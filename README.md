@@ -1,1 +1,1 @@
-# PyQiskit
+# PyQQQ
