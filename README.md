@@ -109,8 +109,8 @@ PyQQQ 计划让你用熟悉的 `if` 语法写量子控制，并严格区分两�
 | 后端 | 状态 | 说明 |
 |------|------|------|
 | Qiskit | ✅ 稳定 | IBM 量子生态 |
-| Cirq | 🔄 开发中 | Google 量子生态 |
-| PennyLane | 🔄 开发中 | 量子机器学习 |
+| Cirq | ✅ 稳定 | Google 量子生态 |
+| PennyLane | ✅ 稳定 | 量子机器学习 |
 | 更多后端 | 📅 规划中 | Amazon Braket, PyQuil... |
 
 ---

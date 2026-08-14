@@ -1,10 +1,14 @@
 """后端注册表。"""
 
 from .base import Backend
+from .cirq import CirqBackend
+from .pennylane import PennyLaneBackend
 from .qiskit import QiskitBackend
 
 _REGISTRY = {
     "qiskit": QiskitBackend(),
+    "cirq": CirqBackend(),
+    "pennylane": PennyLaneBackend(),
 }
 
 
