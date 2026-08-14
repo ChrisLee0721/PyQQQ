@@ -15,9 +15,10 @@
 
 ```python
 from pyqqq import qgate, qshow
+from pyqqq.gates import H, CX
 
-qgate(h, 0)
-qgate(cx, 0, 1)
+qgate(H, 0)
+qgate(CX, 0, 1)
 qshow()
 ```
 
@@ -57,20 +58,24 @@ qshow(backend='pennylane')
 qshow(backend='ibm_brisbane')
 ```
 
-**同一段代码，不加修改，跑在任何后端上。** 这是目前唯一能做到这一点的量子编程工具。
+**同一段代码，不加修改，跑在任何后端上。** 极简语法 + 后端无关，是 PyQQQ 的组合差异化。
 
-### 3. if = 叠加态（用你会的语法，做你不敢想的事）
+### 3. 条件门与”if = 叠加态”（规划中）
 
-```python
-qgate(h, 0)
-if qgate(measure, 0) == 0:
-    qgate(x, 1)
-else:
-    qgate(z, 1)
-qshow()
-```
+PyQQQ 计划让你用熟悉的 `if` 语法写量子控制，并严格区分两种概念：
 
-在 PyQQQ 中，`if` 表示“两种可能性同时存在”——这就是叠加态。**你不需要学习新概念，只需要写你已经在用的 Python 语法。**
+- **条件门（经典控制）**：先测量、再按结果选择分支，这是”坍缩之后的经典分支”。
+  ```python
+  qgate(H, 0)
+  if qgate(MEASURE, 0) == 0:   # 规划中：基于测量结果的条件门
+      qgate(X, 1)
+  else:
+      qgate(Z, 1)
+  qshow()
+  ```
+- **量子叠加控制**：让 `if` 的两种分支”同时存在”。这是 PyQQQ 最独特的设计哲学，也是长期方向，需要自研条件编译器，暂未实现。
+
+我们不把”测量后的经典分支”包装成”叠加态”——教错物理，比不教更糟。
 
 ### 4. 真正的“技术惠普”
 
