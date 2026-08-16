@@ -1,0 +1,136 @@
+{
+  "backend": "QX emulator",
+  "cases": {
+    "bell": {
+      "desc": "Bell state H+CX (2q)",
+      "status": "ok",
+      "shots": 1024,
+      "top": [
+        [
+          "00",
+          0.501
+        ],
+        [
+          "11",
+          0.499
+        ]
+      ]
+    },
+    "ghz3": {
+      "desc": "3-qubit GHZ (CX chain)",
+      "status": "ok",
+      "shots": 1024,
+      "top": [
+        [
+          "000",
+          0.5039
+        ],
+        [
+          "111",
+          0.4961
+        ]
+      ]
+    },
+    "ghz8": {
+      "desc": "8-qubit GHZ (star, SWAP routing)",
+      "status": "ok",
+      "shots": 1024,
+      "top": [
+        [
+          "11111111",
+          0.5098
+        ],
+        [
+          "00000000",
+          0.4902
+        ]
+      ]
+    },
+    "qft3": {
+      "desc": "3-qubit QFT",
+      "status": "ok",
+      "shots": 1024,
+      "top": [
+        [
+          "000",
+          0.2695
+        ],
+        [
+          "111",
+          0.2158
+        ],
+        [
+          "100",
+          0.2031
+        ]
+      ]
+    },
+    "grover4": {
+      "desc": "Grover |1111> 4q (mcz decompose)",
+      "status": "ok",
+      "shots": 1024,
+      "top": [
+        [
+          "1111",
+          0.9629
+        ],
+        [
+          "0101",
+          0.0059
+        ],
+        [
+          "1011",
+          0.0049
+        ]
+      ]
+    },
+    "qeq": {
+      "desc": "Comparator x==5 (mcz)",
+      "status": "ok",
+      "shots": 1024,
+      "top": [
+        [
+          "1101",
+          1.0
+        ]
+      ]
+    },
+    "qlt": {
+      "desc": "Comparator x<5 (QFT adder)",
+      "status": "ok",
+      "shots": 1024,
+      "top": [
+        [
+          "10010",
+          1.0
+        ]
+      ]
+    },
+    "mul": {
+      "desc": "Multiply 5*3 mod 8 (QFT adder)",
+      "status": "ok",
+      "shots": 1024,
+      "top": [
+        [
+          "111101",
+          1.0
+        ]
+      ]
+    },
+    "qif": {
+      "desc": "Coherent if (cp/rz decompose)",
+      "status": "ok",
+      "shots": 1024,
+      "top": [
+        [
+          "00",
+          0.5127
+        ],
+        [
+          "11",
+          0.4873
+        ]
+      ]
+    }
+  }
+}

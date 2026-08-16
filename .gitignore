@@ -219,3 +219,8 @@ __marimo__/
 
 # Claude Code (local machine settings)
 .claude/
+
+# 本地临时预览产物（viz 预览测试输出）
+.viz_preview/
+_p_*.png
+_preview_*.png

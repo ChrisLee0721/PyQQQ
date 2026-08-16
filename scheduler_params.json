@@ -1,0 +1,5 @@
+{
+  "n<8|clifford|tw<4|d0": "qiskit:statevector",
+  "n>=24|clifford|tw<4|d0": "qiskit:stabilizer",
+  "n>=24|nonclifford|tw<4|d0": "qiskit:matrix_product_state"
+}

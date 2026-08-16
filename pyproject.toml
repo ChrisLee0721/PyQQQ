@@ -3,8 +3,8 @@ requires = ["setuptools>=77"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "pyqqq"
-version = "0.1.0"
+name = "quonic"
+version = "0.2.0"
 description = "量子编程，像写 Python 一样简单"
 readme = "README.md"
 requires-python = ">=3.9"
@@ -24,11 +24,25 @@ classifiers = [
 qiskit = ["qiskit>=1.0", "qiskit-aer>=0.14"]
 cirq = ["cirq>=1.0"]
 pennylane = ["pennylane>=0.36"]
-dev = ["pytest>=7.0"]
+quantum-inspire = ["qiskit-quantuminspire>=0.18", "quantuminspire>=4.0", "qiskit<2.4.0"]
+algorithms = ["numpy>=1.24", "scipy>=1.10"]
+viz = ["matplotlib>=3.5"]
+dev = ["pytest>=7.0", "numpy>=1.24", "scipy>=1.10", "matplotlib>=3.5", "ruff>=0.9"]
 
 [tool.setuptools.packages.find]
 where = ["src"]
 
+[tool.setuptools.package-data]
+quonic = ["scheduler/data/*.json"]
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = ["src"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py39"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "W"]
+ignore = ["E501"]

@@ -1,11 +1,11 @@
-# PyQQQ — 量子编程，像写 Python 一样简单
+# QuoNic — 量子编程，像写 Python 一样简单
 
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
 [![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/)
 [![Qiskit](https://img.shields.io/badge/Qiskit-1.0+-green.svg)](https://qiskit.org/)
 [![Cirq](https://img.shields.io/badge/Cirq-1.0+-orange.svg)](https://quantumai.google/cirq)
 
-**PyQQQ 是一个让量子编程变得像写 Python 一样简单的工具。**
+**QuoNic 是一个让量子编程变得像写 Python 一样简单的工具。**
 
 不需要学 `QuantumCircuit`，不需要理解 `backend`，不需要手动 `measure`。你会写 Python，就会用量子计算。
 
@@ -14,25 +14,35 @@
 ## 🚀 30 秒快速开始
 
 ```python
-from pyqqq import qgate, qshow
-from pyqqq.gates import H, CX
+from quonic import qgate, qshow
+from quonic.gates import H, CX
 
 qgate(H, 0)
 qgate(CX, 0, 1)
 qshow()
 ```
 
-**这是量子计算中最经典的贝尔态（Bell State）。** 同样的功能，用 Qiskit 原生代码需要 10+ 行。PyQQQ 只需要 3 行。运行结果会直接显示在终端或 Jupyter 中。
+**这是量子计算中最经典的贝尔态（Bell State）。** 同样的功能，用 Qiskit 原生代码需要 10+ 行。QuoNic 只需要 3 行。运行结果会直接显示在终端或 Jupyter 中。
+
+更多**复制即跑**的示例（GHZ、`qif`、`QInt`、Grover、VQE、QAOA、噪声）见 [`examples/`](examples/)。
 
 ---
 
 ## 📦 安装
 
 ```bash
-pip install pyqqq
+pip install quonic
 ```
 
-依赖自动处理，无需额外配置。
+后端是可选依赖，按需安装。要一键装齐三个后端（含算法模板的 numpy/scipy）：
+
+```bash
+pip install 'quonic[qiskit,cirq,pennylane,algorithms]'
+```
+
+只装某一个后端，例如只用 Cirq：`pip install 'quonic[cirq]'`。未安装的后端在调用时会给出明确的中文提示。
+
+可视化是独立可选依赖：`pip install 'quonic[viz]'`（仅 matplotlib，不引入 Graphviz / Seaborn / NetworkX）。
 
 ---
 
@@ -40,7 +50,7 @@ pip install pyqqq
 
 ### 1. 极简语法：3 行代码跑通贝尔态
 
-你不需要理解“量子电路对象”，不需要选择“后端模拟器”，不需要手动“测量”。PyQQQ 替你处理一切。
+你不需要理解“量子电路对象”，不需要选择“后端模拟器”，不需要手动“测量”。QuoNic 替你处理一切。
 
 ### 2. 一个参数切换所有后端
 
@@ -54,26 +64,36 @@ qshow(backend='cirq')
 # 切换到 PennyLane
 qshow(backend='pennylane')
 
-# 切换到真实 IBM 硬件（需配置 API token）
-qshow(backend='ibm_brisbane')
+# 真实硬件（IBM / AWS / Google 云端）规划中，暂未开放
+qshow(backend='ibm_brisbane')  # TODO: 尚未支持
 ```
 
-**同一段代码，不加修改，跑在任何后端上。** 极简语法 + 后端无关，是 PyQQQ 的组合差异化。
+**同一段代码，不加修改，跑在任何后端上。** 极简语法 + 后端无关，是 QuoNic 的组合差异化。
 
-### 3. 条件门与”if = 叠加态”（规划中）
+### 3. 条件门与”if = 叠加态”
 
-PyQQQ 计划让你用熟悉的 `if` 语法写量子控制，并严格区分两种概念：
+QuoNic 用 `qif` 实现量子叠加控制，并严格区分两种概念：
 
-- **条件门（经典控制）**：先测量、再按结果选择分支，这是”坍缩之后的经典分支”。
+- **量子叠加控制（`qif`，已实现）**：控制比特处于叠加态时**不测量**，两个分支
+  相干叠加，产生真纠缠——这是”两种分支同时发生”，不是先测量再二选一。
   ```python
-  qgate(H, 0)
-  if qgate(MEASURE, 0) == 0:   # 规划中：基于测量结果的条件门
-      qgate(X, 1)
-  else:
-      qgate(Z, 1)
+  from quonic import qgate, qif, qshow
+  from quonic.gates import H, X, I
+
+  qgate(H, 0)                       # 控制比特进入叠加态
+  qif(0).then(X, 1).else_(I, 1)     # q0==1 翻转 q1，否则不动（= 受控 X）
   qshow()
   ```
-- **量子叠加控制**：让 `if` 的两种分支”同时存在”。这是 PyQQQ 最独特的设计哲学，也是长期方向，需要自研条件编译器，暂未实现。
+  `else_(I, ...)` 里的 `I` 是恒等门，让「受控门 = qif 特例」写得自然。
+- **条件门（经典控制，规划中）**：先测量、再按结果选择分支，这是”坍缩之后的经典分支”。
+  ```python
+  # 规划中：基于测量结果的条件门
+  # qgate(H, 0)
+  # if qgate(MEASURE, 0) == 0:
+  #     qgate(X, 1)
+  # else:
+  #     qgate(Z, 1)
+  ```
 
 我们不把”测量后的经典分支”包装成”叠加态”——教错物理，比不教更糟。
 
@@ -83,11 +103,49 @@ PyQQQ 计划让你用熟悉的 `if` 语法写量子控制，并严格区分两�
 - **自动补全**：在 VS Code / Jupyter 中自动提示门名称和参数
 - **自动测量**：忘记写 `measure`？`qshow()` 自动补全
 
+### 5. 智能调度器：自动挑最快的方法
+
+量子模拟有四种方法，快慢差几个数量级，选错直接撞墙：
+
+| 方法 | 复杂度 | 适合 |
+|------|--------|------|
+| `statevector` | 2^n | 通用默认 |
+| `stabilizer` | 多项式 | 纯 Clifford 电路（如纠错码） |
+| `matrix_product_state` | 随树宽增长 | 低树宽电路（如 QAOA） |
+| `density_matrix` | 4^n | 噪声模拟 |
+
+QuoNic 的调度器根据电路特征（门类型、树宽、是否含噪声）自动选择，不用你手动
+指定方法。实测证据：**GHZ(24) 快 36 倍、QAOA(24) 快 19 倍**，Grover 的
+`mcz` 只有 `statevector` 能跑，调度器会自动绕开会崩溃的方法。
+
+```python
+from quonic.scheduler import schedule
+rec = schedule(circuit)   # -> Recommendation(backend='qiskit', method='stabilizer')
+```
+
+详见 [调度器基准与实测数据](docs/benchmarks.md)。
+
+### 6. 全量可视化套件：23 类图，只用 Matplotlib
+
+```python
+from quonic.viz import plot_circuit, plot_counts, plot_decision_tree
+
+plot_circuit(circuit)        # 门序列电路图
+plot_counts(result)          # 测量直方图
+plot_decision_tree()         # 调度决策树
+```
+
+23 类图覆盖四层：**用户刚需**（电路图 / 直方图 / 拓扑图）、**调度器证据**
+（方法对比 / 决策树 / 热力图 / 降级链 / 特征雷达图）、**算法教学**（能量收敛
+/ Grover 振幅 / 态向量 / 布洛赫球）、**量子态**（密度矩阵 / 纠缠 / 门矩阵 /
+路由 / 逐门态演化 / 噪声成本）。全部只用 matplotlib 一个依赖，懒加载，
+`import quonic` 零开销。详见 [可视化套件](docs/visualization.md)。
+
 ---
 
-## 📊 对比：PyQQQ vs Qiskit
+## 📊 对比：QuoNic vs Qiskit
 
-| 场景 | Qiskit | PyQQQ |
+| 场景 | Qiskit | QuoNic |
 |------|--------|-------|
 | **跑通第一个量子程序** | 需要理解 5-8 个新概念 | 只需要 2 个概念：`qgate` 和 `qshow` |
 | **代码行数（贝尔态）** | 8-12 行 | **3 行** |
@@ -96,11 +154,11 @@ PyQQQ 计划让你用熟悉的 `if` 语法写量子控制，并严格区分两�
 
 ---
 
-## 🧠 为什么叫 PyQQQ？
+## 🧠 为什么叫 QuoNic？
 
-- **Py** — Python 原生的语法和体验
-- **Q** — 量子计算
-- **QQ** — 两个 Q：让“量子”和“用户”通过 Python 连接起来
+- **Qu** — Quantum（量子）
+- **onic** — 词尾（photonic / electronic），意为“属于量子的、关于量子的”
+- 读作 /ˈkwɑnɪk/（“阔尼克”），一句话：**“量子计算的”**（the quantum one）
 
 ---
 
@@ -108,25 +166,34 @@ PyQQQ 计划让你用熟悉的 `if` 语法写量子控制，并严格区分两�
 
 | 后端 | 状态 | 说明 |
 |------|------|------|
-| Qiskit | ✅ 稳定 | IBM 量子生态 |
-| Cirq | ✅ 稳定 | Google 量子生态 |
-| PennyLane | ✅ 稳定 | 量子机器学习 |
+| Qiskit | ✅ 稳定 | IBM 生态 · 本地模拟器 |
+| Cirq | ✅ 稳定 | Google 生态 · 本地模拟器 |
+| PennyLane | ✅ 稳定 | 量子机器学习 · 本地模拟器 |
+| 真实硬件 | 📅 规划中 | IBM / AWS / Google 云端量子硬件 |
 | 更多后端 | 📅 规划中 | Amazon Braket, PyQuil... |
+
+> **注意**：目前三个后端都运行在**本地模拟器**上，尚未接入真实量子硬件。接入云端硬件（IBM / AWS Braket / Google）是后续优先级，见 [路线图](#)。
+
+为硬件铺路，QuoNic 已内置 `CouplingMap`（耦合图）、`compile()` 编译 seam，以及 `decompose()` 门分解——把高阶门（`cp` / `ccx` / `mcz`）展开成基础门集。后者是 QuoNic 自己拥有的「可移植核心」：用户不被某个后端的电路形状绑住，Grover 的 `mcz` 分解成 `cx / h / p` 后能跑通所有后端方法。已内置 `route_swaps()` 贪心 SWAP 路由（配合 `plot_routing` 可视化），将来接 IBM / 国产引擎时，只需在编译层接入，无需改动 IR 或调度器。
 
 ---
 
 ## 📖 文档与教程
 
-- [快速入门](docs/quickstart.md) — 5 分钟上手 PyQQQ
+- [快速入门](docs/quickstart.md) — 5 分钟上手 QuoNic
+- [Jupyter 教程](docs/tutorial.ipynb) — 可运行的交互单元
 - [门列表](docs/gates.md) — 所有内置门及其用法
 - [自定义门](docs/custom_gates.md) — 注册你自己的门
 - [后端切换](docs/backends.md) — 一个参数切换所有引擎
+- [调度器基准与实测数据](docs/benchmarks.md) — 自动选最快方法的护城河
+- [可视化套件](docs/visualization.md) — 23 类图，只用 Matplotlib
+- [国产硬件调研](docs/domestic-hardware.md) — QPanda3 / CqLib 接入评估
 
 ---
 
 ## 🤝 贡献指南
 
-PyQQQ 是一个开源项目（Apache 2.0），欢迎任何形式的贡献：
+QuoNic 是一个开源项目（Apache 2.0），欢迎任何形式的贡献：
 
 - 报告 Bug
 - 提出新功能建议
@@ -139,10 +206,10 @@ PyQQQ 是一个开源项目（Apache 2.0），欢迎任何形式的贡献：
 
 ## 📄 许可证
 
-PyQQQ 使用 [Apache License 2.0](LICENSE)，对商用和闭源友好，同时提供专利保护。
+QuoNic 使用 [Apache License 2.0](LICENSE)，对商用和闭源友好，同时提供专利保护。
 
 ---
 
 ## 🌟 给项目加星
 
-如果 PyQQQ 对你有帮助，请在 GitHub 上给我们一个 ⭐️。你的支持是我们持续改进的动力。
+如果 QuoNic 对你有帮助，请在 GitHub 上给我们一个 ⭐️。你的支持是我们持续改进的动力。
