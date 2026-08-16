@@ -204,6 +204,8 @@ QuoNic is open source (Apache 2.0) and welcomes all kinds of contribution:
 - Submit code (new backend adapters, gates, features)
 - Improve docs and tutorials
 
+See [CONTRIBUTING.md](CONTRIBUTING.md) for the development setup, code style, and conventions.
+
 ---
 
 ## 📄 License
