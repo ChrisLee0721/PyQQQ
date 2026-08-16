@@ -47,7 +47,6 @@ class PennyLaneBackend(Backend):
         if nm.enabled and nm.double > 0.0:
             two_qubit_kraus = _two_qubit_depolarizing_kraus(nm.double)
 
-        @qml.set_shots(shots=shots)
         @qml.qnode(dev)
         def qnode():
             for op in circuit.ops:
@@ -58,6 +57,8 @@ class PennyLaneBackend(Backend):
                     elif len(op.qubits) == 2 and two_qubit_kraus is not None:
                         qml.QubitChannel(two_qubit_kraus, wires=list(op.qubits))
             return qml.counts()
+
+        qnode = qml.set_shots(qnode, shots=shots)
 
         raw = qnode()
         # PennyLane 的比特串是 wire0 在最高位，反转为 Qiskit 约定（qubit0 在最低位）

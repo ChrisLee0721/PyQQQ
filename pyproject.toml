@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "quonic"
-version = "0.2.0"
+version = "0.2.1"
 description = "量子编程，像写 Python 一样简单"
 readme = "README.md"
 requires-python = ">=3.9"
@@ -23,7 +23,7 @@ classifiers = [
 [project.optional-dependencies]
 qiskit = ["qiskit>=1.0", "qiskit-aer>=0.14"]
 cirq = ["cirq>=1.0"]
-pennylane = ["pennylane>=0.36"]
+pennylane = ["pennylane>=0.44"]
 quantum-inspire = ["qiskit-quantuminspire>=0.18", "quantuminspire>=4.0", "qiskit<2.4.0"]
 algorithms = ["numpy>=1.24", "scipy>=1.10"]
 viz = ["matplotlib>=3.5"]

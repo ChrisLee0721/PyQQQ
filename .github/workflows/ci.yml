@@ -51,7 +51,7 @@ jobs:
         with:
           python-version: "3.13"
       - name: Install qi extra (pinned qiskit<2.4.0)
-        run: pip install ".[quantum-inspire]"
+        run: pip install ".[quantum-inspire]" pytest
       - name: Offline qi backend smoke
         run: pytest tests/test_qi.py -q
 

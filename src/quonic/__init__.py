@@ -12,7 +12,7 @@ from .result import Result
 from .stack import reset
 from .topology import CouplingMap
 
-__version__ = "0.2.0"
+__version__ = "0.2.1"
 
 __all__ = [
     "qgate",
