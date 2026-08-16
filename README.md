@@ -64,8 +64,10 @@ qshow(backend='cirq')
 # 切换到 PennyLane
 qshow(backend='pennylane')
 
-# 真实硬件（IBM / AWS / Google 云端）规划中，暂未开放
-qshow(backend='ibm_brisbane')  # TODO: 尚未支持
+# 真实硬件（Quantum Inspire）已接入，需登录
+qshow(backend='qi')        # Tuna-9 真机
+qshow(backend='tuna17')    # Tuna-17 真机
+qshow(backend='qx')        # QX 云模拟器
 ```
 
 **同一段代码，不加修改，跑在任何后端上。** 极简语法 + 后端无关，是 QuoNic 的组合差异化。
@@ -169,10 +171,12 @@ plot_decision_tree()         # 调度决策树
 | Qiskit | ✅ 稳定 | IBM 生态 · 本地模拟器 |
 | Cirq | ✅ 稳定 | Google 生态 · 本地模拟器 |
 | PennyLane | ✅ 稳定 | 量子机器学习 · 本地模拟器 |
-| 真实硬件 | 📅 规划中 | IBM / AWS / Google 云端量子硬件 |
-| 更多后端 | 📅 规划中 | Amazon Braket, PyQuil... |
+| Quantum Inspire | ✅ 已接入 | 真实硬件 Tuna-9 / Tuna-17 + QX 模拟器 |
+| 更多后端 | 📅 规划中 | IBM / AWS Braket / 国产硬件... |
 
-> **注意**：目前三个后端都运行在**本地模拟器**上，尚未接入真实量子硬件。接入云端硬件（IBM / AWS Braket / Google）是后续优先级，见 [路线图](#)。
+> **注意**：Qiskit / Cirq / PennyLane 三个后端运行在**本地模拟器**上；真实硬件通过
+> Quantum Inspire 接入（`qshow(backend="qi")`，需登录）。更多云端硬件（IBM / AWS Braket）
+> 是后续优先级。
 
 为硬件铺路，QuoNic 已内置 `CouplingMap`（耦合图）、`compile()` 编译 seam，以及 `decompose()` 门分解——把高阶门（`cp` / `ccx` / `mcz`）展开成基础门集。后者是 QuoNic 自己拥有的「可移植核心」：用户不被某个后端的电路形状绑住，Grover 的 `mcz` 分解成 `cx / h / p` 后能跑通所有后端方法。已内置 `route_swaps()` 贪心 SWAP 路由（配合 `plot_routing` 可视化），将来接 IBM / 国产引擎时，只需在编译层接入，无需改动 IR 或调度器。
 
@@ -182,9 +186,6 @@ plot_decision_tree()         # 调度决策树
 
 - [快速入门](docs/quickstart.md) — 5 分钟上手 QuoNic
 - [Jupyter 教程](docs/tutorial.ipynb) — 可运行的交互单元
-- [门列表](docs/gates.md) — 所有内置门及其用法
-- [自定义门](docs/custom_gates.md) — 注册你自己的门
-- [后端切换](docs/backends.md) — 一个参数切换所有引擎
 - [调度器基准与实测数据](docs/benchmarks.md) — 自动选最快方法的护城河
 - [可视化套件](docs/visualization.md) — 23 类图，只用 Matplotlib
 - [国产硬件调研](docs/domestic-hardware.md) — QPanda3 / CqLib 接入评估
@@ -199,8 +200,6 @@ QuoNic 是一个开源项目（Apache 2.0），欢迎任何形式的贡献：
 - 提出新功能建议
 - 提交代码（新后端适配器、新门、新功能）
 - 完善文档和教程
-
-请阅读 [CONTRIBUTING.md](CONTRIBUTING.md) 了解详细信息。
 
 ---
 
