@@ -158,9 +158,18 @@ plot_decision_tree()         # 调度决策树
 
 ## 🧠 为什么叫 QuoNic？
 
-- **Qu** — Quantum（量子）
-- **onic** — 词尾（photonic / electronic），意为“属于量子的、关于量子的”
-- 读作 /ˈkwɑnɪk/（“阔尼克”），一句话：**“量子计算的”**（the quantum one）
+QuoNic 是 **Quantum Unified Operation Native Interface Core** 的首字母缩写：
+
+| 字母 | 词 | 含义 |
+|------|-----|------|
+| Q | Quantum | 量子 |
+| U | Unified | 统一 —— 一个参数切换所有后端 |
+| O | Operation | 操作 —— `qgate` / `qshow` |
+| N | Native | 原生 —— 像写 Python 一样自然 |
+| I | Interface | 接口 —— 后端适配层 |
+| C | Core | 核心 —— IR / 调度器 / 编译 |
+
+读作 /ˈkwɑnɪk/（“阔尼克”）。
 
 ---
 
