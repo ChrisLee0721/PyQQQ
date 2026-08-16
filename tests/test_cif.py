@@ -114,29 +114,29 @@ def test_cif_rejects_unsupported_backends(backend):
 
 def test_cif_requires_then_branch():
     reset()
-    with pytest.raises(ValueError, match="缺少 then"):
+    with pytest.raises(ValueError, match="missing then"):
         cif(0).else_(Z, 1)
 
 
 def test_cif_rejects_different_targets():
     reset()
-    with pytest.raises(ValueError, match="同一目标比特"):
+    with pytest.raises(ValueError, match="same target"):
         cif(0).then(X, 1).else_(Z, 2)
 
 
 def test_cif_rejects_multi_qubit_branch():
     reset()
-    with pytest.raises(ValueError, match="只支持单比特门"):
+    with pytest.raises(ValueError, match="single-qubit"):
         cif(0).then(CX, 1).else_(Z, 1)
 
 
 def test_cif_rejects_measure_branch():
     reset()
-    with pytest.raises(ValueError, match="酉门"):
+    with pytest.raises(ValueError, match="unitary"):
         cif(0).then(MEASURE, 1).else_(Z, 1)
 
 
 def test_cif_rejects_control_equals_target():
     reset()
-    with pytest.raises(ValueError, match="不能相同"):
+    with pytest.raises(ValueError, match="cannot be the same"):
         cif(0).then(X, 0).else_(Z, 0)

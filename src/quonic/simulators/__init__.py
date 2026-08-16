@@ -1,11 +1,12 @@
-"""自研模拟引擎（朴素版）：不绑定任何后端，仅需 numpy。
+"""In-house simulation engines (naive version): no backend dependency, numpy only.
 
-四个引擎对应四种模拟方法，供 native 后端与调度降级使用：
+Four engines correspond to four simulation methods, for use by the native
+backend and scheduler fallback:
 
-- StatevectorEngine   —— 2^n 复振幅，精确（含非 Clifford 门）
-- StabilizerEngine    —— Clifford tableau，多项式级（仅基础 Clifford 门集）
-- MPSEngine           —— 矩阵乘积态，低纠缠电路突破 2^n 内存墙
-- DensityMatrixEngine —— 密度矩阵，支持去极化噪声
+- StatevectorEngine   —— 2^n complex amplitudes, exact (including non-Clifford gates)
+- StabilizerEngine    —— Clifford tableau, polynomial scaling (basic Clifford gate set only)
+- MPSEngine           —— matrix product state, breaks the 2^n memory wall for low-entanglement circuits
+- DensityMatrixEngine —— density matrix, supports depolarizing noise
 """
 
 from ._density import DensityMatrixEngine

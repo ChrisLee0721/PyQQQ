@@ -1,39 +1,47 @@
-"""矩阵乘积态（MPS）引擎：低纠缠电路突破 2^n 内存墙。
+"""Matrix product state (MPS) engine: breaks the 2^n memory wall for
+low-entanglement circuits.
 
-朴素版：单比特门本地更新，多比特门用「对角相位 + H」技巧 + SVD 截断，
-不相邻 qubit 用 SWAP 链搬移。bond 维上限 chi_max 硬截断。
+Naive version: single-qubit gates update locally, multi-qubit gates use the
+"diagonal phase + H" trick plus SVD truncation, and non-adjacent qubits are
+moved with a SWAP chain. The bond dimension is hard-truncated at chi_max.
 
-约定：qubit 0 是最低位；site 从左到右依次为 qubit 0..n-1。
+Conventions: qubit 0 is the least-significant bit; sites from left to right are
+qubit 0..n-1.
 """
+
+from __future__ import annotations
+
+from typing import Any, Dict, List, Sequence, Tuple
 
 import numpy as np
 
+from .._i18n import tr
 from ._gates import _H, single
 
 
 class MPSEngine:
-    def __init__(self, num_qubits, chi_max=32):
-        self.n = num_qubits
-        self.chi_max = chi_max
-        # M[i] 形状 [χ_{i-1}, 2, χ_i]，初始 |0...0>（所有 bond 维为 1）
-        self.M = [np.zeros((1, 2, 1), dtype=complex) for _ in range(num_qubits)]
+    def __init__(self, num_qubits: int, chi_max: int = 32) -> None:
+        self.n: int = num_qubits
+        self.chi_max: int = chi_max
+        # M[i] has shape [χ_{i-1}, 2, χ_i], initialized to |0...0> (all bond dimensions are 1)
+        self.M: List[Any] = [np.zeros((1, 2, 1), dtype=complex) for _ in range(num_qubits)]
         for t in self.M:
             t[0, 0, 0] = 1.0
 
     # ------------------------------------------------------------------
-    # 基本张量操作
+    # basic tensor operations
     # ------------------------------------------------------------------
-    def _apply_single(self, q, u):
+    def _apply_single(self, q: int, u: Any) -> None:
         self.M[q] = np.einsum("asb,ts->atb", self.M[q], u)
 
-    def _merge(self, qubits):
+    def _merge(self, qubits: Sequence[int]) -> Any:
         theta = self.M[qubits[0]]
         for j in range(1, len(qubits)):
             theta = np.einsum("...a,abc->...bc", theta, self.M[qubits[j]])
         return theta
 
-    def _restore_pair(self, theta, i):
-        """把 [χL, 2, 2, χR] 恢复成 site i, i+1（一次 SVD）。"""
+    def _restore_pair(self, theta: Any, i: int) -> None:
+        """Restore [χL, 2, 2, χR] back into sites i, i+1 (one SVD)."""
         chi_l = theta.shape[0]
         chi_r = theta.shape[-1]
         mat = theta.reshape(chi_l * 2, 2 * chi_r)
@@ -45,8 +53,8 @@ class MPSEngine:
         self.M[i] = a.reshape(chi_l, 2, chi)
         self.M[i + 1] = (s[:, None] * b).reshape(chi, 2, chi_r)
 
-    def _restore(self, theta, qubits):
-        """把 [χL, 2, ..., 2, χR] 恢复成连续 k 个 site（逐步左 SVD）。"""
+    def _restore(self, theta: Any, qubits: Sequence[int]) -> None:
+        """Restore [χL, 2, ..., 2, χR] back into k consecutive sites (left SVD step by step)."""
         k = len(qubits)
         chi_l = theta.shape[0]
         chi_r = theta.shape[-1]
@@ -64,15 +72,15 @@ class MPSEngine:
             chi_l = chi
         self.M[qubits[k - 1]] = cur.reshape(chi_l, 2, chi_r)
 
-    def _swap_adjacent(self, i):
+    def _swap_adjacent(self, i: int) -> None:
         theta = np.einsum("asr,rtb->astb", self.M[i], self.M[i + 1])
         theta = np.einsum("astb->atsb", theta)
         self._restore_pair(theta, i)
 
     # ------------------------------------------------------------------
-    # 对角门（cz / cp / mcz）：合并 -> 对角缩放 -> SVD 恢复
+    # diagonal gates (cz / cp / mcz): merge -> diagonal scaling -> SVD restore
     # ------------------------------------------------------------------
-    def _apply_diag_contiguous(self, qubits, angle):
+    def _apply_diag_contiguous(self, qubits: Sequence[int], angle: float) -> None:
         theta = self._merge(qubits)
         k = len(qubits)
         index = (slice(None),) + (1,) * k + (slice(None),)
@@ -82,9 +90,9 @@ class MPSEngine:
         else:
             self._restore(theta, qubits)
 
-    def _apply_diag(self, qubits, angle):
+    def _apply_diag(self, qubits: Sequence[int], angle: float) -> None:
         q = sorted(qubits)
-        swaps = []
+        swaps: List[int] = []
         for j in range(1, len(q)):
             target = q[0] + j
             while q[j] > target:
@@ -96,9 +104,11 @@ class MPSEngine:
             self._swap_adjacent(i)
 
     # ------------------------------------------------------------------
-    # 门分派
+    # gate dispatch
     # ------------------------------------------------------------------
-    def apply(self, name, qubits, params=()):
+    def apply(
+        self, name: str, qubits: Sequence[int], params: Tuple[float, ...] = ()
+    ) -> None:
         name = name.lower()
         if name == "measure":
             return
@@ -121,26 +131,26 @@ class MPSEngine:
         elif name == "swap":
             a, b = qubits[0], qubits[1]
             if abs(a - b) != 1:
-                raise NotImplementedError("MPS 引擎仅支持相邻量子比特的 swap 门")
+                raise NotImplementedError(tr("err.mps_swap"))
             self._swap_adjacent(min(a, b))
         else:
-            raise ValueError(f"MPS 引擎暂不支持门 '{name}'")
+            raise ValueError(tr("err.mps_gate", name=name))
 
     # ------------------------------------------------------------------
-    # 采样：右环境 + 逐 bit 条件概率
+    # sampling: right environment + per-bit conditional probabilities
     # ------------------------------------------------------------------
-    def _right_env(self):
-        r = [None] * (self.n + 1)
+    def _right_env(self) -> List[Any]:
+        r: List[Any] = [None] * (self.n + 1)
         r[self.n] = np.array([[1.0 + 0j]])
         for i in range(self.n - 1, -1, -1):
             r[i] = np.einsum("asc,cd,bsd->ab", self.M[i], r[i + 1], self.M[i].conj())
         return r
 
-    def _sample_once(self, r):
+    def _sample_once(self, r: List[Any]) -> List[int]:
         left = np.array([[1.0 + 0j]])
-        bits = []
+        bits: List[int] = []
         for i in range(self.n):
-            probs = []
+            probs: List[float] = []
             for s in (0, 1):
                 m = self.M[i][:, s, :]
                 p = np.einsum("ab,ac,cd,bd->", left, m, r[i + 1], m.conj())
@@ -154,9 +164,9 @@ class MPSEngine:
             left = np.einsum("ab,ac,bd->cd", left, m, m.conj())
         return bits
 
-    def sample(self, shots):
+    def sample(self, shots: int) -> Dict[str, int]:
         r = self._right_env()
-        counts = {}
+        counts: Dict[str, int] = {}
         for _ in range(shots):
             bits = self._sample_once(r)
             bs = "".join(str(b) for b in reversed(bits))

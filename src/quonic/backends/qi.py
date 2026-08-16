@@ -1,48 +1,66 @@
-"""Quantum Inspire 真实硬件后端。
+"""Quantum Inspire real-hardware backend.
 
-通过 qiskit-quantuminspire 把 QuoNic 电路编译成 cQASM 3.0，提交到
-Quantum Inspire 的超导真机（Tuna-9 / Tuna-17）或 QX emulator
-（10 量子比特云端模拟器，用于提交前验证）。
+Compiles a QuoNic circuit to cQASM 3.0 via qiskit-quantuminspire and submits it to
+Quantum Inspire's superconducting real hardware (Tuna-9 / Tuna-17) or the QX emulator
+(a 10-qubit cloud simulator for pre-submission validation).
 
-与模拟器后端（qiskit/cirq/pennylane/native）不同：
-  - 真实硬件没有「模拟 method」之分，run() 忽略 method；
-  - 硬件固有噪声，无法注入去极化噪声，run() 拒绝 noise；
-  - 不支持经典控制流（cif/cwhile）：超导真机无中段测量反馈。
+Unlike the simulator backends (qiskit/cirq/pennylane/native):
+  - real hardware has no "simulation method" distinction; run() ignores method;
+  - hardware has intrinsic noise, so depolarizing noise cannot be injected; run() rejects noise;
+  - classical control flow (cif/cwhile) is not supported: superconducting hardware has no mid-circuit measurement feedback.
 
-前置条件（一次性）：
-    1. 安装依赖：   pip install 'qiskit-quantuminspire'
-       （注意：qiskit-quantuminspire 0.18.x 要求 qiskit<2.4.0，当前 pyproject
-        允许 qiskit>=1.0；若已装 2.5.x 需临时降级 qiskit==2.3.1）
-    2. 登录：       qi login   # OAuth 设备流，浏览器授权
-       token 存于 ~/.quantuminspire/config.json，不要手写或贴出。
+Prerequisites (one-time):
+    1. Install the dependency:   pip install 'qiskit-quantuminspire'
+       (note: qiskit-quantuminspire 0.18.x requires qiskit<2.4.0; the current pyproject
+        allows qiskit>=1.0; if 2.5.x is already installed you must temporarily downgrade to qiskit==2.3.1)
+    2. Log in:       qi login   # OAuth device flow, browser authorization
+       The token is stored at ~/.quantuminspire/config.json; do not hardcode or paste it.
 
-用法：
+Engine vs device: backend only selects the engine (qiskit/cirq/pennylane/native/qi);
+the specific real-hardware chip is chosen via the device argument. Bare qi defaults
+to the QX cloud simulator (safe, fast, for pre-submission validation); pass
+device="tuna9"/"tuna17" explicitly to target real hardware.
+
+Usage:
     from quonic.backends import get_backend
-    get_backend("qi").run(circuit, shots=1024)          # 真机 Tuna-9
-    # 一键设备捷径（qshow 也可用 backend= 直达）：
-    get_backend("tuna9").run(circuit, shots=1024)       # Tuna-9
-    get_backend("tuna17").run(circuit, shots=1024)      # Tuna-17
-    get_backend("qx").run(circuit, shots=1024)          # QX emulator（提交前验证）
-    # 或显式构造：
+    get_backend("qi").run(circuit, shots=1024)                  # default: QX cloud simulator
+    get_backend("qi", device="tuna9").run(circuit, shots=1024)  # real hardware Tuna-9
+    get_backend("qi", device="tuna17").run(circuit, shots=1024) # real hardware Tuna-17
+    # The legacy device shortcuts are still supported (equivalent to the device forms above):
+    get_backend("tuna9").run(circuit, shots=1024)
+    # Or construct explicitly:
     from quonic.backends.qi import QuantumInspireBackend
-    QuantumInspireBackend("QX emulator").run(circuit, shots=1024)
+    QuantumInspireBackend("Tuna-9").run(circuit, shots=1024)
 """
 
+from __future__ import annotations
+
+from typing import Any, Dict, Optional, Union
+
+from .._i18n import tr
+from ..ir import Circuit
+from ..noise import NoiseModel
 from ..result import Result
 from .base import Backend
 from .qiskit import QiskitBackend
+from .setup_guide import ensure_ready
 
-# 设备别名 → QI 正式设备名。让 qshow(backend="tuna9") / get_backend("qx")
-# 一键直达，不必记住 Tuna-9 / QX emulator 的精确拼写。
-DEVICE_ALIASES = {
+# Device alias → official QI device name. Lets qshow(backend="tuna9") / get_backend("qx")
+# work in one step without remembering the exact Tuna-9 / QX emulator spelling.
+DEVICE_ALIASES: Dict[str, str] = {
     "tuna9": "Tuna-9",
     "tuna17": "Tuna-17",
     "qx": "QX emulator",
 }
 
+# Default target when using bare qi (no device specified): the QX cloud simulator.
+# Real hardware (Tuna-9/Tuna-17) queues, consumes quota, and requires login, so it is
+# not the default — to avoid hitting the heaviest path when the user just wants a quick run.
+DEFAULT_DEVICE: str = "QX emulator"
 
-def resolve_device(device):
-    """把设备别名（tuna9 / tuna17 / qx）映射到 QI 正式设备名；未知名原样透传。"""
+
+def resolve_device(device: Optional[str]) -> Optional[str]:
+    """Map a device alias (tuna9 / tuna17 / qx) to the official QI device name; unknown names pass through unchanged."""
     if device is None:
         return None
     return DEVICE_ALIASES.get(str(device).lower(), device)
@@ -50,60 +68,79 @@ def resolve_device(device):
 
 class QuantumInspireBackend(Backend):
     name = "qi"
-    # 真实硬件无「模拟方法」之分；列出全部方法名仅供工具/文档参考，
-    # 能力匹配由 supports() 覆盖，避免 get_backend_for_method 降级到 native。
+    # Real hardware has no "simulation method" distinction; the full method list is
+    # only for tooling/docs reference. Capability matching is overridden by supports()
+    # to avoid get_backend_for_method falling back to native.
     methods = frozenset(
         {"statevector", "stabilizer", "matrix_product_state", "density_matrix"}
     )
 
-    def __init__(self, device=None):
-        # device=None 时用真机 Tuna-9；也可传别名 tuna9/tuna17/qx 或
-        # 正式设备名 "Tuna-9"/"Tuna-17"/"QX emulator"
-        self.device = resolve_device(device)
+    # Declarative description of the setup guide (setup_guide uses it to generate a
+    # "press Enter to continue" interactive guide). When integrating IBM / AWS Braket /
+    # domestic hardware in the future, each fills in its own setup while reusing the guide engine.
+    setup: Dict[str, Any] = {
+        "name": "Quantum Inspire",
+        "sdk": {
+            "package": "qiskit_quantuminspire",       # import name, used to detect whether it is installed
+            "pip": "qiskit-quantuminspire",           # PyPI name, used for messages / version queries
+            "install": "quonic[quantum-inspire]",     # recommended install command (with extras)
+        },
+        "auth": {
+            "kind": "oauth_cli",
+            "command": ["qi", "login"],
+            "token_file": "~/.quantuminspire/config.json",
+        },
+        "conflicts": [{"package": "qiskit", "constraint": "<2.4.0"}],
+        "devices": ["Tuna-9", "Tuna-17", "QX emulator"],
+        "billing": True,                               # real hardware consumes quota → confirm before submission
+    }
 
-    def supports(self, method):
-        # 硬件后端不参与 method 能力匹配：任何 method 都直接跑硬件
+    def __init__(self, device: Optional[str] = None) -> None:
+        # device=None defaults to the QX cloud simulator (safe, fast, for pre-submission
+        # validation); you may also pass the aliases tuna9/tuna17/qx or the official
+        # device names "Tuna-9"/"Tuna-17"/"QX emulator"
+        self.device: Optional[str] = resolve_device(device)
+
+    def supports(self, method: str) -> bool:
+        # Hardware backends do not participate in method capability matching: any method runs directly on hardware
         return True
 
-    def run(self, circuit, shots=1024, noise=None, method="statevector"):
+    def run(
+        self,
+        circuit: Circuit,
+        shots: int = 1024,
+        noise: Optional[Union[NoiseModel, float, int]] = None,
+        method: str = "statevector",
+    ) -> Result:
         if noise is not None:
-            raise ValueError(
-                "qi 后端运行真实硬件，无法注入噪声 noise；"
-                "请用 qiskit 后端（Aer density_matrix）模拟去极化噪声"
-            )
+            raise ValueError(tr("err.qi_noise"))
         self._check_supported(circuit)
 
-        # 延迟导入：保证 `import quonic` 零开销，且未装依赖时给出清晰提示
-        try:
-            from qiskit import QuantumCircuit, transpile
-            from qiskit_quantuminspire.qi_provider import QIProvider
-        except ImportError as e:
-            raise ImportError(
-                "使用 qi 后端需要安装 qiskit-quantuminspire 并登录：\n"
-                "    pip install 'qiskit-quantuminspire'\n"
-                "    qi login\n"
-                "（注意：qiskit-quantuminspire 0.18.x 要求 qiskit<2.4.0，"
-                "若已装 2.5.x 需临时降级）"
-            ) from e
+        # Preflight checks: dependency / version conflicts / login. Interactive guide under a TTY, otherwise raise a Chinese error.
+        ensure_ready(self.setup)
+
+        # Deferred import: the dependency is guaranteed ready at this point
+        from qiskit import QuantumCircuit, transpile
+        from qiskit_quantuminspire.qi_provider import QIProvider
 
         qc = QuantumCircuit(circuit.num_qubits, circuit.num_qubits)
         for op in circuit.ops:
             if op.name == "cmeasure":
-                # 具名经典位无反馈语义时等价于普通测量，映射到该比特自己的经典位
+                # A named classical bit with no feedback semantics is equivalent to an ordinary measurement, mapped to that bit's own classical bit
                 qc.measure(op.qubit, op.qubit)
             else:
                 QiskitBackend._apply(qc, op)
 
-        # 自动补全：未显式测量的量子比特最后统一测量
+        # Auto-complete: qubits that are not explicitly measured are all measured at the end
         for q in circuit.unmeasured_qubits():
             qc.measure(q, q)
 
         provider = QIProvider()
-        backend = provider.get_backend(self.device or "Tuna-9")
+        backend = provider.get_backend(self.device or DEFAULT_DEVICE)
         qc_compiled = transpile(qc, backend)
 
         job = backend.run(qc_compiled, shots=shots)
-        # 真机需排队，超时放宽到 30 分钟；QX emulator 通常几秒返回
+        # Real hardware queues, so the timeout is relaxed to 30 minutes; the QX emulator usually returns in seconds
         result = job.result(timeout=1800)
         counts_hex = result.get_counts()
         counts = {
@@ -113,29 +150,24 @@ class QuantumInspireBackend(Backend):
         return Result.from_counts(counts, shots)
 
     @staticmethod
-    def _check_supported(circuit):
+    def _check_supported(circuit: Circuit) -> None:
         for op in circuit.ops:
             if op.name == "cwhile":
-                raise NotImplementedError(
-                    "qi 后端不支持 cwhile（经典反馈循环）；"
-                    "真实硬件无法逐 shot 动态回读，请用 native 后端"
-                )
+                raise NotImplementedError(tr("err.qi_cwhile"))
             if op.name == "cif":
-                raise NotImplementedError(
-                    "qi 后端不支持 cif（中段测量 + 经典分支）；"
-                    "超导真机无中段测量反馈，请用 qiskit 或 native 后端"
-                )
+                raise NotImplementedError(tr("err.qi_cif"))
 
 
-def _hex_to_bitstring(key, n_qubits):
-    """Quantum Inspire 返回 counts 键为 0x.. 形式，还原成 MSB-first 比特串。
+def _hex_to_bitstring(key: str, n_qubits: int) -> str:
+    """Quantum Inspire returns counts keys in 0x.. form; convert them back to an MSB-first bitstring.
 
-    QI 的原始 cQASM 结果串以 qubit 0 为最右位（标准二进制），与 QuoNic
-    native / qiskit 后端约定一致（qubit 0 = LSB = 最右字符）。
+    QI's raw cQASM result string places qubit 0 at the rightmost position (standard
+    binary), matching the QuoNic native / qiskit backend convention (qubit 0 = LSB =
+    rightmost character).
     """
     key = str(key)
     if key.startswith("0x"):
         val = int(key, 16)
-    else:  # 兜底：若已是二进制串
+    else:  # Fallback: if it is already a binary string
         val = int(key, 2)
     return format(val, f"0{n_qubits}b")

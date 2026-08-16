@@ -80,8 +80,8 @@ def test_qshow_report(capsys):
     qgate(CX, 0, 1)
     qshow(backend="qiskit", shots=10, report=True)
     out = capsys.readouterr().out
-    assert "电路资源" in out
-    assert "门数" in out and "深度" in out and "量子比特" in out
+    assert "Circuit resources:" in out
+    assert "gates:" in out and "depth:" in out and "qubits:" in out
 
 
 @pytest.mark.parametrize("backend", ["qiskit", "cirq", "pennylane"])

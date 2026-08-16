@@ -1,29 +1,45 @@
-"""路由可视化：耦合图上的 SWAP 插入电路图。"""
+"""Routing visualization: circuit diagram with inserted SWAPs on the coupling map."""
+
+from __future__ import annotations
+
+from typing import Any, Optional
 
 from ..compiler import route_swaps
+from ..ir import Circuit
+from ..topology import CouplingMap
 from ._mpl import _plt, finalize
 from .circuit import _draw_box, _draw_target, _gate_label
 
 
-def _draw_swap(ax, x, y0, y1):
-    """在两个相邻量子比特线之间画 SWAP 叉号（橙色）。"""
+def _draw_swap(ax: Any, x: float, y0: float, y1: float) -> None:
+    """Draw the SWAP cross (orange) between two adjacent qubit wires."""
     ax.plot([x, x], [y0, y1], color="0.35", lw=1.0, zorder=2)
     ax.plot([x - 0.28, x + 0.28], [y0, y1], color="#E07B00", lw=1.8, zorder=3)
     ax.plot([x - 0.28, x + 0.28], [y1, y0], color="#E07B00", lw=1.8, zorder=3)
 
 
-def plot_routing(circuit, coupling_map, ax=None, show=False, save=None, title=None):
-    """画贪心 SWAP 路由后的电路图，插入的 SWAP 用橙色叉号标出。
+def plot_routing(
+    circuit: Circuit,
+    coupling_map: CouplingMap,
+    ax: Any = None,
+    show: bool = False,
+    save: Optional[str] = None,
+    title: Optional[str] = None,
+) -> Any:
+    """Draw the circuit after greedy SWAP routing, with inserted SWAPs marked as
+    orange crosses.
 
-    横轴为门序列（原始门 + 插入的 SWAP），每行一个物理比特。单比特门会随映射
-    移动到其物理位置，直观展示逻辑比特如何在耦合图上「走动」。
+    The x-axis is the gate sequence (original gates + inserted SWAPs), with one
+    physical qubit per row. Single-qubit gates move to their physical location
+    along with the mapping, visually showing how logical qubits "walk" across
+    the coupling map.
 
-    参数：
-        circuit: 源 Circuit。
-        coupling_map: CouplingMap（连通性约束）。
-        ax / show / save / title: 同 plot_circuit。
+    Parameters:
+        circuit: source Circuit.
+        coupling_map: CouplingMap (connectivity constraints).
+        ax / show / save / title: same as plot_circuit.
 
-    返回：matplotlib Axes。
+    Returns: matplotlib Axes.
     """
     plt = _plt()
     routed = route_swaps(circuit, coupling_map)
@@ -67,9 +83,9 @@ def plot_routing(circuit, coupling_map, ax=None, show=False, save=None, title=No
     ax.set_yticks(range(n))
     ax.set_yticklabels([f"q{q}" for q in range(n)])
     ax.set_xticks([])
-    ax.set_ylabel("物理比特")
+    ax.set_ylabel("Physical qubit")
     for s in ("top", "right", "bottom"):
         ax.spines[s].set_visible(False)
     if title is None:
-        title = f"SWAP 路由（插入 {n_swaps} 个 SWAP）"
+        title = f"SWAP routing ({n_swaps} SWAPs inserted)"
     return finalize(fig, ax, show, save, title)

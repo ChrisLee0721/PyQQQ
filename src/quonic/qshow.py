@@ -1,54 +1,74 @@
-"""qshow —— 运行当前电路并在终端 / Jupyter 中显示结果。
+"""qshow — run the current circuit and display the result in the terminal / Jupyter.
 
-两种用法：
-    qshow(shots=1024)                     # 运行当前电路并显示
-    qshow(result)                          # 直接可视化一个 Result（算法输出等）
+Two usages:
+    qshow(shots=1024)                     # run the current circuit and display
+    qshow(result)                          # directly visualize a Result (algorithm output, etc.)
 
-运行当前电路后会自动清空电路（每次 qshow 都是一个完整程序），
-如需手动清空可调用 reset()。
+After running the current circuit, the circuit is automatically cleared (each qshow is a complete program);
+call reset() to clear it manually.
 
-传入 cache=LocalCacheRegistry(...) 时启用本地调度缓存：第一次跑会记录
-「电路特征 -> 后端」，之后微调电路再跑时直接命中缓存，免去重复决策。
+Passing cache=LocalCacheRegistry(...) enables the local scheduling cache: the first run records
+"circuit features -> backend", and later runs with tweaked circuits hit the cache directly, avoiding repeated decisions.
+
+backend only selects the engine (qiskit/cirq/pennylane/native/qi); the specific real-hardware chip
+goes through the device parameter (only effective when backend="qi", with values tuna9/tuna17/qx).
 """
+
+from __future__ import annotations
 
 import sys
 import time
+from typing import Optional, Union
 
+from ._i18n import tr
 from .backends import get_backend, get_backend_for_method
 from .compiler import decompose, route_swaps
-from .noise import resolve_noise
+from .ir import Circuit
+from .noise import NoiseModel, resolve_noise
 from .result import Result
-from .scheduler import circuit_features, load_noise_cost, recommend_method, schedule
+from .scheduler import (
+    LocalCacheRegistry,
+    circuit_features,
+    load_noise_cost,
+    recommend_method,
+    schedule,
+)
 from .stack import current_circuit, reset
+from .topology import CouplingMap
 
 if hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(encoding="utf-8")
 
 
-def qshow(result=None, backend="auto", shots=1024, noise=None, report=False, cache=None,
-          coupling_map=None):
+def qshow(
+    result: Optional[Result] = None,
+    backend: str = "auto",
+    shots: int = 1024,
+    noise: Optional[Union[NoiseModel, float, int]] = None,
+    report: bool = False,
+    cache: Optional[LocalCacheRegistry] = None,
+    coupling_map: Optional[CouplingMap] = None,
+    device: Optional[str] = None,
+) -> Optional[Result]:
     if result is not None:
         if not isinstance(result, Result):
-            raise TypeError(
-                "qshow 的第一个参数必须是 Result 对象（可用 Result.from_counts / "
-                "Result.from_value 构造），或留空以运行当前电路"
-            )
+            raise TypeError(tr("err.qshow_arg"))
         _print_result(result, backend_name=None)
         return result
 
     circuit = current_circuit()
     if circuit.is_empty():
-        print("（当前电路为空，请先用 qgate(...) 构建电路）")
+        print(tr("show.empty_circuit"))
         return None
 
-    # 目标拓扑：先门分解（高阶门 → 基础门），再 SWAP 路由落到耦合图上
+    # target topology: first gate decomposition (high-level gates → basic gates), then SWAP routing onto the coupling map
     if coupling_map is not None:
         circuit = route_swaps(decompose(circuit), coupling_map)
 
     if report:
         _print_circuit_report(circuit)
 
-    # 调度：解析电路选 method；传了 cache 且未显式指定 backend 时，后端也查表
+    # scheduling: resolve the circuit to pick method; when cache is passed and backend is not explicitly specified, the backend is also looked up
     noise_enabled = resolve_noise(noise).enabled
     if noise_enabled:
         _warn_noise_cost(circuit.num_qubits)
@@ -60,12 +80,12 @@ def qshow(result=None, backend="auto", shots=1024, noise=None, report=False, cac
         be_name = backend
         method = recommend_method(circuit_features(circuit), noise=noise_enabled)
 
-    # 噪声由各后端自行处理（qiskit/native 走 density_matrix，cirq/pennylane
-    # 用信道），不做 method 降级；无噪声才按方法能力匹配降级到 native。
+    # noise is handled by each backend itself (qiskit/native use density_matrix, cirq/pennylane
+    # use channels), no method downgrade; without noise, match method capability and downgrade to native.
     if noise_enabled:
-        be = get_backend(be_name)
+        be = get_backend(be_name, device=device)
     else:
-        be = get_backend_for_method(be_name, method)
+        be = get_backend_for_method(be_name, method, device=device)
     t0 = time.time()
     result = be.run(circuit, shots=shots, noise=noise, method=method)
     elapsed = time.time() - t0
@@ -78,37 +98,34 @@ def qshow(result=None, backend="auto", shots=1024, noise=None, report=False, cac
     return result
 
 
-def _warn_noise_cost(n):
-    """有噪声时按实测数据提示 density_matrix 的 4^n 成本（无实测数据则静默）。"""
+def _warn_noise_cost(n: int) -> None:
+    """With noise, warn about the 4^n cost of density_matrix based on measured data (silent without measured data)."""
     cost = load_noise_cost()
     infeasible = cost.get("infeasible_n")
     if infeasible is not None and n >= infeasible:
-        print(
-            f"提示：去极化噪声走 density_matrix（4^n 资源），"
-            f"参考机实测 n>={infeasible} 时已超预算。当前 n={n}，可能很慢或内存不足。"
-        )
+        print(tr("show.noise_cost", infeasible=infeasible, n=n))
 
 
-def _print_circuit_report(circuit):
-    print("电路资源:")
-    print(f"  门数: {circuit.gate_count()}")
-    print(f"  深度: {circuit.depth()}")
-    print(f"  量子比特: {circuit.num_qubits}")
+def _print_circuit_report(circuit: Circuit) -> None:
+    print(tr("show.circuit_resources"))
+    print(tr("show.gate_count", n=circuit.gate_count()))
+    print(tr("show.depth", n=circuit.depth()))
+    print(tr("show.qubit_count", n=circuit.num_qubits))
 
 
-def _print_result(result, backend_name=None):
+def _print_result(result: Result, backend_name: Optional[str] = None) -> None:
     if result.kind == "counts":
         _print_counts(result, backend_name)
     elif result.kind == "value":
         _print_value(result)
     else:
-        raise ValueError(f"未知的 Result 类型 '{result.kind}'")
+        raise ValueError(tr("err.unknown_result_kind", kind=result.kind))
 
 
-def _print_counts(result, backend_name):
-    header = f"后端: {backend_name} | " if backend_name else ""
-    print(f"{header}shots: {result.shots}")
-    print("结果:")
+def _print_counts(result: Result, backend_name: Optional[str]) -> None:
+    header = tr("show.backend_header", name=backend_name) if backend_name else ""
+    print(f"{header}{tr('show.shots', shots=result.shots)}")
+    print(tr("show.result"))
     counts = result.counts or {}
     total = sum(counts.values()) or 1
     for bitstring in sorted(counts):
@@ -117,8 +134,8 @@ def _print_counts(result, backend_name):
         print(f"  |{bitstring}>  {n:>6d}  ({n / total:6.1%})  {bar}")
 
 
-def _print_value(result):
-    print("结果:")
+def _print_value(result: Result) -> None:
+    print(tr("show.result"))
     print(f"  {result.value}")
     for key, val in result.metadata.items():
         print(f"  {key} = {val}")

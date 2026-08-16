@@ -1,19 +1,34 @@
-"""结果可视化：测量直方图。"""
+"""Result visualization: measurement histogram."""
 
+from __future__ import annotations
+
+from typing import Any, Dict, Optional, Union
+
+from .._i18n import tr
 from ..result import Result
 from ._mpl import _plt, finalize
 
 
-def plot_counts(result, ax=None, show=False, save=None, title=None, top_k=20):
-    """画测量直方图：x 轴为比特串，y 轴为采样次数。
+def plot_counts(
+    result: Union[Result, Dict[str, int]],
+    ax: Any = None,
+    show: bool = False,
+    save: Optional[str] = None,
+    title: Optional[str] = None,
+    top_k: Optional[int] = 20,
+) -> Any:
+    """Draw the measurement histogram: x-axis is bit strings, y-axis is sample
+    counts.
 
-    参数：
-        result: Result（kind="counts"）或 dict 直方图。
-        ax / show / save / title: 同 plot_circuit。
-        top_k: 只显示次数最多的前 top_k 个比特串（按比特串排序）；None 表示
-            全部显示。采样直方图条目很多时默认只画前 20 个，避免柱状图挤爆。
+    Parameters:
+        result: a Result (kind="counts") or a dict histogram.
+        ax / show / save / title: same as plot_circuit.
+        top_k: show only the top_k bit strings with the largest counts (sorted
+            by bit string); None means show all. When a sampled histogram has
+            many entries only the first 20 are shown by default, to avoid a
+            cluttered bar chart.
 
-    返回：matplotlib Axes。
+    Returns: matplotlib Axes.
     """
     plt = _plt()
     if isinstance(result, Result):
@@ -21,7 +36,7 @@ def plot_counts(result, ax=None, show=False, save=None, title=None, top_k=20):
     elif isinstance(result, dict):
         counts = result
     else:
-        raise TypeError("plot_counts 需要 Result（counts）或 dict 直方图")
+        raise TypeError(tr("err.viz_counts"))
 
     truncated = top_k is not None and len(counts) > top_k
     if truncated:
@@ -44,10 +59,10 @@ def plot_counts(result, ax=None, show=False, save=None, title=None, top_k=20):
     rotation = 90 if (len(labels) > 8 or max_len > 6) else 0
     fontsize = 9 if max_len <= 6 else (7 if max_len <= 10 else 6)
     ax.set_xticklabels(tick_labels, rotation=rotation, fontsize=fontsize)
-    ax.set_ylabel("次数")
-    ax.set_xlabel("比特串")
+    ax.set_ylabel("Counts")
+    ax.set_xlabel("Bit string")
     for s in ("top", "right"):
         ax.spines[s].set_visible(False)
     if title is None and truncated:
-        title = f"直方图（次数最多的前 {top_k} 个比特串，共 {len(counts)} 个）"
+        title = f"Histogram (top {top_k} bit strings by count, {len(counts)} total)"
     return finalize(fig, ax, show, save, title)

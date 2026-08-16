@@ -1,35 +1,40 @@
-"""编译 seam：门分解 + 拓扑校验（不执行、不碰真实硬件）。
+"""Compiler seam: gate decomposition + topology validation (does not execute, does not touch real hardware).
 
-两件事：
+Two things:
 
-1. **门分解**（`decompose`）—— 把高阶门展开成基础门集，是后端无关的
-   「可移植核心」，QuoNic 自己拥有，用户不被某个后端的电路形状绑住。
-2. **连通性校验**（`compile`）—— 对照 coupling_map 检查两/多比特门是否
-   落在允许的边上，放不下抛 RoutingError。
+1. **Gate decomposition** (`decompose`) — expands high-level gates into the basic gate set; it is the backend-independent
+   "portable core" owned by QuoNic, so users are not tied to any backend's circuit shape.
+2. **Connectivity validation** (`compile`) — checks against the coupling_map whether two/multi-qubit gates
+   fall on allowed edges; raises RoutingError if they do not fit.
 
-SWAP 路由是留好的下一个扩展点，接在此之后即可，无需改动 IR 或调度器。
+SWAP routing is the reserved next extension point, wired in right after this without changing the IR or the scheduler.
 """
+
+from __future__ import annotations
 
 import math
 from collections import deque
+from typing import Callable, Dict, List, Optional, Set, Tuple
 
+from ._i18n import tr
 from .ir import Circuit, ClassicalIfOperation, CMeasureOperation, GateOperation
+from .topology import CouplingMap
 
 
 class RoutingError(ValueError):
-    """电路无法映射到目标耦合图。"""
+    """The circuit cannot be mapped onto the target coupling map."""
 
 
-# 分解后允许出现的基础门集（decompose 的输出保证落在其中）
-BASIC_GATES = {"i", "h", "x", "y", "z", "rx", "ry", "rz", "p", "cx", "cz"}
+# the basic gate set allowed after decomposition (decompose's output is guaranteed to lie within it)
+BASIC_GATES: Set[str] = {"i", "h", "x", "y", "z", "rx", "ry", "rz", "p", "cx", "cz"}
 
 
-def _p(q, theta):
+def _p(q: int, theta: float) -> GateOperation:
     return GateOperation("p", (q,), (theta,))
 
 
-def _decompose_cp(c, t, theta):
-    """受控相位 cp(theta) = p·cx·p·cx·p（精确，无 ancilla）。"""
+def _decompose_cp(c: int, t: int, theta: float) -> List[GateOperation]:
+    """Controlled phase cp(theta) = p·cx·p·cx·p (exact, no ancilla)."""
     half = theta / 2
     return [
         _p(c, half),
@@ -40,8 +45,8 @@ def _decompose_cp(c, t, theta):
     ]
 
 
-def _decompose_ccx(a, b, c):
-    """精确 Toffoli（Nielsen-Chuang 图 4.9），用 p(π/4) 当 T 门，6 个 cx。"""
+def _decompose_ccx(a: int, b: int, c: int) -> List[GateOperation]:
+    """Exact Toffoli (Nielsen-Chuang Figure 4.9), using p(π/4) as the T gate, 6 cx gates."""
     t = math.pi / 4
     return [
         GateOperation("h", (c,)),
@@ -62,8 +67,12 @@ def _decompose_ccx(a, b, c):
     ]
 
 
-def _decompose_mcx(controls, target, new_ancillas):
-    """多控制 X：k=1 -> cx；k=2 -> Toffoli；k>=3 -> AND 级联（k-2 个干净 ancilla）。"""
+def _decompose_mcx(
+    controls: Tuple[int, ...],
+    target: int,
+    new_ancillas: Callable[[int], Tuple[int, ...]],
+) -> List[GateOperation]:
+    """Multi-controlled X: k=1 -> cx; k=2 -> Toffoli; k>=3 -> AND cascade (k-2 clean ancillas)."""
     k = len(controls)
     if k == 1:
         return [GateOperation("cx", (controls[0], target))]
@@ -71,22 +80,25 @@ def _decompose_mcx(controls, target, new_ancillas):
         return _decompose_ccx(controls[0], controls[1], target)
 
     anc = new_ancillas(k - 2)
-    ops = []
-    # 前向：anc[0] = c1&c2，anc[j] = anc[j-1] & c_{j+2}
+    ops: List[GateOperation] = []
+    # forward: anc[0] = c1&c2, anc[j] = anc[j-1] & c_{j+2}
     ops += _decompose_ccx(controls[0], controls[1], anc[0])
     for j in range(1, k - 2):
         ops += _decompose_ccx(anc[j - 1], controls[j + 1], anc[j])
-    # 施加：t ^= anc[k-3] & c_k
+    # apply: t ^= anc[k-3] & c_k
     ops += _decompose_ccx(anc[k - 3], controls[k - 1], target)
-    # 反算（还原 ancilla 到 |0>）
+    # uncompute (restore ancilla to |0>)
     for j in range(k - 3, 0, -1):
         ops += _decompose_ccx(anc[j - 1], controls[j + 1], anc[j])
     ops += _decompose_ccx(controls[0], controls[1], anc[0])
     return ops
 
 
-def _decompose_mcz(qubits, new_ancillas):
-    """多控制 Z：末位当 target，mcz = H·mcx·H；单控制直接 cz。"""
+def _decompose_mcz(
+    qubits: Tuple[int, ...],
+    new_ancillas: Callable[[int], Tuple[int, ...]],
+) -> List[GateOperation]:
+    """Multi-controlled Z: the last bit is the target, mcz = H·mcx·H; a single control becomes cz directly."""
     t = qubits[-1]
     controls = qubits[:-1]
     if len(controls) == 1:
@@ -98,23 +110,23 @@ def _decompose_mcz(qubits, new_ancillas):
     )
 
 
-def decompose(circuit):
-    """把高阶门（cp / ccx / mcz）展开成基础门集，返回新的 Circuit。
+def decompose(circuit: Circuit) -> Circuit:
+    """Expand high-level gates (cp / ccx / mcz) into the basic gate set, returning a new Circuit.
 
-    输出门集 ∈ {i, h, x, y, z, rx, ry, rz, p, cx, cz}（BASIC_GATES）。
-    多控制 mcz（>2 控制）会引入干净 ancilla（起止均为 |0>），因此输出比特数
-    可能多于输入。分解是精确的（无相对相位），可对拍 statevector 验证。
+    The output gate set ∈ {i, h, x, y, z, rx, ry, rz, p, cx, cz} (BASIC_GATES).
+    Multi-controlled mcz (>2 controls) introduces clean ancillas (both start and end at |0>), so the output bit count
+    may exceed the input. The decomposition is exact (no relative phase) and can be verified against the statevector.
 
-    不改动原电路对象。
+    The original circuit object is not modified.
     """
     out = Circuit()
     out.allocate(circuit.num_qubits)
-    # 可复用的干净 ancilla：每个多控制门分解后 ancilla 都还原到 |0>，
-    # 因此同一组 ancilla 可以被后续门循环使用，总 ancilla 数 = 各门所需的最大值。
-    pool = []
+    # reusable clean ancillas: after each multi-controlled gate decomposition the ancillas are restored to |0>,
+    # so the same set of ancillas can be reused by subsequent gates; total ancilla count = the maximum required by any gate.
+    pool: List[int] = []
     next_ancilla = [circuit.num_qubits]
 
-    def new_ancillas(m):
+    def new_ancillas(m: int) -> Tuple[int, ...]:
         while len(pool) < m:
             pool.append(next_ancilla[0])
             next_ancilla[0] += 1
@@ -135,8 +147,8 @@ def decompose(circuit):
     return out
 
 
-def _violates(op, coupling_map):
-    """两/多比特门是否有任意一对量子比特不相连。"""
+def _violates(op: GateOperation, coupling_map: CouplingMap) -> bool:
+    """Whether any pair of qubits in a two/multi-qubit gate are not connected."""
     qs = op.qubits
     if len(qs) < 2:
         return False
@@ -147,15 +159,15 @@ def _violates(op, coupling_map):
     return False
 
 
-def compile(circuit, coupling_map=None):
-    """把电路编译到目标拓扑，返回新的 Circuit（不改动原对象）。
+def compile(circuit: Circuit, coupling_map: Optional[CouplingMap] = None) -> Circuit:
+    """Compile the circuit onto the target topology, returning a new Circuit (without modifying the original).
 
-    参数：
-        circuit: 源电路。
-        coupling_map: CouplingMap；None 表示全连接（无连通性约束）。
+    Parameters:
+        circuit: the source circuit.
+        coupling_map: a CouplingMap; None means fully connected (no connectivity constraints).
 
-    目前仅做连通性校验；门分解请用 decompose()，路由是留好的扩展点。
-    校验失败抛 RoutingError，成功则返回一份（当前与原电路等价的）副本。
+    Currently only performs connectivity validation; use decompose() for gate decomposition, and routing is a reserved extension point.
+    Raises RoutingError on validation failure; on success returns a copy (currently equivalent to the original circuit).
     """
     out = Circuit()
     out.allocate(circuit.num_qubits)
@@ -173,10 +185,9 @@ def compile(circuit, coupling_map=None):
     if problems:
         detail = ", ".join(f"{op.name}{op.qubits}" for op in problems[:5])
         if len(problems) > 5:
-            detail += f" 等 {len(problems)} 个门"
+            detail += tr("err.routing_etc", n=len(problems))
         raise RoutingError(
-            f"电路无法映射到耦合图（{coupling_map}）："
-            f"以下门的量子比特对不相连 —— {detail}"
+            tr("err.routing", map=coupling_map, detail=detail)
         )
 
     for op in circuit.ops:
@@ -185,23 +196,25 @@ def compile(circuit, coupling_map=None):
 
 
 # ---------------------------------------------------------------------------
-# SWAP 路由
+# SWAP routing
 # ---------------------------------------------------------------------------
 
-def _adjacency(coupling_map):
-    adj = {q: set() for q in range(coupling_map.n)}
+def _adjacency(coupling_map: CouplingMap) -> Dict[int, Set[int]]:
+    adj: Dict[int, Set[int]] = {q: set() for q in range(coupling_map.n)}
     for u, v in coupling_map.edges():
         adj[u].add(v)
         adj[v].add(u)
     return adj
 
 
-def _shortest_path(adj, src, dst):
-    """耦合图上的 BFS 最短路，返回节点序列 [src, ..., dst]；不连通返回 None。"""
+def _shortest_path(
+    adj: Dict[int, Set[int]], src: int, dst: int
+) -> Optional[List[int]]:
+    """BFS shortest path on the coupling map, returning the node sequence [src, ..., dst]; returns None if disconnected."""
     if src == dst:
         return [src]
-    prev = {src: None}
-    q = deque([src])
+    prev: Dict[int, Optional[int]] = {src: None}
+    q: deque = deque([src])
     while q:
         u = q.popleft()
         if u == dst:
@@ -212,28 +225,31 @@ def _shortest_path(adj, src, dst):
                 q.append(v)
     if dst not in prev:
         return None
-    path = []
-    cur = dst
+    path: List[int] = []
+    cur: Optional[int] = dst
     while cur is not None:
         path.append(cur)
         cur = prev[cur]
     return path[::-1]
 
 
-def route_swaps(circuit, coupling_map):
-    """贪心 SWAP 路由：把两比特门映射到耦合图，插入 SWAP 使两端相邻。
+def route_swaps(circuit: Circuit, coupling_map: CouplingMap) -> Circuit:
+    """Greedy SWAP routing: map two-qubit gates onto the coupling map, inserting SWAPs to bring their ends adjacent.
 
-    返回新的 Circuit，门量子比特下标已换成「物理比特」位置，并在两端不相邻的
-    两比特门处插入 "swap" 门（相邻物理比特）。单比特门/测量门下标随映射更新；
-    三比特及以上门按原样透传（调用方应先 decompose() 展开）。不改动原电路。
+    Returns a new Circuit whose gate qubit indices are replaced with "physical bit" positions, inserting a "swap" gate
+    (on adjacent physical bits) at each two-qubit gate whose ends are not adjacent. Single-qubit gate/measurement indices
+    are updated with the mapping; three-or-more-qubit gates are passed through unchanged (callers should decompose() first).
+    The original circuit is not modified.
     """
     adj = _adjacency(coupling_map)
     n_phys = max(circuit.num_qubits, coupling_map.n)
-    layout = list(range(n_phys))  # layout[q] = 逻辑 q 当前所在的物理位置
+    layout = list(range(n_phys))  # layout[q] = the current physical position of logical q
     out = Circuit()
     out.allocate(n_phys)
 
-    def emit(name, qubits, params=()):
+    def emit(
+        name: str, qubits: Tuple[int, ...], params: Tuple[float, ...] = ()
+    ) -> None:
         out.add(GateOperation(name, tuple(qubits), params))
 
     for op in circuit.ops:
@@ -241,7 +257,7 @@ def route_swaps(circuit, coupling_map):
             emit("measure", (layout[op.qubits[0]],))
             continue
         if op.name == "cif":
-            # 经典控制流无邻接约束，只把控制/目标比特下标随布局重映射
+            # classical control flow has no adjacency constraint; only remap control/target bit indices with the layout
             ctrl = layout[op.control] if isinstance(op.control, int) else op.control
             out.add(
                 ClassicalIfOperation(
@@ -260,14 +276,11 @@ def route_swaps(circuit, coupling_map):
             )
             continue
         if op.name == "cmeasure":
-            # 具名经典位测量：只重映射量子比特下标，保留 creg 名
+            # named classical bit measurement: only remap the qubit index, keep the creg name
             out.add(CMeasureOperation(layout[op.qubit], op.creg))
             continue
         if op.name == "cwhile":
-            raise NotImplementedError(
-                "SWAP 路由暂不支持 cwhile（经典反馈循环）；"
-                "请改用 native 后端直接运行，或在路由前展开循环"
-            )
+            raise NotImplementedError(tr("err.routing_cwhile"))
         if len(op.qubits) == 1:
             emit(op.name, (layout[op.qubits[0]],), op.params)
             continue
@@ -284,7 +297,7 @@ def route_swaps(circuit, coupling_map):
             path = _shortest_path(adj, pc, pt)
             if path is None or len(path) < 2:
                 raise RoutingError(
-                    f"耦合图不连通，无法路由 {op.name}{op.qubits}"
+                    tr("err.routing_disconnected", name=op.name, qubits=op.qubits)
                 )
             u, v = path[0], path[1]
             emit("swap", (u, v))

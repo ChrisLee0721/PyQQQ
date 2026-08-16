@@ -1,14 +1,16 @@
-"""统一的结果对象。
+"""Unified result object.
 
-qshow() 与所有算法模板都返回 Result，把两类输出收敛到同一个结构：
+qshow() and all algorithm templates return a Result, converging two kinds of output into a single structure:
 
-- 采样结果（kind="counts"）：运行电路 / Grover 搜索，含 counts 直方图
-- 标量结果（kind="value"）：VQE 能量 / QAOA 割大小，含 value + metadata
+- sampling result (kind="counts"): running a circuit / Grover search, containing a counts histogram
+- scalar result (kind="value"): VQE energy / QAOA cut size, containing value + metadata
 
-用法：
+Usage:
     Result.from_counts({"00": 512, "11": 512}, shots=1024)
     Result.from_value(-2.236, params=[0.1, 0.2, ...])
 """
+
+from __future__ import annotations
 
 from dataclasses import dataclass, field
 from typing import Any, Dict, Optional
@@ -23,8 +25,8 @@ class Result:
     metadata: Dict[str, Any] = field(default_factory=dict)
 
     @classmethod
-    def from_counts(cls, counts, shots):
-        """从采样直方图构造 Result。"""
+    def from_counts(cls, counts: Dict[str, int], shots: int) -> Result:
+        """Construct a Result from a sampling histogram."""
         return cls(
             kind="counts",
             counts={str(k): int(v) for k, v in counts.items()},
@@ -32,6 +34,6 @@ class Result:
         )
 
     @classmethod
-    def from_value(cls, value, **metadata):
-        """从标量结果构造 Result，附加信息放进 metadata。"""
+    def from_value(cls, value: float, **metadata: Any) -> Result:
+        """Construct a Result from a scalar result, with extra information placed in metadata."""
         return cls(kind="value", value=float(value), metadata=dict(metadata))

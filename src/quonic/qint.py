@@ -1,20 +1,25 @@
-"""QInt —— 量子整数寄存器。
+"""QInt — quantum integer register.
 
-一个 QInt 占据当前电路中的连续 n_bits 个量子比特，支持经典加载、
-均匀叠加与量子加法（QFT 加法），最后用 qshow() 测量。
+A QInt occupies n_bits consecutive qubits in the current circuit, supporting classical loading,
+uniform superposition, and quantum addition (QFT addition), finally measured with qshow().
 
-示例：
+Example:
     from quonic import QInt, qshow
 
     x = QInt(3, value=5)   # |5> = |101>
-    x.h()                  # 均匀叠加到 |0>..|7>
-    x += 3                 # 每个分量加 3（模 8）
-    qshow()                # 测量并显示
+    x.h()                  # uniform superposition over |0>..|7>
+    x += 3                 # add 3 to each component (mod 8)
+    qshow()                # measure and display
 """
 
-import math
+from __future__ import annotations
 
+import math
+from typing import Optional, Tuple
+
+from ._i18n import tr
 from .gates import H, Rz, X
+from .ir import Circuit
 from .qft import add_iqft, add_qft
 from .qgate import qgate
 from .qif import controlled
@@ -22,49 +27,49 @@ from .stack import current_circuit
 
 
 class QInt:
-    """量子整数寄存器。
+    """Quantum integer register.
 
-    参数：
-        n_bits: 位宽。
-        value: 初始经典值（None 表示 |0>，等价于 value=0）。
+    Parameters:
+        n_bits: bit width.
+        value: initial classical value (None means |0>, equivalent to value=0).
     """
 
-    def __init__(self, n_bits, value=None):
+    def __init__(self, n_bits: int, value: Optional[int] = None) -> None:
         if not isinstance(n_bits, int) or n_bits < 1:
-            raise ValueError(f"n_bits 必须是正整数，收到 {n_bits!r}")
-        self.n_bits = n_bits
+            raise ValueError(tr("err.qint_n_bits", n_bits=n_bits))
+        self.n_bits: int = n_bits
         base = current_circuit().num_qubits
         current_circuit().allocate(base + n_bits)
-        self.qubits = tuple(range(base, base + n_bits))
+        self.qubits: Tuple[int, ...] = tuple(range(base, base + n_bits))
         if value is not None:
             self.load(value)
 
-    def load(self, value):
-        """经典加载：把寄存器置为 |value>。"""
+    def load(self, value: int) -> QInt:
+        """Classical load: set the register to |value>."""
         value = int(value)
         if not 0 <= value < 2 ** self.n_bits:
             raise ValueError(
-                f"value 超出 {self.n_bits} 位整数范围 [0, {2 ** self.n_bits})，收到 {value}"
+                tr("err.qint_value_range", n_bits=self.n_bits, max=2 ** self.n_bits, value=value)
             )
         for j in range(self.n_bits):
             if (value >> j) & 1:
                 qgate(X, self.qubits[j])
         return self
 
-    def h(self):
-        """对每一位施加 Hadamard，得到 2**n_bits 个基态的均匀叠加。"""
+    def h(self) -> QInt:
+        """Apply a Hadamard to each bit, producing a uniform superposition of 2**n_bits basis states."""
         for q in self.qubits:
             qgate(H, q)
         return self
 
-    def superpose(self):
-        """h() 的别名：均匀叠加。"""
+    def superpose(self) -> QInt:
+        """Alias of h(): uniform superposition."""
         return self.h()
 
-    def add(self, k):
-        """量子加法：|a> -> |a + k mod 2**n_bits>（k 为经典常数）。
+    def add(self, k: int) -> QInt:
+        """Quantum addition: |a> -> |a + k mod 2**n_bits> (k is a classical constant).
 
-        用 QFT 加法（Draper 加法）实现，k 可为任意整数（自动取模）。
+        Implemented with QFT addition (Draper addition); k may be any integer (auto-reduced modulo).
         """
         k = int(k) % 2 ** self.n_bits
         add_qft(current_circuit(), self.qubits)
@@ -73,52 +78,55 @@ class QInt:
         add_iqft(current_circuit(), self.qubits)
         return self
 
-    def __iadd__(self, k):
+    def __iadd__(self, k: int) -> QInt:
         return self.add(k)
 
-    def sub(self, k):
-        """量子减法：|a> -> |a - k mod 2**n_bits>（等价于加 -k）。"""
+    def sub(self, k: int) -> QInt:
+        """Quantum subtraction: |a> -> |a - k mod 2**n_bits> (equivalent to adding -k)."""
         return self.add(-int(k))
 
-    def __isub__(self, k):
+    def __isub__(self, k: int) -> QInt:
         return self.sub(k)
 
-    def __int__(self):
-        raise TypeError(
-            "量子整数处于叠加态，无法直接转成 int；请先 qshow() 测量后读取结果"
-        )
+    def __int__(self) -> int:
+        raise TypeError(tr("err.qint_superposition"))
 
-    def lt(self, k):
-        """比较：返回一个标志比特，x < k 时为 1（x 保持不变）。"""
+    def lt(self, k: int) -> int:
+        """Comparison: returns a flag bit that is 1 when x < k (x is left unchanged)."""
         from .compare import qlt
 
         return qlt(self, k)
 
-    def eq(self, k):
-        """比较：返回一个标志比特，x == k 时为 1（x 保持不变）。"""
+    def eq(self, k: int) -> int:
+        """Comparison: returns a flag bit that is 1 when x == k (x is left unchanged)."""
         from .compare import qeq
 
         return qeq(self, k)
 
-    def gt(self, k):
-        """比较：返回一个标志比特，x > k 时为 1（x 保持不变）。"""
+    def gt(self, k: int) -> int:
+        """Comparison: returns a flag bit that is 1 when x > k (x is left unchanged)."""
         from .compare import qgt
 
         return qgt(self, k)
 
-    def mul(self, k):
-        """乘法：返回一个新 QInt，值为 |x * k mod 2**n_bits>（x 保持不变）。"""
+    def mul(self, k: int) -> QInt:
+        """Multiplication: returns a new QInt whose value is |x * k mod 2**n_bits> (x is left unchanged)."""
         return mul(self, k)
 
-    def __repr__(self):
-        return f"QInt({self.n_bits} 位, qubits={list(self.qubits)})"
+    def __repr__(self) -> str:
+        return f"QInt({self.n_bits} bits, qubits={list(self.qubits)})"
 
 
-def _add_quantum(circuit, a_qubits, b_qubits, shift=0):
-    """量子-量子加法：|a>|b> -> |a>|b + (a << shift) mod 2**n>（Draper 加法）。
+def _add_quantum(
+    circuit: Circuit,
+    a_qubits: Tuple[int, ...],
+    b_qubits: Tuple[int, ...],
+    shift: int = 0,
+) -> None:
+    """Quantum-quantum addition: |a>|b> -> |a>|b + (a << shift) mod 2**n> (Draper addition).
 
-    与 _add_const（加经典常数）不同，这里把 a 的每一位当成受控相位条件，
-    用 controlled(Rz) 实现受控旋转。shift 用于「移位加」乘法。
+    Unlike _add_const (adding a classical constant), here each bit of a acts as a controlled phase condition,
+    implemented with controlled(Rz) rotations. shift is used for "shift-and-add" multiplication.
     """
     n = len(b_qubits)
     add_qft(circuit, b_qubits)
@@ -131,17 +139,17 @@ def _add_quantum(circuit, a_qubits, b_qubits, shift=0):
     add_iqft(circuit, b_qubits)
 
 
-def mul(x, k):
-    """量子乘法：返回新 QInt，值为 |x * k mod 2**n>，x 保持不变。
+def mul(x: QInt, k: int) -> QInt:
+    """Quantum multiplication: returns a new QInt whose value is |x * k mod 2**n>, with x left unchanged.
 
-    用「移位加 + 量子-量子 Draper 加法」实现：对 k 的每个置位 b，把 x << b
-    累加到零初始化的结果寄存器。结果存进干净寄存器而非就地覆盖，因此对任意
-    k（含偶数）都成立（偶数 k 就地乘法不可逆）。
+    Implemented via "shift-and-add + quantum-quantum Draper addition": for each set bit b of k, accumulate
+    x << b into a zero-initialized result register. The result is stored in a clean register rather than
+    overwritten in place, so it holds for any k (including even k; in-place multiplication by an even k is not reversible).
 
-    例：
+    Example:
         a = QInt(2, value=1)     # |1>
         p = mul(a, 3)            # p = |3>
-        qshow()                  # 读 a、p
+        qshow()                  # read a, p
     """
     n = x.n_bits
     k = int(k) % (2 ** n)

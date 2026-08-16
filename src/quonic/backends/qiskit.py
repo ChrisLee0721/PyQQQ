@@ -1,8 +1,13 @@
-"""Qiskit 后端适配器。"""
+"""Qiskit backend adapter."""
+
+from __future__ import annotations
 
 import math
+from typing import Any, Optional, Union
 
-from ..noise import resolve_noise
+from .._i18n import tr
+from ..ir import Circuit, GateOperation
+from ..noise import NoiseModel, resolve_noise
 from ..result import Result
 from .base import Backend
 
@@ -13,26 +18,29 @@ class QiskitBackend(Backend):
         {"statevector", "stabilizer", "matrix_product_state", "density_matrix"}
     )
 
-    def run(self, circuit, shots=1024, noise=None, method="statevector"):
+    def run(
+        self,
+        circuit: Circuit,
+        shots: int = 1024,
+        noise: Optional[Union[NoiseModel, float, int]] = None,
+        method: str = "statevector",
+    ) -> Result:
         try:
             from qiskit import QuantumCircuit
             from qiskit_aer import AerSimulator
         except ImportError as e:
-            raise ImportError(
-                "使用 qiskit 后端需要安装 qiskit 和 qiskit-aer：\n"
-                "    pip install 'quonic[qiskit]'\n"
-                "或： pip install qiskit qiskit-aer"
-            ) from e
+            raise ImportError(tr("err.qiskit_missing")) from e
 
         nm = resolve_noise(noise)
         qc = QuantumCircuit(circuit.num_qubits, circuit.num_qubits)
-        # 具名经典位是某个量子比特测量结果的别名：映射到该比特自己的经典位，
-        # 因此 get_counts 输出与 native 后端一致的扁平比特串（无具名寄存器）。
+        # A named classical bit is an alias for some qubit's measurement result: map it
+        # to that bit's own classical bit, so get_counts outputs a flat bitstring (with
+        # no named registers) consistent with the native backend.
         creg_map = {}
 
         for op in circuit.ops:
             if op.name == "cif":
-                # 经典控制流：control 为 qubit 时先测量；为 creg 时直接读经典位
+                # Classical control flow: measure first when control is a qubit; read the classical bit directly when it is a creg
                 if isinstance(op.control, int):
                     qc.measure(op.control, op.control)
                     clbit = qc.clbits[op.control]
@@ -46,17 +54,15 @@ class QiskitBackend(Backend):
                 qc.measure(op.qubit, op.qubit)
                 creg_map[op.creg] = op.qubit
             elif op.name == "cwhile":
-                raise NotImplementedError(
-                    "qiskit 后端暂不支持 cwhile（经典反馈循环）；请用 native 后端"
-                )
+                raise NotImplementedError(tr("err.qiskit_cwhile"))
             else:
                 self._apply(qc, op)
 
-        # 自动补全：任何没有显式 measure 的量子比特，在最后统一测量
+        # Auto-complete: any qubit without an explicit measure is measured at the end
         for q in circuit.unmeasured_qubits():
             qc.measure(q, q)
 
-        # 噪声模拟需要密度矩阵方法；stabilizer / MPS 不支持通用噪声模型
+        # Noise simulation requires the density-matrix method; stabilizer / MPS do not support general noise models
         if nm.enabled:
             method = "density_matrix"
 
@@ -84,7 +90,7 @@ class QiskitBackend(Backend):
         return Result.from_counts(counts, shots)
 
     @staticmethod
-    def _apply(qc, op):
+    def _apply(qc: Any, op: GateOperation) -> None:
         name, qubits = op.name, op.qubits
         if name == "i":
             qc.id(qubits[0])
@@ -119,4 +125,4 @@ class QiskitBackend(Backend):
         elif name == "measure":
             qc.measure(qubits[0], qubits[0])
         else:
-            raise ValueError(f"Qiskit 后端暂不支持门 '{name}'")
+            raise ValueError(tr("err.qiskit_gate", name=name))

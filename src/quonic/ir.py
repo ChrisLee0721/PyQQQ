@@ -1,11 +1,13 @@
-"""后端无关的中间表示（IR）。
+"""Backend-independent intermediate representation (IR).
 
-qgate() 先把用户操作记录成与后端无关的 GateOperation / Circuit，
-qshow() 再交给具体后端（Qiskit / Cirq / ...）翻译执行。
+qgate() first records user operations into backend-independent GateOperation / Circuit,
+then qshow() hands them to a concrete backend (Qiskit / Cirq / ...) to translate and execute.
 """
 
+from __future__ import annotations
+
 from dataclasses import dataclass
-from typing import List, Tuple
+from typing import List, Tuple, Union
 
 
 @dataclass(frozen=True)
@@ -17,29 +19,29 @@ class GateOperation:
 
 @dataclass(frozen=True)
 class ClassicalIfOperation:
-    """经典控制流：按控制源二选一施加分支门。
+    """Classical control flow: apply one of two branch gates depending on the control source.
 
-    与 qif 的量子叠加不同，这里产生经典混合态（非相干纠缠）。
-    control 可为：
-      - int：测量该 qubit（先测量再分支）
-      - str：读取具名经典位 creg 中已存好的测量结果
-    then_op / else_op 为单比特分支门。
+    Unlike qif's quantum superposition, this produces a classical mixed state (incoherent entanglement).
+    control may be:
+      - int: measure that qubit (measure first, then branch)
+      - str: read the measurement result already stored in the named classical bit creg
+    then_op / else_op are single-bit branch gates.
     """
 
-    control: object
+    control: Union[int, str]
     then_op: GateOperation
     else_op: GateOperation
 
     @property
-    def name(self):
+    def name(self) -> str:
         return "cif"
 
     @property
-    def params(self):
+    def params(self) -> Tuple[()]:
         return ()
 
     @property
-    def qubits(self):
+    def qubits(self) -> Tuple[int, ...]:
         qs = set()
         if isinstance(self.control, int):
             qs.add(self.control)
@@ -50,30 +52,30 @@ class ClassicalIfOperation:
 
 @dataclass(frozen=True)
 class CMeasureOperation:
-    """测量 qubit，把结果存入具名经典位 creg。"""
+    """Measure qubit and store the result in the named classical bit creg."""
 
     qubit: int
     creg: str
 
     @property
-    def name(self):
+    def name(self) -> str:
         return "cmeasure"
 
     @property
-    def params(self):
+    def params(self) -> Tuple[()]:
         return ()
 
     @property
-    def qubits(self):
+    def qubits(self) -> Tuple[int, ...]:
         return (self.qubit,)
 
 
 @dataclass(frozen=True)
 class ClassicalWhileOperation:
-    """经典反馈循环：重复执行 body，直到 creg 的测量结果等于 until。
+    """Classical feedback loop: repeat body until the creg measurement result equals until.
 
-    body 为 ops 元组（通常以 creg.measure(...) 结尾更新条件），
-    是 repeat-until-success（RUS）动态电路的核心。
+    body is a tuple of ops (usually ending with creg.measure(...) to update the condition),
+    the core of repeat-until-success (RUS) dynamic circuits.
     """
 
     creg: str
@@ -81,15 +83,15 @@ class ClassicalWhileOperation:
     body: Tuple[object, ...]
 
     @property
-    def name(self):
+    def name(self) -> str:
         return "cwhile"
 
     @property
-    def params(self):
+    def params(self) -> Tuple[()]:
         return ()
 
     @property
-    def qubits(self):
+    def qubits(self) -> Tuple[int, ...]:
         qs = set()
         for op in self.body:
             qs.update(op.qubits)
@@ -100,22 +102,22 @@ _MEASURE_NAMES = ("measure", "cmeasure")
 
 
 class Circuit:
-    def __init__(self):
-        self.ops: List[GateOperation] = []
+    def __init__(self) -> None:
+        self.ops: List[object] = []
         self.num_qubits: int = 0
 
-    def add(self, op) -> None:
+    def add(self, op: object) -> None:
         self.ops.append(op)
         for q in op.qubits:
             if q + 1 > self.num_qubits:
                 self.num_qubits = q + 1
 
     def allocate(self, n_qubits: int) -> None:
-        # 预占量子比特（不发门），供 QInt 等类型在无初始门时也能占据下标
+        # pre-reserve qubits (without emitting a gate), so QInt etc. can occupy indices even without initial gates
         if n_qubits > self.num_qubits:
             self.num_qubits = n_qubits
 
-    def measured_qubits(self):
+    def measured_qubits(self) -> set:
         measured = set()
         for op in self.ops:
             if op.name == "measure":
@@ -127,19 +129,19 @@ class Circuit:
                     measured.add(op.control)
         return measured
 
-    def unmeasured_qubits(self):
+    def unmeasured_qubits(self) -> List[int]:
         measured = self.measured_qubits()
         return [q for q in range(self.num_qubits) if q not in measured]
 
-    def is_empty(self):
+    def is_empty(self) -> bool:
         return not self.ops
 
-    def gate_count(self):
-        """逻辑门数（不含测量门）。"""
+    def gate_count(self) -> int:
+        """Logical gate count (excluding measurement gates)."""
         return sum(1 for op in self.ops if op.name not in _MEASURE_NAMES)
 
-    def depth(self):
-        """电路深度：非测量门的最长依赖链（按量子比特时钟同步多比特门）。"""
+    def depth(self) -> int:
+        """Circuit depth: the longest dependency chain of non-measurement gates (multi-qubit gates synchronized per-qubit clock)."""
         clocks = [0] * self.num_qubits
         for op in self.ops:
             if op.name in _MEASURE_NAMES:

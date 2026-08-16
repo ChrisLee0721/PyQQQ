@@ -160,25 +160,25 @@ def test_qif_uses_only_basic_gates():
 
 def test_qif_requires_both_branches():
     reset()
-    with pytest.raises(ValueError, match="缺少 then"):
+    with pytest.raises(ValueError, match="missing then"):
         qif(0).else_(Z, 1)
 
 
 def test_qif_rejects_different_targets():
     reset()
-    with pytest.raises(ValueError, match="同一目标比特"):
+    with pytest.raises(ValueError, match="same target"):
         qif(0).then(X, 1).else_(Z, 2)
 
 
 def test_qif_rejects_multi_qubit_branch():
     reset()
-    with pytest.raises(ValueError, match="只支持单比特门"):
+    with pytest.raises(ValueError, match="single-qubit"):
         qif(0).then(CX, 1).else_(Z, 1)
 
 
 def test_qif_rejects_measure_branch():
     reset()
-    with pytest.raises(ValueError, match="酉门"):
+    with pytest.raises(ValueError, match="unitary"):
         qif(0).then(MEASURE, 1).else_(Z, 1)
 
 
@@ -200,7 +200,7 @@ def test_qif_both_identity():
 
 def test_qif_rejects_control_equals_target():
     reset()
-    with pytest.raises(ValueError, match="不能相同"):
+    with pytest.raises(ValueError, match="cannot be the same"):
         qif(0).then(X, 0).else_(Z, 0)
 
 
@@ -251,19 +251,19 @@ def test_controlled_uses_only_basic_gates():
 
 def test_controlled_rejects_multi_qubit():
     reset()
-    with pytest.raises(ValueError, match="单比特"):
+    with pytest.raises(ValueError, match="single-qubit"):
         controlled(CX, 0, 1)
 
 
 def test_controlled_rejects_measure():
     reset()
-    with pytest.raises(ValueError, match="酉门"):
+    with pytest.raises(ValueError, match="unitary"):
         controlled(MEASURE, 0, 1)
 
 
 def test_controlled_rejects_control_equals_target():
     reset()
-    with pytest.raises(ValueError, match="不能相同"):
+    with pytest.raises(ValueError, match="cannot be the same"):
         controlled(X, 0, 0)
 
 

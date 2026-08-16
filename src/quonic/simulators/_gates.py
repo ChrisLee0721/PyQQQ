@@ -1,13 +1,21 @@
-"""门的 numpy 矩阵构造（供自研引擎复用）。
+"""numpy matrix construction for gates (shared by the in-house engines).
 
-约定：
-- qubit 0 是最低位（bitstring 最右侧），与三个采样后端一致。
-- 单比特矩阵 matrix[out, in]。
-- 多比特门（cx/ccx/cz/cp/mcz）在各引擎里用「对角相位 + H」技巧实现，
-  因此这里只提供单比特矩阵，避免多比特矩阵的指标顺序歧义。
+Conventions:
+- qubit 0 is the least-significant bit (rightmost in the bitstring), consistent
+  with the three sampling backends.
+- single-qubit matrix matrix[out, in].
+- multi-qubit gates (cx/ccx/cz/cp/mcz) are implemented in each engine using the
+  "diagonal phase + H" trick, so only single-qubit matrices are provided here to
+  avoid ambiguity in the index ordering of multi-qubit matrices.
 """
 
+from __future__ import annotations
+
+from typing import Any, Set, Tuple
+
 import numpy as np
+
+from .._i18n import tr
 
 _SQRT_HALF = 1.0 / np.sqrt(2.0)
 
@@ -18,7 +26,7 @@ _Z = np.array([[1.0, 0.0], [0.0, -1.0]], dtype=complex)
 _H = np.array([[1.0, 1.0], [1.0, -1.0]], dtype=complex) * _SQRT_HALF
 
 
-def rotation(axis, theta):
+def rotation(axis: str, theta: float) -> Any:
     c = np.cos(theta / 2.0)
     s = np.sin(theta / 2.0)
     if axis == "x":
@@ -30,16 +38,16 @@ def rotation(axis, theta):
             [[np.exp(-1j * theta / 2.0), 0.0], [0.0, np.exp(1j * theta / 2.0)]],
             dtype=complex,
         )
-    raise ValueError(f"未知旋转轴 '{axis}'")
+    raise ValueError(tr("err.unknown_axis", axis=axis))
 
 
-def phase_shift(theta):
-    """相位门 P(θ) = diag(1, e^{iθ})。"""
+def phase_shift(theta: float) -> Any:
+    """Phase gate P(θ) = diag(1, e^{iθ})."""
     return np.array([[1.0, 0.0], [0.0, np.exp(1j * theta)]], dtype=complex)
 
 
-def single(name, params=()):
-    """返回单比特门矩阵；name 为小写门名。"""
+def single(name: str, params: Tuple[float, ...] = ()) -> Any:
+    """Return the single-qubit gate matrix; name is the lowercase gate name."""
     name = name.lower()
     if name == "i":
         return _I
@@ -59,8 +67,8 @@ def single(name, params=()):
         return rotation("z", params[0])
     if name == "p":
         return phase_shift(params[0])
-    raise ValueError(f"自研引擎暂不支持单比特门 '{name}'")
+    raise ValueError(tr("err.self_gate", name=name))
 
 
-# 单比特 Clifford 门集（stabilizer 可用）
-SINGLE_GATES = {"i", "h", "x", "y", "z", "rx", "ry", "rz", "p"}
+# single-qubit Clifford gate set (usable by the stabilizer engine)
+SINGLE_GATES: Set[str] = {"i", "h", "x", "y", "z", "rx", "ry", "rz", "p"}

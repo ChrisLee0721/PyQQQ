@@ -1,14 +1,18 @@
-"""门可视化：单个门的酉矩阵实/虚双面板热力图。"""
+"""Gate visualization: real/imaginary two-panel heatmap of a single gate's unitary matrix."""
+
+from __future__ import annotations
 
 import math
+from typing import Any, List, Optional, Sequence, Tuple
 
+from .._i18n import tr
 from ..gates import Gate, resolve
 from ..ir import GateOperation
 from ._mpl import _plt
 
 
-def _gate_unitary(name, qubits, params):
-    """用自研态矢量引擎逐列构造门的酉矩阵（列 = 基态经过门后的输出）。"""
+def _gate_unitary(name: str, qubits: Sequence[int], params: Tuple[float, ...]) -> Any:
+    """Build the gate's unitary matrix column by column using the in-house statevector engine (column = basis state after applying the gate)."""
     import numpy as np
 
     from ..simulators import StatevectorEngine
@@ -24,8 +28,8 @@ def _gate_unitary(name, qubits, params):
     return u
 
 
-def _resolve_gate(gate):
-    """把输入统一成 (name, qubits, params)。"""
+def _resolve_gate(gate: Any) -> Tuple[str, List[int], Tuple[float, ...]]:
+    """Normalize the input into (name, qubits, params)."""
     if isinstance(gate, GateOperation):
         return gate.name, list(gate.qubits), gate.params
     if isinstance(gate, Gate):
@@ -35,25 +39,33 @@ def _resolve_gate(gate):
     if isinstance(gate, str):
         g = resolve(gate)
         return g.name, list(range(max(1, g.num_qubits))), g.params
-    raise TypeError("plot_gate_matrix 需要 Gate / GateOperation / 门名字符串")
+    raise TypeError(tr("err.viz_gate_matrix"))
 
 
-def plot_gate_matrix(gate, ax=None, show=False, save=None, title=None):
-    """画单个门的酉矩阵实部/虚部双面板热力图。
+def plot_gate_matrix(
+    gate: Any,
+    ax: Any = None,
+    show: bool = False,
+    save: Optional[str] = None,
+    title: Optional[str] = None,
+) -> Any:
+    """Draw a two-panel heatmap of a single gate's unitary matrix (real/imag).
 
-    参数：
-        gate: Gate 对象 / GateOperation / 门名字符串（如 "cx"、"h"、"mcz"）。
-        ax: 可选，长度为 2 的 Axes 序列（[实部, 虚部]）；不传则新建。
-        show / save / title: 同 plot_circuit。
+    Parameters:
+        gate: a Gate object / GateOperation / gate-name string (e.g. "cx", "h",
+            "mcz").
+        ax: optional length-2 sequence of Axes ([real, imag]); a new one is
+            created when omitted.
+        show / save / title: same as plot_circuit.
 
-    返回：长度为 2 的 Axes 序列 [ax_real, ax_imag]。
+    Returns: a length-2 sequence of Axes [ax_real, ax_imag].
     """
     import numpy as np
 
     plt = _plt()
     name, qubits, params = _resolve_gate(gate)
     if name == "measure":
-        raise ValueError("测量门没有酉矩阵")
+        raise ValueError(tr("err.viz_measure_unitary"))
 
     u = _gate_unitary(name, qubits, params)
     n = int(round(math.log2(u.shape[0])))

@@ -33,7 +33,7 @@ dev = ["pytest>=7.0", "numpy>=1.24", "scipy>=1.10", "matplotlib>=3.5", "ruff>=0.
 where = ["src"]
 
 [tool.setuptools.package-data]
-quonic = ["scheduler/data/*.json"]
+quonic = ["py.typed", "scheduler/data/*.json"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

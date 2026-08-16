@@ -27,24 +27,24 @@ from quonic.noise import resolve_noise
 
 def test_qgate_wrong_qubit_count():
     reset()
-    with pytest.raises(ValueError, match="量子比特"):
+    with pytest.raises(ValueError, match="requires"):
         qgate(H, 0, 1)  # H 是单比特门，给了 2 个
 
 
 def test_qgate_unknown_gate_name():
     reset()
-    with pytest.raises(ValueError, match="未知的量子门"):
+    with pytest.raises(ValueError, match="Unknown gate"):
         qgate("toffoli-x")
 
 
 def test_qgate_non_gate_first_arg():
     reset()
-    with pytest.raises(TypeError, match="门对象或门名字符串"):
+    with pytest.raises(TypeError, match="Gate object"):
         qgate(123, 0)
 
 
 def test_parameterized_gate_non_numeric_angle():
-    with pytest.raises(TypeError, match="弧度"):
+    with pytest.raises(TypeError, match="radians"):
         Rx("not-a-number")
 
 
@@ -54,19 +54,19 @@ def test_parameterized_gate_non_numeric_angle():
 
 def test_qint_zero_bits():
     reset()
-    with pytest.raises(ValueError, match="正整数"):
+    with pytest.raises(ValueError, match="positive integer"):
         QInt(0)
 
 
 def test_qint_negative_bits():
     reset()
-    with pytest.raises(ValueError, match="正整数"):
+    with pytest.raises(ValueError, match="positive integer"):
         QInt(-1)
 
 
 def test_qint_value_out_of_range():
     reset()
-    with pytest.raises(ValueError, match="超出"):
+    with pytest.raises(ValueError, match="out of range"):
         QInt(2, value=5)  # 2 位整数范围 [0, 4)
     reset()
 
@@ -74,7 +74,7 @@ def test_qint_value_out_of_range():
 def test_qint_int_conversion_rejected():
     reset()
     x = QInt(2, value=1)
-    with pytest.raises(TypeError, match="叠加态"):
+    with pytest.raises(TypeError, match="superposition"):
         int(x)
     reset()
 
@@ -84,17 +84,17 @@ def test_qint_int_conversion_rejected():
 # ---------------------------------------------------------------------------
 
 def test_coupling_map_negative_n():
-    with pytest.raises(ValueError, match="非负"):
+    with pytest.raises(ValueError, match="non-negative"):
         CouplingMap(-1)
 
 
 def test_coupling_map_self_loop():
-    with pytest.raises(ValueError, match="自环"):
+    with pytest.raises(ValueError, match="self-loop"):
         CouplingMap(3, [(0, 0)])
 
 
 def test_coupling_map_out_of_range_edge():
-    with pytest.raises(ValueError, match="超出"):
+    with pytest.raises(ValueError, match="out of qubit range"):
         CouplingMap(2, [(0, 3)])
 
 
@@ -137,7 +137,7 @@ def test_mark_state_empty():
 
 
 def test_oracle_zero_qubits():
-    with pytest.raises(ValueError, match="正整数"):
+    with pytest.raises(ValueError, match="positive integer"):
         oracle(0)
 
 
@@ -151,7 +151,7 @@ def test_shor_n_too_small():
 # ---------------------------------------------------------------------------
 
 def test_get_backend_unknown_name():
-    with pytest.raises(ValueError, match="未知的后端"):
+    with pytest.raises(ValueError, match="Unknown backend"):
         get_backend("not-a-backend")
 
 

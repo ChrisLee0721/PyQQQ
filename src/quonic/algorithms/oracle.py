@@ -1,36 +1,43 @@
-"""@oracle 装饰器：把经典谓词编译成 Grover 相位神谕。
+"""@oracle decorator: compile a classical predicate into a Grover phase oracle.
 
      from quonic.algorithms import grover, oracle
 
      @oracle(3)
      def f(x):
-         return x == 5            # 标记 |101>（qubit0 在最低位）
+         return x == 5            # mark |101> (qubit0 is the least significant bit)
 
-     result = grover(f, 3)        # 搜索唯一满足 f 的状态
+     result = grover(f, 3)        # search for the unique state satisfying f
 """
 
+from __future__ import annotations
+
+from typing import Any, Callable, Tuple
+
+from .._i18n import tr
+from ..ir import Circuit
 from .grover import mark_state
 
 
-def oracle(n_qubits):
-    """装饰器：把一个经典谓词 f(x) -> bool 变成 Grover 相位神谕。
+def oracle(n_qubits: int) -> Callable[[Callable[[int], bool]], Any]:
+    """Decorator: turn a classical predicate f(x) -> bool into a Grover phase oracle.
 
-    f 接受整数 x（0 <= x < 2**n_qubits），返回 True 表示标记该状态。
-    所有满足 f(x)=True 的状态都会被施加 -1 相位。
+    f takes an integer x (0 <= x < 2**n_qubits) and returns True to mark that
+    state. Every state satisfying f(x)=True receives a -1 phase.
 
-    返回的装饰器把 f 包装成 oracle(circuit) 回调，可直接传给 grover()，
-    也可传给 quantum_counting()（后者会读取其 .marked 属性）。
+    The returned decorator wraps f into an oracle(circuit) callback that can be
+    passed directly to grover(), or to quantum_counting() (which reads its
+    .marked attribute).
 
-    参数：
-        n_qubits: 谓词作用的量子比特数。
+    Args:
+        n_qubits: Number of qubits the predicate acts on.
     """
     if not isinstance(n_qubits, int) or n_qubits < 1:
-        raise ValueError(f"n_qubits 必须是正整数，收到 {n_qubits!r}")
+        raise ValueError(tr("err.oracle_n_qubits_positive", n_qubits=n_qubits))
 
-    def decorator(f):
-        marked = tuple(x for x in range(2 ** n_qubits) if f(x))
+    def decorator(f: Callable[[int], bool]) -> Any:
+        marked: Tuple[int, ...] = tuple(x for x in range(2 ** n_qubits) if f(x))
 
-        def phase_oracle(circuit):
+        def phase_oracle(circuit: Circuit) -> None:
             for x in marked:
                 mark_state(format(x, f"0{n_qubits}b"))(circuit)
 

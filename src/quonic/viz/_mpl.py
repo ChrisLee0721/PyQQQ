@@ -1,14 +1,21 @@
-"""matplotlib 懒加载 + 通用绘图辅助。
+"""matplotlib lazy-loading + common plotting helpers.
 
-可视化是可选能力：`import quonic` 不引入 matplotlib，只有真正调用某个
-plot_* 函数时才加载。中文字体配置、保存 / 显示收尾都收敛在这里。
+Visualization is an optional capability: `import quonic` does not pull in
+matplotlib; it is loaded only when a plot_* function is actually called.
+Chinese font configuration and save/show finalization all live here.
 """
+
+from __future__ import annotations
+
+from typing import Any, Optional, Tuple
+
+from .._i18n import tr
 
 _MPL = None
 
 
-def _plt():
-    """懒加载 matplotlib.pyplot；未安装时给出中文提示。"""
+def _plt() -> Any:
+    """Lazy-load matplotlib.pyplot; give a hint when it is not installed."""
     global _MPL
     if _MPL is None:
         try:
@@ -17,16 +24,12 @@ def _plt():
             _configure_chinese_font()
             _MPL = plt
         except ImportError as e:
-            raise ImportError(
-                "使用可视化需要安装 matplotlib：\n"
-                "    pip install 'quonic[viz]'\n"
-                "或： pip install matplotlib"
-            ) from e
+            raise ImportError(tr("err.viz_matplotlib")) from e
     return _MPL
 
 
-def _configure_chinese_font():
-    """尝试启用中文字体（找不到则静默回退英文，不影响绘图）。"""
+def _configure_chinese_font() -> None:
+    """Try to enable a Chinese font (fall back silently to English if not found, without affecting plotting)."""
     import matplotlib
     from matplotlib import font_manager
 
@@ -44,8 +47,14 @@ def _configure_chinese_font():
     matplotlib.rcParams["axes.unicode_minus"] = False
 
 
-def finalize(fig, ax=None, show=False, save=None, title=None):
-    """统一收尾：设标题、保存、显示，返回 ax（未提供 ax 时返回 fig）。"""
+def finalize(
+    fig: Any,
+    ax: Any = None,
+    show: bool = False,
+    save: Optional[str] = None,
+    title: Optional[str] = None,
+) -> Any:
+    """Unified finalization: set title, save, show, return ax (return fig when no ax is provided)."""
     if title is not None and ax is not None:
         ax.set_title(title)
     if save:
@@ -55,8 +64,8 @@ def finalize(fig, ax=None, show=False, save=None, title=None):
     return ax if ax is not None else fig
 
 
-def new_ax(figsize=(6, 4)):
-    """新建 figure + ax 的便捷入口。"""
+def new_ax(figsize: Tuple[float, float] = (6, 4)) -> Tuple[Any, Any]:
+    """Convenience entry point for creating a new figure + ax."""
     plt = _plt()
     fig, ax = plt.subplots(figsize=figsize)
     return fig, ax

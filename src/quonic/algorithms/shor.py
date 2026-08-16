@@ -1,57 +1,63 @@
-"""Shor 算法：量子周期查找 + 连分数分解大整数。
+"""Shor's algorithm: quantum period finding + continued fractions to factor a
+large integer.
 
-对奇数合数 N（非素数幂）找到一个非平凡因子。
+Find a non-trivial factor of an odd composite N (not a prime power).
 
-原理：
-    1. 随机取 a 与 N 互素，其阶 r 满足 a^r ≡ 1 (mod N)。
-    2. 量子周期查找：用 QPE 估计模乘算子 U_a |y> = |a·y mod N> 的本征相位 s/r。
-    3. 连分数从相位 j/2^t 反解出 r。
-    4. 若 r 为偶数且 a^{r/2} ≠ -1 (mod N)，则 gcd(a^{r/2} ± 1, N) 给出因子。
+Principle:
+    1. Pick a random a coprime to N; its order r satisfies a^r ≡ 1 (mod N).
+    2. Quantum period finding: use QPE to estimate the eigenphase s/r of the
+       modular multiplication operator U_a |y> = |a·y mod N>.
+    3. Continued fractions recover r from the phase j/2^t.
+    4. If r is even and a^{r/2} ≠ -1 (mod N), then gcd(a^{r/2} ± 1, N) yields a factor.
 
-示例：
+Example:
     from quonic.algorithms import shor
 
-    result = shor(15)          # 返回 3 或 5
+    result = shor(15)          # returns 3 or 5
     print(result.value)
 """
 
+from __future__ import annotations
+
 import math
 import random
+from typing import Dict, Iterator, Optional, Sequence, Tuple
 
+from .._i18n import tr
 from ..backends import get_backend
 from ..ir import Circuit, GateOperation
 from ..qft import add_iqft, add_qft
 from ..result import Result
 
 # ---------------------------------------------------------------------------
-# 基础量子门
+# Basic quantum gates
 # ---------------------------------------------------------------------------
 
-def _crz(circuit, c, t, phi):
-    # 受控 Rz(phi)：Rz(phi/2); CX; Rz(-phi/2); CX
+def _crz(circuit: Circuit, c: int, t: int, phi: float) -> None:
+    # Controlled Rz(phi): Rz(phi/2); CX; Rz(-phi/2); CX
     circuit.add(GateOperation("rz", (t,), (phi / 2,)))
     circuit.add(GateOperation("cx", (c, t)))
     circuit.add(GateOperation("rz", (t,), (-phi / 2,)))
     circuit.add(GateOperation("cx", (c, t)))
 
 
-def _toffoli(circuit, c1, c2, t):
+def _toffoli(circuit: Circuit, c1: int, c2: int, t: int) -> None:
     circuit.add(GateOperation("ccx", (c1, c2, t)))
 
 
-def _cswap(circuit, control, a, b):
-    # Fredkin 门：受控交换（3 个 Toffoli）
+def _cswap(circuit: Circuit, control: int, a: int, b: int) -> None:
+    # Fredkin gate: controlled swap (3 Toffolis)
     _toffoli(circuit, control, a, b)
     _toffoli(circuit, control, b, a)
     _toffoli(circuit, control, a, b)
 
 
 # ---------------------------------------------------------------------------
-# QFT 加法（Draper 加法）
+# QFT addition (Draper addition)
 # ---------------------------------------------------------------------------
 
-def _add_const(circuit, qubits, k):
-    """|x> -> |x + k mod 2^m>，m = len(qubits)。"""
+def _add_const(circuit: Circuit, qubits: Sequence[int], k: int) -> None:
+    """|x> -> |x + k mod 2^m>, where m = len(qubits)."""
     m = len(qubits)
     add_qft(circuit, qubits)
     for j in range(m):
@@ -59,8 +65,8 @@ def _add_const(circuit, qubits, k):
     add_iqft(circuit, qubits)
 
 
-def _cadd_const(circuit, qubits, k, control):
-    """受控加法：control=1 时 |x> -> |x + k mod 2^m>。control 不在 qubits 中。"""
+def _cadd_const(circuit: Circuit, qubits: Sequence[int], k: int, control: int) -> None:
+    """Controlled addition: |x> -> |x + k mod 2^m> when control=1. control is not in qubits."""
     m = len(qubits)
     add_qft(circuit, qubits)
     for j in range(m):
@@ -69,11 +75,11 @@ def _cadd_const(circuit, qubits, k, control):
 
 
 # ---------------------------------------------------------------------------
-# 模运算
+# Modular arithmetic
 # ---------------------------------------------------------------------------
 
-def _modinv(a, m):
-    """模逆元 a^{-1} mod m（a 与 m 互素），用扩展欧几里得。"""
+def _modinv(a: int, m: int) -> Optional[int]:
+    """Modular inverse a^{-1} mod m (a coprime to m), via the extended Euclidean algorithm."""
     a %= m
     if math.gcd(a, m) != 1:
         return None
@@ -88,29 +94,49 @@ def _modinv(a, m):
     return t
 
 
-def cadd_mod(circuit, qubits, flag, b, N, control):
-    """受控就地模加：control=1 时 |x> -> |(x + b) mod N>，flag 回到 |0>。
+def cadd_mod(
+    circuit: Circuit,
+    qubits: Sequence[int],
+    flag: int,
+    b: int,
+    N: int,
+    control: int,
+) -> None:
+    """Controlled in-place modular addition: |x> -> |(x + b) mod N> when control=1,
+    with flag returned to |0>.
 
-    qubits 长度为 n+1（n = N 的位宽），x、b ∈ [0, N)。
-    flag 是一个额外的辅助比特（初末均为 |0>），记录「x + b < N」的借位标志。
+    qubits has length n+1 (n = bit width of N), and x, b ∈ [0, N).
+    flag is an extra auxiliary qubit (|0> at both start and end) that records the
+    borrow flag of "x + b < N".
     """
     n = len(qubits) - 1
     M = 2 ** (n + 1)
     _cadd_const(circuit, qubits, b, control)      # x -> x + b
     _cadd_const(circuit, qubits, M - N, control)  # x + b -> x + b - N
-    circuit.add(GateOperation("cx", (qubits[n], flag)))  # flag = 下溢标志
-    _cadd_const(circuit, qubits, N, flag)         # 若下溢，加回 N
-    # 反演 flag（用关系 flag = 「(x+b) mod N >= b」）：
+    circuit.add(GateOperation("cx", (qubits[n], flag)))  # flag = underflow flag
+    _cadd_const(circuit, qubits, N, flag)         # if underflow, add N back
+    # Invert flag (using the relation flag = "(x+b) mod N >= b"):
     _cadd_const(circuit, qubits, M - b, control)  # x -> x - b
     circuit.add(GateOperation("cx", (qubits[n], flag)))
     circuit.add(GateOperation("cx", (control, flag)))
-    _cadd_const(circuit, qubits, b, control)      # 恢复 x
+    _cadd_const(circuit, qubits, b, control)      # restore x
 
 
-def _cmul_mod(circuit, q, reg, c, N, scratch, anc, flag):
-    """受控就地模乘：q=1 时 |reg> -> |c·reg mod N>，scratch/anc/flag 均回到 |0>。
+def _cmul_mod(
+    circuit: Circuit,
+    q: int,
+    reg: Sequence[int],
+    c: int,
+    N: int,
+    scratch: Sequence[int],
+    anc: int,
+    flag: int,
+) -> None:
+    """Controlled in-place modular multiplication: |reg> -> |c·reg mod N> when q=1,
+    with scratch/anc/flag all returned to |0>.
 
-    reg、scratch 均为 n+1 个量子比特；anc 是 Toffoli 辅助比特，flag 是模加标志。
+    reg and scratch each have n+1 qubits; anc is the Toffoli auxiliary qubit and
+    flag is the modular addition flag.
     """
     n = len(reg) - 1
     cinv = _modinv(c, N)
@@ -120,10 +146,10 @@ def _cmul_mod(circuit, q, reg, c, N, scratch, anc, flag):
         _toffoli(circuit, q, reg[i], anc)
         cadd_mod(circuit, scratch, flag, a_i, N, anc)
         _toffoli(circuit, q, reg[i], anc)
-    # 2) 受控交换 reg <-> scratch
+    # 2) controlled swap reg <-> scratch
     for i in range(n + 1):
         _cswap(circuit, q, reg[i], scratch[i])
-    # 3) scratch -= c^{-1}·reg（清零 scratch）
+    # 3) scratch -= c^{-1}·reg (clear scratch)
     for i in range(n):
         b_i = (N - (2 ** i * cinv) % N) % N
         _toffoli(circuit, q, reg[i], anc)
@@ -131,10 +157,20 @@ def _cmul_mod(circuit, q, reg, c, N, scratch, anc, flag):
         _toffoli(circuit, q, reg[i], anc)
 
 
-def _mod_exp(circuit, exponent, reg, a, N, scratch, anc, flag):
-    """|reg> -> |a^x mod N>，x 为 exponent 寄存器（LSB 在 exponent[0]）。
+def _mod_exp(
+    circuit: Circuit,
+    exponent: Sequence[int],
+    reg: Sequence[int],
+    a: int,
+    N: int,
+    scratch: Sequence[int],
+    anc: int,
+    flag: int,
+) -> None:
+    """|reg> -> |a^x mod N>, where x is the exponent register (LSB at exponent[0]).
 
-    与 qpe.py 一致的无 swap IQFT 约定：第 j 个相位比特控制 U^{2^{t-1-j}}。
+    Consistent with qpe.py's no-swap IQFT convention: the j-th phase bit controls
+    U^{2^{t-1-j}}.
     """
     t = len(exponent)
     for j in range(t):
@@ -143,11 +179,11 @@ def _mod_exp(circuit, exponent, reg, a, N, scratch, anc, flag):
 
 
 # ---------------------------------------------------------------------------
-# 经典部分：连分数、因子提取
+# Classical part: continued fractions and factor extraction
 # ---------------------------------------------------------------------------
 
-def _convergents(x, max_q):
-    """生成实数 x 的连分数渐近分数 p/q（q <= max_q）。"""
+def _convergents(x: float, max_q: int) -> Iterator[Tuple[int, int]]:
+    """Generate continued-fraction convergents p/q of a real number x (q <= max_q)."""
     if x <= 0:
         return
     p0, p1 = 0, 1
@@ -168,8 +204,8 @@ def _convergents(x, max_q):
         r = 1.0 / frac
 
 
-def _period_from_phase(j, t, a, N):
-    """从相位 j/2^t 用连分数反解 a 的阶 r。"""
+def _period_from_phase(j: int, t: int, a: int, N: int) -> Optional[int]:
+    """Recover the order r of a from the phase j/2^t using continued fractions."""
     phi = j / (2 ** t)
     if phi == 0:
         return None
@@ -179,8 +215,8 @@ def _period_from_phase(j, t, a, N):
     return None
 
 
-def _factor_from_period(a, r, N):
-    """由阶 r 提取因子；r 为奇数或 a^{r/2}≡-1 时返回 None。"""
+def _factor_from_period(a: int, r: Optional[int], N: int) -> Optional[int]:
+    """Extract a factor from the order r; return None if r is odd or a^{r/2}≡-1."""
     if r is None or r % 2 != 0:
         return None
     x = pow(a, r // 2, N)
@@ -192,8 +228,8 @@ def _factor_from_period(a, r, N):
     return None
 
 
-def _perfect_power_factor(N):
-    """若 N 是完全幂 b^k，返回 b，否则 None。"""
+def _perfect_power_factor(N: int) -> Optional[int]:
+    """If N is a perfect power b^k, return b; otherwise return None."""
     for b in range(2, N.bit_length() + 1):
         root = int(round(N ** (1.0 / b)))
         for r in (root - 1, root, root + 1):
@@ -202,8 +238,10 @@ def _perfect_power_factor(N):
     return None
 
 
-def _run_once(N, a, t, backend, shots):
-    """运行一次量子周期查找，返回 (factor, j, r, exp_counts)。"""
+def _run_once(
+    N: int, a: int, t: int, backend: str, shots: int
+) -> Tuple[Optional[int], Optional[int], Optional[int], Dict[str, int]]:
+    """Run one round of quantum period finding; return (factor, j, r, exp_counts)."""
     n = (N - 1).bit_length()
     exponent = list(range(t))
     base = t
@@ -223,7 +261,7 @@ def _run_once(N, a, t, backend, shots):
 
     result = get_backend(backend).run(circuit, shots=shots)
 
-    # 只关心指数寄存器（最右 t 位），对其它比特求和
+    # Only care about the exponent register (rightmost t bits); sum over the other bits
     exp_counts = {}
     for bitstring, count in result.counts.items():
         e = bitstring[-t:]
@@ -238,21 +276,29 @@ def _run_once(N, a, t, backend, shots):
     return None, None, None, exp_counts
 
 
-def shor(N, a=None, t=None, backend="auto", shots=1024, attempts=8):
-    """分解整数 N（奇数合数且非素数幂），返回一个非平凡因子。
+def shor(
+    N: int,
+    a: Optional[int] = None,
+    t: Optional[int] = None,
+    backend: str = "auto",
+    shots: int = 1024,
+    attempts: int = 8,
+) -> Result:
+    """Factor the integer N (odd composite and not a prime power), returning a
+    non-trivial factor.
 
-    参数：
-        N: 待分解整数。
-        a: 随机基（默认随机选取）。
-        t: 周期查找的精度比特数，默认 2·位宽。
-        backend / shots: 采样参数。
-        attempts: 失败重试次数。
+    Args:
+        N: The integer to factor.
+        a: Random base (chosen randomly by default).
+        t: Number of precision bits for period finding, default 2 · bit width.
+        backend / shots: Sampling parameters.
+        attempts: Number of retries on failure.
 
-    返回：Result（kind="value"），result.value 为 N 的一个非平凡因子。
+    Returns: Result (kind="value"); result.value is a non-trivial factor of N.
     """
     N = int(N)
     if N < 2:
-        raise ValueError(f"N 必须 >= 2，收到 {N}")
+        raise ValueError(tr("err.shor_n", N=N))
 
     if N % 2 == 0:
         return Result.from_value(2, factor_of=N, method="even")
@@ -279,6 +325,4 @@ def shor(N, a=None, t=None, backend="auto", shots=1024, attempts=8):
         if fixed_a:
             break
 
-    raise RuntimeError(
-        f"Shor 算法未能找到 {N} 的因子；请增加 shots / attempts，或更换 N"
-    )
+    raise RuntimeError(tr("err.shor_failed", N=N))

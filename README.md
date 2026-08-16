@@ -1,17 +1,19 @@
-# QuoNic — 量子编程，像写 Python 一样简单
+# QuoNic — Quantum programming, as simple as writing Python
 
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
 [![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/)
 [![Qiskit](https://img.shields.io/badge/Qiskit-1.0+-green.svg)](https://qiskit.org/)
 [![Cirq](https://img.shields.io/badge/Cirq-1.0+-orange.svg)](https://quantumai.google/cirq)
 
-**QuoNic 是一个让量子编程变得像写 Python 一样简单的工具。**
+**QuoNic is a tool that makes quantum programming as simple as writing Python.**
 
-不需要学 `QuantumCircuit`，不需要理解 `backend`，不需要手动 `measure`。你会写 Python，就会用量子计算。
+No `QuantumCircuit` to learn, no `backend` to understand, no manual `measure`. If you can write Python, you can write quantum programs.
+
+[中文文档](README.zh-CN.md)
 
 ---
 
-## 🚀 30 秒快速开始
+## 🚀 30-second quick start
 
 ```python
 from quonic import qgate, qshow
@@ -22,74 +24,74 @@ qgate(CX, 0, 1)
 qshow()
 ```
 
-**这是量子计算中最经典的贝尔态（Bell State）。** 同样的功能，用 Qiskit 原生代码需要 10+ 行。QuoNic 只需要 3 行。运行结果会直接显示在终端或 Jupyter 中。
+**This is the Bell state — the most classic result in quantum computing.** The same thing takes 10+ lines in raw Qiskit. QuoNic does it in 3. The result appears directly in your terminal or Jupyter.
 
-更多**复制即跑**的示例（GHZ、`qif`、`QInt`、Grover、VQE、QAOA、噪声）见 [`examples/`](examples/)。
+More copy-and-run examples (GHZ, `qif`, `QInt`, Grover, VQE, QAOA, noise) live in [`examples/`](examples/).
 
 ---
 
-## 📦 安装
+## 📦 Installation
 
 ```bash
 pip install quonic
 ```
 
-后端是可选依赖，按需安装。要一键装齐三个后端（含算法模板的 numpy/scipy）：
+Backends are optional dependencies — install only what you need. To install all three backends (plus numpy/scipy for the algorithm templates) in one shot:
 
 ```bash
 pip install 'quonic[qiskit,cirq,pennylane,algorithms]'
 ```
 
-只装某一个后端，例如只用 Cirq：`pip install 'quonic[cirq]'`。未安装的后端在调用时会给出明确的中文提示。
+To install a single backend, e.g. only Cirq: `pip install 'quonic[cirq]'`. Calling an uninstalled backend raises a clear message (English by default; set `QUONIC_LANG=zh` for Chinese).
 
-可视化是独立可选依赖：`pip install 'quonic[viz]'`（仅 matplotlib，不引入 Graphviz / Seaborn / NetworkX）。
+Visualization is a separate optional dependency: `pip install 'quonic[viz]'` (matplotlib only — no Graphviz / Seaborn / NetworkX).
 
 ---
 
-## ✨ 核心特性
+## ✨ Core features
 
-### 1. 极简语法：3 行代码跑通贝尔态
+### 1. Minimal syntax: a Bell state in 3 lines
 
-你不需要理解“量子电路对象”，不需要选择“后端模拟器”，不需要手动“测量”。QuoNic 替你处理一切。
+You don't need to understand "quantum circuit objects", pick a "backend simulator", or write `measure` by hand. QuoNic handles all of it.
 
-### 2. 一个参数切换所有后端
+### 2. Switch every backend with one argument
 
 ```python
-# 使用 Qiskit 模拟器（默认）
+# Use the Qiskit simulator (default)
 qshow(backend='qiskit')
 
-# 切换到 Cirq
+# Switch to Cirq
 qshow(backend='cirq')
 
-# 切换到 PennyLane
+# Switch to PennyLane
 qshow(backend='pennylane')
 
-# 真实硬件（Quantum Inspire）已接入，需登录
-qshow(backend='qi')        # Tuna-9 真机
-qshow(backend='tuna17')    # Tuna-17 真机
-qshow(backend='qx')        # QX 云模拟器
+# Real hardware (Quantum Inspire) — requires login
+qshow(backend='qi')                    # QX cloud simulator (default; verify before submitting)
+qshow(backend='qi', device='tuna9')    # Tuna-9 real device
+qshow(backend='qi', device='tuna17')   # Tuna-17 real device
+qshow(backend='qi', device='qx')       # QX cloud simulator
 ```
 
-**同一段代码，不加修改，跑在任何后端上。** 极简语法 + 后端无关，是 QuoNic 的组合差异化。
+**The same code, unchanged, runs on any backend.** Minimal syntax + backend independence is QuoNic's combined differentiator.
 
-### 3. 条件门与”if = 叠加态”
+### 3. Conditional gates and "if = superposition"
 
-QuoNic 用 `qif` 实现量子叠加控制，并严格区分两种概念：
+QuoNic implements quantum superposition control with `qif` and draws a strict line between two concepts:
 
-- **量子叠加控制（`qif`，已实现）**：控制比特处于叠加态时**不测量**，两个分支
-  相干叠加，产生真纠缠——这是”两种分支同时发生”，不是先测量再二选一。
+- **Quantum superposition control (`qif`, implemented)**: when the control qubit is in a superposition, the branches are **not measured** — they interfere coherently and produce real entanglement. This is "both branches happen at once", not "measure then pick one".
   ```python
   from quonic import qgate, qif, qshow
   from quonic.gates import H, X, I
 
-  qgate(H, 0)                       # 控制比特进入叠加态
-  qif(0).then(X, 1).else_(I, 1)     # q0==1 翻转 q1，否则不动（= 受控 X）
+  qgate(H, 0)                       # control qubit enters superposition
+  qif(0).then(X, 1).else_(I, 1)     # q0==1 flips q1, else nothing (= controlled X)
   qshow()
   ```
-  `else_(I, ...)` 里的 `I` 是恒等门，让「受控门 = qif 特例」写得自然。
-- **条件门（经典控制，规划中）**：先测量、再按结果选择分支，这是”坍缩之后的经典分支”。
+  The `I` in `else_(I, ...)` is the identity gate, so "controlled gate = qif special case" reads naturally.
+- **Conditional gates (classical control, planned)**: measure first, then branch on the result — a "classical branch after collapse".
   ```python
-  # 规划中：基于测量结果的条件门
+  # Planned: condition on the measurement result
   # qgate(H, 0)
   # if qgate(MEASURE, 0) == 0:
   #     qgate(X, 1)
@@ -97,127 +99,119 @@ QuoNic 用 `qif` 实现量子叠加控制，并严格区分两种概念：
   #     qgate(Z, 1)
   ```
 
-我们不把”测量后的经典分支”包装成”叠加态”——教错物理，比不教更糟。
+We don't dress up "classical branching after measurement" as "superposition" — teaching wrong physics is worse than not teaching at all.
 
-### 4. 真正的“技术惠普”
+### 4. Genuinely beginner-friendly
 
-- **中文错误信息**：报错时告诉你“哪里错了、为什么错、怎么改”
-- **自动补全**：在 VS Code / Jupyter 中自动提示门名称和参数
-- **自动测量**：忘记写 `measure`？`qshow()` 自动补全
+- **Clear error messages** (English by default, Chinese via `QUONIC_LANG=zh`): they tell you what went wrong, why, and how to fix it
+- **Autocomplete**: gate names and parameters are hinted in VS Code / Jupyter
+- **Automatic measurement**: forgot to write `measure`? `qshow()` fills it in
 
-### 5. 智能调度器：自动挑最快的方法
+### 5. Smart scheduler: automatically picks the fastest method
 
-量子模拟有四种方法，快慢差几个数量级，选错直接撞墙：
+Quantum simulation has four methods whose speeds differ by orders of magnitude — picking wrong hits a wall:
 
-| 方法 | 复杂度 | 适合 |
+| Method | Complexity | Best for |
 |------|--------|------|
-| `statevector` | 2^n | 通用默认 |
-| `stabilizer` | 多项式 | 纯 Clifford 电路（如纠错码） |
-| `matrix_product_state` | 随树宽增长 | 低树宽电路（如 QAOA） |
-| `density_matrix` | 4^n | 噪声模拟 |
+| `statevector` | 2^n | general default |
+| `stabilizer` | polynomial | pure Clifford circuits (e.g. error-correcting codes) |
+| `matrix_product_state` | grows with treewidth | low-treewidth circuits (e.g. QAOA) |
+| `density_matrix` | 4^n | noise simulation |
 
-QuoNic 的调度器根据电路特征（门类型、树宽、是否含噪声）自动选择，不用你手动
-指定方法。实测证据：**GHZ(24) 快 36 倍、QAOA(24) 快 19 倍**，Grover 的
-`mcz` 只有 `statevector` 能跑，调度器会自动绕开会崩溃的方法。
+QuoNic's scheduler picks automatically based on circuit features (gate types, treewidth, whether it contains noise) — you never specify the method by hand. Measured evidence: **GHZ(24) is 36× faster, QAOA(24) 19× faster**; Grover's `mcz` only runs on `statevector`, and the scheduler routes around methods that would crash.
 
 ```python
 from quonic.scheduler import schedule
 rec = schedule(circuit)   # -> Recommendation(backend='qiskit', method='stabilizer')
 ```
 
-详见 [调度器基准与实测数据](docs/benchmarks.md)。
+See [scheduler benchmarks and measurements](docs/benchmarks.md).
 
-### 6. 全量可视化套件：23 类图，只用 Matplotlib
+### 6. Full visualization suite: 23 chart types with only Matplotlib
 
 ```python
 from quonic.viz import plot_circuit, plot_counts, plot_decision_tree
 
-plot_circuit(circuit)        # 门序列电路图
-plot_counts(result)          # 测量直方图
-plot_decision_tree()         # 调度决策树
+plot_circuit(circuit)        # gate-sequence circuit diagram
+plot_counts(result)          # measurement histogram
+plot_decision_tree()         # scheduler decision tree
 ```
 
-23 类图覆盖四层：**用户刚需**（电路图 / 直方图 / 拓扑图）、**调度器证据**
-（方法对比 / 决策树 / 热力图 / 降级链 / 特征雷达图）、**算法教学**（能量收敛
-/ Grover 振幅 / 态向量 / 布洛赫球）、**量子态**（密度矩阵 / 纠缠 / 门矩阵 /
-路由 / 逐门态演化 / 噪声成本）。全部只用 matplotlib 一个依赖，懒加载，
-`import quonic` 零开销。详见 [可视化套件](docs/visualization.md)。
+The 23 chart types span four layers: **core needs** (circuit / histogram / topology), **scheduler evidence** (method comparison / decision tree / heatmap / fallback chain / feature radar), **algorithm teaching** (energy convergence / Grover amplitude / statevector / Bloch sphere), and **quantum states** (density matrix / entanglement / gate matrix / routing / per-gate state evolution / noise cost). All with matplotlib as the single dependency, lazy-loaded, zero overhead on `import quonic`. See [visualization suite](docs/visualization.md).
 
 ---
 
-## 📊 对比：QuoNic vs Qiskit
+## 📊 QuoNic vs Qiskit
 
-| 场景 | Qiskit | QuoNic |
+| Scenario | Qiskit | QuoNic |
 |------|--------|-------|
-| **跑通第一个量子程序** | 需要理解 5-8 个新概念 | 只需要 2 个概念：`qgate` 和 `qshow` |
-| **代码行数（贝尔态）** | 8-12 行 | **3 行** |
-| **从安装到看到结果** | 30-60 分钟 | **2-3 分钟** |
-| **切换后端** | 重写全部代码 | **改一个参数** |
+| **First quantum program** | 5–8 new concepts to learn | just 2: `qgate` and `qshow` |
+| **Lines of code (Bell state)** | 8–12 lines | **3 lines** |
+| **Install to first result** | 30–60 minutes | **2–3 minutes** |
+| **Switching backends** | rewrite everything | **change one argument** |
 
 ---
 
-## 🧠 为什么叫 QuoNic？
+## 🧠 Why the name QuoNic?
 
-QuoNic 是 **Quantum Unified Operation Native Interface Core** 的首字母缩写：
+QuoNic is an acronym for **Quantum Unified Operation Native Interface Core**:
 
-| 字母 | 词 | 含义 |
+| Letter | Word | Meaning |
 |------|-----|------|
-| Q | Quantum | 量子 |
-| U | Unified | 统一 —— 一个参数切换所有后端 |
-| O | Operation | 操作 —— `qgate` / `qshow` |
-| N | Native | 原生 —— 像写 Python 一样自然 |
-| I | Interface | 接口 —— 后端适配层 |
-| C | Core | 核心 —— IR / 调度器 / 编译 |
+| Q | Quantum | quantum |
+| U | Unified | unified — one argument switches every backend |
+| O | Operation | operations — `qgate` / `qshow` |
+| N | Native | native — as natural as writing Python |
+| I | Interface | interface — the backend adapter layer |
+| C | Core | core — IR / scheduler / compiler |
 
-读作 /ˈkwɑnɪk/（“阔尼克”）。
+Pronounced /ˈkwɑnɪk/ ("kwah-nik").
 
 ---
 
-## 🛠️ 当前支持的后端
+## 🛠️ Currently supported backends
 
-| 后端 | 状态 | 说明 |
+| Backend | Status | Notes |
 |------|------|------|
-| Qiskit | ✅ 稳定 | IBM 生态 · 本地模拟器 |
-| Cirq | ✅ 稳定 | Google 生态 · 本地模拟器 |
-| PennyLane | ✅ 稳定 | 量子机器学习 · 本地模拟器 |
-| Quantum Inspire | ✅ 已接入 | 真实硬件 Tuna-9 / Tuna-17 + QX 模拟器 |
-| 更多后端 | 📅 规划中 | IBM / AWS Braket / 国产硬件... |
+| Qiskit | ✅ stable | IBM ecosystem · local simulator |
+| Cirq | ✅ stable | Google ecosystem · local simulator |
+| PennyLane | ✅ stable | quantum machine learning · local simulator |
+| Quantum Inspire | ✅ connected | real hardware Tuna-9 / Tuna-17 + QX simulator |
+| More backends | 📅 planned | IBM / AWS Braket / domestic (Chinese) hardware... |
 
-> **注意**：Qiskit / Cirq / PennyLane 三个后端运行在**本地模拟器**上；真实硬件通过
-> Quantum Inspire 接入（`qshow(backend="qi")`，需登录）。更多云端硬件（IBM / AWS Braket）
-> 是后续优先级。
+> **Note**: the Qiskit / Cirq / PennyLane backends run on **local simulators**; Quantum Inspire real hardware is reached via `qshow(backend="qi", device="tuna9")` (bare `backend="qi"` defaults to the QX cloud simulator and requires login). More cloud hardware (IBM / AWS Braket) is on the roadmap.
 
-为硬件铺路，QuoNic 已内置 `CouplingMap`（耦合图）、`compile()` 编译 seam，以及 `decompose()` 门分解——把高阶门（`cp` / `ccx` / `mcz`）展开成基础门集。后者是 QuoNic 自己拥有的「可移植核心」：用户不被某个后端的电路形状绑住，Grover 的 `mcz` 分解成 `cx / h / p` 后能跑通所有后端方法。已内置 `route_swaps()` 贪心 SWAP 路由（配合 `plot_routing` 可视化），将来接 IBM / 国产引擎时，只需在编译层接入，无需改动 IR 或调度器。
+To pave the way for hardware, QuoNic already ships `CouplingMap` (coupling graph), the `compile()` compilation seam, and `decompose()` gate decomposition — which expands higher-order gates (`cp` / `ccx` / `mcz`) into the basic gate set. The latter is QuoNic's own "portable core": users aren't locked to one backend's circuit shape, and Grover's `mcz` decomposes into `cx / h / p` so it runs on every backend method. A greedy SWAP router `route_swaps()` is built in (with `plot_routing` visualization), so wiring up IBM / domestic engines later only touches the compilation layer — no changes to the IR or scheduler.
 
 ---
 
-## 📖 文档与教程
+## 📖 Docs and tutorials
 
-- [快速入门](docs/quickstart.md) — 5 分钟上手 QuoNic
-- [Jupyter 教程](docs/tutorial.ipynb) — 可运行的交互单元
-- [调度器基准与实测数据](docs/benchmarks.md) — 自动选最快方法的护城河
-- [可视化套件](docs/visualization.md) — 23 类图，只用 Matplotlib
-- [国产硬件调研](docs/domestic-hardware.md) — QPanda3 / CqLib 接入评估
-
----
-
-## 🤝 贡献指南
-
-QuoNic 是一个开源项目（Apache 2.0），欢迎任何形式的贡献：
-
-- 报告 Bug
-- 提出新功能建议
-- 提交代码（新后端适配器、新门、新功能）
-- 完善文档和教程
+- [Quickstart](docs/quickstart.md) — up and running in 5 minutes
+- [Jupyter tutorial](docs/tutorial.ipynb) — runnable interactive notebook
+- [Scheduler benchmarks](docs/benchmarks.md) — the measured-data moat behind automatic method selection
+- [Visualization suite](docs/visualization.md) — 23 chart types with only Matplotlib
+- [Domestic hardware survey](docs/domestic-hardware.md) — QPanda3 / CqLib integration assessment
 
 ---
 
-## 📄 许可证
+## 🤝 Contributing
 
-QuoNic 使用 [Apache License 2.0](LICENSE)，对商用和闭源友好，同时提供专利保护。
+QuoNic is open source (Apache 2.0) and welcomes all kinds of contribution:
+
+- Report bugs
+- Propose new features
+- Submit code (new backend adapters, gates, features)
+- Improve docs and tutorials
 
 ---
 
-## 🌟 给项目加星
+## 📄 License
 
-如果 QuoNic 对你有帮助，请在 GitHub 上给我们一个 ⭐️。你的支持是我们持续改进的动力。
+QuoNic is licensed under the [Apache License 2.0](LICENSE) — friendly to commercial and closed-source use, with patent protection.
+
+---
+
+## 🌟 Star the project
+
+If QuoNic helps you, please give us a ⭐️ on GitHub. Your support keeps us going.

@@ -1,52 +1,55 @@
-"""去极化（depolarizing）噪声模型。
+"""Depolarizing noise model.
 
-用法：
+Usage:
     from quonic import qshow, depolarizing, NoiseModel
 
-    qshow(backend="qiskit", shots=1024, noise=0.05)          # 每个门 5% 去极化
-    qshow(noise=depolarizing(0.05))                          # 等价
-    qshow(noise=NoiseModel(single=0.01, double=0.05))        # 单/双比特门分开
+    qshow(backend="qiskit", shots=1024, noise=0.05)          # 5% depolarizing per gate
+    qshow(noise=depolarizing(0.05))                          # equivalent
+    qshow(noise=NoiseModel(single=0.01, double=0.05))        # single/two-qubit gates separately
 """
 
+from __future__ import annotations
+
 from dataclasses import dataclass
+from typing import Union
+
+from ._i18n import tr
 
 
 @dataclass(frozen=True)
 class NoiseModel:
-    """去极化噪声模型。
+    """Depolarizing noise model.
 
-    参数：
-        single: 每个单比特门之后施加的去极化概率 p。
-        double: 每个两比特门之后施加的去极化概率 p。
+    Parameters:
+        single: depolarizing probability p applied after each single-qubit gate.
+        double: depolarizing probability p applied after each two-qubit gate.
     """
 
     single: float = 0.0
     double: float = 0.0
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         for name in ("single", "double"):
             p = getattr(self, name)
             if not 0.0 <= p <= 1.0:
-                raise ValueError(f"去极化概率 {name} 需在 [0, 1] 内，收到 {p}")
+                raise ValueError(tr("err.noise_prob", name=name, p=p))
 
     @property
-    def enabled(self):
+    def enabled(self) -> bool:
         return self.single > 0.0 or self.double > 0.0
 
 
-def depolarizing(p):
-    """构造单/双比特去极化概率均为 p 的噪声模型。"""
+def depolarizing(p: float) -> NoiseModel:
+    """Construct a noise model with depolarizing probability p for both single- and two-qubit gates."""
     return NoiseModel(single=float(p), double=float(p))
 
 
-def resolve_noise(noise):
-    """把 noise 参数统一成 NoiseModel（None 表示无噪声）。"""
+def resolve_noise(noise: Union[NoiseModel, float, int, None]) -> NoiseModel:
+    """Normalize the noise parameter into a NoiseModel (None means no noise)."""
     if noise is None:
         return NoiseModel()
     if isinstance(noise, NoiseModel):
         return noise
     if isinstance(noise, (int, float)):
         return depolarizing(noise)
-    raise TypeError(
-        "noise 参数必须是 NoiseModel、一个 [0,1] 内的概率数值，或 None"
-    )
+    raise TypeError(tr("err.noise_arg"))

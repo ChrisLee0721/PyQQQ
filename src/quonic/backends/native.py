@@ -1,23 +1,41 @@
-"""QuoNic 自研后端：不依赖任何外部量子库，直接用四个朴素引擎。
+"""QuoNic's in-house backend: depends on no external quantum library, using four naive engines directly.
 
-这是"不绑定 + 组合"的兜底：无论用户切到哪个后端，只要电路适合
-stabilizer / MPS 等非 statevector 方法，都可降级到这里跑（仅需 numpy）。
+This is the "unbound + compose" fallback: whatever backend the user switches to, any
+circuit suited to stabilizer / MPS or other non-statevector methods can fall back here
+(only numpy is required).
 
-引擎在 run() 内延迟导入，保证 `import quonic` 不引入 numpy。
+Engines are imported lazily inside run(), so `import quonic` does not pull in numpy.
 """
 
-from ..noise import resolve_noise
+from __future__ import annotations
+
+from typing import Any, Dict, Iterable, Optional, Tuple, Union
+
+from .._i18n import tr
+from ..ir import Circuit
+from ..noise import NoiseModel, resolve_noise
 from ..result import Result
 from .base import Backend
 
-_METHODS = ("statevector", "stabilizer", "matrix_product_state", "density_matrix")
+_METHODS: Tuple[str, ...] = (
+    "statevector",
+    "stabilizer",
+    "matrix_product_state",
+    "density_matrix",
+)
 
 
 class NativeBackend(Backend):
     name = "native"
     methods = frozenset(_METHODS)
 
-    def run(self, circuit, shots=1024, noise=None, method="statevector"):
+    def run(
+        self,
+        circuit: Circuit,
+        shots: int = 1024,
+        noise: Optional[Union[NoiseModel, float, int]] = None,
+        method: str = "statevector",
+    ) -> Result:
         from ..simulators import (
             DensityMatrixEngine,
             MPSEngine,
@@ -26,12 +44,12 @@ class NativeBackend(Backend):
         )
 
         nm = resolve_noise(noise)
-        # 经典控制流（cif / creg / cwhile）需要逐 shot 模拟：中途测量会
-        # 不可逆地坍缩态矢量
+        # Classical control flow (cif / creg / cwhile) needs per-shot simulation:
+        # mid-circuit measurement irreversibly collapses the statevector
         if any(op.name in ("cif", "cmeasure", "cwhile") for op in circuit.ops):
             return self._run_dynamic(circuit, shots, nm, method)
 
-        # 噪声模拟需要密度矩阵方法；其余引擎不支持通用噪声模型
+        # Noise simulation requires the density-matrix method; the other engines do not support general noise models
         if nm.enabled:
             engine = DensityMatrixEngine(circuit.num_qubits, noise=nm)
         else:
@@ -43,8 +61,7 @@ class NativeBackend(Backend):
             }
             if method not in engines:
                 raise ValueError(
-                    f"native 后端不支持方法 '{method}'，"
-                    f"可用：{', '.join(sorted(engines))}"
+                    tr("err.native_method", method=method, engines=", ".join(sorted(engines)))
                 )
             engine = engines[method](circuit.num_qubits)
 
@@ -53,35 +70,34 @@ class NativeBackend(Backend):
         return Result.from_counts(engine.sample(shots), shots)
 
     @classmethod
-    def _run_dynamic(cls, circuit, shots, nm, method):
+    def _run_dynamic(
+        cls, circuit: Circuit, shots: int, nm: NoiseModel, method: str
+    ) -> Result:
         from ..simulators import DensityMatrixEngine, StatevectorEngine
 
         if nm.enabled:
             method = "density_matrix"
         if method == "density_matrix":
-            def new_engine():
+            def new_engine() -> Any:
                 return DensityMatrixEngine(circuit.num_qubits, noise=nm)
         elif method == "statevector":
-            def new_engine():
+            def new_engine() -> Any:
                 return StatevectorEngine(circuit.num_qubits)
         else:
-            raise NotImplementedError(
-                f"native 后端的经典控制流（cif/creg/cwhile）仅支持 "
-                f"statevector / density_matrix 方法，当前 method='{method}'"
-            )
+            raise NotImplementedError(tr("err.native_ctrl", method=method))
 
-        counts = {}
+        counts: Dict[str, int] = {}
         for _ in range(shots):
             engine = new_engine()
-            cregs = {}
+            cregs: Dict[str, int] = {}
             cls._execute(engine, circuit.ops, cregs)
             for bs, c in engine.sample(1).items():
                 counts[bs] = counts.get(bs, 0) + c
         return Result.from_counts(counts, shots)
 
     @staticmethod
-    def _execute(engine, ops, cregs):
-        """逐 shot 执行一段 ops，维护具名经典位 cregs（name -> 0/1）。"""
+    def _execute(engine: Any, ops: Iterable[Any], cregs: Dict[str, int]) -> None:
+        """Execute a block of ops shot by shot, maintaining named classical bits cregs (name -> 0/1)."""
         for op in ops:
             name = op.name
             if name == "cmeasure":
@@ -99,9 +115,6 @@ class NativeBackend(Backend):
                     NativeBackend._execute(engine, op.body, cregs)
                     iters += 1
                     if iters > 100000:
-                        raise RuntimeError(
-                            f"cwhile 循环超过安全上限（100000 次），"
-                            f"条件 creg={op.creg!r} 可能一直未满足"
-                        )
+                        raise RuntimeError(tr("err.cwhile_limit", creg=op.creg))
             else:
                 engine.apply(name, list(op.qubits), op.params)

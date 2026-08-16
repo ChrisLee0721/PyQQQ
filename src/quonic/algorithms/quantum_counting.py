@@ -1,91 +1,107 @@
-"""量子计数（quantum counting）模板。
+"""Quantum counting template.
 
-用 Grover 迭代 + 量子相位估计（QPE）估计满足神谕的解的个数 M。
+Estimate the number M of solutions satisfying an oracle using Grover iteration
+plus Quantum Phase Estimation (QPE).
 
-原理：Grover 算子 G 在 {|非解>, |解>} 子空间内旋转角度 2θ，其中
-sin²θ = M / N（N = 2^n）。QPE 估计 G 的本征相位 θ/π，从而反解出 M。
+Principle: the Grover operator G rotates by angle 2θ in the {|non-solution>,
+|solution>} subspace, where sin²θ = M / N (N = 2^n). QPE estimates G's eigenphase
+θ/π, from which M is recovered.
 
-示例：在 3 比特（N=8）中统计有多少个状态满足谓词
+Example: count how many states in 3 bits (N=8) satisfy a predicate
 
     from quonic.algorithms import oracle, quantum_counting
 
     @oracle(3)
     def f(x):
-        return x & 1 == 0            # 偶数：共 4 个解
+        return x & 1 == 0            # even numbers: 4 solutions in total
 
     result = quantum_counting(f, 3)
-    print(result.value)              # 接近 4
+    print(result.value)              # close to 4
 """
 
-import math
+from __future__ import annotations
 
+import math
+from typing import Any, List, Optional, Sequence
+
+from .._i18n import tr
 from ..backends import get_backend
 from ..ir import Circuit, GateOperation
 from ..result import Result
 from .qpe import _add_iqft
 
 
-def _marked_states(oracle, n_qubits):
+def _marked_states(oracle: Any, n_qubits: int) -> List[int]:
     if isinstance(oracle, str):
         if len(oracle) != n_qubits:
-            raise ValueError(
-                f"标记比特串 '{oracle}' 长度 {len(oracle)} 与量子比特数 {n_qubits} 不一致"
-            )
+            raise ValueError(tr("err.oracle_len", oracle=oracle, n=len(oracle), n_qubits=n_qubits))
         return [int(oracle, 2)]
-    if hasattr(oracle, "marked"):  # @oracle 装饰器产物
+    if hasattr(oracle, "marked"):  # output of the @oracle decorator
         if oracle.n_qubits != n_qubits:
-            raise ValueError(
-                f"神谕的量子比特数 {oracle.n_qubits} 与 n_qubits={n_qubits} 不一致"
-            )
+            raise ValueError(tr("err.oracle_n_qubits", n=oracle.n_qubits, n_qubits=n_qubits))
         return list(oracle.marked)
-    if callable(oracle):  # 裸谓词 f(x) -> bool
+    if callable(oracle):  # bare predicate f(x) -> bool
         states = [x for x in range(2 ** n_qubits) if oracle(x)]
         if not states:
-            raise ValueError("神谕没有标记任何状态，无法计数")
+            raise ValueError(tr("err.oracle_empty"))
         return states
-    raise TypeError("oracle 必须是标记比特串、@oracle 装饰器产物或谓词函数")
+    raise TypeError(tr("err.oracle_type"))
 
 
-def _add_controlled_oracle(circuit, control, search, marked):
+def _add_controlled_oracle(
+    circuit: Circuit, control: int, search: Sequence[int], marked: Sequence[int]
+) -> None:
     n = len(search)
     for x in marked:
         bits = format(x, f"0{n}b")
         for q in range(n):
             if bits[n - 1 - q] == "0":
                 circuit.add(GateOperation("x", (search[q],)))
-        circuit.add(GateOperation("mcz", tuple([control] + search)))
+        circuit.add(GateOperation("mcz", tuple([control] + list(search))))
         for q in range(n):
             if bits[n - 1 - q] == "0":
                 circuit.add(GateOperation("x", (search[q],)))
 
 
-def _add_controlled_diffusion(circuit, control, search):
+def _add_controlled_diffusion(
+    circuit: Circuit, control: int, search: Sequence[int]
+) -> None:
     for q in search:
         circuit.add(GateOperation("h", (q,)))
     for q in search:
         circuit.add(GateOperation("x", (q,)))
-    circuit.add(GateOperation("mcz", tuple([control] + search)))
+    circuit.add(GateOperation("mcz", tuple([control] + list(search))))
     for q in search:
         circuit.add(GateOperation("x", (q,)))
     for q in search:
         circuit.add(GateOperation("h", (q,)))
 
 
-def _add_controlled_grover(circuit, control, search, marked):
+def _add_controlled_grover(
+    circuit: Circuit, control: int, search: Sequence[int], marked: Sequence[int]
+) -> None:
     _add_controlled_oracle(circuit, control, search, marked)
     _add_controlled_diffusion(circuit, control, search)
 
 
-def quantum_counting(oracle, n_qubits, t=None, backend="auto", shots=1024):
-    """估计满足神谕的解的个数 M。
+def quantum_counting(
+    oracle: Any,
+    n_qubits: int,
+    t: Optional[int] = None,
+    backend: str = "auto",
+    shots: int = 1024,
+) -> Result:
+    """Estimate the number M of solutions satisfying the oracle.
 
-    参数：
-        oracle: 标记比特串、@oracle 装饰器产物或谓词 f(x)->bool。
-        n_qubits: 搜索空间量子比特数（N = 2**n_qubits）。
-        t: 计数量子比特数，默认 n_qubits + 1（越大估计越精确）。
-        backend / shots: 采样参数。
+    Args:
+        oracle: A marking bitstring, the output of the @oracle decorator, or a
+            predicate f(x)->bool.
+        n_qubits: Number of search-space qubits (N = 2**n_qubits).
+        t: Number of counting qubits, default n_qubits + 1 (larger gives a more
+            accurate estimate).
+        backend / shots: Sampling parameters.
 
-    返回：Result（kind="value"），result.value 为 M 的估计值。
+    Returns: Result (kind="value"); result.value is the estimate of M.
     """
     marked = _marked_states(oracle, n_qubits)
     if t is None:
@@ -104,6 +120,6 @@ def quantum_counting(oracle, n_qubits, t=None, backend="auto", shots=1024):
 
     result = get_backend(backend).run(circuit, shots=shots)
     best = max(result.counts, key=result.counts.get)
-    j = int(best[-t:], 2)  # 最右侧 t 位是计数比特
+    j = int(best[-t:], 2)  # the rightmost t bits are the counting qubits
     m = 2 ** n_qubits * math.sin(math.pi * abs(j / 2 ** t - 0.5)) ** 2
     return Result.from_value(m, j=j, t=t, counts=result.counts)

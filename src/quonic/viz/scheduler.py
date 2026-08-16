@@ -1,28 +1,40 @@
-"""调度器相关可视化：方法对比、决策树、选择热力图、降级链、特征雷达图。"""
+"""Scheduler visualization: method comparison, decision tree, selection heatmap, fallback chain, feature radar chart."""
 
+from __future__ import annotations
 
+from typing import Any, Dict, List, Optional, Tuple, Union
+
+from .._i18n import tr
 from ..ir import Circuit
 from ..scheduler import circuit_features, load_measured_decision, recommend_method
 from ..scheduler.registry import load_performance
 from ._mpl import _plt, finalize
 
 # ---------------------------------------------------------------------------
-# 4. 方法对比折线图
+# 4. Method comparison line plot
 # ---------------------------------------------------------------------------
 
-def plot_method_comparison(cls="clifford", ax=None, show=False, save=None, title=None):
-    """画各模拟方法随量子比特数增长的耗时折线（对数 y 轴）。
+def plot_method_comparison(
+    cls: str = "clifford",
+    ax: Any = None,
+    show: bool = False,
+    save: Optional[str] = None,
+    title: Optional[str] = None,
+) -> Any:
+    """Draw the elapsed-time line for each simulation method vs. growing qubit
+    count (log y-axis).
 
-    参数：
-        cls: 决策类别 "clifford" 或 "low_tw"（对应基准里的电路族）。
-        ax / show / save / title: 同 plot_circuit。
+    Parameters:
+        cls: decision class "clifford" or "low_tw" (the circuit family in the
+            benchmark).
+        ax / show / save / title: same as plot_circuit.
 
-    返回：matplotlib Axes。
+    Returns: matplotlib Axes.
     """
     plt = _plt()
     perf = [p for p in load_performance() if p.get("class") == cls]
     if not perf:
-        raise ValueError(f"没有 '{cls}' 类别的实测数据，请先运行基准校准")
+        raise ValueError(tr("err.viz_no_perf", cls=cls))
 
     ns = sorted({p["n"] for p in perf})
     methods = sorted({m for p in perf for m in p["timings"]})
@@ -41,33 +53,37 @@ def plot_method_comparison(cls="clifford", ax=None, show=False, save=None, title
                 ys.append(row["timings"][method])
         ax.plot(xs, ys, marker="o", label=method)
 
-    ax.set_xlabel("量子比特数 n")
-    ax.set_ylabel("耗时 (s)")
+    ax.set_xlabel("Number of qubits n")
+    ax.set_ylabel("Time (s)")
     ax.set_yscale("log")
     ax.legend()
-    ax.set_title(f"决策类别：{cls}")
+    ax.set_title(f"Decision class: {cls}")
     return finalize(fig, ax, show, save, title)
 
 
 # ---------------------------------------------------------------------------
-# 5. 调度决策树
+# 5. Scheduling decision tree
 # ---------------------------------------------------------------------------
 
 class _Node:
     __slots__ = ("label", "children", "x", "y")
 
-    def __init__(self, label, children=None):
-        self.label = label
-        self.children = children or []  # list[(edge_label, _Node)]
-        self.x = 0.0
-        self.y = 0.0
+    def __init__(
+        self, label: str, children: Optional[List[Tuple[str, _Node]]] = None
+    ) -> None:
+        self.label: str = label
+        self.children: List[Tuple[str, _Node]] = children or []
+        self.x: float = 0.0
+        self.y: float = 0.0
 
 
-_LAYER_SPACING = 1.6  # 相邻层之间的 y 间距（自上而下）
-_LEAF_SPACING = 2.0   # 相邻叶子之间的 x 间距
+_LAYER_SPACING = 1.6  # y spacing between adjacent layers (top to bottom)
+_LEAF_SPACING = 2.0   # x spacing between adjacent leaves
 
 
-def _assign(node, depth, next_leaf, max_depth):
+def _assign(
+    node: _Node, depth: int, next_leaf: List[int], max_depth: List[int]
+) -> None:
     node.y = depth * _LAYER_SPACING
     max_depth[0] = max(max_depth[0], depth)
     if not node.children:
@@ -79,25 +95,25 @@ def _assign(node, depth, next_leaf, max_depth):
     node.x = sum(c.x for _, c in node.children) / len(node.children)
 
 
-def _build_decision_tree():
+def _build_decision_tree() -> _Node:
     decision = load_measured_decision() or {}
     cliff_n = decision.get("clifford", {}).get("above_n", 24)
     lowtw_n = decision.get("low_tw", {}).get("above_n", 24)
 
-    root = _Node("电路")
+    root = _Node("Circuit")
     noise_yes = _Node("DM", [])
-    classify = _Node("决策类别")
+    classify = _Node("Decision class")
 
     general = _Node("SV", [])
     cliff = _Node(f"n ≥ {cliff_n}?")
     cliff.children = [
-        ("是", _Node("Stab", [])),
-        ("否", _Node("SV", [])),
+        ("Yes", _Node("Stab", [])),
+        ("No", _Node("SV", [])),
     ]
     lowtw = _Node(f"n ≥ {lowtw_n}?")
     lowtw.children = [
-        ("是", _Node("MPS", [])),
-        ("否", _Node("SV", [])),
+        ("Yes", _Node("MPS", [])),
+        ("No", _Node("SV", [])),
     ]
 
     classify.children = [
@@ -105,17 +121,23 @@ def _build_decision_tree():
         ("clifford", cliff),
         ("low_tw", lowtw),
     ]
-    root.children = [("有噪声", noise_yes), ("无噪声", classify)]
+    root.children = [("Has noise", noise_yes), ("No noise", classify)]
     return root
 
 
-def plot_decision_tree(ax=None, show=False, save=None, title=None):
-    """画调度决策树：噪声 → density_matrix，其余按类别与交叉点选方法。
+def plot_decision_tree(
+    ax: Any = None,
+    show: bool = False,
+    save: Optional[str] = None,
+    title: Optional[str] = None,
+) -> Any:
+    """Draw the scheduling decision tree: noise → density_matrix, others choose
+    the method by class and crossover point.
 
-    参数：
-        ax / show / save / title: 同 plot_circuit。
+    Parameters:
+        ax / show / save / title: same as plot_circuit.
 
-    返回：matplotlib Axes。
+    Returns: matplotlib Axes.
     """
     from matplotlib.patches import FancyArrowPatch, Rectangle
 
@@ -137,8 +159,8 @@ def plot_decision_tree(ax=None, show=False, save=None, title=None):
     else:
         fig = ax.figure
 
-    def draw(node):
-        # 先画子边，再画自身，保证节点盖在边上
+    def draw(node: _Node) -> None:
+        # Draw child edges first, then the node itself, so nodes sit on top of edges
         for edge_label, child in node.children:
             ax.add_patch(
                 FancyArrowPatch(
@@ -186,7 +208,7 @@ def plot_decision_tree(ax=None, show=False, save=None, title=None):
 
 
 # ---------------------------------------------------------------------------
-# 6. 方法选择热力图
+# 6. Method selection heatmap
 # ---------------------------------------------------------------------------
 
 _METHODS = ["statevector", "stabilizer", "matrix_product_state", "density_matrix"]
@@ -204,26 +226,32 @@ _METHOD_ABBREV = {
 }
 
 
-def _method_legend():
+def _method_legend() -> str:
     return "   ".join(f"{abbr} = {name}" for name, abbr in _METHOD_ABBREV.items())
 
 
-def _features_for_class(cls, n):
+def _features_for_class(cls: str, n: int) -> Dict[str, Any]:
     if cls == "clifford":
         return {"n": n, "gate_types": ["cx", "h"], "treewidth_ub": 1}
     if cls == "low_tw":
         return {"n": n, "gate_types": ["cx", "rz"], "treewidth_ub": 1}
-    # general：高树宽非 Clifford
+    # general: high treewidth, non-Clifford
     return {"n": n, "gate_types": ["mcz"], "treewidth_ub": n - 1}
 
 
-def plot_method_heatmap(ax=None, show=False, save=None, title=None):
-    """画「决策类别 × 比特数 → 调度器所选方法」的热力图。
+def plot_method_heatmap(
+    ax: Any = None,
+    show: bool = False,
+    save: Optional[str] = None,
+    title: Optional[str] = None,
+) -> Any:
+    """Draw the "decision class × qubit count → method chosen by the scheduler"
+    heatmap.
 
-    参数：
-        ax / show / save / title: 同 plot_circuit。
+    Parameters:
+        ax / show / save / title: same as plot_circuit.
 
-    返回：matplotlib Axes。
+    Returns: matplotlib Axes.
     """
     plt = _plt()
     rows = ["clifford", "low_tw", "general", "noisy"]
@@ -256,24 +284,30 @@ def plot_method_heatmap(ax=None, show=False, save=None, title=None):
     ax.set_xticklabels(ns)
     ax.set_yticks(range(len(rows)))
     ax.set_yticklabels(rows)
-    ax.set_xlabel("量子比特数 n")
-    ax.set_ylabel("决策类别")
+    ax.set_xlabel("Number of qubits n")
+    ax.set_ylabel("Decision class")
     fig.subplots_adjust(bottom=0.18)
     fig.text(0.5, 0.02, _method_legend(), ha="center", va="bottom", fontsize=8, color="0.4")
     return finalize(fig, ax, show, save, title)
 
 
 # ---------------------------------------------------------------------------
-# 7. 降级链路径图
+# 7. Fallback chain path diagram
 # ---------------------------------------------------------------------------
 
-def plot_fallback_chain(ax=None, show=False, save=None, title=None):
-    """画后端降级链：qiskit → cirq → pennylane → native（自研兜底）。
+def plot_fallback_chain(
+    ax: Any = None,
+    show: bool = False,
+    save: Optional[str] = None,
+    title: Optional[str] = None,
+) -> Any:
+    """Draw the backend fallback chain: qiskit → cirq → pennylane → native
+    (in-house fallback).
 
-    参数：
-        ax / show / save / title: 同 plot_circuit。
+    Parameters:
+        ax / show / save / title: same as plot_circuit.
 
-    返回：matplotlib Axes。
+    Returns: matplotlib Axes.
     """
     from matplotlib.patches import FancyArrowPatch, Rectangle
 
@@ -281,8 +315,8 @@ def plot_fallback_chain(ax=None, show=False, save=None, title=None):
     chain = [
         ("qiskit", "Aer"),
         ("cirq", "Google"),
-        ("pennylane", "量子机器学习"),
-        ("native", "自研引擎兜底"),
+        ("pennylane", "Quantum ML"),
+        ("native", "In-house engine fallback"),
     ]
     n = len(chain)
 
@@ -303,7 +337,7 @@ def plot_fallback_chain(ax=None, show=False, save=None, title=None):
                 FancyArrowPatch((i + 0.42, 0), (i + 0.58, 0), arrowstyle="-|>",
                                 mutation_scale=14, color="0.4", lw=1.2)
             )
-            ax.text(i + 0.5, 0.16, "未安装\n/ 不支持", ha="center", va="bottom",
+            ax.text(i + 0.5, 0.16, "Not installed\n/ unsupported", ha="center", va="bottom",
                     fontsize=6.5, color="0.4")
 
     ax.set_xlim(-0.7, n - 0.3)
@@ -313,17 +347,23 @@ def plot_fallback_chain(ax=None, show=False, save=None, title=None):
 
 
 # ---------------------------------------------------------------------------
-# 9. 电路特征雷达图
+# 9. Circuit feature radar chart
 # ---------------------------------------------------------------------------
 
-def plot_feature_radar(circuit_or_features, ax=None, show=False, save=None, title=None):
-    """画单个电路的多维特征雷达图（极坐标）。
+def plot_feature_radar(
+    circuit_or_features: Union[Circuit, Dict[str, Any]],
+    ax: Any = None,
+    show: bool = False,
+    save: Optional[str] = None,
+    title: Optional[str] = None,
+) -> Any:
+    """Draw a multi-dimensional feature radar chart (polar) of a single circuit.
 
-    参数：
-        circuit_or_features: Circuit 或 circuit_features(circuit) 的 dict。
-        ax / show / save / title: 同 plot_circuit。
+    Parameters:
+        circuit_or_features: a Circuit or the dict from circuit_features(circuit).
+        ax / show / save / title: same as plot_circuit.
 
-    返回：matplotlib Axes。
+    Returns: matplotlib Axes.
     """
     import numpy as np
 
@@ -334,7 +374,7 @@ def plot_feature_radar(circuit_or_features, ax=None, show=False, save=None, titl
         feats = circuit_or_features
 
     dims = ["n", "depth", "gate_count", "treewidth_ub", "clifford"]
-    labels = ["比特数", "深度", "门数", "树宽", "Clifford"]
+    labels = ["Qubits", "Depth", "Gates", "Treewidth", "Clifford"]
     raw = [
         feats.get("n", 0) / 30.0,
         feats.get("depth", 0) / 100.0,

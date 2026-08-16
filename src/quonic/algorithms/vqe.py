@@ -1,23 +1,28 @@
-"""VQE（变分量子本征求解器）模板。
+"""VQE (Variational Quantum Eigensolver) template.
 
-给定一个用泡利项表示的哈密顿量，用硬件高效拟设（hardware-efficient
-ansatz）变分求解其基态能量。
+Given a Hamiltonian expressed as Pauli terms, variationally solve for its ground
+state energy using a hardware-efficient ansatz.
 
-示例：横向场 Ising 模型 H = Z⊗Z + X⊗I + I⊗X（2 量子比特）
+Example: the transverse-field Ising model H = Z⊗Z + X⊗I + I⊗X (2 qubits)
 
     from quonic.algorithms import vqe
 
     hamiltonian = [(1.0, "ZZ"), (1.0, "XI"), (1.0, "IX")]
     result = vqe(hamiltonian, 2)
-    print(result["energy"])   # 接近精确基态能量
+    print(result["energy"])   # close to the exact ground state energy
 """
 
+from __future__ import annotations
+
+from typing import Any, Callable, List, Optional, Sequence, Tuple
+
+from .._i18n import tr
 from ..result import Result
 from ..simulator import StatevectorSimulator
 
 
-def _ansatz_state(n, params):
-    # 硬件高效拟设：Ry 层 -> CX 链 -> Ry 层，共 2n 个参数
+def _ansatz_state(n: int, params: Sequence[float]) -> StatevectorSimulator:
+    # Hardware-efficient ansatz: Ry layer -> CX chain -> Ry layer, 2n parameters in total
     sim = StatevectorSimulator(n)
     for q in range(n):
         sim.apply("ry", (q,), (params[q],))
@@ -28,42 +33,46 @@ def _ansatz_state(n, params):
     return sim
 
 
-def vqe(hamiltonian, n_qubits, init_params=None, optimizer="COBYLA", maxiter=300,
-        record_history=False):
-    """变分求解哈密顿量的基态能量。
+def vqe(
+    hamiltonian: List[Tuple[float, str]],
+    n_qubits: int,
+    init_params: Optional[Sequence[float]] = None,
+    optimizer: str = "COBYLA",
+    maxiter: int = 300,
+    record_history: bool = False,
+) -> Result:
+    """Variationally solve for the ground state energy of a Hamiltonian.
 
-    参数：
-        hamiltonian: 列表 [(系数, 泡利串), ...]，泡利串长度 = n_qubits。
-        n_qubits: 量子比特数。
-        init_params: 初始参数（长度 2 * n_qubits），默认全零。
-        optimizer: scipy.optimize.minimize 的方法名。
-        maxiter: 最大迭代次数。
-        record_history: 为 True 时把每步能量记录进 metadata["history"]，
-            供 plot_energy_convergence 画收敛曲线（默认关闭，避免额外模拟开销）。
+    Args:
+        hamiltonian: List [(coefficient, Pauli string), ...]; each Pauli string
+            has length = n_qubits.
+        n_qubits: Number of qubits.
+        init_params: Initial parameters (length 2 * n_qubits), all zeros by default.
+        optimizer: Method name for scipy.optimize.minimize.
+        maxiter: Maximum number of iterations.
+        record_history: When True, record the energy of each step into
+            metadata["history"] for plot_energy_convergence to plot the
+            convergence curve (off by default to avoid extra simulation overhead).
 
-    返回：Result（kind="value"），result.value 为最优能量，
-    result.metadata["params"] 为最优参数。
+    Returns: Result (kind="value"); result.value is the optimal energy and
+    result.metadata["params"] is the optimal parameters.
     """
     try:
         from scipy.optimize import minimize
     except ImportError as e:
-        raise ImportError(
-            "使用 VQE 需要安装 scipy：\n"
-            "    pip install 'quonic[algorithms]'\n"
-            "或： pip install scipy"
-        ) from e
+        raise ImportError(tr("err.vqe_scipy")) from e
 
     if init_params is None:
         init_params = [0.0] * (2 * n_qubits)
 
-    def energy(params):
+    def energy(params: Sequence[float]) -> float:
         sim = _ansatz_state(n_qubits, params)
         return sum(coeff * sim.expectation(pauli) for coeff, pauli in hamiltonian)
 
-    history = []
-    callback = None
+    history: List[float] = []
+    callback: Optional[Callable[[Any], None]] = None
     if record_history:
-        def callback(xk):
+        def callback(xk: Any) -> None:
             history.append(float(energy(xk)))
 
     result = minimize(

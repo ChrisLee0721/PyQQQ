@@ -1,15 +1,19 @@
-"""电路相关可视化：门序列图、耦合拓扑图、活跃度热力图、态向量图。"""
+"""Circuit visualization: gate-sequence diagram, coupling topology, activity heatmap, statevector plot."""
+
+from __future__ import annotations
 
 import math
+from typing import Any, Dict, Optional, Tuple
 
-from ..ir import Circuit
+from ..ir import Circuit, GateOperation
+from ..topology import CouplingMap
 from ._mpl import _plt, finalize
 
 # ---------------------------------------------------------------------------
-# 1. 门序列电路图
+# 1. Gate-sequence circuit diagram
 # ---------------------------------------------------------------------------
 
-def _gate_label(op):
+def _gate_label(op: GateOperation) -> str:
     if op.name == "measure":
         return "M"
     if op.params:
@@ -18,7 +22,7 @@ def _gate_label(op):
     return op.name
 
 
-def _draw_box(ax, x, y, label):
+def _draw_box(ax: Any, x: float, y: float, label: str) -> None:
     from matplotlib.patches import Rectangle
 
     ax.add_patch(
@@ -34,8 +38,8 @@ def _draw_box(ax, x, y, label):
     ax.text(x, y, label, ha="center", va="center", fontsize=8, zorder=4)
 
 
-def _draw_target(ax, x, y):
-    """⊕ 目标符号（X 基目标端）。"""
+def _draw_target(ax: Any, x: float, y: float) -> None:
+    """⊕ target symbol (X-basis target)."""
     from matplotlib.patches import Circle
 
     ax.add_patch(
@@ -45,15 +49,22 @@ def _draw_target(ax, x, y):
     ax.plot([x, x], [y - 0.16, y + 0.16], color="black", lw=1.4, zorder=4)
 
 
-def plot_circuit(circuit, ax=None, show=False, save=None, title=None):
-    """画门序列电路图：每行一个量子比特，门按时间从左到右排布。
+def plot_circuit(
+    circuit: Circuit,
+    ax: Any = None,
+    show: bool = False,
+    save: Optional[str] = None,
+    title: Optional[str] = None,
+) -> Any:
+    """Draw the gate-sequence circuit diagram: one qubit per row, gates laid out
+    left-to-right in time order.
 
-    参数：
-        circuit: Circuit 对象。
-        ax: 可选的 matplotlib Axes；不传则新建。
-        show / save / title: 是否显示、保存路径、标题。
+    Parameters:
+        circuit: A Circuit object.
+        ax: Optional matplotlib Axes; a new one is created when omitted.
+        show / save / title: whether to display, the save path, and the title.
 
-    返回：matplotlib Axes。
+    Returns: matplotlib Axes.
     """
     plt = _plt()
     n = circuit.num_qubits
@@ -92,18 +103,18 @@ def plot_circuit(circuit, ax=None, show=False, save=None, title=None):
     ax.set_yticks(range(n))
     ax.set_yticklabels([f"q{q}" for q in range(n)])
     ax.set_xticks([])
-    ax.set_ylabel("量子比特")
+    ax.set_ylabel("Qubit")
     for s in ("top", "right", "bottom"):
         ax.spines[s].set_visible(False)
     return finalize(fig, ax, show, save, title)
 
 
 # ---------------------------------------------------------------------------
-# 3. 耦合拓扑图
+# 3. Coupling topology diagram
 # ---------------------------------------------------------------------------
 
-def _layout_positions(coupling_map):
-    """线型拓扑走直线布局，其余走环形布局（无 networkx 依赖）。"""
+def _layout_positions(coupling_map: CouplingMap) -> Dict[int, Tuple[float, float]]:
+    """Linear topology uses a straight-line layout; the rest use a circular layout (no networkx dependency)."""
     n = coupling_map.n
     if coupling_map.edges() == [(i, i + 1) for i in range(n - 1)]:
         return {q: (q, 0.0) for q in range(n)}
@@ -114,14 +125,21 @@ def _layout_positions(coupling_map):
     return pos
 
 
-def plot_coupling_map(coupling_map, ax=None, show=False, save=None, title=None):
-    """画耦合拓扑图：节点是量子比特，边是允许的两比特门连接。
+def plot_coupling_map(
+    coupling_map: CouplingMap,
+    ax: Any = None,
+    show: bool = False,
+    save: Optional[str] = None,
+    title: Optional[str] = None,
+) -> Any:
+    """Draw the coupling topology: nodes are qubits, edges are allowed two-qubit
+    gate connections.
 
-    参数：
-        coupling_map: CouplingMap 对象。
-        ax / show / save / title: 同 plot_circuit。
+    Parameters:
+        coupling_map: A CouplingMap object.
+        ax / show / save / title: same as plot_circuit.
 
-    返回：matplotlib Axes。
+    Returns: matplotlib Axes.
     """
     from matplotlib.patches import Circle
 
@@ -157,17 +175,24 @@ def plot_coupling_map(coupling_map, ax=None, show=False, save=None, title=None):
 
 
 # ---------------------------------------------------------------------------
-# 8. 量子比特活跃度热力图
+# 8. Qubit activity heatmap
 # ---------------------------------------------------------------------------
 
-def plot_qubit_activity(circuit, ax=None, show=False, save=None, title=None):
-    """画量子比特活跃度热力图：行 = 量子比特，列 = 门序列，着色表示被触及。
+def plot_qubit_activity(
+    circuit: Circuit,
+    ax: Any = None,
+    show: bool = False,
+    save: Optional[str] = None,
+    title: Optional[str] = None,
+) -> Any:
+    """Draw the qubit activity heatmap: rows = qubits, columns = gate sequence,
+    colored to indicate which qubits are touched.
 
-    参数：
-        circuit: Circuit 对象。
-        ax / show / save / title: 同 plot_circuit。
+    Parameters:
+        circuit: A Circuit object.
+        ax / show / save / title: same as plot_circuit.
 
-    返回：matplotlib Axes。
+    Returns: matplotlib Axes.
     """
     import numpy as np
 
@@ -187,17 +212,17 @@ def plot_qubit_activity(circuit, ax=None, show=False, save=None, title=None):
     im = ax.imshow(grid, aspect="auto", cmap="Blues", interpolation="nearest", vmin=0, vmax=1)
     ax.set_yticks(range(n))
     ax.set_yticklabels([f"q{q}" for q in range(n)])
-    ax.set_xlabel("门序列（时间）")
-    ax.set_ylabel("量子比特")
-    fig.colorbar(im, ax=ax, label="活跃")
+    ax.set_xlabel("Gate sequence (time)")
+    ax.set_ylabel("Qubit")
+    fig.colorbar(im, ax=ax, label="Active")
     return finalize(fig, ax, show, save, title)
 
 
 # ---------------------------------------------------------------------------
-# 12. 态向量可视化
+# 12. Statevector visualization
 # ---------------------------------------------------------------------------
 
-def _to_statevector(state):
+def _to_statevector(state: Any) -> Any:
     import numpy as np
 
     from ..simulators import StatevectorEngine
@@ -212,18 +237,27 @@ def _to_statevector(state):
     return np.asarray(state)
 
 
-def plot_statevector(state, ax=None, show=False, save=None, title=None, top_k=32):
-    """画态向量的复振幅：上图幅值、下图相位（按基态索引）。
+def plot_statevector(
+    state: Any,
+    ax: Any = None,
+    show: bool = False,
+    save: Optional[str] = None,
+    title: Optional[str] = None,
+    top_k: Optional[int] = 32,
+) -> Any:
+    """Draw the complex amplitudes of a statevector: magnitudes on top, phases
+    below (indexed by basis state).
 
-    参数：
-        state: numpy 复数数组 / StatevectorEngine / Circuit。
-        ax: None（新建双子图）或长度为 2 的 Axes 序列。
-        show / save / title: 同 plot_circuit。
-        top_k: 只显示振幅最大的前 top_k 个基态（按基态索引排序）；None 表示
-            全部显示。大规模态向量（如 10+ 比特）默认只画前 32 个，避免
-            1024+ 根柱状图挤爆。
+    Parameters:
+        state: a numpy complex array / StatevectorEngine / Circuit.
+        ax: None (creates a two-panel figure) or a length-2 sequence of Axes.
+        show / save / title: same as plot_circuit.
+        top_k: show only the top_k basis states with the largest amplitude
+            (sorted by basis-state index); None means show all. For large
+            statevectors (e.g. 10+ qubits) only the first 32 are shown by
+            default, to avoid a cluttered histogram with 1024+ bars.
 
-    返回：长度为 2 的 Axes 序列 [ax_amp, ax_phase]。
+    Returns: a length-2 sequence of Axes [ax_amp, ax_phase].
     """
     import numpy as np
 
@@ -254,15 +288,15 @@ def plot_statevector(state, ax=None, show=False, save=None, title=None, top_k=32
         fig = axes[0].figure
 
     axes[0].bar(range(k), amps, color="#4C72B0")
-    axes[0].set_ylabel("|振幅|")
+    axes[0].set_ylabel("|Amplitude|")
     axes[1].bar(range(k), phases, color="#DD8452")
-    axes[1].set_ylabel("相位 (rad)")
+    axes[1].set_ylabel("Phase (rad)")
     axes[1].set_xticks(range(k))
     axes[1].set_xticklabels(labels, rotation=90, fontsize=7)
     if title is not None:
         axes[0].set_title(title)
     elif truncated:
-        axes[0].set_title(f"态向量（振幅最大的前 {top_k} 个基态，共 {size} 个）")
+        axes[0].set_title(f"Statevector (top {top_k} basis states by amplitude, {size} total)")
     if save:
         fig.savefig(save, bbox_inches="tight", dpi=120)
     if show:

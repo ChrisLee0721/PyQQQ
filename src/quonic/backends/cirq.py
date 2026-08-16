@@ -1,8 +1,13 @@
-"""Cirq 后端适配器。"""
+"""Cirq backend adapter."""
+
+from __future__ import annotations
 
 import math
+from typing import Any, List, Optional, Union
 
-from ..noise import resolve_noise
+from .._i18n import tr
+from ..ir import Circuit, GateOperation
+from ..noise import NoiseModel, resolve_noise
 from ..result import Result
 from .base import Backend
 
@@ -11,15 +16,17 @@ class CirqBackend(Backend):
     name = "cirq"
     methods = frozenset({"statevector"})
 
-    def run(self, circuit, shots=1024, noise=None, method="statevector"):
+    def run(
+        self,
+        circuit: Circuit,
+        shots: int = 1024,
+        noise: Optional[Union[NoiseModel, float, int]] = None,
+        method: str = "statevector",
+    ) -> Result:
         try:
             import cirq
         except ImportError as e:
-            raise ImportError(
-                "使用 cirq 后端需要安装 cirq：\n"
-                "    pip install 'quonic[cirq]'\n"
-                "或： pip install cirq"
-            ) from e
+            raise ImportError(tr("err.cirq_missing")) from e
 
         nm = resolve_noise(noise)
         n = circuit.num_qubits
@@ -52,7 +59,7 @@ class CirqBackend(Backend):
         return Result.from_counts(counts, shots)
 
     @staticmethod
-    def _to_ops(cirq, op, qubits):
+    def _to_ops(cirq: Any, op: GateOperation, qubits: List[Any]) -> List[Any]:
         name, q = op.name, op.qubits
         if name == "i":
             return [cirq.I(qubits[q[0]])]
@@ -95,8 +102,5 @@ class CirqBackend(Backend):
         if name == "measure":
             return [cirq.measure(qubits[q[0]], key=f"m{q[0]}")]
         if name in ("cif", "cmeasure", "cwhile"):
-            raise NotImplementedError(
-                "cirq 后端暂不支持经典控制流（cif/cmeasure/cwhile）；"
-                "请改用 qiskit 或 native 后端"
-            )
-        raise ValueError(f"Cirq 后端暂不支持门 '{name}'")
+            raise NotImplementedError(tr("err.cirq_ctrl"))
+        raise ValueError(tr("err.cirq_gate", name=name))

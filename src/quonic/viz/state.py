@@ -1,25 +1,29 @@
-"""量子态可视化：布洛赫球、密度矩阵热力图、纠缠谱、逐门态演化。"""
+"""Quantum state visualization: Bloch sphere, density-matrix heatmap, entanglement spectrum, per-gate state evolution."""
+
+from __future__ import annotations
 
 import math
+from typing import Any, Optional, Sequence, Tuple
 
+from .._i18n import tr
 from ..ir import Circuit
 from ._mpl import _plt, finalize
 from .circuit import _to_statevector
 
 
-def _bloch_vector(state):
-    """把单比特态（或布洛赫向量三元组）转成 (x, y, z)。"""
+def _bloch_vector(state: Any) -> Tuple[float, float, float]:
+    """Convert a single-qubit state (or a Bloch-vector triple) into (x, y, z)."""
     import numpy as np
 
     if isinstance(state, (list, tuple)) and len(state) == 3:
         x, y, z = (float(v) for v in state)
         if x * x + y * y + z * z > 1.0 + 1e-9:
-            raise ValueError("布洛赫向量模长需 ≤ 1")
+            raise ValueError(tr("err.viz_bloch_norm"))
         return x, y, z
 
     sv = np.asarray(_to_statevector(state), dtype=complex)
     if sv.size != 2:
-        raise ValueError("布洛赫球只接受单比特态（2 个复振幅）或 3 维布洛赫向量")
+        raise ValueError(tr("err.viz_bloch_single"))
     sv = sv / np.linalg.norm(sv)
     a, b = sv[0], sv[1]
     x = 2 * (a.conjugate() * b).real
@@ -28,8 +32,8 @@ def _bloch_vector(state):
     return float(x), float(y), float(z)
 
 
-def _rho_bloch_vector(rho):
-    """从 2×2 密度矩阵求布洛赫向量（混合态也适用）。"""
+def _rho_bloch_vector(rho: Any) -> Tuple[float, float, float]:
+    """Compute the Bloch vector from a 2×2 density matrix (also works for mixed states)."""
     import numpy as np
 
     rho = np.asarray(rho, dtype=complex)
@@ -39,8 +43,10 @@ def _rho_bloch_vector(rho):
     return float(x), float(y), float(z)
 
 
-def _draw_bloch_sphere(ax, x, y, z, label=None):
-    """在给定 3D Axes 上画一个布洛赫球（球线框 + 坐标轴 + 态向量箭头）。"""
+def _draw_bloch_sphere(
+    ax: Any, x: float, y: float, z: float, label: Optional[str] = None
+) -> None:
+    """Draw a Bloch sphere on the given 3D Axes (sphere wireframe + coordinate axes + statevector arrow)."""
     import numpy as np
 
     u = np.linspace(0, 2 * np.pi, 48)
@@ -56,11 +62,11 @@ def _draw_bloch_sphere(ax, x, y, z, label=None):
     ax.text(0, 0, -1.18, "|1>", fontsize=9, color="0.3")
 
     r = math.sqrt(x * x + y * y + z * z)
-    color = "#4C72B0" if r > 0.99 else "#C44E52"  # 纯态蓝 / 混合态橙红
+    color = "#4C72B0" if r > 0.99 else "#C44E52"  # pure state blue / mixed state orange-red
     ax.plot([0, x], [0, y], [0, z], color=color, lw=3)
     ax.scatter([x], [y], [z], color=color, s=80, zorder=5,
                edgecolor="white", linewidth=0.5)
-    ax.scatter([0], [0], [0], color="0.4", s=12, zorder=4)  # 球心参考点
+    ax.scatter([0], [0], [0], color="0.4", s=12, zorder=4)  # sphere-center reference point
     if label is not None:
         ax.text2D(0.03, 0.97, label, transform=ax.transAxes, fontsize=10,
                   color="0.2", va="top", ha="left")
@@ -74,15 +80,24 @@ def _draw_bloch_sphere(ax, x, y, z, label=None):
     ax.set_zticks([])
 
 
-def plot_bloch_sphere(state, ax=None, show=False, save=None, title=None):
-    """画单比特态的布洛赫球（3D，单位球面上的一个点 + 原点指向它的箭头）。
+def plot_bloch_sphere(
+    state: Any,
+    ax: Any = None,
+    show: bool = False,
+    save: Optional[str] = None,
+    title: Optional[str] = None,
+) -> Any:
+    """Draw the Bloch sphere of a single-qubit state (3D, a point on the unit
+    sphere plus an arrow from the origin to it).
 
-    参数：
-        state: 2 复振幅数组 / StatevectorEngine(1) / 单比特 Circuit / 3 维布洛赫向量。
-        ax: 可选，需为 3D projection；不传则新建。
-        show / save / title: 同 plot_circuit。
+    Parameters:
+        state: a 2-element complex amplitude array / StatevectorEngine(1) / a
+            single-qubit Circuit / a 3D Bloch vector.
+        ax: optional, must have a 3D projection; a new one is created when
+            omitted.
+        show / save / title: same as plot_circuit.
 
-    返回：matplotlib Axes（3D）。
+    Returns: matplotlib Axes (3D).
     """
     plt = _plt()
     x, y, z = _bloch_vector(state)
@@ -103,20 +118,31 @@ def plot_bloch_sphere(state, ax=None, show=False, save=None, title=None):
     return ax
 
 
-def plot_bloch_multivector(state, cols=None, annotate=False, show=False, save=None, title=None):
-    """画多比特态每个量子比特的布洛赫球（网格布局）。
+def plot_bloch_multivector(
+    state: Any,
+    cols: Optional[int] = None,
+    annotate: bool = False,
+    show: bool = False,
+    save: Optional[str] = None,
+    title: Optional[str] = None,
+) -> Any:
+    """Draw a Bloch sphere for each qubit of a multi-qubit state (grid layout).
 
-    对每个比特 q 求其约化单比特密度矩阵 ρ_q（对其它比特做部分迹），画成一张
-    布洛赫球网格。纠缠态里各比特会「缩」进球内（混合态），直积态仍在球面。
+    For each qubit q, compute its reduced single-qubit density matrix ρ_q (by
+    tracing out the other qubits) and draw it as a grid of Bloch spheres. In an
+    entangled state each qubit "shrinks" inside the sphere (mixed state), while
+    product states stay on the surface.
 
-    参数：
-        state: n 比特态（1D 态矢量 / 2D 密度矩阵 / StatevectorEngine / Circuit）。
-        cols: 每行球数；None 则取 min(n, 5)。
-        annotate: True 时在每个球下方标注精确布洛赫矢量 (x, y, z)；默认 False
-            保持图清爽（箭头方向 + |r| 标签已编码同等信息）。
-        show / save / title: 同 plot_circuit。
+    Parameters:
+        state: an n-qubit state (1D statevector / 2D density matrix /
+            StatevectorEngine / Circuit).
+        cols: number of spheres per row; None uses min(n, 5).
+        annotate: when True, annotate the exact Bloch vector (x, y, z) under
+            each sphere; default False keeps the figure uncluttered (the arrow
+            direction + |r| label already encode the same information).
+        show / save / title: same as plot_circuit.
 
-    返回：3D Axes 列表（每个量子比特一个）。
+    Returns: a list of 3D Axes (one per qubit).
     """
     import math
 
@@ -151,11 +177,11 @@ def plot_bloch_multivector(state, cols=None, annotate=False, show=False, save=No
 
 
 # ---------------------------------------------------------------------------
-# 密度矩阵热力图
+# Density-matrix heatmap
 # ---------------------------------------------------------------------------
 
-def _to_density(state):
-    """把输入统一成 2^n × 2^n 复密度矩阵（numpy 数组）。"""
+def _to_density(state: Any) -> Any:
+    """Normalize the input into a 2^n × 2^n complex density matrix (numpy array)."""
     import numpy as np
 
     from ..simulators import DensityMatrixEngine, StatevectorEngine
@@ -175,18 +201,25 @@ def _to_density(state):
         return np.outer(arr, arr.conjugate())
     if arr.ndim == 2:
         return arr
-    raise TypeError("无法识别的量子态输入（需 1D 态矢量 / 2D 密度矩阵 / 引擎 / Circuit）")
+    raise TypeError(tr("err.viz_state_input"))
 
 
-def plot_density_matrix(state, ax=None, show=False, save=None, title=None):
-    """画密度矩阵的实部/虚部双面板热力图。
+def plot_density_matrix(
+    state: Any,
+    ax: Any = None,
+    show: bool = False,
+    save: Optional[str] = None,
+    title: Optional[str] = None,
+) -> Any:
+    """Draw a two-panel heatmap of a density matrix (real/imag).
 
-    参数：
-        state: DensityMatrixEngine / StatevectorEngine / Circuit / 复数组。
-        ax: 可选，长度为 2 的 Axes 序列（[实部, 虚部]）；不传则新建双子图。
-        show / save / title: 同 plot_circuit。
+    Parameters:
+        state: DensityMatrixEngine / StatevectorEngine / Circuit / complex array.
+        ax: optional length-2 sequence of Axes ([real, imag]); a new two-panel
+            figure is created when omitted.
+        show / save / title: same as plot_circuit.
 
-    返回：长度为 2 的 Axes 序列 [ax_real, ax_imag]。
+    Returns: a length-2 sequence of Axes [ax_real, ax_imag].
     """
     import numpy as np
 
@@ -225,13 +258,15 @@ def plot_density_matrix(state, ax=None, show=False, save=None, title=None):
 
 
 # ---------------------------------------------------------------------------
-# 纠缠可视化
+# Entanglement visualization
 # ---------------------------------------------------------------------------
 
-def _partial_trace(rho, keep, n):
-    """对 n 比特密度矩阵求子系 A（keep 中的比特）的约化密度矩阵。
+def _partial_trace(rho: Any, keep: Sequence[int], n: int) -> Any:
+    """Compute the reduced density matrix of subsystem A (the qubits in keep)
+    for an n-qubit density matrix.
 
-    被 trace 掉的比特，其行/列指标共享同一 einsum 字母（对角求和 = 部分迹）。
+    Qubits that are traced out share the same einsum letter for their row and
+    column indices (diagonal summation = partial trace).
     """
     import numpy as np
 
@@ -266,8 +301,8 @@ def _partial_trace(rho, keep, n):
     return result.reshape(2 ** k, 2 ** k)
 
 
-def _von_neumann_entropy(eigenvalues):
-    """从约化密度矩阵特征值求冯诺依曼熵（比特）。"""
+def _von_neumann_entropy(eigenvalues: Any) -> float:
+    """Compute the von Neumann entropy (in bits) from the reduced density matrix eigenvalues."""
     import numpy as np
 
     lam = np.clip(np.real(eigenvalues), 0.0, None)
@@ -275,17 +310,18 @@ def _von_neumann_entropy(eigenvalues):
     return float(-np.sum(lam * np.log2(lam)))
 
 
-def _concurrence(rho):
-    """Wootters 并发度，适用于任意 2 比特态（纯或混合）。
+def _concurrence(rho: Any) -> float:
+    """Wootters concurrence, valid for any two-qubit state (pure or mixed).
 
-    纯态退化为 sqrt(2(1 - Tr(ρ_A²)))；混合态（如测量坍缩后的经典关联态）
-    正确返回 0——纯态公式对混合态会误判成非零。
+    For pure states it reduces to sqrt(2(1 - Tr(ρ_A²))); for mixed states (such
+    as classically correlated states after measurement collapse) it correctly
+    returns 0 — the pure-state formula would misjudge mixed states as non-zero.
     """
     import numpy as np
 
     rho = np.asarray(rho, dtype=complex)
     if rho.shape != (4, 4):
-        raise ValueError("并发度只对 2 比特态定义（需 4×4 密度矩阵）")
+        raise ValueError(tr("err.viz_concurrence"))
     sy = np.array([[0.0, -1j], [1j, 0.0]], dtype=complex)
     m = np.kron(sy, sy)  # σ_y ⊗ σ_y
     rho_tilde = m @ rho.conj() @ m
@@ -295,19 +331,30 @@ def _concurrence(rho):
     return float(max(0.0, lam[0] - lam[1] - lam[2] - lam[3]))
 
 
-def plot_entanglement(state, partition=None, ax=None, show=False, save=None, title=None):
-    """画量子态的纠缠谱（约化密度矩阵特征值）+ 冯诺依曼熵。
+def plot_entanglement(
+    state: Any,
+    partition: Optional[Sequence[int]] = None,
+    ax: Any = None,
+    show: bool = False,
+    save: Optional[str] = None,
+    title: Optional[str] = None,
+) -> Any:
+    """Draw the entanglement spectrum (reduced density matrix eigenvalues) plus
+    the von Neumann entropy of a quantum state.
 
-    把态按 partition（子系 A 的比特下标，默认取前一半）切开，对 B 做部分迹得到
-    ρ_A，画出其特征值（施密特系数平方）降序柱状图，并标注纠缠熵。2 比特态额外
-    标注并发度（concurrence，Wootters 公式，对纯态和混合态都成立）。
+    Split the state by partition (the qubit indices of subsystem A; default is
+    the first half), trace out B to obtain ρ_A, plot its eigenvalues (squared
+    Schmidt coefficients) as a descending bar chart, and annotate the
+    entanglement entropy. For two-qubit states also annotate the concurrence
+    (Wootters formula, valid for both pure and mixed states).
 
-    参数：
-        state: 1D 态矢量 / 2D 密度矩阵 / StatevectorEngine / Circuit。
-        partition: 子系 A 的比特下标列表；None 表示前 floor(n/2) 个比特。
-        ax / show / save / title: 同 plot_circuit。
+    Parameters:
+        state: 1D statevector / 2D density matrix / StatevectorEngine / Circuit.
+        partition: list of qubit indices for subsystem A; None means the first
+            floor(n/2) qubits.
+        ax / show / save / title: same as plot_circuit.
 
-    返回：matplotlib Axes。
+    Returns: matplotlib Axes.
     """
     import numpy as np
 
@@ -319,7 +366,7 @@ def plot_entanglement(state, partition=None, ax=None, show=False, save=None, tit
         partition = list(range(n // 2))
     partition = sorted(set(partition))
     if not partition or any(not 0 <= q < n for q in partition):
-        raise ValueError(f"partition 需为 [0, {n}) 的非空比特下标子集，收到 {partition}")
+        raise ValueError(tr("err.viz_partition", n=n, partition=partition))
 
     rho_a = _partial_trace(rho, partition, n)
     eigvals = np.linalg.eigvalsh(rho_a)
@@ -334,15 +381,15 @@ def plot_entanglement(state, partition=None, ax=None, show=False, save=None, tit
     ax.bar(range(len(eigvals)), eigvals, color="#4C72B0")
     ax.set_xticks(range(len(eigvals)))
     ax.set_xticklabels([f"λ{i + 1}" for i in range(len(eigvals))])
-    ax.set_ylabel("约化密度矩阵特征值")
-    ax.set_xlabel("施密特系数（降序）")
+    ax.set_ylabel("Reduced density matrix eigenvalues")
+    ax.set_xlabel("Schmidt coefficients (descending)")
     for s in ("top", "right"):
         ax.spines[s].set_visible(False)
 
-    label = f"纠缠熵 S(ρ_A) = {entropy:.3f} bit"
+    label = f"Entanglement entropy S(ρ_A) = {entropy:.3f} bit"
     if n == 2 and len(partition) == 1:
         concurrence = _concurrence(rho)
-        label += f"   并发度 C = {concurrence:.3f}"
+        label += f"   Concurrence C = {concurrence:.3f}"
     ax.set_title(label)
 
     if title is not None:
@@ -354,17 +401,26 @@ def plot_entanglement(state, partition=None, ax=None, show=False, save=None, tit
     return ax
 
 
-def plot_entanglement_profile(state, ax=None, show=False, save=None, title=None):
-    """画所有相邻二分切口（0..k vs k+1..n-1）的纠缠熵谱。
+def plot_entanglement_profile(
+    state: Any,
+    ax: Any = None,
+    show: bool = False,
+    save: Optional[str] = None,
+    title: Optional[str] = None,
+) -> Any:
+    """Draw the entanglement-entropy spectrum for every adjacent bipartition
+    (0..k vs k+1..n-1).
 
-    对每个切口 k 求约化密度矩阵 ρ_{0..k} 的冯诺依曼熵，画成柱状图。GHZ 态
-    处处为 1、直积态处处为 0、低纠缠链式态呈单调分布。
+    For each cut k compute the von Neumann entropy of the reduced density matrix
+    ρ_{0..k} and plot it as a bar chart. GHZ states are 1 everywhere, product
+    states are 0 everywhere, and low-entanglement chain states show a monotone
+    distribution.
 
-    参数：
-        state: 1D 态矢量 / 2D 密度矩阵 / StatevectorEngine / Circuit。
-        ax / show / save / title: 同 plot_circuit。
+    Parameters:
+        state: 1D statevector / 2D density matrix / StatevectorEngine / Circuit.
+        ax / show / save / title: same as plot_circuit.
 
-    返回：matplotlib Axes。
+    Returns: matplotlib Axes.
     """
     import numpy as np
 
@@ -387,8 +443,8 @@ def plot_entanglement_profile(state, ax=None, show=False, save=None, title=None)
     ax.bar(cuts, entropies, color="#4C72B0")
     ax.set_xticks(cuts)
     ax.set_xticklabels([f"k={k}" for k in cuts])
-    ax.set_xlabel("二分切口（0..k | k+1..n-1）")
-    ax.set_ylabel("纠缠熵 S (bit)")
+    ax.set_xlabel("Bipartition cut (0..k | k+1..n-1)")
+    ax.set_ylabel("Entanglement entropy S (bit)")
     ax.set_ylim(0, max(1.0, (max(entropies) if entropies else 0) * 1.15))
     for s in ("top", "right"):
         ax.spines[s].set_visible(False)
@@ -396,21 +452,32 @@ def plot_entanglement_profile(state, ax=None, show=False, save=None, title=None)
 
 
 # ---------------------------------------------------------------------------
-# 逐门态演化
+# Per-gate state evolution
 # ---------------------------------------------------------------------------
 
-def plot_state_evolution(circuit, ax=None, show=False, save=None, title=None, top_k=16):
-    """画态矢量随电路逐门演化的概率热力图。
+def plot_state_evolution(
+    circuit: Circuit,
+    ax: Any = None,
+    show: bool = False,
+    save: Optional[str] = None,
+    title: Optional[str] = None,
+    top_k: Optional[int] = 16,
+) -> Any:
+    """Draw the probability heatmap of the statevector evolving gate by gate
+    through the circuit.
 
-    横轴为门序列（0 表示初态），纵轴为基态，色块为 |振幅|²。基态过多时只保留
-    概率峰值最大的前 top_k 个（按索引排序）。
+    The x-axis is the gate sequence (0 denotes the initial state), the y-axis is
+    the basis states, and each cell is |amplitude|². When there are too many
+    basis states, only the top_k with the largest probability peaks are kept
+    (sorted by index).
 
-    参数：
-        circuit: Circuit 对象。
-        ax / show / save / title: 同 plot_circuit。
-        top_k: 保留的基态数（按全程最大概率取前 k 个）；None 表示全部。
+    Parameters:
+        circuit: A Circuit object.
+        ax / show / save / title: same as plot_circuit.
+        top_k: number of basis states to keep (the top k by peak probability
+            over the whole run); None means all.
 
-    返回：matplotlib Axes。
+    Returns: matplotlib Axes.
     """
     import numpy as np
 
@@ -425,7 +492,7 @@ def plot_state_evolution(circuit, ax=None, show=False, save=None, title=None, to
             continue
         eng.apply(op.name, list(op.qubits), op.params)
         probs.append(np.abs(eng.state) ** 2)
-    grid = np.array(probs).T  # shape (2^n, 步数)
+    grid = np.array(probs).T  # shape (2^n, steps)
 
     shown = np.arange(2 ** n)
     if top_k is not None and grid.shape[0] > top_k:
@@ -441,9 +508,9 @@ def plot_state_evolution(circuit, ax=None, show=False, save=None, title=None, to
     im = ax.imshow(grid, aspect="auto", cmap="Blues", interpolation="nearest", vmin=0, vmax=1)
     ax.set_yticks(range(grid.shape[0]))
     ax.set_yticklabels([f"|{format(i, '0%db' % n)}>" for i in shown], fontsize=7)
-    ax.set_xlabel("门序列（0 = 初态）")
-    ax.set_ylabel("基态")
-    fig.colorbar(im, ax=ax, label="|振幅|²")
+    ax.set_xlabel("Gate sequence (0 = initial state)")
+    ax.set_ylabel("Basis state")
+    fig.colorbar(im, ax=ax, label="|Amplitude|²")
     if title is None and grid.shape[0] != 2 ** n:
-        title = f"态演化（概率峰值最大的前 {top_k} 个基态，共 {2 ** n} 个）"
+        title = f"State evolution (top {top_k} basis states by peak probability, {2 ** n} total)"
     return finalize(fig, ax, show, save, title)

@@ -37,7 +37,7 @@ def test_creg_measure_then_cif_else():
 
 def test_creg_requires_nonempty_name():
     reset()
-    with pytest.raises(ValueError, match="非空字符串"):
+    with pytest.raises(ValueError, match="non-empty"):
         creg("")
 
 

@@ -1,34 +1,42 @@
-"""算法相关可视化：VQE/QAOA 能量收敛图、Grover 迭代振幅图。"""
+"""Algorithm visualization: VQE/QAOA energy convergence plot, Grover iteration amplitude plot."""
+
+from __future__ import annotations
 
 import math
+from typing import Any, List, Optional, Sequence, Tuple, Union
 
+from .._i18n import tr
 from ..result import Result
 from ._mpl import _plt, finalize
 
 # ---------------------------------------------------------------------------
-# 10. 能量收敛图
+# 10. Energy convergence plot
 # ---------------------------------------------------------------------------
 
-def _as_energies(data):
+def _as_energies(data: Union[Result, Sequence[float]]) -> List[float]:
     if isinstance(data, Result):
         history = data.metadata.get("history")
         if history is None:
-            raise ValueError(
-                "Result 里没有收敛轨迹。请用 vqe(..., record_history=True) 或 "
-                "qaoa_maxcut(..., record_history=True) 运行，或直接传入能量列表。"
-            )
+            raise ValueError(tr("err.viz_history"))
         return list(history)
     return list(data)
 
 
-def plot_energy_convergence(energies, ax=None, show=False, save=None, title=None):
-    """画变分算法（VQE/QAOA）的能量随优化迭代次数的收敛曲线。
+def plot_energy_convergence(
+    energies: Union[Result, Sequence[float]],
+    ax: Any = None,
+    show: bool = False,
+    save: Optional[str] = None,
+    title: Optional[str] = None,
+) -> Any:
+    """Draw the convergence curve of energy vs. optimization iteration for a
+    variational algorithm (VQE/QAOA).
 
-    参数：
-        energies: 能量列表，或带 metadata["history"] 的 Result。
-        ax / show / save / title: 同 plot_circuit。
+    Parameters:
+        energies: a list of energies, or a Result with metadata["history"].
+        ax / show / save / title: same as plot_circuit.
 
-    返回：matplotlib Axes。
+    Returns: matplotlib Axes.
     """
     plt = _plt()
     ys = _as_energies(energies)
@@ -39,17 +47,17 @@ def plot_energy_convergence(energies, ax=None, show=False, save=None, title=None
         fig = ax.figure
 
     ax.plot(range(len(ys)), ys, marker="o", markersize=3, color="#4C72B0")
-    ax.set_xlabel("优化迭代")
-    ax.set_ylabel("能量")
+    ax.set_xlabel("Optimization iteration")
+    ax.set_ylabel("Energy")
     ax.grid(True, alpha=0.3)
     return finalize(fig, ax, show, save, title)
 
 
 # ---------------------------------------------------------------------------
-# 11. Grover 迭代振幅图
+# 11. Grover iteration amplitude plot
 # ---------------------------------------------------------------------------
 
-def _apply_oracle(eng, marked):
+def _apply_oracle(eng: Any, marked: str) -> None:
     n = eng.n
     for q in range(n):
         if marked[n - 1 - q] == "0":
@@ -60,7 +68,7 @@ def _apply_oracle(eng, marked):
             eng.apply("x", (q,))
 
 
-def _apply_diffusion(eng):
+def _apply_diffusion(eng: Any) -> None:
     n = eng.n
     for q in range(n):
         eng.apply("h", (q,))
@@ -73,29 +81,38 @@ def _apply_diffusion(eng):
         eng.apply("h", (q,))
 
 
-def _target_prob(eng, marked):
+def _target_prob(eng: Any, marked: str) -> float:
     idx = int(marked, 2)
     return float(abs(eng.state[idx]) ** 2)
 
 
-def plot_grover_amplitudes(n_qubits, marked, iterations=None, ax=None,
-                           show=False, save=None, title=None):
-    """画 Grover 搜索中目标态概率随迭代次数的变化（自研引擎模拟，无后端依赖）。
+def plot_grover_amplitudes(
+    n_qubits: int,
+    marked: str,
+    iterations: Optional[int] = None,
+    ax: Any = None,
+    show: bool = False,
+    save: Optional[str] = None,
+    title: Optional[str] = None,
+) -> Any:
+    """Draw the probability of the target state in Grover search as a function
+    of iteration count (simulated with the in-house engine, no backend
+    dependency).
 
-    参数：
-        n_qubits: 量子比特数。
-        marked: 要标记的目标比特串（如 "11"）。
-        iterations: 迭代次数，默认 floor(π/4 · √(2^n))。
-        ax / show / save / title: 同 plot_circuit。
+    Parameters:
+        n_qubits: number of qubits.
+        marked: the target bit string to mark (e.g. "11").
+        iterations: number of iterations, default floor(π/4 · √(2^n)).
+        ax / show / save / title: same as plot_circuit.
 
-    返回：matplotlib Axes。
+    Returns: matplotlib Axes.
     """
     from ..simulators import StatevectorEngine
 
     plt = _plt()
     marked = str(marked)
     if len(marked) != n_qubits or any(ch not in "01" for ch in marked):
-        raise ValueError(f"marked 需为长度 {n_qubits} 的 0/1 比特串，收到 {marked!r}")
+        raise ValueError(tr("err.viz_marked", n_qubits=n_qubits, marked=marked))
     if iterations is None:
         iterations = int(math.pi / 4 * math.sqrt(2 ** n_qubits))
 
@@ -114,29 +131,40 @@ def plot_grover_amplitudes(n_qubits, marked, iterations=None, ax=None,
         fig = ax.figure
 
     ax.plot(range(len(probs)), probs, marker="o", color="#4C72B0")
-    ax.set_xlabel("迭代次数")
-    ax.set_ylabel(f"目标态 |{marked}> 概率")
+    ax.set_xlabel("Iterations")
+    ax.set_ylabel(f"Probability of target state |{marked}>")
     ax.set_ylim(0, 1.02)
     ax.grid(True, alpha=0.3)
     return finalize(fig, ax, show, save, title)
 
 
 # ---------------------------------------------------------------------------
-# 问题图（QAOA MaxCut）
+# Problem graph (QAOA MaxCut)
 # ---------------------------------------------------------------------------
 
-def plot_problem_graph(edges, n_qubits=None, partition=None, ax=None, show=False,
-                       save=None, title=None):
-    """画优化问题图（如 MaxCut 的顶点与边），可选按割着色。
+def plot_problem_graph(
+    edges: Sequence[Tuple[int, int]],
+    n_qubits: Optional[int] = None,
+    partition: Any = None,
+    ax: Any = None,
+    show: bool = False,
+    save: Optional[str] = None,
+    title: Optional[str] = None,
+) -> Any:
+    """Draw an optimization problem graph (e.g. MaxCut vertices and edges),
+    optionally colored by cut.
 
-    参数：
-        edges: 边列表 [(i, j), ...]。
-        n_qubits: 顶点数；None 则取边的最大顶点 + 1。
-        partition: 可选，每个顶点的割归属——dict {顶点: 0/1} 或长度 n 的 0/1 序列。
-            给定后跨割的边与两侧顶点用不同颜色标出。
-        ax / show / save / title: 同 plot_circuit。
+    Parameters:
+        edges: list of edges [(i, j), ...].
+        n_qubits: number of vertices; None takes the largest vertex in the edges
+            plus 1.
+        partition: optional, the cut assignment of each vertex — dict
+            {vertex: 0/1} or a length-n 0/1 sequence. When given, cut-crossing
+            edges and the vertices on each side are highlighted in different
+            colors.
+        ax / show / save / title: same as plot_circuit.
 
-    返回：matplotlib Axes。
+    Returns: matplotlib Axes.
     """
     from matplotlib.patches import Circle
 
@@ -188,22 +216,33 @@ def plot_problem_graph(edges, n_qubits=None, partition=None, ax=None, show=False
 
 
 # ---------------------------------------------------------------------------
-# 哈密顿量可视化
+# Hamiltonian visualization
 # ---------------------------------------------------------------------------
 
 _OP_COLORS = {"I": "#EEEEEE", "X": "#4C72B0", "Y": "#55A868", "Z": "#C44E52"}
 
 
-def plot_hamiltonian(hamiltonian, n_qubits=None, ax=None, show=False, save=None, title=None):
-    """画泡利项哈密顿量：左 = 各项系数柱状图，右 = 算符结构热力图。
+def plot_hamiltonian(
+    hamiltonian: Sequence[Tuple[float, str]],
+    n_qubits: Optional[int] = None,
+    ax: Any = None,
+    show: bool = False,
+    save: Optional[str] = None,
+    title: Optional[str] = None,
+) -> Any:
+    """Draw a Pauli-term Hamiltonian: left = bar chart of term coefficients,
+    right = heatmap of the operator structure.
 
-    参数：
-        hamiltonian: 列表 [(系数, 泡利串), ...]，泡利串长度 = n_qubits。
-        n_qubits: 量子比特数；None 则取第一个泡利串的长度。
-        ax: 可选，长度为 2 的 Axes 序列（[系数, 算符结构]）；不传则新建。
-        show / save / title: 同 plot_circuit。
+    Parameters:
+        hamiltonian: list [(coefficient, Pauli string), ...], Pauli string
+            length = n_qubits.
+        n_qubits: number of qubits; None takes the length of the first Pauli
+            string.
+        ax: optional length-2 sequence of Axes ([coefficients, operator
+            structure]); a new one is created when omitted.
+        show / save / title: same as plot_circuit.
 
-    返回：长度为 2 的 Axes 序列 [ax_coeff, ax_ops]。
+    Returns: a length-2 sequence of Axes [ax_coeff, ax_ops].
     """
     import numpy as np
     from matplotlib.colors import ListedColormap
@@ -234,9 +273,9 @@ def plot_hamiltonian(hamiltonian, n_qubits=None, ax=None, show=False, save=None,
     axes[0].set_xticks(xs)
     axes[0].set_xticklabels(paulis)
     axes[0].axhline(0, color="0.5", lw=0.8)
-    axes[0].set_xlabel("泡利项")
-    axes[0].set_ylabel("系数")
-    axes[0].set_title("系数")
+    axes[0].set_xlabel("Pauli term")
+    axes[0].set_ylabel("Coefficient")
+    axes[0].set_title("Coefficients")
     for s in ("top", "right"):
         axes[0].spines[s].set_visible(False)
 
@@ -246,8 +285,8 @@ def plot_hamiltonian(hamiltonian, n_qubits=None, ax=None, show=False, save=None,
     axes[1].set_xticklabels([f"q{q}" for q in range(n_qubits)])
     axes[1].set_yticks(range(len(paulis)))
     axes[1].set_yticklabels(paulis)
-    axes[1].set_xlabel("量子比特")
-    axes[1].set_title("算符结构")
+    axes[1].set_xlabel("Qubit")
+    axes[1].set_title("Operator structure")
     for i in range(len(paulis)):
         for j in range(n_qubits):
             axes[1].text(j, i, paulis[i][j], ha="center", va="center",

@@ -1,17 +1,21 @@
-"""内置量子门。
+"""Built-in quantum gates.
 
-门对象是主推 API（与 Qiskit/Cirq 风格一致）：
+Gate objects are the primary API (consistent with the Qiskit/Cirq style):
     from quonic.gates import H, X, CX
     qgate(H, 0)
 
-qgate() 同时接受门对象或门名字符串（如 qgate("h", 0)）。
-参数化门（Rx/Ry/Rz）是工厂函数，返回带参数的门对象：
+qgate() accepts either a gate object or a gate name string (e.g. qgate("h", 0)).
+Parameterized gates (Rx/Ry/Rz) are factory functions that return gate objects with parameters:
     from quonic.gates import Rx
     qgate(Rx(0.5), 0)
 """
 
+from __future__ import annotations
+
 from dataclasses import dataclass, field
-from typing import Tuple
+from typing import Literal, Tuple, Union
+
+from ._i18n import tr
 
 
 @dataclass(frozen=True)
@@ -25,7 +29,7 @@ H = Gate("h", 1)
 X = Gate("x", 1)
 Y = Gate("y", 1)
 Z = Gate("z", 1)
-I = Gate("i", 1)  # noqa: E741  # 恒等门，标准符号
+I = Gate("i", 1)  # noqa: E741  # identity gate, standard symbol
 CX = Gate("cx", 2)
 CZ = Gate("cz", 2)
 CCX = Gate("ccx", 3)
@@ -33,12 +37,12 @@ SWAP = Gate("swap", 2)
 MEASURE = Gate("measure", 1)
 
 
-def _angle(theta):
+def _angle(theta: float) -> float:
     try:
         return float(theta)
     except (TypeError, ValueError):
         raise TypeError(
-            f"参数化门的旋转角必须是数字（弧度），收到 {theta!r}（{type(theta).__name__}）"
+            tr("err.gate_angle", theta=theta, type=type(theta).__name__)
         ) from None
 
 
@@ -56,9 +60,12 @@ def Rz(theta: float) -> Gate:
 
 _BY_NAME = {g.name: g for g in (H, X, Y, Z, I, CX, CZ, CCX, SWAP, MEASURE)}
 
+# the allowed values of a gate name string. IDEs (Pylance) use this to autocomplete gate names inside qgate("...").
+GateName = Literal["h", "x", "y", "z", "i", "cx", "cz", "ccx", "swap", "measure"]
 
-def resolve(gate):
-    """把门对象或门名字符串统一解析为 Gate 对象。"""
+
+def resolve(gate: Union[Gate, GateName]) -> Gate:
+    """Resolve a gate object or gate name string into a Gate object."""
     if isinstance(gate, Gate):
         return gate
     if isinstance(gate, str):
@@ -66,15 +73,14 @@ def resolve(gate):
         if name in _BY_NAME:
             return _BY_NAME[name]
         raise ValueError(
-            f"未知的量子门 '{gate}'。可用门：{', '.join(sorted(_BY_NAME))}"
+            tr("err.unknown_gate", gate=gate, gates=", ".join(sorted(_BY_NAME)))
         )
-    raise TypeError(
-        f"qgate 的第一个参数必须是门对象或门名字符串，收到 {type(gate).__name__}"
-    )
+    raise TypeError(tr("err.qgate_arg", type=type(gate).__name__))
 
 
 __all__ = [
     "Gate",
+    "GateName",
     "H", "X", "Y", "Z", "I",
     "CX", "CZ", "CCX", "SWAP",
     "MEASURE",

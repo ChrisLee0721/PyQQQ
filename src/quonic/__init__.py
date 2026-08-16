@@ -1,6 +1,7 @@
-"""QuoNic —— 量子编程，像写 Python 一样简单。"""
+"""QuoNic — quantum programming, as simple as writing Python."""
 
 from . import gates
+from ._i18n import get_language, set_language
 from .compare import qeq, qgt, qlt
 from .compiler import RoutingError, decompose
 from .noise import NoiseModel, depolarizing
@@ -35,5 +36,7 @@ __all__ = [
     "CouplingMap",
     "RoutingError",
     "decompose",
+    "get_language",
+    "set_language",
     "__version__",
 ]

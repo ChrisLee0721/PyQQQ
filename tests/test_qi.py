@@ -8,7 +8,7 @@
 import pytest
 
 from quonic import cif, creg, cwhile, qgate, reset
-from quonic.backends import available_backends, get_backend
+from quonic.backends import available_backends, get_backend, resolve_target
 from quonic.backends.qi import _hex_to_bitstring, resolve_device
 from quonic.gates import H, I, X
 from quonic.stack import current_circuit
@@ -38,10 +38,20 @@ def test_qi_supports_any_method_no_fallback():
 # 设备捷径映射（tuna9 / tuna17 / qx）
 # ---------------------------------------------------------------------------
 
-def test_device_shortcuts_registered():
-    assert "tuna9" in available_backends()
-    assert "tuna17" in available_backends()
-    assert "qx" in available_backends()
+def test_device_shortcuts_resolve_to_qi():
+    # 旧设备捷径仍兼容：backend="tuna9" 等价于 backend="qi", device="tuna9"
+    assert resolve_target("tuna9") == ("qi", "tuna9")
+    assert resolve_target("tuna17") == ("qi", "tuna17")
+    assert resolve_target("qx") == ("qi", "qx")
+    assert resolve_target("qi", "tuna9") == ("qi", "tuna9")
+    assert resolve_target("qiskit") == ("qiskit", None)
+    assert resolve_target("auto") == ("auto", None)
+
+
+def test_device_only_valid_for_qi():
+    # device 只对 qi 有效，其余引擎传 device 报中文错
+    with pytest.raises(ValueError, match="backend='qi'"):
+        resolve_target("qiskit", "tuna9")
 
 
 def test_resolve_device_aliases():
@@ -56,7 +66,8 @@ def test_device_shortcut_backend_device():
     assert get_backend("tuna9").device == "Tuna-9"
     assert get_backend("tuna17").device == "Tuna-17"
     assert get_backend("qx").device == "QX emulator"
-    assert get_backend("qi").device is None  # 默认走 Tuna-9
+    assert get_backend("qi").device is None  # 未指定时 run() 默认走 QX 云模拟器
+    assert get_backend("qi", device="tuna9").device == "Tuna-9"
 
 
 # ---------------------------------------------------------------------------
@@ -66,7 +77,7 @@ def test_device_shortcut_backend_device():
 def test_qi_rejects_noise():
     reset()
     qgate(X, 0)
-    with pytest.raises(ValueError, match="噪声"):
+    with pytest.raises(ValueError, match="noise"):
         _run(noise=0.1)
 
 

@@ -1,7 +1,8 @@
-"""算法模板：Grover 搜索 / VQE / QAOA / QPE。
+"""Algorithm templates: Grover search / VQE / QAOA / QPE.
 
-每个模板只依赖 numpy / scipy，不绑定具体后端；采样类算法
-（Grover、QPE）可切换 qiskit / cirq / pennylane 任意后端。
+Each template depends only on numpy / scipy and is not tied to a specific
+backend; sampling algorithms (Grover, QPE) can switch among the qiskit /
+cirq / pennylane backends.
 """
 
 from .grover import diffusion, grover, mark_state

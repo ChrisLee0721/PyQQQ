@@ -1,13 +1,18 @@
-"""噪声成本可视化：去极化噪声下密度矩阵模拟的耗时热力图、噪声叠加电路图。"""
+"""Noise cost visualization: timing heatmap for density-matrix simulation under depolarizing noise, and noise-overlaid circuit diagram."""
+
+from __future__ import annotations
 
 import time
+from typing import Any, Optional, Sequence, Union
 
+from ..ir import Circuit
+from ..noise import NoiseModel
 from ._mpl import _plt, finalize
 from .circuit import _draw_box, _draw_target, _gate_label
 
 
-def _noisy_ghz_time(n, p, repeats):
-    """在密度矩阵引擎上跑 n 比特 GHZ（H + CX 链）并施加去极化噪声，返回最短耗时。"""
+def _noisy_ghz_time(n: int, p: float, repeats: int) -> Optional[float]:
+    """Run an n-qubit GHZ (H + CX chain) on the density-matrix engine with depolarizing noise and return the shortest elapsed time."""
     from ..noise import depolarizing
     from ..simulators import DensityMatrixEngine
 
@@ -24,24 +29,39 @@ def _noisy_ghz_time(n, p, repeats):
     return best
 
 
-def plot_noise_heatmap(n_values=(2, 4, 6, 8, 10), noise_rates=(0.0, 0.01, 0.05, 0.1, 0.5),
-                       budget=1.0, repeats=1, ax=None, show=False, save=None, title=None):
-    """画去极化噪声下密度矩阵模拟的耗时热力图。
+def plot_noise_heatmap(
+    n_values: Sequence[int] = (2, 4, 6, 8, 10),
+    noise_rates: Sequence[float] = (0.0, 0.01, 0.05, 0.1, 0.5),
+    budget: float = 1.0,
+    repeats: int = 1,
+    ax: Any = None,
+    show: bool = False,
+    save: Optional[str] = None,
+    title: Optional[str] = None,
+) -> Any:
+    """Draw the timing heatmap of density-matrix simulation under depolarizing
+    noise.
 
-    横轴为比特数 n，纵轴为去极化概率 p，色块为 log10(耗时/秒)。耗时主要随 n
-    按 4^n 增长（密度矩阵的内存/时间墙）；p 本身几乎不影响耗时——去极化信道对
-    任意 p>0 都做同样多的矩阵运算，只有 p=0（关闭噪声）才跳过噪声层。
+    The x-axis is the qubit count n, the y-axis is the depolarizing probability
+    p, and each cell is log10(elapsed time / second). Time grows with n roughly
+    as 4^n (the memory/time wall of density matrices); p itself barely affects
+    timing — the depolarizing channel performs the same amount of matrix work
+    for any p > 0, and only p = 0 (noise off) skips the noise layer.
 
-    超过 budget 秒的格子会被红框标出，表示该 (p, n) 组合在此预算内不可行。
+    Cells exceeding budget seconds are outlined in red, indicating that (p, n)
+    combination is infeasible within this budget.
 
-    参数：
-        n_values: 比特数序列（密度矩阵为 4^n 成本，建议 ≤ 10）。
-        noise_rates: 去极化概率序列（0.0 表示无噪声，仍用密度矩阵引擎跑）。
-        budget: 耗时预算（秒），超过的格子标记为不可行。
-        repeats: 每个格子重复次数，取最小值（压计时抖动）。
-        ax / show / save / title: 同 plot_circuit。
+    Parameters:
+        n_values: sequence of qubit counts (density matrix costs 4^n, ≤ 10
+            recommended).
+        noise_rates: sequence of depolarizing probabilities (0.0 means no
+            noise, still run on the density-matrix engine).
+        budget: time budget (seconds); cells exceeding it are marked infeasible.
+        repeats: number of repeats per cell, taking the minimum (to suppress
+            timing jitter).
+        ax / show / save / title: same as plot_circuit.
 
-    返回：matplotlib Axes。
+    Returns: matplotlib Axes.
     """
     import numpy as np
 
@@ -93,30 +113,41 @@ def plot_noise_heatmap(n_values=(2, 4, 6, 8, 10), noise_rates=(0.0, 0.01, 0.05, 
     ax.set_xticklabels(n_values)
     ax.set_yticks(range(len(noise_rates)))
     ax.set_yticklabels(noise_rates)
-    ax.set_xlabel("量子比特数 n")
-    ax.set_ylabel("去极化概率 p")
-    fig.colorbar(im, ax=ax, label="log10(耗时/s)")
+    ax.set_xlabel("Number of qubits n")
+    ax.set_ylabel("Depolarizing probability p")
+    fig.colorbar(im, ax=ax, label="log10(time/s)")
     fig.subplots_adjust(bottom=0.18)
     fig.text(
         0.5, 0.02,
-        f"红框 = 超过预算 {budget}s；耗时主要由 n 决定（4^n 墙），p 几乎不影响",
+        f"Red box = exceeds budget {budget}s; timing is dominated by n (4^n wall), p has little effect",
         ha="center", va="bottom", fontsize=8, color="0.4",
     )
     return finalize(fig, ax, show, save, title)
 
 
-def plot_noisy_circuit(circuit, noise=None, ax=None, show=False, save=None, title=None):
-    """在电路图上叠加噪声强度：每个门的背景色 = 它承受的去极化概率。
+def plot_noisy_circuit(
+    circuit: Circuit,
+    noise: Optional[Union[NoiseModel, float, int]] = None,
+    ax: Any = None,
+    show: bool = False,
+    save: Optional[str] = None,
+    title: Optional[str] = None,
+) -> Any:
+    """Overlay noise intensity on the circuit diagram: each gate's background
+    color is the depolarizing probability it experiences.
 
-    单比特门用 noise.single、两比特及以上门用 noise.double 着色（YlOrRd
-    色标），测量门不着色。白色门盒/目标符号画在色带之上，保证可读。
+    Single-qubit gates are colored with noise.single and two-or-more-qubit gates
+    with noise.double (YlOrRd colormap); measurement gates are not colored.
+    White gate boxes / target symbols are drawn on top of the color band for
+    readability.
 
-    参数：
-        circuit: Circuit 对象。
-        noise: NoiseModel / 概率数值 / None（None 表示无噪声，全部零强度）。
-        ax / show / save / title: 同 plot_circuit。
+    Parameters:
+        circuit: A Circuit object.
+        noise: NoiseModel / numeric probability / None (None means no noise, all
+            zero intensity).
+        ax / show / save / title: same as plot_circuit.
 
-    返回：matplotlib Axes。
+    Returns: matplotlib Axes.
     """
     from matplotlib.colors import Normalize
     from matplotlib.patches import Rectangle
@@ -179,15 +210,15 @@ def plot_noisy_circuit(circuit, noise=None, ax=None, show=False, save=None, titl
     ax.set_yticks(range(n))
     ax.set_yticklabels([f"q{q}" for q in range(n)])
     ax.set_xticks([])
-    ax.set_ylabel("量子比特")
+    ax.set_ylabel("Qubit")
     for s in ("top", "right", "bottom"):
         ax.spines[s].set_visible(False)
 
     sm = plt.cm.ScalarMappable(norm=norm, cmap=cmap)
     sm.set_array([])
-    cbar = fig.colorbar(sm, ax=ax, label="去极化噪声率")
+    cbar = fig.colorbar(sm, ax=ax, label="Depolarizing noise rate")
     cbar.set_ticks([0, vmax])
     cbar.set_ticklabels(["0", f"{vmax:.3g}"])
     if title is None:
-        title = f"噪声叠加（single={noise.single}, double={noise.double}）"
+        title = f"Noise overlay (single={noise.single}, double={noise.double})"
     return finalize(fig, ax, show, save, title)

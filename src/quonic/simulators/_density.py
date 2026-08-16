@@ -1,11 +1,17 @@
-"""密度矩阵引擎：2^n × 2^n 密度矩阵，支持去极化噪声。
+"""Density matrix engine: 2^n × 2^n density matrix, supports depolarizing noise.
 
-约定：qubit 0 是最低位。噪声在每个逻辑门之后施加（去极化信道）。
+Conventions: qubit 0 is the least-significant bit. Noise is applied after every
+logical gate (depolarizing channel).
 """
+
+from __future__ import annotations
+
+from typing import Any, Dict, Optional, Sequence, Tuple, Union
 
 import numpy as np
 
-from ..noise import resolve_noise
+from .._i18n import tr
+from ..noise import NoiseModel, resolve_noise
 from ._gates import _H, single
 
 _I = np.eye(2, dtype=complex)
@@ -16,24 +22,28 @@ _PAULIS = (_I, _X, _Y, _Z)
 
 
 class DensityMatrixEngine:
-    def __init__(self, num_qubits, noise=None):
-        self.n = num_qubits
-        self.noise = resolve_noise(noise)
-        self.rho = np.zeros((2 ** num_qubits, 2 ** num_qubits), dtype=complex)
+    def __init__(
+        self,
+        num_qubits: int,
+        noise: Optional[Union[NoiseModel, float, int]] = None,
+    ) -> None:
+        self.n: int = num_qubits
+        self.noise: NoiseModel = resolve_noise(noise)
+        self.rho: Any = np.zeros((2 ** num_qubits, 2 ** num_qubits), dtype=complex)
         self.rho[0, 0] = 1.0
 
     @staticmethod
-    def _apply_single_to(rho, u, q, n):
+    def _apply_single_to(rho: Any, u: Any, q: int, n: int) -> Any:
         hi = 2 ** (n - q - 1)
         lo = 2 ** q
         r = rho.reshape(hi, 2, lo, hi, 2, lo)
         uc = u.conj().T
         return np.einsum("AQBCRD,qQ,Rr->AqBCrD", r, u, uc).reshape(2 ** n, 2 ** n)
 
-    def _apply_single(self, u, q):
+    def _apply_single(self, u: Any, q: int) -> None:
         self.rho = self._apply_single_to(self.rho, u, q, self.n)
 
-    def _apply_phase(self, qubits, angle):
+    def _apply_phase(self, qubits: Sequence[int], angle: float) -> None:
         idx = np.arange(2 ** self.n)
         mask = np.ones(2 ** self.n, dtype=bool)
         for q in qubits:
@@ -42,7 +52,7 @@ class DensityMatrixEngine:
         phase[mask] = angle
         self.rho *= np.exp(1j * (phase[:, None] - phase[None, :]))
 
-    def _swap(self, a, b):
+    def _swap(self, a: int, b: int) -> None:
         if a == b:
             return
         idx = np.arange(2 ** self.n)
@@ -52,14 +62,14 @@ class DensityMatrixEngine:
         perm = (idx & mask) | (ia << b) | (ib << a)
         self.rho = self.rho[perm][:, perm]
 
-    def _depolarize_single(self, q, p):
+    def _depolarize_single(self, q: int, p: float) -> None:
         rho = self.rho
         result = (1.0 - p) * rho
         for pauli in (_X, _Y, _Z):
             result += (p / 3.0) * self._apply_single_to(rho, pauli, q, self.n)
         self.rho = result
 
-    def _depolarize_double(self, q0, q1, p):
+    def _depolarize_double(self, q0: int, q1: int, p: float) -> None:
         rho = self.rho
         result = (1.0 - p) * rho
         for pa in _PAULIS:
@@ -74,7 +84,7 @@ class DensityMatrixEngine:
                 result += (p / 15.0) * tmp
         self.rho = result
 
-    def _noise_after(self, qubits):
+    def _noise_after(self, qubits: Sequence[int]) -> None:
         if not self.noise.enabled:
             return
         nq = len(qubits)
@@ -83,7 +93,9 @@ class DensityMatrixEngine:
         elif nq == 2 and self.noise.double > 0.0:
             self._depolarize_double(qubits[0], qubits[1], self.noise.double)
 
-    def apply(self, name, qubits, params=()):
+    def apply(
+        self, name: str, qubits: Sequence[int], params: Tuple[float, ...] = ()
+    ) -> None:
         name = name.lower()
         if name == "measure":
             return
@@ -106,26 +118,28 @@ class DensityMatrixEngine:
         elif name == "mcz":
             self._apply_phase(qubits, np.pi)
         else:
-            raise ValueError(f"密度矩阵引擎暂不支持门 '{name}'")
+            raise ValueError(tr("err.density_gate", name=name))
         self._noise_after(qubits)
 
-    def sample(self, shots):
+    def sample(self, shots: int) -> Dict[str, int]:
         probs = np.real(np.diag(self.rho))
         probs = np.clip(probs, 0.0, None)
         probs = probs / probs.sum()
         idx = np.random.choice(2 ** self.n, size=shots, p=probs)
-        counts = {}
+        counts: Dict[str, int] = {}
         fmt = f"0{self.n}b"
         for i in idx:
             bs = format(int(i), fmt)
             counts[bs] = counts.get(bs, 0) + 1
         return counts
 
-    def measure_qubit(self, q):
-        """中途测量 qubit q：按对角概率坍缩密度矩阵，返回测量结果 0/1。
+    def measure_qubit(self, q: int) -> int:
+        """Mid-circuit measurement of qubit q: collapse the density matrix by
+        diagonal probabilities and return the 0/1 outcome.
 
-        用投影 P_outcome·ρ·P_outcome 实现（保留 2^n 维度，把 qubit q != outcome
-        的行列清零），再按迹归一化。
+        Implemented with the projector P_outcome·ρ·P_outcome (keeping 2^n
+        dimensions and zeroing the rows/columns where qubit q != outcome), then
+        normalized by the trace.
         """
         idx = np.arange(2 ** self.n)
         bit = (idx >> q) & 1

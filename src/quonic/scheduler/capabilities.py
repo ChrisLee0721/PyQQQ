@@ -1,23 +1,29 @@
-"""模拟方法的静态能力矩阵：调度决策的「硬约束」层。
+"""Static capability matrix for simulation methods: the "hard constraint" layer of scheduling decisions.
 
-能力不匹配是硬约束（直接排除该方法），性能数据是「软选择」（在剩余方法里
-挑最快）。这里只记录与具体机器无关的静态事实：
+A capability mismatch is a hard constraint (the method is excluded outright);
+performance data is a "soft selection" (pick the fastest among the remaining
+methods). Only static, machine-independent facts are recorded here:
 
-- 每种方法能吃哪些门（基础 Clifford / 全 Clifford / 任意非 Clifford）
-- 每种方法是否支持去极化噪声
+- Which gates each method can handle (basic Clifford / full Clifford / arbitrary non-Clifford)
+- Whether each method supports depolarizing noise
 
-性能数据（耗时）在 benchmark.py 里实测，二者分离：能力稳定可白送，
-性能随机器漂移需重跑校准。
+Performance data (timings) is measured in benchmark.py, keeping the two
+separate: capabilities are stable and free to ship, while performance drifts
+with the machine and needs re-calibration.
 """
 
-BASIC_CLIFFORD = {"h", "x", "y", "z", "cx", "cz"}
-"""Aer 的 stabilizer 方法只接受这组基础 Clifford 门（不含 mcz / cp / ccx）。"""
+from __future__ import annotations
 
-CLIFFORD_GATES = BASIC_CLIFFORD | {"mcz"}
-"""完整 Clifford 门集（含多控制 Z）。用于 is_clifford 判断。"""
+from typing import Any, Dict, Iterable, Set
+
+BASIC_CLIFFORD: Set[str] = {"h", "x", "y", "z", "cx", "cz"}
+"""Aer's stabilizer method only accepts this set of basic Clifford gates (no mcz / cp / ccx)."""
+
+CLIFFORD_GATES: Set[str] = BASIC_CLIFFORD | {"mcz"}
+"""The full Clifford gate set (including multi-controlled Z). Used for the is_clifford check."""
 
 
-METHOD_CAPABILITIES = {
+METHOD_CAPABILITIES: Dict[str, Dict[str, Any]] = {
     "statevector": {
         "clifford": True,
         "nonclifford": True,
@@ -25,7 +31,7 @@ METHOD_CAPABILITIES = {
         "gates": "all",
     },
     "stabilizer": {
-        "clifford": True,  # 仅基础 Clifford（不含 mcz）
+        "clifford": True,  # basic Clifford only (no mcz)
         "nonclifford": False,
         "noise": False,
         "gates": "basic_clifford",
@@ -45,12 +51,12 @@ METHOD_CAPABILITIES = {
 }
 
 
-def eligible_methods(gate_types, noise=False):
-    """返回能跑该电路的方法集合（能力硬约束）。
+def eligible_methods(gate_types: Iterable[str], noise: bool = False) -> Set[str]:
+    """Return the set of methods that can run this circuit (capability hard constraints).
 
-    - 有噪声 -> 只有 density_matrix 支持
-    - 基础 Clifford -> statevector / stabilizer / matrix_product_state
-    - 其它（mcz / 任意角旋转等）-> statevector / matrix_product_state
+    - noise -> only density_matrix supports it
+    - basic Clifford -> statevector / stabilizer / matrix_product_state
+    - otherwise (mcz / arbitrary-angle rotations, etc.) -> statevector / matrix_product_state
     """
     if noise:
         return {"density_matrix"}
@@ -61,12 +67,12 @@ def eligible_methods(gate_types, noise=False):
     return methods
 
 
-def decision_class(features):
-    """把电路特征归入三个决策类别，与 benchmark 的电路族一一对应。
+def decision_class(features: Dict[str, Any]) -> str:
+    """Classify circuit features into three decision classes, matching benchmark circuit families one-to-one.
 
-    - "clifford"  —— 纯基础 Clifford，stabilizer 的用武之地
-    - "low_tw"    —— 非基础 Clifford 但低树宽，MPS 的用武之地
-    - "general"   —— 高纠缠/高树宽，只有 statevector 能高效跑
+    - "clifford"  -- pure basic Clifford, where stabilizer shines
+    - "low_tw"    -- non-basic Clifford but low treewidth, where MPS shines
+    - "general"   -- high entanglement / high treewidth, only statevector runs efficiently
     """
     gs = set(features["gate_types"])
     if gs and gs <= BASIC_CLIFFORD:

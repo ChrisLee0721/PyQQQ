@@ -1,21 +1,24 @@
-"""量子傅里叶变换（QFT）及其逆变换。
+"""Quantum Fourier transform (QFT) and its inverse.
 
-qubits 参数是一个量子比特索引列表，第一个元素视为最低位。
-采用无 swap 约定（与 QPE 一致）。
+The qubits argument is a list of qubit indices; the first element is treated as the least-significant bit.
+Uses the no-swap convention (consistent with QPE).
 """
 
+from __future__ import annotations
+
 import math
+from typing import Tuple
 
-from .ir import GateOperation
+from .ir import Circuit, GateOperation
 
 
-def _add_cp(circuit, c, t, phi):
-    # 受控相位 CP(phi)=diag(1,1,1,e^{i phi})，后端直接支持原生 cp 门
+def _add_cp(circuit: Circuit, c: int, t: int, phi: float) -> None:
+    # controlled phase CP(phi)=diag(1,1,1,e^{i phi}); the backend supports the native cp gate directly
     circuit.add(GateOperation("cp", (c, t), (phi,)))
 
 
-def add_qft(circuit, qubits):
-    """正向 QFT（无 swap，qubits[0] 为最低位）。"""
+def add_qft(circuit: Circuit, qubits: Tuple[int, ...]) -> None:
+    """Forward QFT (no swap, qubits[0] is the least-significant bit)."""
     n = len(qubits)
     for j in range(n - 1, -1, -1):
         circuit.add(GateOperation("h", (qubits[j],)))
@@ -23,8 +26,8 @@ def add_qft(circuit, qubits):
             _add_cp(circuit, qubits[k], qubits[j], math.pi / 2 ** (j - k))
 
 
-def add_iqft(circuit, qubits):
-    """逆 QFT（无 swap），是 add_qft 的逆。"""
+def add_iqft(circuit: Circuit, qubits: Tuple[int, ...]) -> None:
+    """Inverse QFT (no swap), the inverse of add_qft."""
     n = len(qubits)
     for j in range(n):
         for k in range(j):

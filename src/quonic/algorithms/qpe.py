@@ -1,47 +1,56 @@
-"""量子相位估计（QPE）模板。
+"""Quantum Phase Estimation (QPE) template.
 
-估计单比特门 U = Rz(θ) 作用在 |1> 上的本征相位。
+Estimate the eigenphase of the single-qubit gate U = Rz(θ) acting on |1>.
 
-Rz(θ)|1> = e^{iθ/2}|1>，所以本征相位 φ = θ/2。
-QPE 用 n 个相位比特估计 j，满足 j/2^n ≈ φ/(2π) = θ/(4π)。
+Rz(θ)|1> = e^{iθ/2}|1>, so the eigenphase φ = θ/2.
+QPE uses n phase bits to estimate j, satisfying j/2^n ≈ φ/(2π) = θ/(4π).
 
-示例：
+Example:
     import math
     from quonic.algorithms import qpe
 
     result = qpe(math.pi, n_precision=3, shots=1024)
-    # Rz(π)|1> 相位 π/2，φ/(2π)=1/4，j≈2 -> 相位比特 "010"
+    # Rz(π)|1> has phase π/2, φ/(2π)=1/4, j≈2 -> phase bits "010"
 """
 
+
+from __future__ import annotations
 
 from ..backends import get_backend
 from ..ir import Circuit, GateOperation
 from ..qft import add_iqft
+from ..result import Result
 
 
-def _add_crz(circuit, c, t, theta):
-    # 受控 Rz(theta)（控制 c，目标 t）
+def _add_crz(circuit: Circuit, c: int, t: int, theta: float) -> None:
+    # Controlled Rz(theta) (control c, target t)
     circuit.add(GateOperation("cx", (c, t)))
     circuit.add(GateOperation("rz", (t,), (-theta / 2,)))
     circuit.add(GateOperation("cx", (c, t)))
     circuit.add(GateOperation("rz", (t,), (theta / 2,)))
 
 
-def _add_iqft(circuit, n):
-    # 逆量子傅里叶变换（qubit 0 = 最低位），委托给 qft 模块
+def _add_iqft(circuit: Circuit, n: int) -> None:
+    # Inverse quantum Fourier transform (qubit 0 = least significant bit), delegated to the qft module
     add_iqft(circuit, list(range(n)))
 
 
-def qpe(theta, n_precision, shots=1024, backend="auto"):
-    """估计 Rz(theta) 作用在 |1> 上的本征相位。
+def qpe(
+    theta: float,
+    n_precision: int,
+    shots: int = 1024,
+    backend: str = "auto",
+) -> Result:
+    """Estimate the eigenphase of Rz(theta) acting on |1>.
 
-    参数：
-        theta: 单比特旋转角（弧度）。
-        n_precision: 相位估计的比特数。
-        shots / backend: 采样参数。
+    Args:
+        theta: Single-qubit rotation angle (radians).
+        n_precision: Number of bits for the phase estimate.
+        shots / backend: Sampling parameters.
 
-    返回：Result（kind="counts"）。比特串最右侧 n_precision 位是相位估计，
-    其整数值 j 满足 j/2^n ≈ theta/(4π)（n = n_precision）。
+    Returns: Result (kind="counts"). The rightmost n_precision bits of the
+    bitstring are the phase estimate; their integer value j satisfies
+    j/2^n ≈ theta/(4π) (n = n_precision).
     """
     n = n_precision
     state_qubit = n

@@ -1,42 +1,46 @@
-"""比较器：qlt / qeq / qgt —— 用量子寄存器与经典常数比较，结果存入一个标志位。
+"""Comparators: qlt / qeq / qgt — compare a quantum register with a classical constant, storing the result in a flag bit.
 
-三种比较都返回一个新的 ancilla 比特（标志位），比较前后量子寄存器 x 保持不变：
+All three comparisons return a new ancilla bit (flag bit); the quantum register x is left unchanged before and after the comparison:
 
     from quonic import QInt, qlt, qeq, qgt, qshow
 
-    x = QInt(3); x.h()          # |0..7> 均匀叠加
-    lt = qlt(x, 4)              # lt 标志位，x < 4 时为 1
-    qshow()                     # 测量所有比特，读 lt 标志
+    x = QInt(3); x.h()          # |0..7> uniform superposition
+    lt = qlt(x, 4)              # lt flag bit, 1 when x < 4
+    qshow()                     # measure all bits, read the lt flag
 
-实现要点：
-- qeq 精确：x - k mod 2^n 是否为零（X 全翻转后用多控制 Z 检测全零）。
-- qlt 用 n+1 位补码：x - k 的符号位（第 n 位）指示 x < k；符号位来自一个
-  干净的 sign ancilla，比较后 uncompute 还原 x 与 ancilla。
-- qgt = NOT qlt(k+1)（x > k ⟺ x >= k+1 ⟺ 非 x < k+1）。
+Implementation notes:
+- qeq is exact: whether x - k mod 2^n is zero (flip all X and detect all-zero with a multi-controlled Z).
+- qlt uses an (n+1)-bit two's complement: the sign bit (the n-th bit) of x - k indicates x < k; the sign bit comes from a
+  clean sign ancilla, and x and the ancilla are uncomputed/restored after the comparison.
+- qgt = NOT qlt(k+1) (x > k ⟺ x >= k+1 ⟺ not x < k+1).
 
-全部基于 QFT 加法（与 QInt.add 同一套 Draper 加法）。numpy 只在运行时经
-add_qft / 门矩阵间接使用，保证 `import quonic` 零开销。
+All based on QFT addition (the same Draper addition as QInt.add). numpy is only used indirectly at runtime
+via add_qft / gate matrices, guaranteeing zero-cost `import quonic`.
 """
 
-import math
+from __future__ import annotations
 
+import math
+from typing import Any, Tuple
+
+from ._i18n import tr
 from .gates import CX, H, Rz, X
-from .ir import GateOperation
+from .ir import Circuit, GateOperation
 from .qft import add_iqft, add_qft
 from .qgate import qgate
 from .stack import current_circuit
 
 
-def _alloc_ancilla():
-    """分配一个干净的 |0> ancilla 比特，返回其下标。"""
+def _alloc_ancilla() -> int:
+    """Allocate a clean |0> ancilla bit and return its index."""
     circ = current_circuit()
     q = circ.num_qubits
     circ.allocate(q + 1)
     return q
 
 
-def _add_const(circuit, qubits, k):
-    """QFT 加法：|a> -> |a + k mod 2**len(qubits)>，k 可为负。"""
+def _add_const(circuit: Circuit, qubits: Tuple[int, ...], k: int) -> None:
+    """QFT addition: |a> -> |a + k mod 2**len(qubits)>; k may be negative."""
     n = len(qubits)
     k = int(k) % (2 ** n)
     add_qft(circuit, qubits)
@@ -45,13 +49,13 @@ def _add_const(circuit, qubits, k):
     add_iqft(circuit, qubits)
 
 
-def _check_qint(x):
+def _check_qint(x: Any) -> None:
     if not (hasattr(x, "n_bits") and hasattr(x, "qubits")):
-        raise TypeError(f"比较器需要 QInt 寄存器，收到 {type(x).__name__}")
+        raise TypeError(tr("err.compare_qint", type=type(x).__name__))
 
 
-def qeq(x, k):
-    """flag == 1 iff x == k（精确，x 保持不变）。返回标志比特下标。"""
+def qeq(x: Any, k: int) -> int:
+    """flag == 1 iff x == k (exact, x is left unchanged). Returns the flag bit index."""
     _check_qint(x)
     flag = _alloc_ancilla()
     _add_const(current_circuit(), x.qubits, -int(k))
@@ -66,8 +70,8 @@ def qeq(x, k):
     return flag
 
 
-def qlt(x, k):
-    """flag == 1 iff x < k（x 保持不变）。返回标志比特下标。"""
+def qlt(x: Any, k: int) -> int:
+    """flag == 1 iff x < k (x is left unchanged). Returns the flag bit index."""
     _check_qint(x)
     sign = _alloc_ancilla()
     flag = _alloc_ancilla()
@@ -78,8 +82,8 @@ def qlt(x, k):
     return flag
 
 
-def qgt(x, k):
-    """flag == 1 iff x > k（x 保持不变）。返回标志比特下标。"""
+def qgt(x: Any, k: int) -> int:
+    """flag == 1 iff x > k (x is left unchanged). Returns the flag bit index."""
     flag = qlt(x, int(k) + 1)
     qgate(X, flag)
     return flag

@@ -1,9 +1,15 @@
-"""态矢量模拟器 —— 用 numpy 精确计算期望值，供 VQE / QAOA 使用。
+"""Statevector simulator — uses numpy to compute expectation values exactly, for VQE / QAOA.
 
-约定：qubit 0 是最低位（bitstring 最右侧），与三个采样后端一致。
+Convention: qubit 0 is the least-significant bit (the rightmost of the bitstring), consistent with the three sampling backends.
 """
 
+from __future__ import annotations
+
+from typing import Any, Sequence
+
 import numpy as np
+
+from ._i18n import tr
 
 _I = np.array([[1.0, 0.0], [0.0, 1.0]], dtype=complex)
 _X = np.array([[0.0, 1.0], [1.0, 0.0]], dtype=complex)
@@ -14,7 +20,7 @@ _H = np.array([[1.0, 1.0], [1.0, -1.0]], dtype=complex) / np.sqrt(2.0)
 _PAULI = {"I": _I, "X": _X, "Y": _Y, "Z": _Z}
 
 
-def _rotation(axis, theta):
+def _rotation(axis: str, theta: float) -> Any:
     c = np.cos(theta / 2.0)
     s = np.sin(theta / 2.0)
     if axis == "x":
@@ -23,30 +29,30 @@ def _rotation(axis, theta):
         return np.array([[c, -s], [s, c]], dtype=complex)
     if axis == "z":
         return np.array([[np.exp(-1j * theta / 2), 0], [0, np.exp(1j * theta / 2)]], dtype=complex)
-    raise ValueError(f"未知旋转轴 '{axis}'")
+    raise ValueError(tr("err.unknown_axis", axis=axis))
 
 
 class StatevectorSimulator:
-    def __init__(self, num_qubits):
-        self.n = num_qubits
-        self.state = np.zeros(2 ** num_qubits, dtype=complex)
+    def __init__(self, num_qubits: int) -> None:
+        self.n: int = num_qubits
+        self.state: Any = np.zeros(2 ** num_qubits, dtype=complex)
         self.state[0] = 1.0  # |0...0>
 
-    def _apply_single(self, u, q):
+    def _apply_single(self, u: Any, q: int) -> None:
         a = 2 ** q
         k = 2 ** (self.n - q - 1)
         s = self.state.reshape(a, 2, k)
         self.state = np.einsum("ij,ajk->aik", u, s).reshape(-1)
 
-    def _apply_phase(self, qubits):
-        # 对「这些 qubit 全为 |1>」的基态叠加 -1 相位（实现多控制 Z）
+    def _apply_phase(self, qubits: Sequence[int]) -> None:
+        # apply a -1 phase to basis states where "all these qubits are |1>" (implementing multi-controlled Z)
         idx = np.arange(2 ** self.n)
         mask = np.ones(2 ** self.n, dtype=bool)
         for q in qubits:
             mask &= ((idx >> q) & 1).astype(bool)
         self.state = np.where(mask, -self.state, self.state)
 
-    def apply(self, name, qubits, params=()):
+    def apply(self, name: str, qubits: Sequence[int], params: Sequence[float] = ()) -> None:
         name = name.lower()
         if name == "h":
             self._apply_single(_H, qubits[0])
@@ -67,16 +73,16 @@ class StatevectorSimulator:
         elif name == "mcz":
             self._apply_phase(tuple(qubits))
         else:
-            raise ValueError(f"态矢量模拟器暂不支持门 '{name}'")
+            raise ValueError(tr("err.sim_unsupported_gate", name=name))
 
-    def expectation(self, pauli_string):
-        """计算 <ψ| O |ψ>，其中 O 是 pauli_string 描述的泡利积。
+    def expectation(self, pauli_string: str) -> float:
+        """Compute <ψ| O |ψ>, where O is the Pauli product described by pauli_string.
 
-        pauli_string[i] 作用于 qubit i（例如 "ZZ" 表示 Z⊗Z）。
+        pauli_string[i] acts on qubit i (e.g. "ZZ" means Z⊗Z).
         """
         if len(pauli_string) != self.n:
             raise ValueError(
-                f"泡利串长度 {len(pauli_string)} 与量子比特数 {self.n} 不一致"
+                tr("err.pauli_len", actual=len(pauli_string), expected=self.n)
             )
         other = StatevectorSimulator(self.n)
         other.state = self.state.copy()

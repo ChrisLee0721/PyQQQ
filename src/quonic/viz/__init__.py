@@ -1,16 +1,18 @@
-"""QuoNic 全量可视化套件 —— 12 类图，只用 matplotlib。
+"""QuoNic full visualization suite — 12 chart types, using only matplotlib.
 
-可视化是可选能力：`import quonic` 不引入 matplotlib，调用任一 plot_* 时
-才懒加载。依赖收敛到唯一的 `quonic[viz]`（matplotlib），不引入
-Graphviz / Seaborn / NetworkX。
+Visualization is an optional capability: `import quonic` does not pull in
+matplotlib; it is lazy-loaded only when one of the plot_* functions is called.
+Dependencies converge to the single `quonic[viz]` (matplotlib) extra, without
+Graphviz / Seaborn / NetworkX.
 
     from quonic.viz import plot_circuit, plot_counts
 
-    plot_circuit(circuit)          # 门序列电路图
-    plot_counts(result)            # 测量直方图
+    plot_circuit(circuit)          # gate-sequence circuit diagram
+    plot_counts(result)            # measurement histogram
 
-每个函数都接受可选 ax / show / save / title 参数，返回 matplotlib Axes
-（plot_statevector 返回 Axes 列表），便于嵌入用户自己的 figure 或导出。
+Every function accepts optional ax / show / save / title arguments and returns
+matplotlib Axes (plot_statevector returns a list of Axes), making it easy to
+embed into your own figure or export.
 """
 
 from .algorithm import (
