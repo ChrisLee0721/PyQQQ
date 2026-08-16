@@ -224,3 +224,10 @@ __marimo__/
 .viz_preview/
 _p_*.png
 _preview_*.png
+
+# 生成的测试报告与视频草稿（可重新生成，非项目文档）
+docs/test-report.md
+docs/test-report.html
+docs/test-report.pdf
+docs/figures/
+docs/video-script.md
