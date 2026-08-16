@@ -24,6 +24,19 @@ def _two_qubit_depolarizing_kraus(p):
     return kraus
 
 
+def _set_shots(qml, qnode, shots):
+    """跨版本设置 shots。
+
+    PennyLane 0.44+ 中 set_shots 是 transform（set_shots(qnode, shots=...)）；
+    更早版本（0.36–0.42）里它是装饰器（@set_shots(shots=...)）。旧版支持
+    Python 3.9/3.10，新版要求 3.11+，所以这里做运行时兼容。
+    """
+    try:
+        return qml.set_shots(qnode, shots=shots)
+    except TypeError:
+        return qml.set_shots(shots=shots)(qnode)
+
+
 class PennyLaneBackend(Backend):
     name = "pennylane"
     methods = frozenset({"statevector"})
@@ -58,7 +71,7 @@ class PennyLaneBackend(Backend):
                         qml.QubitChannel(two_qubit_kraus, wires=list(op.qubits))
             return qml.counts()
 
-        qnode = qml.set_shots(qnode, shots=shots)
+        qnode = _set_shots(qml, qnode, shots)
 
         raw = qnode()
         # PennyLane 的比特串是 wire0 在最高位，反转为 Qiskit 约定（qubit0 在最低位）
