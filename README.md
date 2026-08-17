@@ -1,4 +1,4 @@
-# QuoNic — Quantum programming, as simple as writing Python
+# QuoNic — Quantum programming, as simple as writing Python 
 
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
 [![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/)
