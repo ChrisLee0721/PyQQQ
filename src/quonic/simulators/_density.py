@@ -63,6 +63,20 @@ class DensityMatrixEngine:
         perm = (idx & mask) | (ia << b) | (ib << a)
         self.rho = self.rho[perm][:, perm]
 
+    def _cswap(self, anc: int, a: int, b: int) -> None:
+        """CSWAP: swap qubits a,b when ancilla anc is |1>."""
+        if a == b:
+            return
+        idx = np.arange(2 ** self.n)
+        anc_set = ((idx >> anc) & 1).astype(bool)
+        ia = (idx >> a) & 1
+        ib = (idx >> b) & 1
+        mask = ~((1 << a) | (1 << b))
+        new_idx = idx.copy()
+        swapped = (idx & mask) | (ia << b) | (ib << a)
+        new_idx[anc_set] = swapped[anc_set]
+        self.rho = self.rho[new_idx][:, new_idx]
+
     def _depolarize_single(self, q: int, p: float) -> None:
         rho = self.rho
         result = (1.0 - p) * rho
@@ -114,6 +128,8 @@ class DensityMatrixEngine:
             self._apply_single(_H, qubits[2])
             self._apply_phase(qubits, np.pi)
             self._apply_single(_H, qubits[2])
+        elif name == "cswap":
+            self._cswap(qubits[0], qubits[1], qubits[2])
         elif name == "swap":
             self._swap(qubits[0], qubits[1])
         elif name == "mcz":

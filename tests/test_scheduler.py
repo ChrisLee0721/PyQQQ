@@ -163,10 +163,11 @@ def test_qshow_cache_integration(tmp_path, capsys):
     reset()
     qgate(H, 0)
     qgate(CX, 0, 1)
-    qshow(cache=cache, shots=64)
+    # Use native backend explicitly to avoid qiskit dependency
+    qshow(backend="native", cache=cache, shots=64)
     capsys.readouterr()
 
     # 跑完应把「特征 -> 后端:method」写入缓存文件
     cache2 = LocalCacheRegistry(str(p))
     assert len(cache2.table) == 1
-    assert any(v.startswith("qiskit") for v in cache2.table.values())
+    assert any(v.startswith("native") for v in cache2.table.values())

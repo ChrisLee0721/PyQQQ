@@ -45,6 +45,21 @@ class StatevectorEngine:
         perm = (idx & mask) | (ia << b) | (ib << a)
         self.state = self.state[perm]
 
+    def _cswap(self, anc: int, a: int, b: int) -> None:
+        """CSWAP: swap qubits a,b when ancilla anc is |1>."""
+        if a == b:
+            return
+        idx = np.arange(2 ** self.n)
+        anc_set = ((idx >> anc) & 1).astype(bool)
+        ia = (idx >> a) & 1
+        ib = (idx >> b) & 1
+        mask = ~((1 << a) | (1 << b))
+        # For states where ancilla=1, swap a and b
+        new_idx = idx.copy()
+        swapped = (idx & mask) | (ia << b) | (ib << a)
+        new_idx[anc_set] = swapped[anc_set]
+        self.state = self.state[new_idx]
+
     def apply(
         self, name: str, qubits: Sequence[int], params: Tuple[float, ...] = ()
     ) -> None:
@@ -65,6 +80,9 @@ class StatevectorEngine:
             self._apply_single(_H, qubits[2])
             self._apply_phase(qubits, np.pi)
             self._apply_single(_H, qubits[2])
+        elif name == "cswap":
+            # CSWAP(ancilla, i, j): swap qubits i,j when ancilla=|1>
+            self._cswap(qubits[0], qubits[1], qubits[2])
         elif name == "swap":
             self._swap(qubits[0], qubits[1])
         elif name == "mcz":
