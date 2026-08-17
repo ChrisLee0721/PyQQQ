@@ -36,13 +36,15 @@ qshow()
 pip install quonic
 ```
 
-后端是可选依赖，按需安装。要一键装齐三个后端（含算法模板的 numpy/scipy）：
+后端是可选依赖，按需安装。要一键装齐所有后端（含算法模板的 numpy/scipy）：
 
 ```bash
-pip install 'quonic[qiskit,cirq,pennylane,algorithms]'
+pip install 'quonic[qiskit,cirq,pennylane,algorithms,all-sim]'
 ```
 
 只装某一个后端，例如只用 Cirq：`pip install 'quonic[cirq]'`。未安装的后端在调用时会给出明确的英文提示（设置 `QUONIC_LANG=zh` 可切换为中文）。
+
+额外模拟器后端（Qulacs / TensorCircuit / CUDA-Q / MindQuantum / QPanda3 / CqLib）：`pip install 'quonic[all-sim]'` 或单独安装，如 `pip install 'quonic[qulacs]'`。
 
 可视化是独立可选依赖：`pip install 'quonic[viz]'`（仅 matplotlib，不引入 Graphviz / Seaborn / NetworkX）。
 
@@ -63,8 +65,14 @@ qshow(backend='qiskit')
 # 切换到 Cirq
 qshow(backend='cirq')
 
-# 切换到 PennyLane
-qshow(backend='pennylane')
+# 切换到 Qulacs（高性能 C++）
+qshow(backend='qulacs')
+
+# 切换到 TensorCircuit（JAX/TensorFlow/PyTorch）
+qshow(backend='tensorcircuit')
+
+# 噪声模拟
+qshow(backend='qiskit', noise=0.05)
 
 # 真实硬件（Quantum Inspire）已接入，需登录
 qshow(backend='qi')                    # QX 云模拟器（默认，提交前验证）
@@ -180,15 +188,21 @@ QuoNic 是 **Quantum Unified Operation Native Interface Core** 的首字母缩�
 
 | 后端 | 状态 | 说明 |
 |------|------|------|
-| Qiskit | ✅ 稳定 | IBM 生态 · 本地模拟器 |
-| Cirq | ✅ 稳定 | Google 生态 · 本地模拟器 |
-| PennyLane | ✅ 稳定 | 量子机器学习 · 本地模拟器 |
+| Qiskit | ✅ 稳定 | IBM 生态 · 4 种模拟方法 · 噪声 · 经典控制流 |
+| Cirq | ✅ 稳定 | Google 生态 · statevector · 噪声 |
+| PennyLane | ✅ 稳定 | 量子机器学习 · statevector · 噪声 |
+| Qulacs | ✅ 稳定 | 高性能 C++ 模拟器 · statevector + 密度矩阵 · 噪声 |
+| TensorCircuit | ✅ 稳定 | JAX/TensorFlow/PyTorch 后端 · statevector + 密度矩阵 · 噪声 |
+| CUDA-Q | ✅ 稳定 | NVIDIA GPU 加速 · statevector · 全局噪声模型 |
+| MindQuantum | ✅ 稳定 | 华为 · statevector + 密度矩阵 · 噪声（仅 Linux/macOS） |
+| QPanda3 | ✅ 稳定 | 本源量子 · statevector + 密度矩阵 |
+| CqLib | ⚠️ 仅云端 | 中电信量子 · 无本地模拟器 |
 | Quantum Inspire | ✅ 已接入 | 真实硬件 Tuna-9 / Tuna-17 + QX 模拟器 |
-| 更多后端 | 📅 规划中 | IBM / AWS Braket / 国产硬件... |
+| Native | ✅ 稳定 | 自研 numpy 引擎 · 4 种模拟方法 · 噪声 · fallback |
 
-> **注意**：Qiskit / Cirq / PennyLane 三个后端运行在**本地模拟器**上；Quantum Inspire
-> 真机通过 `qshow(backend="qi", device="tuna9")` 接入（`backend="qi"` 裸用默认走 QX 云模拟器，
-> 需登录）。更多云端硬件（IBM / AWS Braket）是后续优先级。
+> **注意**：Qiskit / Cirq / PennyLane / Qulacs / TensorCircuit / QPanda3 运行在**本地模拟器**上。
+> CUDA-Q 需要 NVIDIA CUDA 环境。MindQuantum 需要 Linux/macOS。CqLib 仅支持云端执行（天衍平台）。
+> Quantum Inspire 真机通过 `qshow(backend="qi", device="tuna9")` 接入。
 
 为硬件铺路，QuoNic 已内置 `CouplingMap`（耦合图）、`compile()` 编译 seam，以及 `decompose()` 门分解——把高阶门（`cp` / `ccx` / `mcz`）展开成基础门集。后者是 QuoNic 自己拥有的「可移植核心」：用户不被某个后端的电路形状绑住，Grover 的 `mcz` 分解成 `cx / h / p` 后能跑通所有后端方法。已内置 `route_swaps()` 贪心 SWAP 路由（配合 `plot_routing` 可视化），将来接 IBM / 国产引擎时，只需在编译层接入，无需改动 IR 或调度器。
 

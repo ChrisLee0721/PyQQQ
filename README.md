@@ -36,13 +36,15 @@ More copy-and-run examples (GHZ, `qif`, `QInt`, Grover, VQE, QAOA, noise) live i
 pip install quonic
 ```
 
-Backends are optional dependencies — install only what you need. To install all three backends (plus numpy/scipy for the algorithm templates) in one shot:
+Backends are optional dependencies — install only what you need. To install all backends (plus numpy/scipy for the algorithm templates) in one shot:
 
 ```bash
-pip install 'quonic[qiskit,cirq,pennylane,algorithms]'
+pip install 'quonic[qiskit,cirq,pennylane,algorithms,all-sim]'
 ```
 
 To install a single backend, e.g. only Cirq: `pip install 'quonic[cirq]'`. Calling an uninstalled backend raises a clear message (English by default; set `QUONIC_LANG=zh` for Chinese).
+
+Additional simulator backends (Qulacs / TensorCircuit / CUDA-Q / MindQuantum / QPanda3 / CqLib): `pip install 'quonic[all-sim]'` or install individually, e.g. `pip install 'quonic[qulacs]'`.
 
 Visualization is a separate optional dependency: `pip install 'quonic[viz]'` (matplotlib only — no Graphviz / Seaborn / NetworkX).
 
@@ -63,8 +65,14 @@ qshow(backend='qiskit')
 # Switch to Cirq
 qshow(backend='cirq')
 
-# Switch to PennyLane
-qshow(backend='pennylane')
+# Switch to Qulacs (high-performance C++)
+qshow(backend='qulacs')
+
+# Switch to TensorCircuit (JAX/TensorFlow/PyTorch)
+qshow(backend='tensorcircuit')
+
+# Noise simulation
+qshow(backend='qiskit', noise=0.05)
 
 # Real hardware (Quantum Inspire) — requires login
 qshow(backend='qi')                    # QX cloud simulator (default; verify before submitting)
@@ -173,13 +181,19 @@ Pronounced /ˈkwɑnɪk/ ("kwah-nik").
 
 | Backend | Status | Notes |
 |------|------|------|
-| Qiskit | ✅ stable | IBM ecosystem · local simulator |
-| Cirq | ✅ stable | Google ecosystem · local simulator |
-| PennyLane | ✅ stable | quantum machine learning · local simulator |
+| Qiskit | ✅ stable | IBM ecosystem · all 4 methods · noise · classical control flow |
+| Cirq | ✅ stable | Google ecosystem · statevector · noise |
+| PennyLane | ✅ stable | quantum machine learning · statevector · noise |
+| Qulacs | ✅ stable | high-performance C++ simulator · statevector + density matrix · noise |
+| TensorCircuit | ✅ stable | JAX/TensorFlow/PyTorch backend · statevector + density matrix · noise |
+| CUDA-Q | ✅ stable | NVIDIA GPU-accelerated · statevector · global noise model |
+| MindQuantum | ✅ stable | Huawei · statevector + density matrix · noise (Linux/macOS) |
+| QPanda3 | ✅ stable | Origin Quantum · statevector + density matrix |
+| CqLib | ⚠️ cloud-only | China Telecom Quantum · no local simulator |
 | Quantum Inspire | ✅ connected | real hardware Tuna-9 / Tuna-17 + QX simulator |
-| More backends | 📅 planned | IBM / AWS Braket / domestic (Chinese) hardware... |
+| Native | ✅ stable | in-house numpy engine · all 4 methods · noise · fallback |
 
-> **Note**: the Qiskit / Cirq / PennyLane backends run on **local simulators**; Quantum Inspire real hardware is reached via `qshow(backend="qi", device="tuna9")` (bare `backend="qi"` defaults to the QX cloud simulator and requires login). More cloud hardware (IBM / AWS Braket) is on the roadmap.
+> **Note**: Qiskit / Cirq / PennyLane / Qulacs / TensorCircuit / QPanda3 run on **local simulators**. CUDA-Q requires NVIDIA CUDA. MindQuantum requires Linux/macOS. CqLib is cloud-only (TianYan platform). Quantum Inspire real hardware is reached via `qshow(backend="qi", device="tuna9")`.
 
 To pave the way for hardware, QuoNic already ships `CouplingMap` (coupling graph), the `compile()` compilation seam, and `decompose()` gate decomposition — which expands higher-order gates (`cp` / `ccx` / `mcz`) into the basic gate set. The latter is QuoNic's own "portable core": users aren't locked to one backend's circuit shape, and Grover's `mcz` decomposes into `cx / h / p` so it runs on every backend method. A greedy SWAP router `route_swaps()` is built in (with `plot_routing` visualization), so wiring up IBM / domestic engines later only touches the compilation layer — no changes to the IR or scheduler.
 
