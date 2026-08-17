@@ -3,8 +3,9 @@
 Teleports a quantum state from Alice to Bob using entanglement.
 """
 
-from quonic.algorithms import teleportation
 import math
+
+from quonic.algorithms import teleportation
 
 print("=== Quantum Teleportation ===\n")
 
