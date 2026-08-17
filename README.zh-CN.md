@@ -1,9 +1,20 @@
 # QuoNic — 量子编程，像写 Python 一样简单
 
+[![CI](https://github.com/ChrisLee0721/QuoNic/actions/workflows/ci.yml/badge.svg)](https://github.com/ChrisLee0721/QuoNic/actions/workflows/ci.yml)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
 [![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/)
+[![Version](https://img.shields.io/badge/version-0.4.0-purple.svg)](CHANGELOG.md)
+
 [![Qiskit](https://img.shields.io/badge/Qiskit-1.0+-green.svg)](https://qiskit.org/)
 [![Cirq](https://img.shields.io/badge/Cirq-1.0+-orange.svg)](https://quantumai.google/cirq)
+[![PennyLane](https://img.shields.io/badge/PennyLane-0.36+-yellow.svg)](https://pennylane.ai/)
+[![Qulacs](https://img.shields.io/badge/Qulacs-0.6+-blue.svg)](https://qulacs.org/)
+[![TensorCircuit](https://img.shields.io/badge/TensorCircuit-0.12+-red.svg)](https://github.com/tencent-quantum-lab/tensorcircuit)
+[![CUDA-Q](https://img.shields.io/badge/CUDA--Q-0.8+-green.svg)](https://developer.nvidia.com/cuda-quantum)
+[![MindQuantum](https://img.shields.io/badge/MindQuantum-0.9+-blue.svg)](https://gitee.com/mindspore/mindquantum)
+[![QPanda3](https://img.shields.io/badge/QPanda3-3.0+-orange.svg)](https://qcloud.originqc.com.cn/)
+[![77 Algorithms](https://img.shields.io/badge/algorithms-77-blueviolet.svg)](src/quonic/algorithms/)
+[![379 Tests](https://img.shields.io/badge/tests-379%20passed-brightgreen.svg)](tests/)
 
 **QuoNic 是一个让量子编程变得像写 Python 一样简单的工具。**
 
