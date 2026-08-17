@@ -40,7 +40,7 @@ jobs:
       - name: Install package + backends
         run: pip install ".[dev,qiskit,cirq,pennylane]"
       - name: Run tests
-        run: pytest -q
+        run: pytest -v --tb=short --durations=10
 
   hardware-smoke:
     name: Quantum Inspire smoke (qiskit<2.4.0)
