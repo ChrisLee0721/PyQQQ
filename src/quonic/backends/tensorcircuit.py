@@ -24,7 +24,6 @@ def _patch_numpy_for_tensorcircuit() -> None:
     global _tc_patched
     if _tc_patched:
         return
-    import warnings
 
     import numpy as np
 

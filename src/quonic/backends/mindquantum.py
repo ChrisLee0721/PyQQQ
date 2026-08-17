@@ -138,7 +138,6 @@ class MindQuantumBackend(EngineBackend):
     def _measure_qubit(self, engine: Any, qubit: int) -> int:
         """Mid-circuit measurement via manual probability extraction."""
         import numpy as np
-
         from mindquantum import Simulator
 
         sim = Simulator("cpu", self._n)

@@ -10,7 +10,7 @@ import pytest
 
 from quonic import qgate, reset
 from quonic.backends import get_backend
-from quonic.gates import CX, H, I, X
+from quonic.gates import X
 from quonic.ir import ClassicalIfOperation, GateOperation
 from quonic.stack import current_circuit
 

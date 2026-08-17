@@ -165,7 +165,6 @@ class CudaQBackend(EngineBackend):
             if name == "cmeasure":
                 # CUDA-Q doesn't support mid-circuit measurement natively
                 # We can't truly collapse; just record a random outcome
-                import numpy as np
 
                 cregs[op.creg] = cregs.get(op.creg, 0)  # placeholder
                 outcome = 0  # CUDA-Q limitation

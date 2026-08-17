@@ -151,6 +151,7 @@ activemq-data/
 .env
 .envrc
 .venv
+.venv312
 env/
 venv/
 ENV/
@@ -217,8 +218,9 @@ __marimo__/
 # Streamlit
 .streamlit/secrets.toml
 
-# Claude Code (local machine settings)
+# Claude Code / MiMoCode (local machine settings)
 .claude/
+.mimocode/
 
 # 本地临时预览产物（viz 预览测试输出）
 .viz_preview/

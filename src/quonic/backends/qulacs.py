@@ -149,7 +149,6 @@ class QulacsBackend(EngineBackend):
     def _measure_qubit(self, engine: Any, qubit: int) -> int:
         """Mid-circuit measurement: compute P(1) from statevector or density matrix."""
         import numpy as np
-
         from qulacs import QuantumState
 
         # Handle both tuple (circuit, dm) and plain circuit

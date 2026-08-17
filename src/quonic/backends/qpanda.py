@@ -106,7 +106,7 @@ class QPandaBackend(EngineBackend):
 
     def _sample_dm(self, engine: Any, shots: int, n: int) -> Dict[str, int]:
         """Sample using density-matrix simulator."""
-        from pyqpanda3.core import CPUQVM, DensityMatrixSimulator, QProg, measure
+        from pyqpanda3.core import DensityMatrixSimulator, QProg, measure
 
         prog = QProg()
         prog << engine
@@ -138,7 +138,6 @@ class QPandaBackend(EngineBackend):
     def _measure_qubit(self, engine: Any, qubit: int) -> int:
         """Mid-circuit measurement via probability extraction."""
         import numpy as np
-
         from pyqpanda3.core import CPUQVM, QProg
 
         prog = QProg()
