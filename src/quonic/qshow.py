@@ -19,7 +19,7 @@ from __future__ import annotations
 import sys
 import time
 from concurrent.futures import ProcessPoolExecutor
-from typing import Dict, List, Optional, Union
+from typing import Callable, Dict, List, Optional, Union
 
 from ._i18n import tr
 from .backends import get_backend, get_backend_for_method
@@ -195,6 +195,85 @@ def qshow_all(
 
 
 def _run_one_in_subprocess(args: tuple) -> Result:
+    """Module-level function for ProcessPoolExecutor (must be picklable)."""
+    backend_name, ops, n, shots, noise = args
+    from .ir import Circuit as _Circuit
+
+    c = _Circuit()
+    c.num_qubits = n
+    c.ops = list(ops)
+    be = get_backend(backend_name)
+    return be.run(c, shots=shots, noise=noise)
+
+
+# ---------------------------------------------------------------------------
+# run_circuits — run multiple different circuits in parallel
+# ---------------------------------------------------------------------------
+
+
+def run_circuits(
+    builders: List[Callable[[], None]],
+    backend: str = "auto",
+    shots: int = 1024,
+    noise: Optional[Union[NoiseModel, float, int]] = None,
+    print_results: bool = True,
+) -> Dict[int, Result]:
+    """Run multiple different circuits in parallel.
+
+    Each builder is a function that calls qgate() to build a circuit.
+    Each builder runs in a separate process with its own global state.
+
+    Returns a dict mapping index (0, 1, 2, ...) to Result.
+
+    Example::
+
+        def bell():
+            qgate(H, 0)
+            qgate(CX, 0, 1)
+
+        def flip():
+            qgate(X, 0)
+
+        results = run_circuits([bell, flip], backend='qiskit')
+        # {0: Result(bell), 1: Result(flip)}
+    """
+    if not builders:
+        return {}
+
+    # Capture each circuit by running the builder in the main process
+    # and recording the ops, then replay in subprocesses.
+    captured: List[tuple] = []
+    for builder in builders:
+        reset()
+        builder()
+        circ = current_circuit()
+        captured.append((list(circ.ops), circ.num_qubits))
+        reset()
+
+    if len(builders) == 1:
+        ops, n = captured[0]
+        result = _run_circuit_subprocess((backend, ops, n, shots, noise))
+        if print_results:
+            _print_result(result, backend_name=backend)
+        return {0: result}
+
+    args_list = [(backend, ops, n, shots, noise) for ops, n in captured]
+    results: Dict[int, Result] = {}
+
+    with ProcessPoolExecutor(max_workers=len(builders)) as pool:
+        futures = {pool.submit(_run_circuit_subprocess, a): i for i, a in enumerate(args_list)}
+        for future in futures:
+            idx = futures[future]
+            results[idx] = future.result()
+
+    if print_results:
+        for idx, result in results.items():
+            _print_result(result, backend_name=f"{backend} #{idx}")
+
+    return results
+
+
+def _run_circuit_subprocess(args: tuple) -> Result:
     """Module-level function for ProcessPoolExecutor (must be picklable)."""
     backend_name, ops, n, shots, noise = args
     from .ir import Circuit as _Circuit

@@ -8,7 +8,7 @@ from .noise import NoiseModel, depolarizing
 from .qgate import qgate
 from .qif import cif, controlled, creg, cwhile, qif
 from .qint import QInt, mul
-from .qshow import qshow, qshow_all
+from .qshow import qshow, qshow_all, run_circuits
 from .readout import ReadoutCalibration, calibrate
 from .result import Result
 from .stack import reset
@@ -30,6 +30,7 @@ __all__ = [
     "mul",
     "qshow",
     "qshow_all",
+    "run_circuits",
     "reset",
     "gates",
     "QInt",
