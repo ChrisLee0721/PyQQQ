@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "quonic"
-version = "0.4.0"
+version = "0.4.1"
 description = "量子编程，像写 Python 一样简单"
 readme = "README.md"
 requires-python = ">=3.9"
@@ -12,6 +12,7 @@ license = "Apache-2.0"
 license-files = ["LICENSE"]
 authors = [{ name = "ChrisLee", email = "Christina_Llap_Yuen@outlook.com" }]
 keywords = ["quantum", "quantum-computing", "qiskit", "cirq", "pennylane"]
+dependencies = ["numpy>=1.24"]
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Intended Audience :: Developers",
