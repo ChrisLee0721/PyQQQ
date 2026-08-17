@@ -18,7 +18,8 @@ from __future__ import annotations
 
 import sys
 import time
-from typing import Optional, Union
+from concurrent.futures import ProcessPoolExecutor
+from typing import Dict, List, Optional, Union
 
 from ._i18n import tr
 from .backends import get_backend, get_backend_for_method
@@ -139,3 +140,67 @@ def _print_value(result: Result) -> None:
     print(f"  {result.value}")
     for key, val in result.metadata.items():
         print(f"  {key} = {val}")
+
+
+# ---------------------------------------------------------------------------
+# qshow_all — run the current circuit on multiple backends in parallel
+# ---------------------------------------------------------------------------
+
+
+def qshow_all(
+    backends: List[str],
+    shots: int = 1024,
+    noise: Optional[Union[NoiseModel, float, int]] = None,
+    print_results: bool = True,
+) -> Dict[str, Result]:
+    """Run the current circuit on multiple backends in parallel.
+
+    Each backend runs in a separate process (independent global state).
+    Returns a dict mapping backend name to Result.
+
+    Example::
+
+        qgate(H, 0)
+        qgate(CX, 0, 1)
+        results = qshow_all(['qiskit', 'cirq', 'qulacs'])
+        # {'qiskit': Result(...), 'cirq': Result(...), 'qulacs': Result(...)}
+    """
+    circuit = current_circuit()
+    if circuit.is_empty():
+        print(tr("show.empty_circuit"))
+        return {}
+
+    # Capture circuit ops for serialization to subprocesses
+    ops = list(circuit.ops)
+    n = circuit.num_qubits
+
+    # _run_one must be at module level for ProcessPoolExecutor pickle
+    args = [(backend, ops, n, shots, noise) for backend in backends]
+
+    results: Dict[str, Result] = {}
+    if len(backends) == 1:
+        results[backends[0]] = _run_one_in_subprocess(args[0])
+    else:
+        with ProcessPoolExecutor(max_workers=len(backends)) as pool:
+            futures = {pool.submit(_run_one_in_subprocess, a): a[0] for a in args}
+            for future in futures:
+                be_name = futures[future]
+                results[be_name] = future.result()
+
+    if print_results:
+        for be_name, result in results.items():
+            _print_result(result, backend_name=be_name)
+
+    return results
+
+
+def _run_one_in_subprocess(args: tuple) -> Result:
+    """Module-level function for ProcessPoolExecutor (must be picklable)."""
+    backend_name, ops, n, shots, noise = args
+    from .ir import Circuit as _Circuit
+
+    c = _Circuit()
+    c.num_qubits = n
+    c.ops = list(ops)
+    be = get_backend(backend_name)
+    return be.run(c, shots=shots, noise=noise)
