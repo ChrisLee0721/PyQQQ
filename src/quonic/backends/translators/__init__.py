@@ -14,6 +14,7 @@ from .base import Translator
 from .cif import CifTranslator
 from .cmeasure import CMeasureTranslator
 from .controlled import CCXTranslator, CXTranslator, CZTranslator
+from .cswap import CswapTranslator
 from .cwhile import CwhileTranslator
 from .hadamard import HadamardTranslator
 from .identity import IdentityTranslator
@@ -33,6 +34,7 @@ TRANSLATORS: Dict[str, Translator] = {t.name: t for t in (
     CZTranslator(),
     CCXTranslator(),
     SwapTranslator(),
+    CswapTranslator(),
     MczTranslator(),
     RxTranslator(),
     RyTranslator(),
