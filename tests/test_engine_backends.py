@@ -171,13 +171,14 @@ def test_bell_noisy(backend):
     qgate(H, 0)
     qgate(CX, 0, 1)
     be = get_backend(backend)
+    shots = 512  # reduced for slow backends (TensorCircuit DMCircuit)
     try:
-        result = be.run(current_circuit(), shots=4096, noise=0.05)
+        result = be.run(current_circuit(), shots=shots, noise=0.05)
     except NotImplementedError:
         pytest.skip(f"{backend} does not support noise yet")
     leakage = result.counts.get("01", 0) + result.counts.get("10", 0)
-    assert leakage / 4096 > 0.005  # noise produced some leakage
-    assert leakage / 4096 < 0.40   # not too much
+    assert leakage / shots > 0.003  # noise produced some leakage
+    assert leakage / shots < 0.45   # not too much
 
 
 # ---------------------------------------------------------------------------

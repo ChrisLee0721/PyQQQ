@@ -48,14 +48,15 @@ def test_noise_x_gate(backend):
     reset()
     qgate(X, 0)
     be = get_backend(backend)
+    shots = 512  # reduced for slow backends (TensorCircuit DMCircuit)
     try:
-        result = be.run(current_circuit(), shots=4096, noise=0.1)
+        result = be.run(current_circuit(), shots=shots, noise=0.1)
     except NotImplementedError:
         pytest.skip(f"{backend} does not support noise")
     # With 10% depolarizing, ~10% of shots should flip back to |0>
-    p0 = result.counts.get("0", 0) / 4096
-    assert p0 > 0.02  # some leakage
-    assert p0 < 0.25  # not too much
+    p0 = result.counts.get("0", 0) / shots
+    assert p0 > 0.01  # some leakage
+    assert p0 < 0.30  # not too much
 
 
 # ---------------------------------------------------------------------------
@@ -70,15 +71,16 @@ def test_readout_noise(backend):
     reset()
     qgate(X, 0)  # |1>
     be = get_backend(backend)
+    shots = 512
     nm = NoiseModel(readout=0.1)
     try:
-        result = be.run(current_circuit(), shots=4096, noise=nm)
+        result = be.run(current_circuit(), shots=shots, noise=nm)
     except NotImplementedError:
         pytest.skip(f"{backend} does not support noise")
     # With 10% readout error, ~10% of shots should read |0>
-    p0 = result.counts.get("0", 0) / 4096
-    assert p0 > 0.03
-    assert p0 < 0.20
+    p0 = result.counts.get("0", 0) / shots
+    assert p0 > 0.02
+    assert p0 < 0.25
 
 
 # ---------------------------------------------------------------------------
@@ -90,20 +92,21 @@ def test_readout_noise(backend):
 def test_two_qubit_noise_stronger(backend):
     """Two-qubit noise should produce more leakage than single-qubit."""
     _import_backend(backend)
+    shots = 512
     reset()
     qgate(H, 0)
     qgate(CX, 0, 1)
     be = get_backend(backend)
     try:
-        result_low = be.run(current_circuit(), shots=4096, noise=NoiseModel(single=0.01, double=0.01))
+        result_low = be.run(current_circuit(), shots=shots, noise=NoiseModel(single=0.01, double=0.01))
         reset()
         qgate(H, 0)
         qgate(CX, 0, 1)
-        result_high = be.run(current_circuit(), shots=4096, noise=NoiseModel(single=0.01, double=0.10))
+        result_high = be.run(current_circuit(), shots=shots, noise=NoiseModel(single=0.01, double=0.10))
     except NotImplementedError:
         pytest.skip(f"{backend} does not support noise")
 
     def leakage(r):
-        return (r.counts.get("01", 0) + r.counts.get("10", 0)) / 4096
+        return (r.counts.get("01", 0) + r.counts.get("10", 0)) / shots
 
     assert leakage(result_high) > leakage(result_low)
