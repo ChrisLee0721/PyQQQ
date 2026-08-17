@@ -217,6 +217,65 @@ QuoNic 是 **Quantum Unified Operation Native Interface Core** 的首字母缩�
 
 为硬件铺路，QuoNic 已内置 `CouplingMap`（耦合图）、`compile()` 编译 seam，以及 `decompose()` 门分解——把高阶门（`cp` / `ccx` / `mcz`）展开成基础门集。后者是 QuoNic 自己拥有的「可移植核心」：用户不被某个后端的电路形状绑住，Grover 的 `mcz` 分解成 `cx / h / p` 后能跑通所有后端方法。已内置 `route_swaps()` 贪心 SWAP 路由（配合 `plot_routing` 可视化），将来接 IBM / 国产引擎时，只需在编译层接入，无需改动 IR 或调度器。
 
+### 并行执行
+
+```python
+from quonic import qgate, qshow_all, run_circuits
+from quonic.gates import H, CX, X
+
+# 同一电路在多个后端上并行执行
+qgate(H, 0)
+qgate(CX, 0, 1)
+results = qshow_all(['qiskit', 'cirq', 'qulacs'])
+
+# 不同电路并行执行
+def bell(): qgate(H, 0); qgate(CX, 0, 1)
+def flip(): qgate(X, 0)
+results = run_circuits([bell, flip], backend='qiskit')
+```
+
+---
+
+## 🧮 77 个算法模板
+
+QuoNic 内置 77 个算法模板，覆盖 10 大领域——从基础量子计算到前沿研究演示。每个算法均有边界条件和使用案例说明。详见[完整算法报告](docs/QuoNic_Algorithm_Report.pdf)。
+
+### 使用方式
+
+```python
+from quonic.algorithms import grover, vqe, qaoa_maxcut, deutsch_jozsa
+
+# Grover 搜索 |11>
+result = grover("11", 2, shots=1024)
+
+# VQE 基态能量
+hamiltonian = [(1.0, "ZZ"), (1.0, "XI"), (1.0, "IX")]
+result = vqe(hamiltonian, 2)
+
+# QAOA MaxCut
+result = qaoa_maxcut([(0,1), (1,2), (0,2)], 3, p=2)
+
+# Deutsch-Jozsa
+result = deutsch_jozsa(2, my_oracle, shots=100)
+```
+
+### 算法目录
+
+| 领域 | 算法 | 类型 |
+|------|------|------|
+| **基石算法** (9) | QFT、Deutsch-Jozsa、Bernstein-Vazirani、Simon、SWAP 测试、Hadamard 测试、振幅放大/估计、QPE | 完整 |
+| **搜索优化** (7) | QAOA（通用/TSP/MIS/背包）、Grover、量子计数、量子行走、量子退火 | 完整 + 演示 |
+| **量子化学** (8) | VQE、哈密顿量导入（OpenFermion/PennyLane/字符串）、Trotter、哈密顿量模拟、动态模拟、费米子映射、QSP、分子 VQE | 完整 + 演示 |
+| **线性代数** (6) | HHL、矩阵求逆、特征值求解、PDE/ODE 求解、数据拟合 | 演示 |
+| **通信密码** (6) | 隐形传态、BB84、E91、超密编码、Shor、离散对数 | 完整 + 演示 |
+| **混合算法** (7) | VQC、量子核方法、QNG、VQR、QNN、QSVM、量子退火混合 | 完整 + 演示 |
+| **量子纠错** (9) | 比特/相位翻转码、Shor 9 比特、Steane 7 比特、稳定子、syndrome、表面码、颜色码、容错门 | 演示 |
+| **统计采样** (3) | 量子蒙特卡洛、拒绝采样、贝叶斯推理 | 演示 |
+| **代数** (3) | 隐藏子群、格问题 SVP、椭圆曲线 | 演示 |
+| **前沿演示** (10) | QCNN、QGNN、分布式 QAOA、QTransformer、QRL、QTDA、QPCA、聚类、QGAN、QBM | 演示 |
+
+> **完整** = 标准算法，能在模拟器上跑，结果有意义。**演示** = 最小化核心概念展示，非生产级。
+
 ---
 
 ## 📖 文档与教程

@@ -208,6 +208,65 @@ Pronounced /ˈkwɑnɪk/ ("kwah-nik").
 
 To pave the way for hardware, QuoNic already ships `CouplingMap` (coupling graph), the `compile()` compilation seam, and `decompose()` gate decomposition — which expands higher-order gates (`cp` / `ccx` / `mcz`) into the basic gate set. The latter is QuoNic's own "portable core": users aren't locked to one backend's circuit shape, and Grover's `mcz` decomposes into `cx / h / p` so it runs on every backend method. A greedy SWAP router `route_swaps()` is built in (with `plot_routing` visualization), so wiring up IBM / domestic engines later only touches the compilation layer — no changes to the IR or scheduler.
 
+### Parallel execution
+
+```python
+from quonic import qgate, qshow_all, run_circuits
+from quonic.gates import H, CX, X
+
+# Run the same circuit on multiple backends in parallel
+qgate(H, 0)
+qgate(CX, 0, 1)
+results = qshow_all(['qiskit', 'cirq', 'qulacs'])
+
+# Run different circuits in parallel
+def bell(): qgate(H, 0); qgate(CX, 0, 1)
+def flip(): qgate(X, 0)
+results = run_circuits([bell, flip], backend='qiskit')
+```
+
+---
+
+## 🧮 77 Algorithm Templates
+
+QuoNic ships 77 algorithm templates across 10 domains — from foundational quantum computing to cutting-edge research demos. Each algorithm has documented boundary conditions and usage examples. See the [full algorithm report](docs/QuoNic_Algorithm_Report.pdf).
+
+### Usage
+
+```python
+from quonic.algorithms import grover, vqe, qaoa_maxcut, deutsch_jozsa
+
+# Grover search for |11>
+result = grover("11", 2, shots=1024)
+
+# VQE ground state energy
+hamiltonian = [(1.0, "ZZ"), (1.0, "XI"), (1.0, "IX")]
+result = vqe(hamiltonian, 2)
+
+# QAOA MaxCut
+result = qaoa_maxcut([(0,1), (1,2), (0,2)], 3, p=2)
+
+# Deutsch-Jozsa
+result = deutsch_jozsa(2, my_oracle, shots=100)
+```
+
+### Algorithm catalog
+
+| Domain | Algorithms | Type |
+|--------|-----------|------|
+| **Foundational** (9) | QFT, Deutsch-Jozsa, Bernstein-Vazirani, Simon, SWAP test, Hadamard test, amplitude amplification/estimation, QPE | Full |
+| **Search & Optimization** (7) | QAOA (generic/TSP/MIS/Knapsack), Grover, quantum counting, quantum walk, quantum annealing | Full + demo |
+| **Quantum Chemistry** (8) | VQE, Hamiltonian import (OpenFermion/PennyLane/string), Trotter, Hamiltonian simulation, dynamics simulation, fermion mapping, QSP, molecular VQE | Full + demo |
+| **Linear Algebra** (6) | HHL, matrix inversion, eigenvalue solver, PDE/ODE solver, data fitting | Demo |
+| **Communication & Crypto** (6) | Teleportation, BB84, E91, superdense coding, Shor, discrete log | Full + demo |
+| **Hybrid** (7) | VQC, quantum kernel, QNG, VQR, QNN, QSVM, quantum annealing hybrid | Full + demo |
+| **Error Correction** (9) | Bit/phase flip code, Shor 9-qubit, Steane 7-qubit, stabilizer, syndrome, surface code, color code, FT gates | Demo |
+| **Statistical** (3) | Quantum Monte Carlo, rejection sampling, Bayesian inference | Demo |
+| **Algebraic** (3) | Hidden subgroup, lattice SVP, elliptic curve | Demo |
+| **Cutting-edge** (10) | QCNN, QGNN, distributed QAOA, QTransformer, QRL, QTDA, QPCA, clustering, QGAN, QBM | Demo |
+
+> **Full** = standard algorithm, works on simulator, meaningful results. **Demo** = minimal demonstration of core concept, not production-grade.
+
 ---
 
 ## 📖 Docs and tutorials
