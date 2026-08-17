@@ -195,21 +195,8 @@ def test_groverize_multi_rejects_missing_bit():
 
 
 # ---------------------------------------------------------------------------
-# 4. 后端覆盖：多比特 creg v1 仅 native + qiskit
+# 4. 后端覆盖：多比特 creg 支持 native / qiskit / cirq / pennylane
 # ---------------------------------------------------------------------------
-
-@pytest.mark.parametrize("backend", ["cirq", "pennylane"])
-def test_multi_creg_unsupported_cirq_pennylane(backend):
-    pytest.importorskip(backend)
-    reset()
-    qgate(X, 1)
-    reg = creg("reg", width=2)
-    reg.measure(0, bit=0)
-    reg.measure(1, bit=1)
-    cif(reg, 2).then(X, 2).else_(I, 2)
-    with pytest.raises(NotImplementedError, match="multi-bit"):
-        _run(shots=16, backend=backend)
-
 
 def test_multi_creg_qiskit_cif():
     pytest.importorskip("qiskit_aer")
@@ -226,3 +213,70 @@ def test_multi_creg_qiskit_cif():
     reg_bits, flat_bits = next(iter(counts)).split(" ")
     assert reg_bits == "10"  # 寄存器值 2
     assert flat_bits[0] == "1"  # q2 被 then 分支翻转
+
+
+@pytest.mark.parametrize("backend", ["cirq", "pennylane"])
+def test_multi_creg_cif_then_cirq_pennylane(backend):
+    pytest.importorskip(backend)
+    reset()
+    qgate(X, 1)  # bit1 = 1 -> 寄存器值 2
+    reg = creg("reg", width=2)
+    reg.measure(0, bit=0)
+    reg.measure(1, bit=1)
+    cif(reg, 2).then(X, 2).else_(I, 2)
+    result = _run(shots=256, backend=backend)
+    # q2=1, q1=1, q0=0 -> "110"
+    assert result.counts == {"110": 256}
+
+
+@pytest.mark.parametrize("backend", ["cirq", "pennylane"])
+def test_multi_creg_cif_else_cirq_pennylane(backend):
+    pytest.importorskip(backend)
+    reset()
+    reg = creg("reg", width=2)
+    reg.measure(0, bit=0)  # 寄存器值 0
+    reg.measure(1, bit=1)
+    cif(reg, 2).then(X, 2).else_(I, 2)  # reg != 2 -> else I(q2)
+    result = _run(shots=256, backend=backend)
+    assert result.counts == {"000": 256}
+
+
+@pytest.mark.parametrize("backend", ["cirq", "pennylane"])
+def test_multi_creg_bitstring_cif_cirq_pennylane(backend):
+    pytest.importorskip(backend)
+    reset()
+    qgate(X, 0)  # bit0 = 1 -> 寄存器值 1
+    reg = creg("reg", width=2)
+    reg.measure(0, bit=0)
+    reg.measure(1, bit=1)
+    cif(reg, "01").then(X, 2).else_(I, 2)
+    result = _run(shots=256, backend=backend)
+    # q2=1, q1=0, q0=1 -> "101"
+    assert result.counts == {"101": 256}
+
+
+@pytest.mark.parametrize("backend", ["cirq", "pennylane"])
+def test_cif_str_control_cirq_pennylane(backend):
+    # 单比特寄存器 value=1 走 str 控制：cif(flag) 应等价于 cif(flag, 1)
+    pytest.importorskip(backend)
+    reset()
+    qgate(X, 0)
+    flag = creg("flag")
+    flag.measure(0)
+    cif(flag).then(X, 1).else_(I, 1)
+    result = _run(shots=256, backend=backend)
+    assert result.counts == {"11": 256}
+
+
+@pytest.mark.parametrize("backend", ["cirq", "pennylane"])
+def test_cif_single_bit_value_zero_cirq_pennylane(backend):
+    # 单比特寄存器 value=0 走 CRegCondition(width=1)：cif(flag, 0)
+    pytest.importorskip(backend)
+    reset()
+    qgate(X, 0)
+    flag = creg("flag")
+    flag.measure(0)
+    cif(flag, 0).then(X, 1).else_(I, 1)  # flag == 1 != 0 -> else I(q1)
+    result = _run(shots=256, backend=backend)
+    # q1=0, q0=1 -> "01"
+    assert result.counts == {"01": 256}

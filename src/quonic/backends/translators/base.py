@@ -13,26 +13,27 @@ from typing import Any, Dict, List
 class Translator:
     name: str = ""
 
-    def to_qiskit(self, qc: Any, op: Any, cregs: Dict[str, int]) -> None:
+    def to_qiskit(self, qc: Any, op: Any, cregs: Dict[str, Any]) -> None:
         """Emit this operation onto a Qiskit QuantumCircuit in place.
 
-        ``cregs`` maps a named classical bit to its qubit index (maintained by
-        the qiskit backend across ops).
+        ``cregs`` maps a named classical register to its ClassicalRegister
+        (multi-bit) or its qubit index (single-bit alias), maintained by the
+        qiskit backend across ops.
         """
         raise NotImplementedError
 
     def to_cirq(
-        self, cirq: Any, op: Any, qubits: List[Any], cregs: Dict[str, str]
+        self, cirq: Any, op: Any, qubits: List[Any], cregs: Dict[str, Any]
     ) -> List[Any]:
         """Return the list of Cirq operations for this operation.
 
-        ``cregs`` maps a named classical bit to its measurement key.
+        ``cregs`` maps a named classical register to {bit_index: measurement key}.
         """
         raise NotImplementedError
 
     def to_pennylane(self, qml: Any, op: Any, cregs: Dict[str, Any]) -> None:
         """Emit this operation inside a PennyLane qnode in place.
 
-        ``cregs`` maps a named classical bit to its measured value.
+        ``cregs`` maps a named classical register to {bit_index: measured value}.
         """
         raise NotImplementedError

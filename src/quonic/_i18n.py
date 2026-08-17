@@ -281,10 +281,9 @@ _MESSAGES: Dict[str, Dict[str, str]] = {
               "或： pip install cirq",
     },
     "err.cirq_ctrl": {
-        "en": "cirq backend does not support cmeasure/cwhile (named classical "
-              "registers / feedback loops); use qiskit or native backend",
-        "zh": "cirq 后端暂不支持 cmeasure/cwhile（具名经典寄存器 / 反馈循环）；"
-              "请改用 qiskit 或 native 后端",
+        "en": "cirq backend does not support cwhile (classical feedback loop); "
+              "use native backend",
+        "zh": "cirq 后端暂不支持 cwhile（经典反馈循环）；请用 native 后端",
     },
     "err.cirq_gate": {
         "en": "Cirq backend does not support gate '{name}'",
@@ -316,15 +315,97 @@ _MESSAGES: Dict[str, Dict[str, str]] = {
               "或： pip install pennylane",
     },
     "err.pennylane_ctrl": {
-        "en": "pennylane backend does not support cmeasure/cwhile (named "
-              "classical registers / feedback loops); use qiskit or native backend",
-        "zh": "pennylane 后端暂不支持 cmeasure/cwhile（具名经典寄存器 / 反馈循环）；"
-              "请改用 qiskit 或 native 后端",
+        "en": "pennylane backend does not support cwhile (classical feedback loop); "
+              "use native backend",
+        "zh": "pennylane 后端暂不支持 cwhile（经典反馈循环）；请用 native 后端",
     },
     "err.pennylane_gate": {
         "en": "PennyLane backend does not support gate '{name}'",
         "zh": "PennyLane 后端暂不支持门 '{name}'",
     },
+
+    # -- engine backend errors (shared across qulacs / tensorcircuit / cudaq / ...) --
+    "err.engine_ctrl": {
+        "en": "{name} backend does not support classical control flow "
+              "(cif/cmeasure/cwhile); use native or qiskit backend",
+        "zh": "{name} 后端暂不支持经典控制流（cif/cmeasure/cwhile）；"
+              "请用 native 或 qiskit 后端",
+    },
+    "err.engine_noise": {
+        "en": "{name} backend does not yet support noise injection; "
+              "use qiskit (Aer density_matrix) or native backend for noise simulation",
+        "zh": "{name} 后端暂不支持噪声注入；"
+              "请用 qiskit（Aer density_matrix）或 native 后端模拟噪声",
+    },
+    "err.engine_no_dm": {
+        "en": "{name} backend does not support density matrix simulation",
+        "zh": "{name} 后端不支持密度矩阵模拟",
+    },
+    "err.engine_no_measure": {
+        "en": "{name} backend does not support mid-circuit measurement",
+        "zh": "{name} 后端不支持中段测量",
+    },
+    "err.qulacs_missing": {
+        "en": "qulacs backend requires qulacs:\n"
+              "    pip install 'quonic[qulacs]'\nor: pip install qulacs",
+        "zh": "使用 qulacs 后端需要安装 qulacs：\n"
+              "    pip install 'quonic[qulacs]'\n或： pip install qulacs",
+    },
+    "err.qulacs_gate": {
+        "en": "qulacs backend does not support gate '{name}'",
+        "zh": "qulacs 后端暂不支持门 '{name}'",
+    },
+    "err.tensorcircuit_missing": {
+        "en": "tensorcircuit backend requires tensorcircuit:\n"
+              "    pip install 'quonic[tensorcircuit]'\nor: pip install tensorcircuit",
+        "zh": "使用 tensorcircuit 后端需要安装 tensorcircuit：\n"
+              "    pip install 'quonic[tensorcircuit]'\n或： pip install tensorcircuit",
+    },
+    "err.tensorcircuit_gate": {
+        "en": "tensorcircuit backend does not support gate '{name}'",
+        "zh": "tensorcircuit 后端暂不支持门 '{name}'",
+    },
+    "err.cudaq_missing": {
+        "en": "cudaq backend requires cuda-quantum:\n"
+              "    pip install 'quonic[cudaq]'\nor: pip install cuda-quantum",
+        "zh": "使用 cudaq 后端需要安装 cuda-quantum：\n"
+              "    pip install 'quonic[cudaq]'\n或： pip install cuda-quantum",
+    },
+    "err.cudaq_gate": {
+        "en": "cudaq backend does not support gate '{name}'",
+        "zh": "cudaq 后端暂不支持门 '{name}'",
+    },
+    "err.mindquantum_missing": {
+        "en": "mindquantum backend requires mindquantum:\n"
+              "    pip install 'quonic[mindquantum]'\nor: pip install mindquantum",
+        "zh": "使用 mindquantum 后端需要安装 mindquantum：\n"
+              "    pip install 'quonic[mindquantum]'\n或： pip install mindquantum",
+    },
+    "err.mindquantum_gate": {
+        "en": "mindquantum backend does not support gate '{name}'",
+        "zh": "mindquantum 后端暂不支持门 '{name}'",
+    },
+    "err.qpanda_missing": {
+        "en": "qpanda backend requires pyqpanda3:\n"
+              "    pip install 'quonic[qpanda]'\nor: pip install pyqpanda3",
+        "zh": "使用 qpanda 后端需要安装 pyqpanda3：\n"
+              "    pip install 'quonic[qpanda]'\n或： pip install pyqpanda3",
+    },
+    "err.qpanda_gate": {
+        "en": "qpanda backend does not support gate '{name}'",
+        "zh": "qpanda 后端暂不支持门 '{name}'",
+    },
+    "err.cqlib_missing": {
+        "en": "cqlib backend requires cqlib:\n"
+              "    pip install 'quonic[cqlib]'\nor: pip install cqlib",
+        "zh": "使用 cqlib 后端需要安装 cqlib：\n"
+              "    pip install 'quonic[cqlib]'\n或： pip install cqlib",
+    },
+    "err.cqlib_gate": {
+        "en": "cqlib backend does not support gate '{name}'",
+        "zh": "cqlib 后端暂不支持门 '{name}'",
+    },
+
 
     # -------------------------------------------------------- core errors
     "err.gate_angle": {
@@ -457,10 +538,6 @@ _MESSAGES: Dict[str, Dict[str, str]] = {
     "err.cif_value": {
         "en": "cif register value must be in [0, {max}), got {value}",
         "zh": "cif 的寄存器值必须在 [0, {max}) 内，收到 {value}",
-    },
-    "err.multi_creg_backend": {
-        "en": "multi-bit classical registers are not yet supported by the {backend} backend",
-        "zh": "{backend} 后端暂不支持多比特经典寄存器",
     },
     "err.cwhile_cond": {
         "en": "cwhile condition must be a classical bit declared with creg(), "

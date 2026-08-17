@@ -51,6 +51,22 @@ METHOD_CAPABILITIES: Dict[str, Dict[str, Any]] = {
 }
 
 
+BACKEND_CAPABILITIES: Dict[str, Set[str]] = {
+    # Which simulation methods each backend supports (including v2 upgrades).
+    "qiskit": {"statevector", "stabilizer", "matrix_product_state", "density_matrix"},
+    "cirq": {"statevector"},
+    "pennylane": {"statevector"},
+    "native": {"statevector", "stabilizer", "matrix_product_state", "density_matrix"},
+    "qi": {"statevector"},
+    "qulacs": {"statevector", "density_matrix"},
+    "tensorcircuit": {"statevector", "density_matrix"},
+    "cudaq": {"statevector", "density_matrix"},
+    "mindquantum": {"statevector", "density_matrix"},
+    "qpanda": {"statevector", "density_matrix"},
+    "cqlib": {"statevector", "density_matrix"},
+}
+
+
 def eligible_methods(gate_types: Iterable[str], noise: bool = False) -> Set[str]:
     """Return the set of methods that can run this circuit (capability hard constraints).
 
@@ -83,6 +99,7 @@ def decision_class(features: Dict[str, Any]) -> str:
 
 
 __all__ = [
+    "BACKEND_CAPABILITIES",
     "BASIC_CLIFFORD",
     "CLIFFORD_GATES",
     "METHOD_CAPABILITIES",

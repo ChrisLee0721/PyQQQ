@@ -7,10 +7,17 @@ from typing import Dict, List, Optional, Tuple
 from .._i18n import tr
 from .base import Backend
 from .cirq import CirqBackend
+from .cqlib import CqlibBackend
+from .cudaq import CudaQBackend
+from .engine import EngineBackend
+from .mindquantum import MindQuantumBackend
 from .native import NativeBackend
 from .pennylane import PennyLaneBackend
 from .qi import QuantumInspireBackend
 from .qiskit import QiskitBackend
+from .qpanda import QPandaBackend
+from .qulacs import QulacsBackend
+from .tensorcircuit import TensorCircuitBackend
 
 # Engine registry: the backend argument only recognizes these five engine names
 # (local simulators plus the qi cloud entry point). Specific real-hardware devices
@@ -22,6 +29,12 @@ _REGISTRY: Dict[str, Backend] = {
     "pennylane": PennyLaneBackend(),
     "native": NativeBackend(),
     "qi": QuantumInspireBackend(),
+    "qulacs": QulacsBackend(),
+    "tensorcircuit": TensorCircuitBackend(),
+    "cudaq": CudaQBackend(),
+    "mindquantum": MindQuantumBackend(),
+    "qpanda": QPandaBackend(),
+    "cqlib": CqlibBackend(),
 }
 
 # Backward-compatible aliases for the legacy one-shot device shortcuts: backend="tuna9" is equivalent to backend="qi", device="tuna9".
@@ -112,6 +125,7 @@ def available_backends() -> List[str]:
 
 __all__ = [
     "Backend",
+    "EngineBackend",
     "get_backend",
     "get_backend_for_method",
     "available_backends",
