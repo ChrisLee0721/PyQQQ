@@ -6,23 +6,24 @@ Runs a Bell state on Quantum Inspire's 9-qubit superconducting hardware.
 
 ## 前置条件 Prerequisites
 
-1. 安装依赖（注意 qiskit 版本约束，建议用独立虚拟环境）：
+`qiskit-quantuminspire` 0.18.x 要求 `qiskit<2.4.0`，与主环境常见的 `qiskit`
+2.5.x 冲突。**推荐用独立虚拟环境隔离，避免回退主环境的 qiskit**：
 
-   ```bash
-   pip install 'quonic[quantum-inspire]'
-   # 等价于： pip install 'qiskit-quantuminspire>=0.18' 'quantuminspire>=4.0' 'qiskit<2.4.0'
-   ```
+```bash
+python -m venv .venv-qi
+# Windows:
+.venv-qi\Scripts\activate
+# macOS / Linux:
+# source .venv-qi/bin/activate
 
-   `qiskit-quantuminspire` 0.18.x 要求 `qiskit<2.4.0`；若环境里已装 2.5.x，
-   需临时降级 `qiskit==2.3.1`（qiskit-aer 无版本上界，不受影响）。
+pip install 'quonic[quantum-inspire]'
+# 等价于： pip install 'qiskit-quantuminspire>=0.18' 'quantuminspire>=4.0' 'qiskit<2.4.0'
+qi login
+```
 
-2. 登录（OAuth 设备流，浏览器授权一次即可）：
-
-   ```bash
-   qi login
-   ```
-
-   token 存于 `~/.quantuminspire/config.json`，请勿手写或贴出。
+登录走 OAuth 设备流，浏览器授权一次即可；token 存于
+`~/.quantuminspire/config.json`，请勿手写或贴出。也可直接运行
+`python -m quonic.setup` 让引导引擎自动诊断并给出同样的 venv 步骤。
 
 ## 当前可用的 backend Available backends
 

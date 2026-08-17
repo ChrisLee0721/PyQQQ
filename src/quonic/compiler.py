@@ -17,7 +17,13 @@ from collections import deque
 from typing import Callable, Dict, List, Optional, Set, Tuple
 
 from ._i18n import tr
-from .ir import Circuit, ClassicalIfOperation, CMeasureOperation, GateOperation
+from .ir import (
+    Circuit,
+    ClassicalIfOperation,
+    ClassicalWhileOperation,
+    CMeasureOperation,
+    GateOperation,
+)
 from .topology import CouplingMap
 
 
@@ -159,16 +165,29 @@ def _violates(op: GateOperation, coupling_map: CouplingMap) -> bool:
     return False
 
 
-def compile(circuit: Circuit, coupling_map: Optional[CouplingMap] = None) -> Circuit:
+def compile(
+    circuit: Circuit,
+    coupling_map: Optional[CouplingMap] = None,
+    route: bool = False,
+) -> Circuit:
     """Compile the circuit onto the target topology, returning a new Circuit (without modifying the original).
 
     Parameters:
         circuit: the source circuit.
         coupling_map: a CouplingMap; None means fully connected (no connectivity constraints).
+        route: when True, decompose high-level gates (cp/ccx/mcz) and insert SWAPs to map
+            every two-qubit gate onto the coupling_map, instead of only validating connectivity.
 
-    Currently only performs connectivity validation; use decompose() for gate decomposition, and routing is a reserved extension point.
-    Raises RoutingError on validation failure; on success returns a copy (currently equivalent to the original circuit).
+    With route=False this only performs connectivity validation (raising RoutingError on violation).
+    With route=True it returns a routed copy: ``route_swaps(decompose(circuit), coupling_map)``.
+    cwhile loops cannot be routed directly — groverize() them into a static circuit first.
     """
+    if route:
+        dec = decompose(circuit)
+        if coupling_map is None:
+            return dec
+        return route_swaps(dec, coupling_map)
+
     out = Circuit()
     out.allocate(circuit.num_qubits)
 
@@ -304,4 +323,165 @@ def route_swaps(circuit: Circuit, coupling_map: CouplingMap) -> Circuit:
             lu, lv = layout.index(u), layout.index(v)
             layout[lu], layout[lv] = layout[lv], layout[lu]
 
+    return out
+
+
+# ---------------------------------------------------------------------------
+# cwhile Grover-ization (compile a repeat-until-success loop into a static circuit)
+# ---------------------------------------------------------------------------
+
+# gates whose adjoint is obtained by negating their angle (all others are self-adjoint)
+_ADJOINT_NEGATED = frozenset({"rx", "ry", "rz", "p", "cp"})
+
+
+def _adjoint(op: GateOperation) -> GateOperation:
+    """Return the Hermitian adjoint of a single gate operation (self-adjoint gates return themselves)."""
+    if op.name in _ADJOINT_NEGATED:
+        return GateOperation(op.name, op.qubits, tuple(-a for a in op.params))
+    return op
+
+
+def _oracle_multi(ancillas: List[int], until: int) -> List[GateOperation]:
+    """Phase-flip the basis states where the ancilla register equals ``until``.
+
+    Flips an X on each ancilla whose target bit is 0, applies a multi-controlled Z,
+    then uncomputes the X gates — so only the register-value == ``until`` state is flipped.
+    """
+    width = len(ancillas)
+    ops: List[GateOperation] = []
+    for i in range(width):
+        if (until >> i) & 1 == 0:
+            ops.append(GateOperation("x", (ancillas[i],)))
+    if width == 1:
+        ops.append(GateOperation("z", (ancillas[0],)))
+    else:
+        ops.append(GateOperation("mcz", tuple(ancillas)))
+    for i in range(width):
+        if (until >> i) & 1 == 0:
+            ops.append(GateOperation("x", (ancillas[i],)))
+    return ops
+
+
+def _reflect_zero(circuit: Circuit, n: int) -> None:
+    """Append the reflection 2|0…0⟩⟨0…0| − I about the all-zero state."""
+    for q in range(n):
+        circuit.add(GateOperation("x", (q,)))
+    if n == 1:
+        circuit.add(GateOperation("z", (0,)))
+    else:
+        circuit.add(GateOperation("mcz", tuple(range(n))))
+    for q in range(n):
+        circuit.add(GateOperation("x", (q,)))
+
+
+def _infer_success_prob(cwhile_op: ClassicalWhileOperation) -> float:
+    """Infer the single-shot success probability p by simulating the unitary body on |0…0⟩.
+
+    The loop body is a unitary sequence ending with ``width`` cmeasure ops writing each bit of
+    the creg register; deferred measurement copies each measured qubit onto a |0⟩-initialized
+    ancilla, so P(success) is exactly P(register == until) under the body unitary. This is exact
+    for any unitary body, so the caller only needs ``success_prob`` when the body already
+    contains measurements.
+    """
+    import numpy as np
+
+    from .simulators import StatevectorEngine
+
+    body = cwhile_op.body
+    width = cwhile_op.width
+    measures = list(body[-width:])
+    unitary = list(body[:-width])
+    n_data = max(q for o in body for q in o.qubits) + 1
+
+    engine = StatevectorEngine(n_data)
+    for o in unitary:
+        engine.apply(o.name, list(o.qubits), o.params)
+
+    probs = np.abs(engine.state) ** 2
+    idx = np.arange(2 ** n_data)
+    reg = np.zeros(2 ** n_data, dtype=int)
+    for m in measures:
+        reg |= ((idx >> m.qubit) & 1) << m.bit
+    return float(np.sum(probs[reg == cwhile_op.until]))
+
+
+def groverize(
+    cwhile_op: ClassicalWhileOperation, success_prob: Optional[float] = None
+) -> Circuit:
+    """Compile a repeat-until-success ``cwhile`` loop into a static Grover circuit.
+
+    The loop body must be a purely unitary gate sequence ending with a single
+    ``creg.measure(q)`` (the success criterion). The measurement is deferred onto a
+    fresh ancilla (|0⟩ → CX), and the success subspace (ancilla == until) is amplitude
+    amplified with k = ⌊π / (4·arcsin(√p))⌋ Grover iterations, where p = success_prob
+    is the single-shot success probability. This trades the classical O(1/p) retries
+    for O(1/√p) oracle calls and yields a static, backend-independent circuit.
+
+    Parameters:
+        cwhile_op: the ``ClassicalWhileOperation`` produced by the ``with cwhile(...)`` block.
+        success_prob: the single-shot success probability p ∈ (0, 1). When omitted (None),
+            it is inferred exactly by simulating the unitary body on |0…0⟩.
+
+    Returns: a new ``Circuit`` (data qubits + one ancilla) that measures all qubits at the end.
+        The ancilla is the highest-index qubit; its measurement equals ``until`` on success.
+    """
+    if not isinstance(cwhile_op, ClassicalWhileOperation):
+        raise TypeError(tr("err.grover_type", type=type(cwhile_op).__name__))
+
+    body = cwhile_op.body
+    width = cwhile_op.width
+    if not body or len(body) < width:
+        raise ValueError(tr("err.grover_body_unitary"))
+
+    measures = list(body[-width:])
+    unitary = list(body[:-width])
+    for m in measures:
+        if not isinstance(m, CMeasureOperation) or m.creg != cwhile_op.creg:
+            raise ValueError(tr("err.grover_body_unitary"))
+    if sorted(m.bit for m in measures) != list(range(width)):
+        raise ValueError(tr("err.grover_body_bits"))
+    for o in unitary:
+        if not isinstance(o, GateOperation) or o.name == "measure":
+            raise ValueError(tr("err.grover_body_unitary"))
+
+    if success_prob is None:
+        p = _infer_success_prob(cwhile_op)
+    else:
+        p = float(success_prob)
+    if not (0.0 < p < 1.0):
+        raise ValueError(tr("err.grover_prob", p=p))
+
+    n_data = max(q for o in body for q in o.qubits) + 1
+    ancillas = [n_data + i for i in range(width)]
+    n_total = n_data + width
+
+    u = unitary + [
+        GateOperation("cx", (m.qubit, ancillas[m.bit])) for m in measures
+    ]
+    u_dag = [
+        GateOperation("cx", (m.qubit, ancillas[m.bit])) for m in reversed(measures)
+    ] + [_adjoint(o) for o in reversed(unitary)]
+
+    k = int(math.pi / (4 * math.asin(math.sqrt(p))))
+
+    out = Circuit()
+    out.allocate(n_total)
+
+    def _emit(ops: List[GateOperation]) -> None:
+        for o in ops:
+            out.add(o)
+
+    _emit(u)
+    for _ in range(k):
+        _emit(_oracle_multi(ancillas, cwhile_op.until))
+        _emit(u_dag)
+        # The reflection acts on the data qubits only: after u† the ancilla is
+        # uncomputed back to |0…0⟩, so reflecting about the data |0…0⟩ is
+        # equivalent to reflecting about the full |0…0⟩ on the relevant subspace —
+        # this turns a C^(n_total-1)Z into a far cheaper C^(n_data-1)Z.
+        _reflect_zero(out, n_data)
+        _emit(u)
+
+    for q in range(n_total):
+        out.add(GateOperation("measure", (q,)))
     return out

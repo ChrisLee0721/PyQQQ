@@ -12,7 +12,7 @@ from __future__ import annotations
 from typing import Any, Dict, Iterable, Optional, Tuple, Union
 
 from .._i18n import tr
-from ..ir import Circuit
+from ..ir import Circuit, CRegCondition
 from ..noise import NoiseModel, resolve_noise
 from ..result import Result
 from .base import Backend
@@ -97,17 +97,23 @@ class NativeBackend(Backend):
 
     @staticmethod
     def _execute(engine: Any, ops: Iterable[Any], cregs: Dict[str, int]) -> None:
-        """Execute a block of ops shot by shot, maintaining named classical bits cregs (name -> 0/1)."""
+        """Execute a block of ops shot by shot, maintaining named classical registers
+        cregs (name -> integer register value)."""
         for op in ops:
             name = op.name
             if name == "cmeasure":
-                cregs[op.creg] = engine.measure_qubit(op.qubit)
+                v = cregs.get(op.creg, 0)
+                outcome = engine.measure_qubit(op.qubit)
+                cregs[op.creg] = (v & ~(1 << op.bit)) | (outcome << op.bit)
             elif name == "cif":
                 if isinstance(op.control, int):
                     outcome = engine.measure_qubit(op.control)
+                    hit = outcome == 1
+                elif isinstance(op.control, CRegCondition):
+                    hit = cregs.get(op.control.creg, 0) == op.control.value
                 else:
-                    outcome = cregs.get(op.control, 0)
-                branch = op.then_op if outcome == 1 else op.else_op
+                    hit = cregs.get(op.control, 0) == 1
+                branch = op.then_op if hit else op.else_op
                 engine.apply(branch.name, list(branch.qubits), branch.params)
             elif name == "cwhile":
                 iters = 0

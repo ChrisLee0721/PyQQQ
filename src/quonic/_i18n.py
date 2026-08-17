@@ -80,13 +80,13 @@ _MESSAGES: Dict[str, Dict[str, str]] = {
         "en": "      How to handle:",
         "zh": "      处理方式：",
     },
-    "setup.opt_downgrade": {
-        "en": "        Enter = downgrade {pkg} to {constraint} (affects current env)",
-        "zh": "        回车 = 回退 {pkg} 到 {constraint}（影响当前环境）",
-    },
     "setup.opt_venv": {
-        "en": "        2    = create isolated venv (recommended, avoids conflicts)",
-        "zh": "        2    = 创建独立虚拟环境（推荐，隔离冲突）",
+        "en": "        Enter = create isolated venv (recommended, avoids conflicts)",
+        "zh": "        回车 = 创建独立虚拟环境（推荐，隔离冲突）",
+    },
+    "setup.opt_downgrade": {
+        "en": "        2    = downgrade {pkg} to {constraint} (affects current env)",
+        "zh": "        2    = 回退 {pkg} 到 {constraint}（影响当前环境）",
     },
     "setup.opt_skip": {
         "en": "        3    = skip, I'll handle it myself",
@@ -281,9 +281,9 @@ _MESSAGES: Dict[str, Dict[str, str]] = {
               "或： pip install cirq",
     },
     "err.cirq_ctrl": {
-        "en": "cirq backend does not support classical control flow "
-              "(cif/cmeasure/cwhile); use qiskit or native backend",
-        "zh": "cirq 后端暂不支持经典控制流（cif/cmeasure/cwhile）；"
+        "en": "cirq backend does not support cmeasure/cwhile (named classical "
+              "registers / feedback loops); use qiskit or native backend",
+        "zh": "cirq 后端暂不支持 cmeasure/cwhile（具名经典寄存器 / 反馈循环）；"
               "请改用 qiskit 或 native 后端",
     },
     "err.cirq_gate": {
@@ -316,9 +316,9 @@ _MESSAGES: Dict[str, Dict[str, str]] = {
               "或： pip install pennylane",
     },
     "err.pennylane_ctrl": {
-        "en": "pennylane backend does not support classical control flow "
-              "(cif/cmeasure/cwhile); use qiskit or native backend",
-        "zh": "pennylane 后端暂不支持经典控制流（cif/cmeasure/cwhile）；"
+        "en": "pennylane backend does not support cmeasure/cwhile (named "
+              "classical registers / feedback loops); use qiskit or native backend",
+        "zh": "pennylane 后端暂不支持 cmeasure/cwhile（具名经典寄存器 / 反馈循环）；"
               "请改用 qiskit 或 native 后端",
     },
     "err.pennylane_gate": {
@@ -442,14 +442,34 @@ _MESSAGES: Dict[str, Dict[str, str]] = {
         "en": "cif control and target qubits cannot be the same",
         "zh": "cif 的控制比特与目标比特不能相同",
     },
+    "err.creg_width": {
+        "en": "creg width must be >= 1, got {width}",
+        "zh": "creg 位宽必须 >= 1，收到 {width}",
+    },
+    "err.creg_bit": {
+        "en": "creg bit index {bit} out of range [0, {width})",
+        "zh": "creg 位索引 {bit} 超出范围 [0, {width})",
+    },
+    "err.creg_bitstring": {
+        "en": "register value must be an int or a bitstring of 0/1, got {value!r}",
+        "zh": "寄存器值必须是 int 或只含 0/1 的比特串，收到 {value!r}",
+    },
+    "err.cif_value": {
+        "en": "cif register value must be in [0, {max}), got {value}",
+        "zh": "cif 的寄存器值必须在 [0, {max}) 内，收到 {value}",
+    },
+    "err.multi_creg_backend": {
+        "en": "multi-bit classical registers are not yet supported by the {backend} backend",
+        "zh": "{backend} 后端暂不支持多比特经典寄存器",
+    },
     "err.cwhile_cond": {
         "en": "cwhile condition must be a classical bit declared with creg(), "
               "got {cond!r}",
         "zh": "cwhile 的条件必须是 creg() 声明的经典位，收到 {cond!r}",
     },
     "err.cwhile_until": {
-        "en": "cwhile until must be 0 or 1, got {until}",
-        "zh": "cwhile 的 until 只能是 0 或 1，收到 {until}",
+        "en": "cwhile until must be a register value in [0, {max}), got {until}",
+        "zh": "cwhile 的 until 必须是 [0, {max}) 内的寄存器值，收到 {until}",
     },
     "err.cwhile_max_iters": {
         "en": "cwhile max_iters must be >= 1, got {max_iters}",
@@ -477,10 +497,10 @@ _MESSAGES: Dict[str, Dict[str, str]] = {
         "zh": "电路无法映射到耦合图（{map}）：以下门的量子比特对不相连 —— {detail}",
     },
     "err.routing_cwhile": {
-        "en": "SWAP routing does not support cwhile (classical feedback loop); run "
-              "with native backend directly, or unroll the loop before routing",
+        "en": "SWAP routing does not support cwhile (classical feedback loop); "
+              "groverize() it into a static circuit first, then compile(route=True)",
         "zh": "SWAP 路由暂不支持 cwhile（经典反馈循环）；"
-              "请改用 native 后端直接运行，或在路由前展开循环",
+              "请先用 groverize() 把它编译成静态电路，再 compile(route=True)",
     },
     "err.routing_disconnected": {
         "en": "coupling map is disconnected, cannot route {name}{qubits}",
@@ -489,6 +509,30 @@ _MESSAGES: Dict[str, Dict[str, str]] = {
     "err.routing_etc": {
         "en": " and {n} more gates",
         "zh": " 等 {n} 个门",
+    },
+    "err.grover_type": {
+        "en": "groverize expects a cwhile operation (ClassicalWhileOperation), got {type}",
+        "zh": "groverize 需要 cwhile 操作（ClassicalWhileOperation），收到 {type}",
+    },
+    "err.grover_prob": {
+        "en": "success_prob must be in (0, 1), got {p}",
+        "zh": "success_prob 需在 (0, 1) 内，收到 {p}",
+    },
+    "err.grover_no_op": {
+        "en": "groverize() must be called after the `with cwhile(...)` block has "
+              "finished (no loop body captured yet)",
+        "zh": "groverize() 必须在 `with cwhile(...)` 块结束后调用（尚未捕获循环体）",
+    },
+    "err.grover_body_unitary": {
+        "en": "cwhile body must be a sequence of unitary gates ending with "
+              "creg.measure(...) ops for the loop creg; measure/cif/cwhile are not "
+              "supported by groverize (fall back to the native backend)",
+        "zh": "cwhile 循环体必须是纯酉门序列并以循环 creg 的 creg.measure(...) 结尾；"
+              "groverize 不支持 measure/cif/cwhile（请回退 native 后端）",
+    },
+    "err.grover_body_bits": {
+        "en": "cwhile body must measure each register bit exactly once for groverize",
+        "zh": "groverize 要求 cwhile 循环体恰好测量寄存器每个位各一次",
     },
 
     # ------------------------------------------------------- simulators
@@ -573,6 +617,80 @@ _MESSAGES: Dict[str, Dict[str, str]] = {
         "en": "Shor's algorithm failed to find a factor of {N}; increase shots / "
               "attempts, or try a different N",
         "zh": "Shor 算法未能找到 {N} 的因子；请增加 shots / attempts，或更换 N",
+    },
+
+    # ------------------------------------------------------------- zne
+    "err.zne_fold_k": {
+        "en": "fold k must be a non-negative integer, got {k}",
+        "zh": "fold 的 k 必须是非负整数，收到 {k}",
+    },
+    "err.zne_fold_unitary": {
+        "en": "cannot fold op '{name}': only unitary gates with trailing "
+              "measurements are foldable",
+        "zh": "无法折叠操作 '{name}'：只能折叠酉门与末尾测量",
+    },
+    "err.zne_factors": {
+        "en": "ZNE factor λ must be an odd integer >= 1, got {lam}",
+        "zh": "ZNE 噪声倍数 λ 必须是 >= 1 的奇数，收到 {lam}",
+    },
+    "err.zne_factors_order": {
+        "en": "ZNE factors must be strictly increasing, got {lam} after {prev}",
+        "zh": "ZNE 噪声倍数必须严格递增，收到 {lam}（前一个为 {prev}）",
+    },
+    "err.zne_metric": {
+        "en": "zne() requires exactly one of target (success metric) or "
+              "observable (expectation metric)",
+        "zh": "zne() 需要 target（成功率指标）或 observable（期望值指标）二选一",
+    },
+    "err.zne_noise": {
+        "en": "zne() requires a non-zero noise model (a probability in (0, 1] "
+              "or a NoiseModel)",
+        "zh": "zne() 需要非零噪声模型（一个 (0, 1] 内的概率或 NoiseModel）",
+    },
+    "err.zne_observable": {
+        "en": "observable must be a Pauli string of I/X/Y/Z, got {observable!r}",
+        "zh": "observable 必须是 I/X/Y/Z 构成的泡利串，收到 {observable!r}",
+    },
+    "err.zne_backend": {
+        "en": "ZNE success metric supports only 'native', 'qiskit', or 'qi' "
+              "backend, got '{backend}'",
+        "zh": "ZNE 成功率指标仅支持 'native'、'qiskit' 或 'qi' 后端，收到 '{backend}'",
+    },
+    "err.zne_qi_noise": {
+        "en": "backend='qi' runs on real hardware with intrinsic noise; do not "
+              "pass a noise model (ZNE folds the circuit to amplify it instead)",
+        "zh": "backend='qi' 跑在真机上，自带本征噪声；请勿传入噪声模型（ZNE 通过折叠电路来放大本征噪声）",
+    },
+    "err.zne_calib_n": {
+        "en": "readout calibration has {calib} qubits but the circuit has "
+              "{qubits}; they must match",
+        "zh": "读出校准覆盖 {calib} 个量子比特，但电路有 {qubits} 个，二者必须一致",
+    },
+    "err.zne_extrap": {
+        "en": "extrapolation must be 'linear' or 'exponential', got {method!r}",
+        "zh": "外推方法必须是 'linear' 或 'exponential'，收到 {method!r}",
+    },
+    "err.zne_scipy": {
+        "en": "exponential extrapolation requires scipy:\n"
+              "    pip install 'quonic[algorithms]'",
+        "zh": "指数外推需要 scipy：\n"
+              "    pip install 'quonic[algorithms]'",
+    },
+
+    # ------------------------------------------------------------ readout
+    "err.readout_n": {
+        "en": "num_qubits must be a positive integer, got {n!r}",
+        "zh": "num_qubits 必须是正整数，收到 {n!r}",
+    },
+    "err.readout_singular": {
+        "en": "readout confusion matrix is singular (readout error p=0.5 or "
+              "degenerate); it cannot be inverted",
+        "zh": "读出混淆矩阵奇异（读出误差 p=0.5 或退化），无法求逆",
+    },
+    "err.readout_correlated_n": {
+        "en": "correlated readout calibration needs 2^n circuits and is limited "
+              "to n <= {max_n}; got n={n}",
+        "zh": "关联读出校准需要 2^n 个电路，仅支持 n <= {max_n}；收到 n={n}",
     },
 
     # ------------------------------------------------------------ misc core

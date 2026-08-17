@@ -153,3 +153,33 @@ def test_guided_setup_skips_sdk_on_n(monkeypatch):
 
     guided_setup(setup, input_=fake_input, run=fake_run)
     assert installed == []
+
+
+# ---------------------------------------------------------------------------
+# _handle_conflict：默认回退到 venv 方案（不污染主环境）
+# ---------------------------------------------------------------------------
+
+def test_conflict_default_is_venv(monkeypatch):
+    c = {"package": "qiskit", "constraint": "<2.4.0"}
+    calls = []
+    monkeypatch.setattr(setup_guide, "_print_venv_guide", lambda: calls.append("venv"))
+    monkeypatch.setattr(
+        setup_guide, "_run_pip", lambda run, target: calls.append(("pip", target))
+    )
+
+    setup_guide._handle_conflict(c, run=lambda *a: None, input_=lambda p="": "")
+    # 回车默认 = 打印 venv 引导，不执行 pip 降级
+    assert calls == ["venv"]
+
+
+def test_conflict_option2_downgrades(monkeypatch):
+    c = {"package": "qiskit", "constraint": "<2.4.0"}
+    calls = []
+    monkeypatch.setattr(setup_guide, "_print_venv_guide", lambda: calls.append("venv"))
+    monkeypatch.setattr(
+        setup_guide, "_run_pip", lambda run, target: calls.append(("pip", target))
+    )
+
+    setup_guide._handle_conflict(c, run=lambda *a: None, input_=lambda p="": "2")
+    # 显式选 2 = 降级
+    assert calls == [("pip", "qiskit<2.4.0")]

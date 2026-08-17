@@ -19,9 +19,11 @@ from typing import Any, List, Optional, Tuple, Type, Union
 from ._i18n import tr
 from .gates import Gate, GateName, resolve
 from .ir import (
+    Circuit,
     ClassicalIfOperation,
     ClassicalWhileOperation,
     CMeasureOperation,
+    CRegCondition,
     GateOperation,
 )
 from .stack import current_circuit, pop, push
@@ -184,35 +186,74 @@ def controlled(
     return ops
 
 
-class CReg:
-    """Named classical bit: holds one measurement result, read by cif / cwhile."""
+def _to_register_value(value: Union[int, str]) -> int:
+    """Normalize a register value to an integer: accept an int or a "0/1" bitstring (MSB first)."""
+    if isinstance(value, str):
+        if not value or any(c not in "01" for c in value):
+            raise ValueError(tr("err.creg_bitstring", value=value))
+        return int(value, 2)
+    return int(value)
 
-    def __init__(self, name: str) -> None:
-        if not isinstance(name, str) or not name:
-            raise ValueError(tr("err.creg_name", name=name))
-        self.name: str = name
+
+class _CRegBit:
+    """A single bit slice of a CReg, enabling ``flag[i].measure(q)``."""
+
+    def __init__(self, creg: CReg, bit: int) -> None:
+        self.creg: CReg = creg
+        self.bit: int = int(bit)
 
     def measure(self, qubit: int) -> CReg:
-        """Measure qubit and store the result in this classical bit. Returns self for chaining."""
-        current_circuit().add(CMeasureOperation(int(qubit), self.name))
+        return self.creg.measure(qubit, self.bit)
+
+
+class CReg:
+    """Named classical register of ``width`` bits (width=1 is a single classical bit).
+
+    Holds measurement results read by cif / cwhile; the register value is an integer
+    in [0, 2**width), where bit i is stored by ``measure(q, bit=i)``.
+    """
+
+    def __init__(self, name: str, width: int = 1) -> None:
+        if not isinstance(name, str) or not name:
+            raise ValueError(tr("err.creg_name", name=name))
+        width = int(width)
+        if width < 1:
+            raise ValueError(tr("err.creg_width", width=width))
+        self.name: str = name
+        self.width: int = width
+
+    def measure(self, qubit: int, bit: int = 0) -> CReg:
+        """Measure qubit into register bit ``bit``. Returns self for chaining."""
+        bit = int(bit)
+        if not 0 <= bit < self.width:
+            raise ValueError(tr("err.creg_bit", bit=bit, width=self.width))
+        current_circuit().add(CMeasureOperation(int(qubit), self.name, bit))
         return self
 
+    def __getitem__(self, bit: int) -> _CRegBit:
+        return _CRegBit(self, bit)
+
     def __repr__(self) -> str:
-        return f"CReg({self.name!r})"
+        if self.width == 1:
+            return f"CReg({self.name!r})"
+        return f"CReg({self.name!r}, width={self.width})"
 
 
-def creg(name: str) -> CReg:
-    """Declare a named classical bit.
+def creg(name: str, width: int = 1) -> CReg:
+    """Declare a named classical register of ``width`` bits (width=1 by default).
 
-    Usage: flag = creg("flag"); flag.measure(0) stores the measurement result of qubit 0;
-    then pass it to cif(flag) / cwhile(flag) for branching or looping.
+    Usage: flag = creg("flag"); flag.measure(0) stores the measurement of qubit 0
+    into bit 0; a width-2 register stores two bits via flag.measure(0, bit=0) and
+    flag.measure(1, bit=1), then cif(flag, 2) / cwhile(flag, until=2) branch or loop
+    on the full register value.
     """
-    return CReg(name)
+    return CReg(name, width)
 
 
 class _CIfBuilder:
-    def __init__(self, control: Union[int, CReg]) -> None:
-        self.control: Union[int, CReg] = control  # int (qubit) or CReg (classical bit)
+    def __init__(self, control: Union[int, CReg], value: Union[int, str] = 1) -> None:
+        self.control: Union[int, CReg] = control  # int (qubit) or CReg (classical register)
+        self._value: Union[int, str] = value
         self._then: Optional[Tuple[Gate, int]] = None
         self._else: Optional[Tuple[Gate, int]] = None
 
@@ -238,7 +279,14 @@ class _CIfBuilder:
         if tt != ft:
             raise ValueError(tr("err.cif_same_target", tt=tt, ft=ft))
         if isinstance(self.control, CReg):
-            ctrl: Union[int, str] = self.control.name
+            reg = self.control
+            v = _to_register_value(self._value)
+            if not 0 <= v < 2 ** reg.width:
+                raise ValueError(tr("err.cif_value", value=self._value, max=2 ** reg.width))
+            # single-bit register with value 1 keeps the plain str control (backward compatible)
+            ctrl: Union[int, str, CRegCondition] = (
+                reg.name if reg.width == 1 and v == 1 else CRegCondition(reg.name, reg.width, v)
+            )
         else:
             ctrl = int(self.control)
             if ctrl == tt:
@@ -252,35 +300,43 @@ class _CIfBuilder:
         return op
 
 
-def cif(control: Union[int, CReg]) -> _CIfBuilder:
+def cif(control: Union[int, CReg], value: Union[int, str] = 1) -> _CIfBuilder:
     """Classical if: apply one of two branch gates depending on the control source.
 
     Unlike qif (quantum-superposition if), cif produces a classical mixed state rather than coherent entanglement.
     control may be:
-      - a qubit index: **measure** that bit first, then branch (measured |1> applies then, |0> applies else)
-      - a CReg (a classical bit declared with creg()): directly read the already-stored measurement result
+      - a qubit index: **measure** that bit first, then branch (measured |1> applies then, |0> applies else);
+        ``value`` is ignored in this form.
+      - a CReg (a classical register declared with creg()): apply then when the register
+        value equals ``value`` (int or "0/1" bitstring), else otherwise. For a single-bit
+        register, ``value`` defaults to 1.
 
     Examples:
         qgate(H, 0)
         cif(0).then(X, 1).else_(Z, 1)      # measure q0 first, then pick one
 
         flag = creg("flag"); flag.measure(0)
-        cif(flag).then(X, 1).else_(I, 1)   # branch on flag's stored result
+        cif(flag).then(X, 1).else_(I, 1)   # branch on flag == 1
+
+        reg = creg("reg", width=2); reg.measure(0, bit=0); reg.measure(1, bit=1)
+        cif(reg, 2).then(X, 2).else_(I, 2) # branch on reg == 2 ("10")
     """
-    return _CIfBuilder(control)
+    return _CIfBuilder(control, value)
 
 
 class _CWhileBuilder:
-    def __init__(self, cond: CReg, until: int, max_iters: int) -> None:
+    def __init__(self, cond: CReg, until: Union[int, str], max_iters: int) -> None:
         if not isinstance(cond, CReg):
             raise TypeError(tr("err.cwhile_cond", cond=cond))
         self.creg: CReg = cond
-        self.until: int = int(until)
-        if self.until not in (0, 1):
-            raise ValueError(tr("err.cwhile_until", until=self.until))
+        self.width: int = cond.width
+        self.until: int = _to_register_value(until)
+        if not 0 <= self.until < 2 ** self.width:
+            raise ValueError(tr("err.cwhile_until", until=until, max=2 ** self.width))
         self.max_iters: int = int(max_iters)
         if self.max_iters < 1:
             raise ValueError(tr("err.cwhile_max_iters", max_iters=self.max_iters))
+        self.op: Optional[ClassicalWhileOperation] = None
 
     def __enter__(self) -> _CWhileBuilder:
         push()  # capture the loop body into a new circuit scope
@@ -295,20 +351,44 @@ class _CWhileBuilder:
         body = pop()
         if exc_type is not None:
             return False  # exception in loop body: already popped, propagate upward
-        op = ClassicalWhileOperation(self.creg.name, self.until, tuple(body.ops))
-        current_circuit().add(op)
+        self.op = ClassicalWhileOperation(
+            self.creg.name, self.until, tuple(body.ops), self.width
+        )
+        current_circuit().add(self.op)
         return False
 
+    def groverize(self, success_prob: Optional[float] = None) -> Circuit:
+        """Compile this loop into a static Grover circuit (see quonic.compiler.groverize).
 
-def cwhile(cond: CReg, until: int = 0, max_iters: int = 10000) -> _CWhileBuilder:
-    """Classical feedback loop (repeat-until-success): repeat the loop body until the creg measurement
-    result equals until. The loop body ends with creg.measure(...) to update the condition.
+        success_prob may be omitted: for a purely unitary body it is inferred exactly by
+        simulation, so the common single-rotation RUS case needs no manual probability.
+        """
+        from .compiler import groverize as _groverize
+
+        if self.op is None:
+            raise ValueError(tr("err.grover_no_op"))
+        return _groverize(self.op, success_prob)
+
+
+def cwhile(
+    cond: CReg, until: Union[int, str] = 0, max_iters: int = 10000
+) -> _CWhileBuilder:
+    """Classical feedback loop (repeat-until-success): repeat the loop body until the creg
+    register value equals until (an int register value, or a "0/1" bitstring MSB-first).
+    The loop body ends with creg.measure(...) to update the condition.
 
     Usage (context manager):
         flag = creg("flag")
         with cwhile(flag, until=0):
             qgate(H, 0)
             flag.measure(0)   # re-measure flag on every attempt
+
+    Capture the loop object and call .groverize() to compile it into a static circuit:
+
+        with cwhile(flag, until=0) as loop:
+            qgate(Ry(2 * math.pi / 3), 0)
+            flag.measure(0)
+        static = loop.groverize()   # success_prob auto-inferred for unitary bodies
 
     Note: only the native backend supports cwhile (dynamic per-shot execution); other backends raise
     NotImplementedError. The loop body must measure the condition creg, otherwise it loops until the

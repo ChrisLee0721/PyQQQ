@@ -42,8 +42,8 @@ from ..ir import Circuit
 from ..noise import NoiseModel
 from ..result import Result
 from .base import Backend
-from .qiskit import QiskitBackend
 from .setup_guide import ensure_ready
+from .translators import TRANSLATORS
 
 # Device alias → official QI device name. Lets qshow(backend="tuna9") / get_backend("qx")
 # work in one step without remembering the exact Tuna-9 / QX emulator spelling.
@@ -129,7 +129,7 @@ class QuantumInspireBackend(Backend):
                 # A named classical bit with no feedback semantics is equivalent to an ordinary measurement, mapped to that bit's own classical bit
                 qc.measure(op.qubit, op.qubit)
             else:
-                QiskitBackend._apply(qc, op)
+                TRANSLATORS[op.name].to_qiskit(qc, op, {})
 
         # Auto-complete: qubits that are not explicitly measured are all measured at the end
         for q in circuit.unmeasured_qubits():
@@ -137,11 +137,13 @@ class QuantumInspireBackend(Backend):
 
         provider = QIProvider()
         backend = provider.get_backend(self.device or DEFAULT_DEVICE)
-        qc_compiled = transpile(qc, backend)
+        # level 3 aggressively reduces depth/SWAP count (matters for deep Grover/QFT circuits on real hardware)
+        qc_compiled = transpile(qc, backend, optimization_level=3)
 
         job = backend.run(qc_compiled, shots=shots)
-        # Real hardware queues, so the timeout is relaxed to 30 minutes; the QX emulator usually returns in seconds
-        result = job.result(timeout=1800)
+        # Real hardware queues (Tuna-17 can exceed 30 min under load), so the timeout
+        # is relaxed to 60 minutes; the QX emulator usually returns in seconds.
+        result = job.result(timeout=3600)
         counts_hex = result.get_counts()
         counts = {
             _hex_to_bitstring(k, circuit.num_qubits): v

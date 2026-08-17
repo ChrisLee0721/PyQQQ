@@ -98,6 +98,42 @@ def test_compile_ignores_measure():
 
 
 # ---------------------------------------------------------------------------
+# compile(route=True)：SWAP 路由 + 高层门分解
+# ---------------------------------------------------------------------------
+
+def test_compile_route_inserts_swaps():
+    # cx(0,2) 在 line(3) 上不相连，route=True 应插入 swap 使其落线
+    c = Circuit()
+    c.add(GateOperation("h", (0,)))
+    c.add(GateOperation("cx", (0, 2)))
+    out = compile(c, CouplingMap.from_line(3), route=True)
+
+    cm = CouplingMap.from_line(3)
+    for op in out.ops:
+        if len(op.qubits) == 2:
+            assert cm.has_edge(*op.qubits), op
+    assert "swap" in [op.name for op in out.ops]
+
+
+def test_compile_route_decomposes_high_level():
+    c = Circuit()
+    c.add(GateOperation("ccx", (0, 1, 2)))
+    out = compile(c, CouplingMap.fully_connected(3), route=True)
+    assert out.ops
+    for op in out.ops:
+        assert op.name in BASIC_GATES
+
+
+def test_compile_route_no_map_decomposes():
+    # route=True 且无耦合图：等价于 decompose()
+    c = Circuit()
+    c.add(GateOperation("ccx", (0, 1, 2)))
+    out = compile(c, route=True)
+    for op in out.ops:
+        assert op.name in BASIC_GATES
+
+
+# ---------------------------------------------------------------------------
 # decompose：用自研 statevector 引擎对拍验证分解正确性
 # ---------------------------------------------------------------------------
 

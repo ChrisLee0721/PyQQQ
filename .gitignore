@@ -231,3 +231,6 @@ docs/test-report.html
 docs/test-report.pdf
 docs/figures/
 docs/video-script.md
+
+# 真机运行结果日志（由 examples 生成，可重新生成）
+qi_*_results.txt

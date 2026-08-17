@@ -46,6 +46,7 @@ from .state import (
     plot_entanglement_profile,
     plot_state_evolution,
 )
+from .zne import plot_zne
 
 __all__ = [
     "plot_circuit",
@@ -72,4 +73,5 @@ __all__ = [
     "plot_hamiltonian",
     "plot_entanglement_profile",
     "plot_noisy_circuit",
+    "plot_zne",
 ]

@@ -5,10 +5,11 @@ from __future__ import annotations
 from typing import Any, List, Optional, Union
 
 from .._i18n import tr
-from ..ir import Circuit, GateOperation
+from ..ir import Circuit
 from ..noise import NoiseModel, resolve_noise
 from ..result import Result
 from .base import Backend
+from .translators import TRANSLATORS
 
 
 def _two_qubit_depolarizing_kraus(p: float) -> List[Any]:
@@ -71,8 +72,9 @@ class PennyLaneBackend(Backend):
 
         @qml.qnode(dev)
         def qnode() -> Any:
+            cregs = {}
             for op in circuit.ops:
-                self._apply(qml, op)
+                TRANSLATORS[op.name].to_pennylane(qml, op, cregs)
                 if nm.enabled and op.name != "measure":
                     if len(op.qubits) == 1 and nm.single > 0.0:
                         qml.DepolarizingChannel(nm.single, wires=op.qubits[0])
@@ -89,46 +91,3 @@ class PennyLaneBackend(Backend):
             key = str(bitstring)[::-1]
             counts[key] = counts.get(key, 0) + count
         return Result.from_counts(counts, shots)
-
-    @staticmethod
-    def _apply(qml: Any, op: GateOperation) -> None:
-        name, qubits = op.name, op.qubits
-        if name == "i":
-            qml.Identity(wires=qubits[0])
-        elif name == "h":
-            qml.Hadamard(wires=qubits[0])
-        elif name == "x":
-            qml.PauliX(wires=qubits[0])
-        elif name == "y":
-            qml.PauliY(wires=qubits[0])
-        elif name == "z":
-            qml.PauliZ(wires=qubits[0])
-        elif name == "cx":
-            qml.CNOT(wires=[qubits[0], qubits[1]])
-        elif name == "cz":
-            qml.CZ(wires=[qubits[0], qubits[1]])
-        elif name == "ccx":
-            qml.Toffoli(wires=[qubits[0], qubits[1], qubits[2]])
-        elif name == "swap":
-            qml.SWAP(wires=[qubits[0], qubits[1]])
-        elif name == "mcz":
-            target = qubits[-1]
-            qml.Hadamard(wires=target)
-            qml.MultiControlledX(wires=list(qubits))
-            qml.Hadamard(wires=target)
-        elif name == "rx":
-            qml.RX(op.params[0], wires=qubits[0])
-        elif name == "ry":
-            qml.RY(op.params[0], wires=qubits[0])
-        elif name == "rz":
-            qml.RZ(op.params[0], wires=qubits[0])
-        elif name == "cp":
-            qml.ControlledPhaseShift(op.params[0], wires=[qubits[0], qubits[1]])
-        elif name == "p":
-            qml.PhaseShift(op.params[0], wires=qubits[0])
-        elif name == "measure":
-            return  # qml.counts() measures all wires, so an explicit measure needs no extra operation
-        elif name in ("cif", "cmeasure", "cwhile"):
-            raise NotImplementedError(tr("err.pennylane_ctrl"))
-        else:
-            raise ValueError(tr("err.pennylane_gate", name=name))

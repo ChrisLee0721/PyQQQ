@@ -7,7 +7,7 @@
 
 import pytest
 
-from quonic import cif, qgate, reset
+from quonic import cif, creg, qgate, reset
 from quonic.backends import get_backend
 from quonic.gates import CX, MEASURE, H, I, X, Z
 from quonic.stack import current_circuit
@@ -100,12 +100,23 @@ def test_cif_rejects_stabilizer():
 
 
 @pytest.mark.parametrize("backend", ["cirq", "pennylane"])
-def test_cif_rejects_unsupported_backends(backend):
+def test_cif_works_on_cirq_pennylane(backend):
+    pytest.importorskip(backend)
     reset()
-    qgate(H, 0)
-    cif(0).then(X, 1).else_(Z, 1)
-    with pytest.raises(NotImplementedError):
-        _run(shots=16, backend=backend)
+    qgate(X, 0)
+    cif(0).then(X, 1).else_(I, 1)
+    result = _run(shots=256, backend=backend)
+    assert result.counts == {"11": 256}
+
+
+@pytest.mark.parametrize("backend", ["cirq", "pennylane"])
+def test_cmeasure_standalone_cirq_pennylane(backend):
+    pytest.importorskip(backend)
+    reset()
+    flag = creg("flag")
+    flag.measure(0)
+    result = _run(shots=256, backend=backend)
+    assert result.counts == {"0": 256}
 
 
 # ---------------------------------------------------------------------------

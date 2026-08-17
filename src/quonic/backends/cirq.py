@@ -2,14 +2,14 @@
 
 from __future__ import annotations
 
-import math
-from typing import Any, List, Optional, Union
+from typing import Optional, Union
 
 from .._i18n import tr
-from ..ir import Circuit, GateOperation
+from ..ir import Circuit
 from ..noise import NoiseModel, resolve_noise
 from ..result import Result
 from .base import Backend
+from .translators import TRANSLATORS
 
 
 class CirqBackend(Backend):
@@ -32,8 +32,9 @@ class CirqBackend(Backend):
         n = circuit.num_qubits
         qubits = [cirq.LineQubit(i) for i in range(n)]
         ops = []
+        cregs = {}
         for op in circuit.ops:
-            ops.extend(self._to_ops(cirq, op, qubits))
+            ops.extend(TRANSLATORS[op.name].to_cirq(cirq, op, qubits, cregs))
             if nm.enabled and op.name != "measure":
                 nq = len(op.qubits)
                 if nq == 1 and nm.single > 0.0:
@@ -57,50 +58,3 @@ class CirqBackend(Backend):
             bitstring = "".join(str(int(b)) for b in reversed(bits))
             counts[bitstring] = counts.get(bitstring, 0) + 1
         return Result.from_counts(counts, shots)
-
-    @staticmethod
-    def _to_ops(cirq: Any, op: GateOperation, qubits: List[Any]) -> List[Any]:
-        name, q = op.name, op.qubits
-        if name == "i":
-            return [cirq.I(qubits[q[0]])]
-        if name == "h":
-            return [cirq.H(qubits[q[0]])]
-        if name == "x":
-            return [cirq.X(qubits[q[0]])]
-        if name == "y":
-            return [cirq.Y(qubits[q[0]])]
-        if name == "z":
-            return [cirq.Z(qubits[q[0]])]
-        if name == "cx":
-            return [cirq.CNOT(qubits[q[0]], qubits[q[1]])]
-        if name == "cz":
-            return [cirq.CZ(qubits[q[0]], qubits[q[1]])]
-        if name == "ccx":
-            return [cirq.CCNOT(qubits[q[0]], qubits[q[1]], qubits[q[2]])]
-        if name == "swap":
-            return [cirq.SWAP(qubits[q[0]], qubits[q[1]])]
-        if name == "mcz":
-            return [
-                cirq.ControlledGate(cirq.Z, num_controls=len(q) - 1).on(
-                    *(qubits[i] for i in q)
-                )
-            ]
-        if name == "rx":
-            return [cirq.rx(op.params[0])(qubits[q[0]])]
-        if name == "ry":
-            return [cirq.ry(op.params[0])(qubits[q[0]])]
-        if name == "rz":
-            return [cirq.rz(op.params[0])(qubits[q[0]])]
-        if name == "cp":
-            return [
-                cirq.CZPowGate(exponent=op.params[0] / math.pi).on(
-                    qubits[q[0]], qubits[q[1]]
-                )
-            ]
-        if name == "p":
-            return [cirq.ZPowGate(exponent=op.params[0] / math.pi).on(qubits[q[0]])]
-        if name == "measure":
-            return [cirq.measure(qubits[q[0]], key=f"m{q[0]}")]
-        if name in ("cif", "cmeasure", "cwhile"):
-            raise NotImplementedError(tr("err.cirq_ctrl"))
-        raise ValueError(tr("err.cirq_gate", name=name))

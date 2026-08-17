@@ -230,11 +230,11 @@ def _handle_conflict(
     c: Dict[str, str], run: Callable[..., Any], input_: Callable[[str], str]
 ) -> None:
     print(tr("setup.how_to_handle"))
-    print(tr("setup.opt_downgrade", pkg=c["package"], constraint=c["constraint"]))
     print(tr("setup.opt_venv"))
+    print(tr("setup.opt_downgrade", pkg=c["package"], constraint=c["constraint"]))
     print(tr("setup.opt_skip"))
     ans = _menu(tr("setup.prompt_input"), input_, default="1")
-    if ans == "2":
+    if ans == "1":
         _print_venv_guide()
         return
     if ans == "3":

@@ -18,17 +18,31 @@ class GateOperation:
 
 
 @dataclass(frozen=True)
+class CRegCondition:
+    """A multi-bit classical register equality test: the branch/loop condition
+    ``creg == value`` for a register of ``width`` bits.
+
+    ``value`` is the integer register value in [0, 2**width).
+    """
+
+    creg: str
+    width: int
+    value: int
+
+
+@dataclass(frozen=True)
 class ClassicalIfOperation:
     """Classical control flow: apply one of two branch gates depending on the control source.
 
     Unlike qif's quantum superposition, this produces a classical mixed state (incoherent entanglement).
     control may be:
       - int: measure that qubit (measure first, then branch)
-      - str: read the measurement result already stored in the named classical bit creg
+      - str: read the measurement result already stored in the named single-bit creg (then when == 1)
+      - CRegCondition: read the named multi-bit register, then when register == value
     then_op / else_op are single-bit branch gates.
     """
 
-    control: Union[int, str]
+    control: Union[int, str, CRegCondition]
     then_op: GateOperation
     else_op: GateOperation
 
@@ -52,10 +66,12 @@ class ClassicalIfOperation:
 
 @dataclass(frozen=True)
 class CMeasureOperation:
-    """Measure qubit and store the result in the named classical bit creg."""
+    """Measure qubit and store the result in the ``bit``-th position of the named
+    classical register creg (bit defaults to 0 for the single-bit case)."""
 
     qubit: int
     creg: str
+    bit: int = 0
 
     @property
     def name(self) -> str:
@@ -72,15 +88,18 @@ class CMeasureOperation:
 
 @dataclass(frozen=True)
 class ClassicalWhileOperation:
-    """Classical feedback loop: repeat body until the creg measurement result equals until.
+    """Classical feedback loop: repeat body until the creg register value equals until.
 
-    body is a tuple of ops (usually ending with creg.measure(...) to update the condition),
-    the core of repeat-until-success (RUS) dynamic circuits.
+    ``width`` is the number of bits of the creg register (1 for a single bit);
+    ``until`` is the integer register value in [0, 2**width). body is a tuple of
+    ops (usually ending with creg.measure(...) to update the condition), the core
+    of repeat-until-success (RUS) dynamic circuits.
     """
 
     creg: str
     until: int
     body: Tuple[object, ...]
+    width: int = 1
 
     @property
     def name(self) -> str:

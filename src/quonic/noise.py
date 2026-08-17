@@ -18,25 +18,27 @@ from ._i18n import tr
 
 @dataclass(frozen=True)
 class NoiseModel:
-    """Depolarizing noise model.
+    """Depolarizing + readout noise model.
 
     Parameters:
         single: depolarizing probability p applied after each single-qubit gate.
         double: depolarizing probability p applied after each two-qubit gate.
+        readout: probability p that a measured bit is misread (flipped) at the end.
     """
 
     single: float = 0.0
     double: float = 0.0
+    readout: float = 0.0
 
     def __post_init__(self) -> None:
-        for name in ("single", "double"):
+        for name in ("single", "double", "readout"):
             p = getattr(self, name)
             if not 0.0 <= p <= 1.0:
                 raise ValueError(tr("err.noise_prob", name=name, p=p))
 
     @property
     def enabled(self) -> bool:
-        return self.single > 0.0 or self.double > 0.0
+        return self.single > 0.0 or self.double > 0.0 or self.readout > 0.0
 
 
 def depolarizing(p: float) -> NoiseModel:

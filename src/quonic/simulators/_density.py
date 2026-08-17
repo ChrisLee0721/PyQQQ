@@ -6,6 +6,7 @@ logical gate (depolarizing channel).
 
 from __future__ import annotations
 
+import functools
 from typing import Any, Dict, Optional, Sequence, Tuple, Union
 
 import numpy as np
@@ -126,6 +127,12 @@ class DensityMatrixEngine:
         probs = np.clip(probs, 0.0, None)
         probs = probs / probs.sum()
         idx = np.random.choice(2 ** self.n, size=shots, p=probs)
+        p = self.noise.readout
+        if p > 0.0:
+            # readout error: flip each measured bit independently with probability p
+            flips = np.random.random((shots, self.n)) < p
+            mask = (flips * (1 << np.arange(self.n))).sum(axis=1)
+            idx = idx ^ mask.astype(int)
         counts: Dict[str, int] = {}
         fmt = f"0{self.n}b"
         for i in idx:
@@ -153,3 +160,17 @@ class DensityMatrixEngine:
         if tr > 0.0:
             self.rho /= tr
         return outcome
+
+    def expectation(self, pauli_string: str) -> float:
+        """Compute ⟨O⟩ = Tr(ρ·O) for the Pauli product O described by pauli_string.
+
+        pauli_string[i] acts on qubit i (qubit 0 is the least-significant bit),
+        matching StatevectorSimulator.expectation.
+        """
+        if len(pauli_string) != self.n:
+            raise ValueError(
+                tr("err.pauli_len", actual=len(pauli_string), expected=self.n)
+            )
+        _P = {"I": _I, "X": _X, "Y": _Y, "Z": _Z}
+        o = functools.reduce(np.kron, [_P[p] for p in reversed(pauli_string)])
+        return float(np.real(np.trace(self.rho @ o)))
