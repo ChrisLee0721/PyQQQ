@@ -163,17 +163,19 @@ class CudaQBackend(EngineBackend):
         for op in ops:
             name = op.name
             if name == "cmeasure":
-                # CUDA-Q doesn't support mid-circuit measurement natively
-                # We can't truly collapse; just record a random outcome
+                # CUDA-Q doesn't support mid-circuit measurement natively.
+                # Use random outcome as approximation (no state collapse).
+                import random as _rnd
 
-                cregs[op.creg] = cregs.get(op.creg, 0)  # placeholder
-                outcome = 0  # CUDA-Q limitation
+                outcome = _rnd.randint(0, 1)
                 v = cregs.get(op.creg, 0)
                 cregs[op.creg] = (v & ~(1 << op.bit)) | (outcome << op.bit)
             elif name == "cif":
                 if isinstance(op.control, int):
-                    # Can't measure mid-kernel; assume |0> for CUDA-Q
-                    hit = False
+                    # Can't measure mid-kernel; random outcome as approximation
+                    import random as _rnd
+
+                    hit = _rnd.randint(0, 1) == 1
                 elif isinstance(op.control, CRegCondition):
                     hit = cregs.get(op.control.creg, 0) == op.control.value
                 else:

@@ -214,6 +214,231 @@ class EngineBackend(Backend):
         raise NotImplementedError(tr("err.engine_no_measure", name=self.name))
 
     # ------------------------------------------------------------------ #
+    #  Numpy state-vector helpers for dynamic path
+    # ------------------------------------------------------------------ #
+
+    def _run_dynamic_sv(self, circuit, shots, nm):
+        """Generic dynamic-path implementation using numpy state vectors.
+
+        Backends that don't have a stateful SDK engine can use this as their
+        _run_dynamic: it builds the state vector in pure numpy, supports
+        mid-circuit measurement with collapse, and samples at the end.
+        """
+        import numpy as np
+
+        n = circuit.num_qubits
+        counts: Dict[str, int] = {}
+
+        for _ in range(shots):
+            sv = np.zeros(2**n, dtype=complex)
+            sv[0] = 1.0
+            cregs: Dict[str, int] = {}
+            sv = self._sv_execute(sv, circuit.ops, cregs, n)
+            probs = np.abs(sv) ** 2
+            probs = probs / probs.sum()
+            idx = np.random.choice(2**n, p=probs)
+            bs = format(idx, f"0{n}b")[::-1]
+            counts[bs] = counts.get(bs, 0) + 1
+
+        if nm.readout > 0:
+            counts = self._apply_readout_noise(counts, n, nm.readout)
+        return Result.from_counts(counts, shots)
+
+    def _sv_execute(self, sv, ops, cregs, n):
+        """Execute ops on a numpy state vector, collapsing on measurement."""
+
+        for op in ops:
+            name = op.name
+            if name == "cmeasure":
+                outcome = self._sv_measure(sv, op.qubit, n)
+                sv = self._sv_collapse(sv, op.qubit, n, outcome)
+                v = cregs.get(op.creg, 0)
+                cregs[op.creg] = (v & ~(1 << op.bit)) | (outcome << op.bit)
+            elif name == "cif":
+                if isinstance(op.control, int):
+                    outcome = self._sv_measure(sv, op.control, n)
+                    sv = self._sv_collapse(sv, op.control, n, outcome)
+                    hit = outcome == 1
+                elif isinstance(op.control, CRegCondition):
+                    hit = cregs.get(op.control.creg, 0) == op.control.value
+                else:
+                    hit = cregs.get(op.control, 0) == 1
+                branch = op.then_op if hit else op.else_op
+                sv = self._sv_apply_gate(sv, branch.name, list(branch.qubits), branch.params, n)
+            elif name == "cwhile":
+                iters = 0
+                while cregs.get(op.creg, 0) != op.until:
+                    sv = self._sv_execute(sv, op.body, cregs, n)
+                    iters += 1
+                    if iters > 100000:
+                        raise RuntimeError(tr("err.cwhile_limit", creg=op.creg))
+            elif name == "measure":
+                pass
+            else:
+                sv = self._sv_apply_gate(sv, name, list(op.qubits), op.params, n)
+        return sv
+
+    def _sv_apply_gate(self, sv, name, qubits, params, n):
+        """Apply a gate to a numpy state vector."""
+
+        if name in ("measure", "identity", "i"):
+            return sv
+
+        u = self._sv_gate_matrix(name, params)
+        if u is not None and len(qubits) == 1:
+            return self._sv_apply_single(sv, u, qubits[0], n)
+
+        if name == "cx" and len(qubits) == 2:
+            return self._sv_apply_cx(sv, qubits[0], qubits[1], n)
+        if name == "cz" and len(qubits) == 2:
+            return self._sv_apply_cz(sv, qubits[0], qubits[1], n)
+        if name == "cp" and len(qubits) == 2:
+            return self._sv_apply_cp(sv, qubits[0], qubits[1], params[0], n)
+        if name == "ccx" and len(qubits) == 3:
+            return self._sv_apply_ccx(sv, qubits[0], qubits[1], qubits[2], n)
+        if name == "swap" and len(qubits) == 2:
+            return self._sv_apply_swap(sv, qubits[0], qubits[1], n)
+        if name == "mcz":
+            return self._sv_apply_mcz(sv, qubits, n)
+        return sv
+
+    @staticmethod
+    def _sv_gate_matrix(name, params):
+        """Return 2x2 unitary matrix for a single-qubit gate."""
+        import numpy as np
+
+        if name == "h":
+            return np.array([[1, 1], [1, -1]], dtype=complex) / np.sqrt(2)
+        if name == "x":
+            return np.array([[0, 1], [1, 0]], dtype=complex)
+        if name == "y":
+            return np.array([[0, -1j], [1j, 0]], dtype=complex)
+        if name == "z":
+            return np.array([[1, 0], [0, -1]], dtype=complex)
+        if name == "rx":
+            t = params[0]
+            return np.array(
+                [[np.cos(t / 2), -1j * np.sin(t / 2)], [-1j * np.sin(t / 2), np.cos(t / 2)]],
+                dtype=complex,
+            )
+        if name == "ry":
+            t = params[0]
+            return np.array(
+                [[np.cos(t / 2), -np.sin(t / 2)], [np.sin(t / 2), np.cos(t / 2)]],
+                dtype=complex,
+            )
+        if name == "rz":
+            t = params[0]
+            return np.array(
+                [[np.exp(-1j * t / 2), 0], [0, np.exp(1j * t / 2)]], dtype=complex
+            )
+        if name == "p":
+            t = params[0]
+            return np.array([[1, 0], [0, np.exp(1j * t)]], dtype=complex)
+        return None
+
+    @staticmethod
+    def _sv_apply_single(sv, u, qubit, n):
+        """Apply a single-qubit gate to a state vector."""
+
+        new_sv = sv.copy()
+        for i in range(2**n):
+            if (i >> qubit) & 1 == 0:
+                j = i | (1 << qubit)
+                a, b = sv[i], sv[j]
+                new_sv[i] = u[0, 0] * a + u[0, 1] * b
+                new_sv[j] = u[1, 0] * a + u[1, 1] * b
+        return new_sv
+
+    @staticmethod
+    def _sv_apply_cx(sv, control, target, n):
+        """Apply CX (CNOT) gate."""
+        new_sv = sv.copy()
+        for i in range(2**n):
+            if (i >> control) & 1 == 1:
+                j = i ^ (1 << target)
+                new_sv[i] = sv[j]
+                new_sv[j] = sv[i]
+        return new_sv
+
+    @staticmethod
+    def _sv_apply_cz(sv, q0, q1, n):
+        """Apply CZ gate."""
+        new_sv = sv.copy()
+        for i in range(2**n):
+            if (i >> q0) & 1 == 1 and (i >> q1) & 1 == 1:
+                new_sv[i] = -sv[i]
+        return new_sv
+
+    @staticmethod
+    def _sv_apply_cp(sv, q0, q1, theta, n):
+        """Apply controlled-phase gate."""
+        import numpy as np
+
+        new_sv = sv.copy()
+        for i in range(2**n):
+            if (i >> q0) & 1 == 1 and (i >> q1) & 1 == 1:
+                new_sv[i] = np.exp(1j * theta) * sv[i]
+        return new_sv
+
+    @staticmethod
+    def _sv_apply_ccx(sv, c0, c1, target, n):
+        """Apply Toffoli (CCX) gate."""
+        new_sv = sv.copy()
+        for i in range(2**n):
+            if (i >> c0) & 1 == 1 and (i >> c1) & 1 == 1:
+                j = i ^ (1 << target)
+                new_sv[i] = sv[j]
+                new_sv[j] = sv[i]
+        return new_sv
+
+    @staticmethod
+    def _sv_apply_swap(sv, q0, q1, n):
+        """Apply SWAP gate."""
+        new_sv = sv.copy()
+        for i in range(2**n):
+            b0 = (i >> q0) & 1
+            b1 = (i >> q1) & 1
+            if b0 != b1:
+                j = i ^ (1 << q0) ^ (1 << q1)
+                new_sv[i] = sv[j]
+                new_sv[j] = sv[i]
+        return new_sv
+
+    @staticmethod
+    def _sv_apply_mcz(sv, qubits, n):
+        """Apply multi-controlled Z gate."""
+        new_sv = sv.copy()
+        for i in range(2**n):
+            if all((i >> q) & 1 == 1 for q in qubits):
+                new_sv[i] = -sv[i]
+        return new_sv
+
+    @staticmethod
+    def _sv_measure(sv, qubit, n):
+        """Measure a qubit from a state vector, return 0 or 1."""
+        import numpy as np
+
+        idx = np.arange(2**n)
+        bit = (idx >> qubit) & 1
+        p0 = float(np.sum(np.abs(sv[bit == 0]) ** 2))
+        return 0 if np.random.random() < p0 else 1
+
+    @staticmethod
+    def _sv_collapse(sv, qubit, n, outcome):
+        """Collapse state vector after measurement."""
+        import numpy as np
+
+        idx = np.arange(2**n)
+        bit = (idx >> qubit) & 1
+        new_sv = sv.copy()
+        new_sv[bit != outcome] = 0.0
+        norm = np.linalg.norm(new_sv)
+        if norm > 0:
+            new_sv /= norm
+        return new_sv
+
+    # ------------------------------------------------------------------ #
     #  Shared helpers
     # ------------------------------------------------------------------ #
 
