@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "quonic"
-version = "0.4.2"
+version = "0.5.0"
 description = "量子编程，像写 Python 一样简单"
 readme = "README.md"
 requires-python = ">=3.9"
@@ -34,6 +34,7 @@ cudaq = ["cuda-quantum>=0.8"]
 mindquantum = ["mindquantum>=0.9"]
 qpanda = ["pyqpanda3>=3.0"]
 cqlib = ["cqlib>=0.1"]
+gpu = ["cupy-cuda12x>=13.0"]
 all-sim = ["quonic[qulacs,tensorcircuit,cudaq,mindquantum,qpanda,cqlib]"]
 dev = ["pytest>=7.0", "numpy>=1.24", "scipy>=1.10", "matplotlib>=3.5", "ruff>=0.9"]
 

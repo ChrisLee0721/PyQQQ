@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import FrozenSet, Optional, Union
+from typing import Dict, FrozenSet, Optional, Union
 
 from ..ir import Circuit
 from ..noise import NoiseModel
@@ -14,6 +14,14 @@ class Backend(ABC):
     name: str = "base"
     # Set of method names this backend supports (overridden by subclasses). The scheduler uses this for capability matching and fallback.
     methods: FrozenSet[str] = frozenset({"statevector"})
+
+    # Capability matrix — subclasses override to declare support.
+    _CAPABILITIES: Dict[str, bool] = {
+        "noise": False,
+        "ctrl": False,
+        "mid_measure": False,
+        "gpu": False,
+    }
 
     def supports(self, method: str) -> bool:
         """Whether this backend supports the given simulation method."""

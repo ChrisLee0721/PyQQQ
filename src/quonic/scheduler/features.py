@@ -64,12 +64,25 @@ def _bucket_key(f: Dict[str, Any]) -> str:
     return f"{n_bucket}|{cliff}|{tw_bucket}|{depth_bucket}"
 
 
+def _entanglement_level(tw: int, n: int) -> str:
+    """Entanglement level: proxy for tensor-network vs statevector choice."""
+    ratio = tw / max(n, 1)
+    if ratio < 0.2:
+        return "low"
+    if ratio < 0.5:
+        return "medium"
+    return "high"
+
+
 def circuit_features(circuit: Circuit) -> Dict[str, Any]:
     """Extract circuit features and return a dict whose features['key'] is a hashable bucketing key."""
     gate_types = _gate_types(circuit)
     edges = _interaction_graph(circuit)
     tw = _treewidth_upper_bound(circuit.num_qubits, edges)
     is_clifford = all(g in CLIFFORD_GATES for g in gate_types)
+    has_ctrl = any(
+        op.name in ("cif", "cmeasure", "cwhile") for op in circuit.ops
+    )
     feats: Dict[str, Any] = {
         "n": circuit.num_qubits,
         "depth": circuit.depth(),
@@ -77,6 +90,8 @@ def circuit_features(circuit: Circuit) -> Dict[str, Any]:
         "gate_types": gate_types,
         "is_clifford": is_clifford,
         "treewidth_ub": tw,
+        "entanglement": _entanglement_level(tw, circuit.num_qubits),
+        "has_ctrl": has_ctrl,
     }
     feats["key"] = _bucket_key(feats)
     return feats

@@ -2,7 +2,87 @@
 
 本项目所有重要变更都记录于此。All notable changes to this project are documented here.
 
-## [0.4.0] — 2026-08-17
+## [0.5.0] — 2026-08-19
+
+GPU 智能调度 + 7 个新后端 + 误差缓解增强 + 大量 bug 修复。GPU smart scheduling,
+7 new backends, error mitigation enhancements, and numerous bug fixes.
+
+### 新增 Added
+
+- **GPU 智能调度** `method="gpu"` + `recommend_backend_gpu()`：根据电路特征（纠缠级别 /
+  经典控制流 / 电路大小）自动选择最优 GPU 后端。CuPy 通用引擎作为兜底。
+  **GPU smart scheduling** `method="gpu"` + `recommend_backend_gpu()`: automatically selects
+  the best GPU backend based on circuit features (entanglement / classical control / size).
+  CuPy universal engine as fallback.
+
+- **CuPy 通用引擎** `backends/cupy_engine.py`：基于 CuPy（numpy GPU drop-in）的状态向量
+  模拟器，支持噪声注入和经典控制流，自动检测 CUDA/ROCm，无 GPU 时 fallback numpy。
+  **CuPy universal engine**: CuPy-based statevector simulator with noise and classical control
+  flow support, auto-detects CUDA/ROCm, falls back to numpy when no GPU.
+
+- **7 个后端 GPU 变体**：qulacs / tensorcircuit / pennylane / qiskit / mindquantum / qpanda /
+  cudaq 各自接入原生 GPU（QuantumStateGpu / JAX / lightning.gpu / Aer GPU 等）。
+  **7 backend GPU variants**: each backend connects to its native GPU implementation.
+
+- **能力矩阵** `_CAPABILITIES`：每个后端声明支持的特性（noise / ctrl / mid_measure / gpu），
+  `run()` 入口检查，不支持时抛统一错误。
+  **Capability matrix**: each backend declares supported features, `run()` checks at entry.
+
+- **电路特征扩展** `scheduler/features.py`：新增 `entanglement`（纠缠级别）和 `has_ctrl`
+  （经典控制流）特征，用于 GPU 调度决策。
+  **Circuit features**: new `entanglement` and `has_ctrl` features for GPU scheduling.
+
+- **cirq / pennylane 多比特 creg**：`cmeasure` 支持 `bit > 0`，`cif` 支持 `CRegCondition`
+  （多比特寄存器相等判据）。
+  **cirq / pennylane multi-bit creg**: `cmeasure` supports `bit > 0`, `cif` supports
+  `CRegCondition` (multi-bit register equality).
+
+- **新 example**：`gpu_demo/`（GPU 加速演示）、`error_mitigation/`（误差缓解演示）。
+  **New examples**: `gpu_demo/` (GPU acceleration), `error_mitigation/` (ZNE + readout calibration).
+
+- **新测试**：`test_gpu.py`（GPU 分发 / CuPy 引擎 / 能力矩阵 / 智能调度）。
+  **New tests**: GPU dispatch, CuPy engine, capability matrix, smart scheduling.
+
+### 变更 Changed
+
+- **TensorCircuit numpy patch 隔离**：`_tc_compat()` 上下文管理器，patch 入口 restore 出口，
+  不再全局污染 numpy。
+  **TensorCircuit numpy patch isolation**: context manager patches on entry, restores on exit.
+
+- **向量化 `_apply_readout_noise`**：从逐 shot Python 循环改为 numpy tensordot 张量收缩。
+  **Vectorized readout noise**: numpy tensordot instead of per-shot Python loop.
+
+- **CuPy 多比特门向量化**：CX / CCX / CZ / CP / SWAP / MCZ 全部用 numpy 索引替代
+  Python 循环。
+  **CuPy multi-qubit gate vectorization**: all gates use numpy indexing instead of Python loops.
+
+- **`_i18n.py`**：新增 `err.no_gpu` / `err.gpu_missing` / `err.gpu_fallback_failed` 错误消息。
+  **i18n**: new GPU error messages.
+
+- **`pyproject.toml`**：新增 `gpu = ["cupy-cuda12x"]` 可选依赖。
+  **pyproject.toml**: new `gpu` optional dependency.
+
+### 修复 Fixed
+
+- **ZNE success metric 外推被忽略**：`zne.py` success metric 路径硬编码线性外推，现改为
+  使用 `extrapolation` 参数 + 成功概率 clamp 到 [0,1]。
+  **ZNE success metric extrapolation ignored**: now uses the `extrapolation` parameter
+  and clamps success probability to [0,1].
+
+- **读出校准混淆矩阵奇异**：`readout.py` 捕获 `LinAlgError`，fallback Tikhonov 正则化。
+  **Readout calibration singular matrix**: falls back to Tikhonov regularization.
+
+- **读出校准无比特数校验**：`apply()` 加 n>20 时显存用量 warning。
+  **Readout calibration no qubit limit**: `apply()` warns when n>20.
+
+- **qshow_all 多进程 + CUDA**：加 warning（CUDA context 不可跨进程继承）。
+  **qshow_all multiprocessing + CUDA**: added warning about CUDA context.
+
+- **GPU 显存预检查**：CuPy 引擎在分配前检查可用显存，不足时抛 MemoryError。
+  **GPU memory pre-check**: CuPy engine checks available memory before allocation.
+
+- **CuPy fallback 错误信息**：捕获 CuPy 异常，重新抛出带原始后端名的错误。
+  **CuPy fallback error messages**: re-raises with original backend name.
 
 引擎后端全面升级、77 个算法模板、并行执行支持。Major release: engine backend upgrades,
 77 algorithm templates, and parallel execution support.

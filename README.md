@@ -3,7 +3,7 @@
 [![CI](https://github.com/ChrisLee0721/QuoNic/actions/workflows/ci.yml/badge.svg)](https://github.com/ChrisLee0721/QuoNic/actions/workflows/ci.yml)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
 [![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/)
-[![Version](https://img.shields.io/badge/version-0.4.0-purple.svg)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-0.5.0-purple.svg)](CHANGELOG.md)
 
 [![Qiskit](https://img.shields.io/badge/Qiskit-1.0+-green.svg)](https://qiskit.org/)
 [![Cirq](https://img.shields.io/badge/Cirq-1.0+-orange.svg)](https://quantumai.google/cirq)
@@ -14,7 +14,7 @@
 [![MindQuantum](https://img.shields.io/badge/MindQuantum-0.9+-blue.svg)](https://gitee.com/mindspore/mindquantum)
 [![QPanda3](https://img.shields.io/badge/QPanda3-3.0+-orange.svg)](https://qcloud.originqc.com.cn/)
 [![77 Algorithms](https://img.shields.io/badge/algorithms-77-blueviolet.svg)](src/quonic/algorithms/)
-[![379 Tests](https://img.shields.io/badge/tests-379%20passed-brightgreen.svg)](tests/)
+[![481 Tests](https://img.shields.io/badge/tests-481%20passed-brightgreen.svg)](tests/)
 
 **QuoNic is a tool that makes quantum programming as simple as writing Python.**
 
@@ -37,7 +37,7 @@ qshow()
 
 **This is the Bell state — the most classic result in quantum computing.** The same thing takes 10+ lines in raw Qiskit. QuoNic does it in 3. The result appears directly in your terminal or Jupyter.
 
-More copy-and-run examples (GHZ, `qif`, `QInt`, Grover, VQE, QAOA, noise) live in [`examples/`](examples/).
+More copy-and-run examples (GHZ, `qif`, `QInt`, Grover, VQE, QAOA, noise, GPU acceleration, error mitigation) live in [`examples/`](examples/).
 
 ---
 
@@ -146,7 +146,32 @@ rec = schedule(circuit)   # -> Recommendation(backend='qiskit', method='stabiliz
 
 See [scheduler benchmarks and measurements](docs/benchmarks.md).
 
-### 6. Full visualization suite: 23 chart types with only Matplotlib
+### 6. GPU acceleration — one argument
+
+```python
+qshow(method='gpu')                              # GPU on current backend
+qshow(backend='qulacs', method='gpu')            # qulacs GPU (fallback CuPy)
+```
+
+The scheduler can also pick the best GPU backend automatically:
+
+```python
+from quonic.scheduler import recommend_backend_gpu, circuit_features
+
+rec = recommend_backend_gpu(circuit_features(circuit))
+# -> Recommendation(backend='qulacs', method='gpu')
+```
+
+| Circuit type | Best GPU backend | Why |
+|---|---|---|
+| High entanglement, small n | qulacs | fastest statevector GPU |
+| Low entanglement, large n | tensorcircuit | tensor network on GPU |
+| Classical control flow | qulacs | stateful collapse |
+| Fallback | cupy | universal GPU engine |
+
+Install: `pip install 'quonic[gpu]'` (CuPy) or `pip install 'quonic[qulacs]'` (native GPU).
+
+### 7. Full visualization suite: 23 chart types with only Matplotlib
 
 ```python
 from quonic.viz import plot_circuit, plot_counts, plot_decision_tree

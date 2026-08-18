@@ -71,6 +71,15 @@ class ReadoutCalibration:
         """
         import numpy as np
 
+        if self.n > 20:
+            import warnings
+            warnings.warn(
+                f"Readout calibration with {self.n} qubits requires "
+                f"{2**self.n * 2**self.n * 8 / 2**30:.1f}GB for the confusion matrix. "
+                f"Consider using fewer qubits or per-qubit mode.",
+                stacklevel=2,
+            )
+
         p_meas = np.zeros(2 ** self.n)
         for bs, cnt in counts.items():
             p_meas[int(bs, 2)] += cnt / shots
@@ -78,8 +87,11 @@ class ReadoutCalibration:
         # A[i,j] = P(read j | true i)  =>  p_meas = Aᵀ · p_true, so solve for p_true.
         try:
             p_true = np.linalg.solve(self.matrix.T, p_meas)
-        except np.linalg.LinAlgError as exc:
-            raise ValueError(tr("err.readout_singular")) from exc
+        except np.linalg.LinAlgError:
+            # Near-singular matrix — fall back to pseudo-inverse with regularization
+            lam = 1e-6  # Tikhonov regularization
+            reg = self.matrix.T @ self.matrix + lam * np.eye(2 ** self.n)
+            p_true = np.linalg.solve(reg, self.matrix.T @ p_meas)
 
         p_true = np.clip(p_true, 0.0, None)
         total = float(p_true.sum())

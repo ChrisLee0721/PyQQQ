@@ -14,6 +14,7 @@ class QPandaBackend(EngineBackend):
     _MISSING_ERR = "err.qpanda_missing"
     _GATE_ERR = "err.qpanda_gate"
     methods = frozenset({"statevector", "density_matrix"})
+    _CAPABILITIES = {"noise": True, "ctrl": True, "mid_measure": True, "gpu": True}
 
     # ------------------------------------------------------------------ #
     #  Statevector path
@@ -99,6 +100,37 @@ class QPandaBackend(EngineBackend):
             # QPanda3 returns bitstrings with MSB first; reverse for qubit-0-is-LSB
             counts[str(bs)[::-1]] = counts.get(str(bs)[::-1], 0) + int(count)
         return counts
+
+    def _run_gpu(self, circuit, shots, nm):
+        """Try GPUQVM, fallback to CuPy."""
+        try:
+            from pyqpanda3.core import GPUQVM, CBit, QProg, measure
+
+            n = circuit.num_qubits
+            qc = self._create(n)
+            for op in circuit.ops:
+                if op.name == "measure":
+                    continue
+                self._apply_one(qc, op.name, list(op.qubits), op.params)
+
+            prog = QProg()
+            prog << qc
+            cbits = [CBit(i) for i in range(n)]
+            for i in range(n):
+                prog << measure(i, cbits[i])
+
+            vm = GPUQVM()
+            vm.run(prog, shots)
+            raw = vm.result().get_counts()
+            counts: Dict[str, int] = {}
+            for bs, count in raw.items():
+                counts[str(bs)[::-1]] = counts.get(str(bs)[::-1], 0) + int(count)
+            if nm.readout > 0:
+                counts = self._apply_readout_noise(counts, n, nm.readout)
+            from ..result import Result
+            return Result.from_counts(counts, shots)
+        except Exception:
+            return super()._run_gpu(circuit, shots, nm)
 
     # ------------------------------------------------------------------ #
     #  Density-matrix path (v2)

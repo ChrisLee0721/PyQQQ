@@ -15,8 +15,9 @@ from .translators import TRANSLATORS
 class QiskitBackend(Backend):
     name = "qiskit"
     methods = frozenset(
-        {"statevector", "stabilizer", "matrix_product_state", "density_matrix"}
+        {"statevector", "stabilizer", "matrix_product_state", "density_matrix", "gpu"}
     )
+    _CAPABILITIES = {"noise": True, "ctrl": True, "mid_measure": False, "gpu": True}
 
     def run(
         self,

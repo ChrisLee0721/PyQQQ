@@ -30,9 +30,9 @@ _MODULE_MAP = {
 
 def _import_backend(backend: str):
     if backend == "tensorcircuit":
-        from quonic.backends.tensorcircuit import _patch_numpy_for_tensorcircuit
+        from quonic.backends.tensorcircuit import _ensure_tc_numpy_compat
 
-        _patch_numpy_for_tensorcircuit()
+        _ensure_tc_numpy_compat()
     mod = _MODULE_MAP.get(backend, backend)
     return pytest.importorskip(mod)
 

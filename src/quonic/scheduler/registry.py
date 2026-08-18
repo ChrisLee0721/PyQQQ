@@ -135,6 +135,28 @@ def recommend_method(features: Dict[str, Any], noise: bool = False) -> str:
     return "statevector"
 
 
+def recommend_backend_gpu(features: Dict[str, Any]) -> Recommendation:
+    """Pick the best GPU backend for this circuit.
+
+    Decision tree based on circuit features:
+    1. Low entanglement + large n → tensorcircuit (tensor network on GPU)
+    2. Has classical control flow → qulacs (stateful collapse on GPU)
+    3. Otherwise → qulacs (fastest statevector on GPU)
+    4. Fallback → cupy (universal GPU engine)
+    """
+    n = features["n"]
+    entanglement = features.get("entanglement", "high")
+    has_ctrl = features.get("has_ctrl", False)
+
+    if entanglement == "low" and n >= 20:
+        return Recommendation("tensorcircuit", "gpu")
+    if has_ctrl:
+        return Recommendation("qulacs", "gpu")
+    if n <= 30:
+        return Recommendation("qulacs", "gpu")
+    return Recommendation("tensorcircuit", "gpu")
+
+
 class MemoryRegistry(BackendRegistry):
     """In-memory key -> backend mapping table."""
 

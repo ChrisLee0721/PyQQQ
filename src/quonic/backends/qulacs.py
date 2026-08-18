@@ -13,6 +13,7 @@ class QulacsBackend(EngineBackend):
     _MISSING_ERR = "err.qulacs_missing"
     _GATE_ERR = "err.qulacs_gate"
     methods = frozenset({"statevector", "density_matrix"})
+    _CAPABILITIES = {"noise": True, "ctrl": True, "mid_measure": True, "gpu": True}
 
     # ------------------------------------------------------------------ #
     #  Statevector path (v1)
@@ -98,6 +99,42 @@ class QulacsBackend(EngineBackend):
             bs = format(val, f"0{n}b")[::-1]
             counts[bs] = counts.get(bs, 0) + 1
         return counts
+
+    # ------------------------------------------------------------------ #
+    #  GPU path — try QuantumStateGpu, fallback to CuPy
+    # ------------------------------------------------------------------ #
+
+    def _run_gpu(self, circuit, shots, nm):
+        import importlib.util
+        if importlib.util.find_spec("qulacs.gate") and hasattr(
+            __import__("qulacs", fromlist=["QuantumStateGpu"]), "QuantumStateGpu"
+        ):
+            return self._run_gpu_native(circuit, shots, nm)
+        return super()._run_gpu(circuit, shots, nm)
+
+    def _run_gpu_native(self, circuit, shots, nm):
+        """Native qulacs GPU execution (when QuantumStateGpu is available)."""
+        from qulacs import QuantumCircuit as QC
+        from qulacs import QuantumStateGpu
+
+        n = circuit.num_qubits
+        qc = QC(n)
+        for op in circuit.ops:
+            if op.name == "measure":
+                continue
+            self._apply_one(qc, op.name, list(op.qubits), op.params)
+
+        state = QuantumStateGpu(n)
+        qc.update_quantum_state(state)
+        raw = state.sampling(shots)
+        counts: Dict[str, int] = {}
+        for val in raw:
+            bs = format(val, f"0{n}b")[::-1]
+            counts[bs] = counts.get(bs, 0) + 1
+        if nm.readout > 0:
+            counts = self._apply_readout_noise(counts, n, nm.readout)
+        from ..result import Result
+        return Result.from_counts(counts, shots)
 
     # ------------------------------------------------------------------ #
     #  Dynamic path (v2) — stateful engine for mid-circuit measurement

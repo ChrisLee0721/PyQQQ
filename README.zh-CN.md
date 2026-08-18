@@ -3,7 +3,7 @@
 [![CI](https://github.com/ChrisLee0721/QuoNic/actions/workflows/ci.yml/badge.svg)](https://github.com/ChrisLee0721/QuoNic/actions/workflows/ci.yml)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
 [![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/)
-[![Version](https://img.shields.io/badge/version-0.4.0-purple.svg)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-0.5.0-purple.svg)](CHANGELOG.md)
 
 [![Qiskit](https://img.shields.io/badge/Qiskit-1.0+-green.svg)](https://qiskit.org/)
 [![Cirq](https://img.shields.io/badge/Cirq-1.0+-orange.svg)](https://quantumai.google/cirq)
@@ -14,7 +14,7 @@
 [![MindQuantum](https://img.shields.io/badge/MindQuantum-0.9+-blue.svg)](https://gitee.com/mindspore/mindquantum)
 [![QPanda3](https://img.shields.io/badge/QPanda3-3.0+-orange.svg)](https://qcloud.originqc.com.cn/)
 [![77 Algorithms](https://img.shields.io/badge/algorithms-77-blueviolet.svg)](src/quonic/algorithms/)
-[![379 Tests](https://img.shields.io/badge/tests-379%20passed-brightgreen.svg)](tests/)
+[![481 Tests](https://img.shields.io/badge/tests-481%20passed-brightgreen.svg)](tests/)
 
 **QuoNic 是一个让量子编程变得像写 Python 一样简单的工具。**
 
@@ -37,7 +37,7 @@ qshow()
 
 **这是量子计算中最经典的贝尔态（Bell State）。** 同样的功能，用 Qiskit 原生代码需要 10+ 行。QuoNic 只需要 3 行。运行结果会直接显示在终端或 Jupyter 中。
 
-更多**复制即跑**的示例（GHZ、`qif`、`QInt`、Grover、VQE、QAOA、噪声）见 [`examples/`](examples/)。
+更多**复制即跑**的示例（GHZ、`qif`、`QInt`、Grover、VQE、QAOA、噪声、GPU 加速、误差缓解）见 [`examples/`](examples/)。
 
 ---
 
@@ -149,7 +149,32 @@ rec = schedule(circuit)   # -> Recommendation(backend='qiskit', method='stabiliz
 
 详见 [调度器基准与实测数据](docs/benchmarks.md)。
 
-### 6. 全量可视化套件：23 类图，只用 Matplotlib
+### 6. GPU 加速 — 一个参数
+
+```python
+qshow(method='gpu')                              # 当前后端 GPU
+qshow(backend='qulacs', method='gpu')            # qulacs GPU（兜底 CuPy）
+```
+
+调度器也可自动选最优 GPU 后端：
+
+```python
+from quonic.scheduler import recommend_backend_gpu, circuit_features
+
+rec = recommend_backend_gpu(circuit_features(circuit))
+# -> Recommendation(backend='qulacs', method='gpu')
+```
+
+| 电路类型 | 最优 GPU 后端 | 原因 |
+|---|---|---|
+| 高纠缠、小电路 | qulacs | 最快状态向量 GPU |
+| 低纠缠、大电路 | tensorcircuit | 张量网络 GPU |
+| 有经典控制流 | qulacs | 支持状态塌缩 |
+| 兜底 | cupy | 通用 GPU 引擎 |
+
+安装：`pip install 'quonic[gpu]'`（CuPy）或 `pip install 'quonic[qulacs]'`（原生 GPU）。
+
+### 7. 全量可视化套件：23 类图，只用 Matplotlib
 
 ```python
 from quonic.viz import plot_circuit, plot_counts, plot_decision_tree

@@ -15,7 +15,7 @@ from .stack import reset
 from .topology import CouplingMap
 from .zne import ZNEResult, fold, zne
 
-__version__ = "0.4.2"
+__version__ = "0.5.0"
 
 __all__ = [
     "qgate",

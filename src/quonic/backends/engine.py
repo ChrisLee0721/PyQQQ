@@ -32,6 +32,7 @@ class EngineBackend(Backend):
     """Generic simulator backend.  Subclasses fill _create / _apply_one / _sample.
 
     v2: Supports noise injection and classical control flow via optional hooks.
+    v3: Capability matrix + vectorized readout noise.
     """
 
     # Subclasses set these:
@@ -40,8 +41,16 @@ class EngineBackend(Backend):
 
     methods: FrozenSet[str] = frozenset({"statevector"})
 
+    # Capability matrix — subclasses override to declare support.
+    _CAPABILITIES: Dict[str, bool] = {
+        "noise": False,       # density-matrix noise injection
+        "ctrl": False,        # classical control flow (cif/cmeasure/cwhile)
+        "mid_measure": False, # mid-circuit measurement with state collapse
+        "gpu": False,         # GPU acceleration
+    }
+
     # ------------------------------------------------------------------ #
-    #  run() — three-way dispatch
+    #  run() — dispatch
     # ------------------------------------------------------------------ #
 
     def run(
@@ -53,6 +62,16 @@ class EngineBackend(Backend):
     ) -> Result:
         nm = resolve_noise(noise)
         has_ctrl = any(op.name in ("cif", "cmeasure", "cwhile") for op in circuit.ops)
+
+        if method == "gpu":
+            if not self._CAPABILITIES.get("gpu", False):
+                raise NotImplementedError(tr("err.no_gpu", name=self.name))
+            return self._run_gpu(circuit, shots, nm)
+
+        if has_ctrl and not self._CAPABILITIES.get("ctrl", False):
+            raise NotImplementedError(tr("err.engine_ctrl", name=self.name))
+        if nm.enabled and not self._CAPABILITIES.get("noise", False):
+            raise NotImplementedError(tr("err.engine_noise", name=self.name))
 
         if has_ctrl:
             return self._run_dynamic(circuit, shots, nm, method)
@@ -123,6 +142,28 @@ class EngineBackend(Backend):
         if nm.readout > 0:
             counts = self._apply_readout_noise(counts, circuit.num_qubits, nm.readout)
         return Result.from_counts(counts, shots)
+
+    # ------------------------------------------------------------------ #
+    #  _run_gpu — GPU acceleration hook
+    # ------------------------------------------------------------------ #
+
+    def _run_gpu(
+        self, circuit: Circuit, shots: int, nm: NoiseModel
+    ) -> Result:
+        """GPU execution.  Override in subclasses with native GPU support.
+
+        Default: delegates to CuPy engine (universal fallback).
+        """
+        from .cupy_engine import CupyEngineBackend
+
+        try:
+            return CupyEngineBackend()._run_gpu(circuit, shots, nm)
+        except NotImplementedError:
+            raise
+        except Exception as e:
+            raise RuntimeError(
+                tr("err.gpu_fallback_failed", backend=self.name, error=str(e))
+            ) from e
 
     def _execute_shot(
         self,
@@ -446,11 +487,10 @@ class EngineBackend(Backend):
     def _apply_readout_noise(
         counts: Dict[str, int], n: int, readout_prob: float
     ) -> Dict[str, int]:
-        """Apply bit-flip readout noise to a counts dict.
+        """Apply independent bit-flip readout noise to a counts dict.
 
-        For each unique bitstring, compute the probability of each possible
-        output bitstring using the tensor product of per-qubit confusion
-        matrices, then distribute counts accordingly.  O(unique_states × 2^n).
+        Uses per-qubit 2×2 confusion matrix applied via numpy einsum along each
+        axis of an n-dimensional tensor.  O(n × 2^n) — no Python per-shot loop.
         """
         import numpy as np
 
@@ -458,28 +498,27 @@ class EngineBackend(Backend):
             return dict(counts)
 
         p = readout_prob
-        # Per-qubit confusion matrix: [[1-p, p], [p, 1-p]]
-        # Tensor product over n qubits gives 2^n × 2^n transition matrix
-        single = np.array([[1 - p, p], [p, 1 - p]])
-        mat = single
-        for _ in range(n - 1):
-            mat = np.kron(mat, single)
+        conf = np.array([[1 - p, p], [p, 1 - p]])
 
-        noisy: Dict[str, int] = {}
-        fmt = f"0{n}b"
+        # Build n-dim tensor: axis i = qubit i (0 = LSB)
+        shape = tuple([2] * n)
+        arr = np.zeros(shape)
         for bs, c in counts.items():
-            # Input index
-            in_idx = int(bs, 2)
-            # Output probabilities for this input
-            probs = mat[:, in_idx]
-            # Distribute counts
-            for out_idx in range(2**n):
-                expected = probs[out_idx] * c
-                if expected > 0.5:  # round to nearest integer
-                    out_bs = format(out_idx, fmt)
-                    noisy[out_bs] = noisy.get(out_bs, 0) + round(expected)
-                elif expected > 0.001:  # keep small but non-negligible
-                    out_bs = format(out_idx, fmt)
-                    noisy[out_bs] = noisy.get(out_bs, 0) + max(1, round(expected))
+            idx = tuple(int(bs[i]) for i in range(n - 1, -1, -1))
+            arr[idx] = c
 
+        # Apply confusion matrix along each qubit axis
+        for q in range(n):
+            arr = np.tensordot(conf, arr, axes=([1], [q]))
+            arr = np.moveaxis(arr, 0, q)
+
+        # Convert back to counts dict
+        noisy: Dict[str, int] = {}
+        it = np.nditer(arr, flags=["multi_index"])
+        for val in it:
+            v = int(round(float(val)))
+            if v > 0:
+                idx = it.multi_index
+                bs = "".join(str(idx[n - 1 - i]) for i in range(n))
+                noisy[bs] = noisy.get(bs, 0) + v
         return noisy

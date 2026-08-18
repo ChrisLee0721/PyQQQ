@@ -16,6 +16,7 @@ class CudaQBackend(EngineBackend):
     _MISSING_ERR = "err.cudaq_missing"
     _GATE_ERR = "err.cudaq_gate"
     methods = frozenset({"statevector", "density_matrix"})
+    _CAPABILITIES = {"noise": True, "ctrl": True, "mid_measure": True, "gpu": True}
 
     # ------------------------------------------------------------------ #
     #  Statevector path (v1)
@@ -97,6 +98,20 @@ class CudaQBackend(EngineBackend):
         for bs, count in result.items():
             counts[str(bs)] = counts.get(str(bs), 0) + int(count)
         return counts
+
+    def _run_gpu(self, circuit, shots, nm):
+        """CUDA-Q is GPU-native — just run normally."""
+        from ..result import Result
+
+        engine = self._create(circuit.num_qubits)
+        for op in circuit.ops:
+            if op.name == "measure":
+                continue
+            self._apply_one(engine, op.name, list(op.qubits), op.params)
+        counts = self._sample(engine, shots, circuit.num_qubits)
+        if nm.readout > 0:
+            counts = self._apply_readout_noise(counts, circuit.num_qubits, nm.readout)
+        return Result.from_counts(counts, shots)
 
     # ------------------------------------------------------------------ #
     #  Noise path (v2) — CUDA-Q uses a global NoiseModel

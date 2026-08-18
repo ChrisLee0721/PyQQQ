@@ -340,10 +340,13 @@ def zne(
         values.append(
             _success_value(_correct(result.counts or {}), targets, shots)
         )
+    extrap = _extrapolate(factors, values, extrapolation)
+    # Success probability is bounded [0, 1]; clamp extrapolation overshoot
+    extrap = max(0.0, min(1.0, extrap))
     return ZNEResult(
         factors=tuple(float(f) for f in factors),
         values=tuple(values),
-        extrapolated=_linear_extrap(factors, values),
+        extrapolated=extrap,
         metric="success",
     )
 

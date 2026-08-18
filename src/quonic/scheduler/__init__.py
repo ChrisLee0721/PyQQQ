@@ -36,6 +36,7 @@ from .registry import (
     load_measured_decision,
     load_noise_cost,
     load_performance,
+    recommend_backend_gpu,
     recommend_method,
 )
 
@@ -90,6 +91,7 @@ __all__ = [
     "schedule",
     "circuit_features",
     "recommend_method",
+    "recommend_backend_gpu",
     "load_measured_decision",
     "load_noise_cost",
     "load_performance",

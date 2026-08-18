@@ -23,6 +23,8 @@ class CirqBackend(Backend):
         noise: Optional[Union[NoiseModel, float, int]] = None,
         method: str = "statevector",
     ) -> Result:
+        if method == "gpu":
+            raise NotImplementedError(tr("err.no_gpu", name=self.name))
         try:
             import cirq
         except ImportError as e:

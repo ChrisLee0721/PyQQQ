@@ -56,6 +56,8 @@ class PennyLaneBackend(Backend):
         noise: Optional[Union[NoiseModel, float, int]] = None,
         method: str = "statevector",
     ) -> Result:
+        if method == "gpu":
+            raise NotImplementedError(tr("err.no_gpu", name=self.name))
         try:
             import pennylane as qml
         except ImportError as e:

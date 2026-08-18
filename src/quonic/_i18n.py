@@ -345,6 +345,22 @@ _MESSAGES: Dict[str, Dict[str, str]] = {
         "en": "{name} backend does not support mid-circuit measurement",
         "zh": "{name} 后端不支持中段测量",
     },
+    "err.no_gpu": {
+        "en": "{name} backend does not support GPU acceleration; "
+              "use qulacs, tensorcircuit, or cupy backend",
+        "zh": "{name} 后端不支持 GPU 加速；"
+              "请用 qulacs、tensorcircuit 或 cupy 后端",
+    },
+    "err.gpu_missing": {
+        "en": "GPU engine requires cupy and a CUDA/ROCm GPU:\n"
+              "    pip install 'quonic[gpu]'\nor: pip install cupy-cuda12x",
+        "zh": "GPU 引擎需要 cupy 和 CUDA/ROCm GPU：\n"
+              "    pip install 'quonic[gpu]'\n或： pip install cupy-cuda12x",
+    },
+    "err.gpu_fallback_failed": {
+        "en": "{backend} GPU failed, CuPy fallback also failed: {error}",
+        "zh": "{backend} GPU 失败，CuPy 兜底也失败：{error}",
+    },
     "err.qulacs_missing": {
         "en": "qulacs backend requires qulacs:\n"
               "    pip install 'quonic[qulacs]'\nor: pip install qulacs",

@@ -55,12 +55,15 @@ def test_apply_is_identity_without_readout_error():
     assert corrected == {"1": 1000}
 
 
-def test_apply_singular_raises():
+def test_apply_singular_uses_regularization():
     # p = 0.5 readout is a degenerate (uninformative) confusion matrix
+    # With Tikhonov regularization, this should not raise but return a result
     m = np.array([[[0.5, 0.5], [0.5, 0.5]]])
     cal = ReadoutCalibration(m, 1)
-    with pytest.raises(ValueError):
-        cal.apply({"1": 1000}, 1000)
+    result = cal.apply({"1": 1000}, 1000)
+    # Regularized result should still be a valid counts dict
+    assert isinstance(result, dict)
+    assert sum(result.values()) > 0
 
 
 # ---------------------------------------------------------------------------

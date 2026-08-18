@@ -28,6 +28,7 @@ _METHODS: Tuple[str, ...] = (
 class NativeBackend(Backend):
     name = "native"
     methods = frozenset(_METHODS)
+    _CAPABILITIES = {"noise": True, "ctrl": True, "mid_measure": True, "gpu": False}
 
     def run(
         self,
@@ -36,6 +37,8 @@ class NativeBackend(Backend):
         noise: Optional[Union[NoiseModel, float, int]] = None,
         method: str = "statevector",
     ) -> Result:
+        if method == "gpu":
+            raise NotImplementedError(tr("err.no_gpu", name=self.name))
         from ..simulators import (
             DensityMatrixEngine,
             MPSEngine,

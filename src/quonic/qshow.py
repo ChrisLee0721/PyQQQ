@@ -170,6 +170,18 @@ def qshow_all(
         print(tr("show.empty_circuit"))
         return {}
 
+    # Warn about GPU backends in multiprocessing
+    gpu_backends = {"qulacs", "tensorcircuit", "cudaq", "mindquantum", "qpanda", "cupy"}
+    requested_gpu = [b for b in backends if b in gpu_backends]
+    if requested_gpu and len(backends) > 1:
+        import warnings
+        warnings.warn(
+            f"GPU backends {requested_gpu} used with qshow_all (multiprocessing). "
+            f"CUDA contexts cannot be shared across processes; GPU backends may "
+            f"fail or fall back to CPU in subprocesses.",
+            stacklevel=2,
+        )
+
     # Capture circuit ops for serialization to subprocesses
     ops = list(circuit.ops)
     n = circuit.num_qubits

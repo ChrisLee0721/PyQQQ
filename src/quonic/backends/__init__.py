@@ -9,6 +9,7 @@ from .base import Backend
 from .cirq import CirqBackend
 from .cqlib import CqlibBackend
 from .cudaq import CudaQBackend
+from .cupy_engine import CupyEngineBackend
 from .engine import EngineBackend
 from .mindquantum import MindQuantumBackend
 from .native import NativeBackend
@@ -35,6 +36,7 @@ _REGISTRY: Dict[str, Backend] = {
     "mindquantum": MindQuantumBackend(),
     "qpanda": QPandaBackend(),
     "cqlib": CqlibBackend(),
+    "cupy": CupyEngineBackend(),
 }
 
 # Backward-compatible aliases for the legacy one-shot device shortcuts: backend="tuna9" is equivalent to backend="qi", device="tuna9".

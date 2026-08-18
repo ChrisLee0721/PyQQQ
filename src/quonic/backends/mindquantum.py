@@ -13,6 +13,7 @@ class MindQuantumBackend(EngineBackend):
     _MISSING_ERR = "err.mindquantum_missing"
     _GATE_ERR = "err.mindquantum_gate"
     methods = frozenset({"statevector", "density_matrix"})
+    _CAPABILITIES = {"noise": True, "ctrl": True, "mid_measure": True, "gpu": True}
 
     # ------------------------------------------------------------------ #
     #  Statevector path (v1)
@@ -85,6 +86,32 @@ class MindQuantumBackend(EngineBackend):
             bs = "".join(str(int(sample[i])) for i in range(n))[::-1]
             counts[bs] = counts.get(bs, 0) + 1
         return counts
+
+    def _run_gpu(self, circuit, shots, nm):
+        """Try GPU simulator, fallback to CuPy."""
+        try:
+            from mindquantum import Circuit, Simulator
+
+            n = circuit.num_qubits
+            circ = Circuit()
+            for op in circuit.ops:
+                if op.name == "measure":
+                    continue
+                self._apply_one(circ, op.name, list(op.qubits), op.params)
+
+            sim = Simulator("gpu", n)
+            sim.apply_circuit(circ)
+            raw = sim.sampling(shots)
+            counts: Dict[str, int] = {}
+            for sample in raw.samples:
+                bs = "".join(str(int(sample[i])) for i in range(n))[::-1]
+                counts[bs] = counts.get(bs, 0) + 1
+            if nm.readout > 0:
+                counts = self._apply_readout_noise(counts, n, nm.readout)
+            from ..result import Result
+            return Result.from_counts(counts, shots)
+        except Exception:
+            return super()._run_gpu(circuit, shots, nm)
 
     # ------------------------------------------------------------------ #
     #  Dynamic path (v2) — stateful Simulator for mid-circuit measurement

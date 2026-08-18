@@ -48,22 +48,29 @@ METHOD_CAPABILITIES: Dict[str, Dict[str, Any]] = {
         "noise": True,
         "gates": "all",
     },
+    "gpu": {
+        "clifford": True,
+        "nonclifford": True,
+        "noise": True,
+        "gates": "all",
+    },
 }
 
 
 BACKEND_CAPABILITIES: Dict[str, Set[str]] = {
     # Which simulation methods each backend supports (including v2 upgrades).
-    "qiskit": {"statevector", "stabilizer", "matrix_product_state", "density_matrix"},
+    "qiskit": {"statevector", "stabilizer", "matrix_product_state", "density_matrix", "gpu"},
     "cirq": {"statevector"},
     "pennylane": {"statevector"},
     "native": {"statevector", "stabilizer", "matrix_product_state", "density_matrix"},
     "qi": {"statevector"},
-    "qulacs": {"statevector", "density_matrix"},
-    "tensorcircuit": {"statevector", "density_matrix"},
-    "cudaq": {"statevector", "density_matrix"},
-    "mindquantum": {"statevector", "density_matrix"},
-    "qpanda": {"statevector", "density_matrix"},
+    "qulacs": {"statevector", "density_matrix", "gpu"},
+    "tensorcircuit": {"statevector", "density_matrix", "gpu"},
+    "cudaq": {"statevector", "density_matrix", "gpu"},
+    "mindquantum": {"statevector", "density_matrix", "gpu"},
+    "qpanda": {"statevector", "density_matrix", "gpu"},
     "cqlib": {"statevector", "density_matrix"},
+    "cupy": {"statevector", "density_matrix", "gpu"},
 }
 
 

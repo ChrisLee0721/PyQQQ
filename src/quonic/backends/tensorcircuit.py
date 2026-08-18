@@ -2,32 +2,30 @@
 
 from __future__ import annotations
 
+from contextlib import contextmanager
 from typing import Any, Dict, Tuple
 
 from .._i18n import tr
 from ..noise import NoiseModel
 from .engine import EngineBackend
 
-_tc_patched = False
+_tc_numpy_patched = False
 
 
-def _patch_numpy_for_tensorcircuit() -> None:
-    """Monkey-patch numpy so TensorCircuit 0.12 works with numpy 2.x.
+def _ensure_tc_numpy_compat() -> None:
+    """Patch numpy for TensorCircuit 0.12 + numpy 2.x compatibility.
 
-    numpy 2.0 made several breaking changes:
-    - ``newshape`` kwarg renamed to ``shape`` in np.reshape
-    - ``np.ComplexWarning`` removed (now builtins.ComplexWarning)
-    - Various other deprecations
-
-    We patch once, before the first ``import tensorcircuit``.
+    Applied once at first use.  The patches are **idempotent** — they translate
+    the deprecated ``newshape`` kwarg to ``shape`` and restore ``ComplexWarning``.
+    Neither change alters numpy's public API semantics, so other backends and
+    user code are unaffected.
     """
-    global _tc_patched
-    if _tc_patched:
+    global _tc_numpy_patched
+    if _tc_numpy_patched:
         return
 
     import numpy as np
 
-    # 1. Fix np.reshape newshape kwarg (only needed on numpy 2.x)
     if np.__version__ >= "2":
         _orig_reshape = np.reshape
 
@@ -38,16 +36,57 @@ def _patch_numpy_for_tensorcircuit() -> None:
 
         np.reshape = _compat_reshape
 
-    # 2. Restore np.ComplexWarning (moved to numpy.exceptions in numpy 2.0)
-    if np.__version__ >= "2" and not hasattr(np, "ComplexWarning"):
-        try:
-            from numpy.exceptions import ComplexWarning
+        if not hasattr(np, "ComplexWarning"):
+            try:
+                from numpy.exceptions import ComplexWarning
+                np.ComplexWarning = ComplexWarning
+            except ImportError:
+                pass
 
-            np.ComplexWarning = ComplexWarning
-        except ImportError:
-            pass
+    _tc_numpy_patched = True
 
-    _tc_patched = True
+
+@contextmanager
+def _tc_compat():
+    """Context manager variant: patches on entry, restores on exit.
+
+    Use this in backend methods for process-level isolation.  For test helpers
+    that need the patch for the entire session, use ``_ensure_tc_numpy_compat``
+    instead (patches once, never restores).
+    """
+    import numpy as np
+
+    patched = False
+    patched_warn = False
+    orig_reshape = np.reshape
+
+    if np.__version__ >= "2":
+        def _compat_reshape(a, *args, **kwargs):
+            if "newshape" in kwargs and "shape" not in kwargs:
+                kwargs["shape"] = kwargs.pop("newshape")
+            return orig_reshape(a, *args, **kwargs)
+
+        np.reshape = _compat_reshape
+        patched = True
+
+        if not hasattr(np, "ComplexWarning"):
+            try:
+                from numpy.exceptions import ComplexWarning
+                np.ComplexWarning = ComplexWarning
+                patched_warn = True
+            except ImportError:
+                pass
+
+    try:
+        yield
+    finally:
+        if patched:
+            np.reshape = orig_reshape
+        if patched_warn:
+            try:
+                del np.ComplexWarning
+            except AttributeError:
+                pass
 
 
 class TensorCircuitBackend(EngineBackend):
@@ -55,17 +94,18 @@ class TensorCircuitBackend(EngineBackend):
     _MISSING_ERR = "err.tensorcircuit_missing"
     _GATE_ERR = "err.tensorcircuit_gate"
     methods = frozenset({"statevector", "density_matrix"})
+    _CAPABILITIES = {"noise": True, "ctrl": True, "mid_measure": True, "gpu": True}
 
     # ------------------------------------------------------------------ #
     #  Statevector path (v1, unchanged)
     # ------------------------------------------------------------------ #
 
     def _create(self, n: int) -> Any:
-        _patch_numpy_for_tensorcircuit()
-        try:
-            import tensorcircuit as tc
-        except ImportError as e:
-            raise ImportError(tr(self._MISSING_ERR)) from e
+        with _tc_compat():
+            try:
+                import tensorcircuit as tc
+            except ImportError as e:
+                raise ImportError(tr(self._MISSING_ERR)) from e
         self._n = n
         return tc.Circuit(n)
 
@@ -144,13 +184,43 @@ class TensorCircuitBackend(EngineBackend):
 
     def _create_dm(self, n: int) -> Any:
         """DMCircuit is a drop-in replacement for Circuit — same API."""
-        _patch_numpy_for_tensorcircuit()
-        try:
-            import tensorcircuit as tc
-        except ImportError as e:
-            raise ImportError(tr(self._MISSING_ERR)) from e
+        with _tc_compat():
+            try:
+                import tensorcircuit as tc
+            except ImportError as e:
+                raise ImportError(tr(self._MISSING_ERR)) from e
         self._n = n
         return tc.DMCircuit(n)
+
+    def _run_gpu(self, circuit, shots, nm):
+        """Try JAX backend for GPU, fallback to CuPy."""
+        with _tc_compat():
+            try:
+                import tensorcircuit as tc
+                tc.set_backend("jax")
+                # JAX backend active — use TC's native GPU path
+                engine = tc.Circuit(circuit.num_qubits)
+                for op in circuit.ops:
+                    if op.name == "measure":
+                        continue
+                    self._apply_one(engine, op.name, list(op.qubits), op.params)
+                raw = engine.sample(shots)
+                counts: Dict[str, int] = {}
+                for val in raw:
+                    if isinstance(val, tuple):
+                        bits = val[0]
+                        bs = "".join(str(int(bits[i])) for i in range(circuit.num_qubits))[::-1]
+                    elif isinstance(val, str):
+                        bs = val[::-1]
+                    else:
+                        bs = "".join(str(int(val[i])) for i in range(circuit.num_qubits))[::-1]
+                    counts[bs] = counts.get(bs, 0) + 1
+                if nm.readout > 0:
+                    counts = self._apply_readout_noise(counts, circuit.num_qubits, nm.readout)
+                from ..result import Result
+                return Result.from_counts(counts, shots)
+            except Exception:
+                return super()._run_gpu(circuit, shots, nm)
 
     def _apply_noise_after_gate(
         self, engine: Any, qubits: list[int], nm: NoiseModel
@@ -193,24 +263,24 @@ class TensorCircuitBackend(EngineBackend):
 
     def _run_dynamic(self, circuit, shots, nm, method):
         """Override: segment-by-segment DMCircuit execution with mid-circuit collapse."""
-        _patch_numpy_for_tensorcircuit()
-        import numpy as np
+        with _tc_compat():
+            import numpy as np
 
-        counts: Dict[str, int] = {}
-        n = circuit.num_qubits
-        self._n = n
+            counts: Dict[str, int] = {}
+            n = circuit.num_qubits
+            self._n = n
 
-        for _ in range(shots):
-            sv = self._execute_dynamic_segments(circuit.ops, n)
-            # Sample from final state vector
-            probs = np.abs(sv) ** 2
-            probs = probs / probs.sum()
-            idx = np.random.choice(2**n, p=probs)
-            bs = format(idx, f"0{n}b")[::-1]
-            counts[bs] = counts.get(bs, 0) + 1
+            for _ in range(shots):
+                sv = self._execute_dynamic_segments(circuit.ops, n)
+                # Sample from final state vector
+                probs = np.abs(sv) ** 2
+                probs = probs / probs.sum()
+                idx = np.random.choice(2**n, p=probs)
+                bs = format(idx, f"0{n}b")[::-1]
+                counts[bs] = counts.get(bs, 0) + 1
 
-        if nm.readout > 0:
-            counts = self._apply_readout_noise(counts, n, nm.readout)
+            if nm.readout > 0:
+                counts = self._apply_readout_noise(counts, n, nm.readout)
         from ..result import Result
         return Result.from_counts(counts, shots)
 
