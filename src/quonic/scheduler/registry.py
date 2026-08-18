@@ -104,6 +104,11 @@ def load_noise_cost() -> Dict[str, Any]:
     return _load_benchmarks().get("noise", {})
 
 
+def load_gpu_decision() -> Dict[str, Any]:
+    """Load the measured GPU decision table; return an empty dict if missing."""
+    return _load_benchmarks().get("gpu", {}).get("decision", {})
+
+
 def recommend_method(features: Dict[str, Any], noise: bool = False) -> str:
     """Analyze the circuit structure to pick a method: first check the measured table, then fall back to cold-start rules.
 
@@ -111,12 +116,15 @@ def recommend_method(features: Dict[str, Any], noise: bool = False) -> str:
     Soft selection (performance): pick the measured fastest among capable methods (use default thresholds without measured data).
 
     - noise                                   -> density_matrix
+    - requires_grad                           -> statevector (autodiff needs SV)
     - basic Clifford and n >= crossover point -> stabilizer (polynomial)
     - low treewidth and n >= crossover point  -> matrix_product_state (low entanglement)
     - otherwise                               -> statevector
     """
     if noise:
         return "density_matrix"
+    if features.get("requires_grad", False):
+        return "statevector"
     n = features["n"]
     gate_types = set(features["gate_types"])
     cls = decision_class(features)
@@ -138,12 +146,23 @@ def recommend_method(features: Dict[str, Any], noise: bool = False) -> str:
 def recommend_backend_gpu(features: Dict[str, Any]) -> Recommendation:
     """Pick the best GPU backend for this circuit.
 
-    Decision tree based on circuit features:
-    1. Low entanglement + large n → tensorcircuit (tensor network on GPU)
-    2. Has classical control flow → qulacs (stateful collapse on GPU)
-    3. Otherwise → qulacs (fastest statevector on GPU)
-    4. Fallback → cupy (universal GPU engine)
+    Uses measured data from benchmarks.json when available; falls back to
+    hardcoded decision tree based on circuit features.
     """
+    # Try measured data first
+    measured = load_gpu_decision()
+    if measured:
+        n = features["n"]
+        entanglement = features.get("entanglement", "high")
+        cls = "low_tw" if entanglement == "low" else "general"
+        entry = measured.get(cls)
+        if entry and n >= entry.get("above_n", 0):
+            return Recommendation(entry["backend"], "gpu")
+        # Default from measured: best backend for this class
+        if entry:
+            return Recommendation(entry["backend"], "gpu")
+
+    # Fallback: hardcoded decision tree
     n = features["n"]
     entanglement = features.get("entanglement", "high")
     has_ctrl = features.get("has_ctrl", False)
@@ -155,6 +174,18 @@ def recommend_backend_gpu(features: Dict[str, Any]) -> Recommendation:
     if n <= 30:
         return Recommendation("qulacs", "gpu")
     return Recommendation("tensorcircuit", "gpu")
+
+
+def recommend_backend_autodiff(features: Dict[str, Any]) -> Recommendation:
+    """Pick the best autodiff-capable backend for variational circuits.
+
+    PennyLane and TensorCircuit both support automatic differentiation.
+    Preference order: tensorcircuit (JAX, GPU-accelerated) > pennylane (parameter-shift).
+    """
+    n = features.get("n", 0)
+    if n <= 20:
+        return Recommendation("pennylane", "statevector")
+    return Recommendation("tensorcircuit", "statevector")
 
 
 class MemoryRegistry(BackendRegistry):

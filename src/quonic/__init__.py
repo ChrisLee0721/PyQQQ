@@ -3,7 +3,7 @@
 from . import gates
 from ._i18n import get_language, set_language
 from .compare import qeq, qgt, qlt
-from .compiler import RoutingError, compile, decompose, groverize
+from .compiler import RoutingError, compile, decompose, groverize, optimize
 from .noise import NoiseModel, depolarizing
 from .qgate import qgate
 from .qif import cif, controlled, creg, cwhile, qif
@@ -15,7 +15,7 @@ from .stack import reset
 from .topology import CouplingMap
 from .zne import ZNEResult, fold, zne
 
-__version__ = "0.5.0"
+__version__ = "0.6.0"
 
 __all__ = [
     "qgate",
@@ -42,6 +42,7 @@ __all__ = [
     "compile",
     "decompose",
     "groverize",
+    "optimize",
     "zne",
     "fold",
     "ZNEResult",

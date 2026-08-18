@@ -193,5 +193,125 @@
       "method": "matrix_product_state",
       "above_n": 20
     }
+  },
+  "gpu": {
+    "meta": {
+      "backends": [
+        "qulacs",
+        "cupy"
+      ],
+      "shots": 256,
+      "generated_at": "2026-08-18T20:59:43.404712+00:00",
+      "backend": "gpu",
+      "machine": "Windows-11-10.0.26200-SP0",
+      "numpy": "2.5.2",
+      "qiskit_aer": "0.17.2"
+    },
+    "performance": [
+      {
+        "n": 8,
+        "class": "clifford",
+        "backend": "qulacs",
+        "time": 0.0069
+      },
+      {
+        "n": 8,
+        "class": "clifford",
+        "backend": "cupy",
+        "time": 0.0066
+      },
+      {
+        "n": 8,
+        "class": "general",
+        "backend": "qulacs",
+        "time": 0.0182
+      },
+      {
+        "n": 8,
+        "class": "general",
+        "backend": "cupy",
+        "time": 0.0171
+      },
+      {
+        "n": 12,
+        "class": "clifford",
+        "backend": "qulacs",
+        "time": 0.0143
+      },
+      {
+        "n": 12,
+        "class": "clifford",
+        "backend": "cupy",
+        "time": 0.0131
+      },
+      {
+        "n": 12,
+        "class": "general",
+        "backend": "qulacs",
+        "time": 0.0262
+      },
+      {
+        "n": 12,
+        "class": "general",
+        "backend": "cupy",
+        "time": 0.0252
+      },
+      {
+        "n": 16,
+        "class": "clifford",
+        "backend": "qulacs",
+        "time": 0.0199
+      },
+      {
+        "n": 16,
+        "class": "clifford",
+        "backend": "cupy",
+        "time": 0.02
+      },
+      {
+        "n": 16,
+        "class": "general",
+        "backend": "qulacs",
+        "time": 0.053
+      },
+      {
+        "n": 16,
+        "class": "general",
+        "backend": "cupy",
+        "time": 0.0367
+      },
+      {
+        "n": 20,
+        "class": "clifford",
+        "backend": "qulacs",
+        "time": 0.0472
+      },
+      {
+        "n": 20,
+        "class": "clifford",
+        "backend": "cupy",
+        "time": 0.0453
+      },
+      {
+        "n": 20,
+        "class": "general",
+        "backend": "qulacs",
+        "time": 0.5325
+      },
+      {
+        "n": 20,
+        "class": "general",
+        "backend": "cupy",
+        "time": 0.5349
+      }
+    ],
+    "decision": {
+      "clifford": {
+        "backend": "cupy"
+      },
+      "general": {
+        "backend": "cupy"
+      }
+    }
   }
 }

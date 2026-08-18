@@ -485,3 +485,161 @@ def groverize(
     for q in range(n_total):
         out.add(GateOperation("measure", (q,)))
     return out
+
+
+# ---------------------------------------------------------------------------
+#  Optimization passes
+# ---------------------------------------------------------------------------
+
+# Self-inverse gates: applying twice = identity
+_SELF_INVERSE: Set[str] = {"x", "y", "z", "h", "cx", "cz", "swap", "ccx"}
+
+
+def optimize_cancel(circuit: Circuit) -> Circuit:
+    """Cancel adjacent self-inverse gate pairs (G·G = I).
+
+    Scans the ops list and removes adjacent pairs of the same self-inverse
+    gate on the same qubits.
+    """
+    out = Circuit()
+    out.allocate(circuit.num_qubits)
+    ops = list(circuit.ops)
+    i = 0
+    while i < len(ops):
+        if (
+            i + 1 < len(ops)
+            and isinstance(ops[i], GateOperation)
+            and isinstance(ops[i + 1], GateOperation)
+            and ops[i].name == ops[i + 1].name
+            and ops[i].qubits == ops[i + 1].qubits
+            and ops[i].name in _SELF_INVERSE
+        ):
+            i += 2  # skip the pair
+        else:
+            out.add(ops[i])
+            i += 1
+    return out
+
+
+# Commutation table: gates on different qubits always commute.
+# Gates on the same qubit: these pairs commute (can be reordered).
+_SAME_QUBIT_COMMUTE: Set[Tuple[str, str]] = {
+    ("x", "z"), ("z", "x"),
+    ("y", "z"), ("z", "y"),
+    ("x", "y"), ("y", "x"),
+    ("h", "z"), ("z", "h"),
+    ("rx", "rz"), ("rz", "rx"),
+    ("ry", "rz"), ("rz", "ry"),
+}
+
+
+def _commutes(a: GateOperation, b: GateOperation) -> bool:
+    """Check if two gate operations commute (can be reordered)."""
+    # Different qubits always commute
+    if set(a.qubits).isdisjoint(set(b.qubits)):
+        return True
+    # Same qubits: check commutation table
+    if a.qubits == b.qubits:
+        return (a.name, b.name) in _SAME_QUBIT_COMMUTE
+    # Overlapping but not identical qubit sets: don't commute (conservative)
+    return False
+
+
+def optimize_commute(circuit: Circuit) -> Circuit:
+    """Reorder gates to bring cancelable pairs together.
+
+    Uses bubble-sort-style passes: for each gate, try to move it left past
+    commuting gates to find a cancelable neighbor.
+    """
+    ops = list(circuit.ops)
+    changed = True
+    while changed:
+        changed = False
+        for i in range(1, len(ops)):
+            if not isinstance(ops[i], GateOperation):
+                continue
+            if not isinstance(ops[i - 1], GateOperation):
+                continue
+            # Try to swap ops[i] left if it commutes with ops[i-1]
+            if _commutes(ops[i], ops[i - 1]):
+                # Check if swapping creates a cancelable pair with ops[i-2]
+                if (
+                    i >= 2
+                    and isinstance(ops[i - 2], GateOperation)
+                    and ops[i].name == ops[i - 2].name
+                    and ops[i].qubits == ops[i - 2].qubits
+                    and ops[i].name in _SELF_INVERSE
+                ):
+                    # Swap to bring the pair together
+                    ops[i - 1], ops[i] = ops[i], ops[i - 1]
+                    changed = True
+    out = Circuit()
+    out.allocate(circuit.num_qubits)
+    for op in ops:
+        out.add(op)
+    return out
+
+
+# Peephole patterns: (sequence of gate names+qubits) → replacement
+_PEEPHOLE_PATTERNS: List[Tuple[Tuple[str, ...], Tuple[str, ...]]] = [
+    # CX(0,1) · CX(1,0) · CX(0,1) = SWAP(0,1)
+    (("cx", "cx", "cx"), ("swap",)),
+]
+
+
+def optimize_peephole(circuit: Circuit) -> Circuit:
+    """Replace known multi-gate patterns with shorter equivalents.
+
+    Patterns:
+      CX(a,b) · CX(b,a) · CX(a,b) → SWAP(a,b)
+    """
+    ops = list(circuit.ops)
+    out = Circuit()
+    out.allocate(circuit.num_qubits)
+
+    i = 0
+    while i < len(ops):
+        # Pattern: CX(a,b) · CX(b,a) · CX(a,b) = SWAP(a,b)
+        if (
+            i + 2 < len(ops)
+            and all(isinstance(ops[i + j], GateOperation) for j in range(3))
+            and ops[i].name == "cx"
+            and ops[i + 1].name == "cx"
+            and ops[i + 2].name == "cx"
+            and ops[i].qubits == ops[i + 2].qubits  # first and third same
+            and ops[i].qubits[0] == ops[i + 1].qubits[1]  # a == second's target
+            and ops[i].qubits[1] == ops[i + 1].qubits[0]  # b == second's control
+        ):
+            a, b = ops[i].qubits
+            out.add(GateOperation("swap", (a, b)))
+            i += 3
+        else:
+            out.add(ops[i])
+            i += 1
+    return out
+
+
+def optimize(
+    circuit: Circuit,
+    passes: Tuple[str, ...] = ("cancel", "commute", "cancel", "peephole"),
+) -> Circuit:
+    """Apply optimization passes in order.
+
+    Available passes:
+      - "cancel": remove adjacent self-inverse gate pairs
+      - "commute": reorder gates to enable more cancellations
+      - "peephole": replace known multi-gate patterns
+
+    Default sequence runs cancel twice: once before commute (to remove trivial
+    pairs) and once after (to cancel pairs brought together by reordering).
+
+    Returns a new Circuit (the original is not modified).
+    """
+    for p in passes:
+        if p == "cancel":
+            circuit = optimize_cancel(circuit)
+        elif p == "commute":
+            circuit = optimize_commute(circuit)
+        elif p == "peephole":
+            circuit = optimize_peephole(circuit)
+    return circuit

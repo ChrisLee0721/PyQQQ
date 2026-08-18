@@ -505,6 +505,22 @@ _MESSAGES: Dict[str, Dict[str, str]] = {
         "en": "qif control and target qubits cannot be the same",
         "zh": "qif 的控制比特与目标比特不能相同",
     },
+    "err.qif_nested_too_large": {
+        "en": "nested qif sub-circuit too large ({n} qubits, max 4); "
+              "consider decomposing manually",
+        "zh": "嵌套 qif 子电路过大（{n} 比特，最多 4 比特）；请手动分解",
+    },
+    "err.qif_general_cu": {
+        "en": "general multi-qubit controlled-U decomposition not yet implemented "
+              "(then={then_name}, else={else_name}); use identity else branch or "
+              "known gates (CX/CZ/SWAP/CCX)",
+        "zh": "通用多比特受控 U 分解尚未实现（then={then_name}, else={else_name}）；"
+              "请用恒等 else 分支或已知门（CX/CZ/SWAP/CCX）",
+    },
+    "err.controlled_target_count": {
+        "en": "gate '{name}' requires {expected} target qubit(s), got {got}",
+        "zh": "门 '{name}' 需要 {expected} 个目标比特，收到 {got} 个",
+    },
     "err.controlled_single": {
         "en": "controlled target gate must be single-qubit, got {name}",
         "zh": "controlled 的目标门必须是单比特门，收到 {name}",

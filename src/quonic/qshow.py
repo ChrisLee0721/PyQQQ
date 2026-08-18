@@ -50,6 +50,7 @@ def qshow(
     cache: Optional[LocalCacheRegistry] = None,
     coupling_map: Optional[CouplingMap] = None,
     device: Optional[str] = None,
+    requires_grad: bool = False,
 ) -> Optional[Result]:
     if result is not None:
         if not isinstance(result, Result):
@@ -58,6 +59,7 @@ def qshow(
         return result
 
     circuit = current_circuit()
+    circuit.requires_grad = requires_grad
     if circuit.is_empty():
         print(tr("show.empty_circuit"))
         return None

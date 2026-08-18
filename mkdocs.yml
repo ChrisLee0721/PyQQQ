@@ -1,0 +1,73 @@
+site_name: QuoNic Documentation
+site_description: Quantum programming, as simple as writing Python
+site_url: https://chrislee0721.github.io/QuoNic/
+repo_url: https://github.com/ChrisLee0721/QuoNic
+repo_name: QuoNic
+
+theme:
+  name: material
+  palette:
+    - scheme: default
+      primary: deep purple
+      accent: purple
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - scheme: slate
+      primary: deep purple
+      accent: purple
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  features:
+    - content.code.copy
+    - content.code.annotate
+    - navigation.tabs
+    - navigation.sections
+    - navigation.expand
+    - navigation.top
+
+markdown_extensions:
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences
+  - pymdownx.highlight
+  - pymdownx.inlinehilite
+  - pymdownx.tabbed:
+      alternate_style: true
+  - toc:
+      permalink: true
+
+plugins:
+  - search
+  - mkdocstrings:
+      handlers:
+        python:
+          options:
+            show_source: true
+            show_root_heading: true
+            members_order: source
+            docstring_style: google
+
+nav:
+  - Home: index.md
+  - Quick Start: quickstart.md
+  - API Reference:
+    - Core IR: api/ir.md
+    - Gates: api/gates.md
+    - Backends: api/backends.md
+    - Scheduler: api/scheduler.md
+    - Compiler: api/compiler.md
+    - Noise: api/noise.md
+    - ZNE: api/zne.md
+    - Readout: api/readout.md
+    - Visualization: api/viz.md
+  - Tutorials:
+    - 01 Basics: tutorials/01_basics.md
+    - 02 Algorithms: tutorials/02_algorithms.md
+    - 03 Noise Mitigation: tutorials/03_noise_mitigation.md
+    - 04 GPU Acceleration: tutorials/04_gpu_acceleration.md
+    - 05 Advanced: tutorials/05_advanced.md
+  - Examples: examples.md
+  - Benchmarks: benchmarks.md
+  - Changelog: changelog.md

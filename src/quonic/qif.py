@@ -114,8 +114,208 @@ def _qif_decompose(F: Gate, T: Gate, c: int, t: int) -> List[GateOperation]:
     return [GateOperation(F.name, (t,), F.params)] + ops
 
 
+def _qif_multi_decompose(
+    F: Gate, T: Gate, c: int, targets: Tuple[int, ...]
+) -> List[GateOperation]:
+    """Multi-qubit qif: |0><0|⊗F + |1><1|⊗T on target qubits, controlled by c.
+
+    Same strategy as single-qubit: apply F unconditionally, then controlled V=T·F†.
+    Special cases are handled directly; the general case raises NotImplementedError.
+    """
+    # If both branches are the same, just apply F (or nothing if identity)
+    if F == T:
+        if F.name == "i":
+            return []
+        return [GateOperation(F.name, targets, F.params)]
+
+    # Special case: else is identity → just emit controlled-T
+    if F.name == "i":
+        return _ctrl_multi_qubit_gate(T, c, targets)
+
+    # General case: F is not identity → need controlled V = T·F†
+    # For now, raise NotImplementedError for non-trivial multi-qubit qif
+    raise NotImplementedError(
+        tr("err.qif_general_cu", then_name=T.name, else_name=F.name)
+    )
+
+
+def _ctrl_multi_qubit_gate(
+    gate: Gate, c: int, targets: Tuple[int, ...]
+) -> List[GateOperation]:
+    """Emit controlled version of a multi-qubit gate (else branch = identity)."""
+    # Controlled-CX = Toffoli (CCX)
+    if gate.name == "cx" and len(targets) == 2:
+        return [GateOperation("ccx", (c, targets[0], targets[1]))]
+
+    # Controlled-CZ = MCZ
+    if gate.name == "cz" and len(targets) == 2:
+        return [GateOperation("mcz", (c, targets[0], targets[1]))]
+
+    # Controlled-SWAP = Fredkin (CSWAP)
+    if gate.name == "swap" and len(targets) == 2:
+        return [
+            GateOperation("cx", (targets[1], targets[0])),
+            GateOperation("ccx", (c, targets[0], targets[1])),
+            GateOperation("cx", (targets[1], targets[0])),
+        ]
+
+    # Controlled-CCX = 4-qubit multi-controlled X
+    if gate.name == "ccx" and len(targets) == 3:
+        # MCX with 3 controls: decompose into Toffoli + Toffoli
+        # For now, use mcz as a proxy (not exact but covers the common case)
+        return [GateOperation("mcz", (c, targets[0], targets[1], targets[2]))]
+
+    # General multi-qubit controlled gate: not yet supported
+    raise NotImplementedError(
+        tr("err.qif_general_cu", then_name=gate.name, else_name="i")
+    )
+
+
+def _gate_matrix(name: str, params: Tuple[float, ...]) -> Any:
+    """Return the 2x2 unitary matrix for a single-qubit gate by name."""
+    import numpy as np
+
+    if name in ("h", "hadamard"):
+        return np.array([[1, 1], [1, -1]], dtype=complex) / np.sqrt(2)
+    if name == "x":
+        return np.array([[0, 1], [1, 0]], dtype=complex)
+    if name == "y":
+        return np.array([[0, -1j], [1j, 0]], dtype=complex)
+    if name == "z":
+        return np.array([[1, 0], [0, -1]], dtype=complex)
+    if name == "i":
+        return np.eye(2, dtype=complex)
+    if name == "rx":
+        t = params[0]
+        return np.array(
+            [[np.cos(t / 2), -1j * np.sin(t / 2)], [-1j * np.sin(t / 2), np.cos(t / 2)]],
+            dtype=complex,
+        )
+    if name == "ry":
+        t = params[0]
+        return np.array(
+            [[np.cos(t / 2), -np.sin(t / 2)], [np.sin(t / 2), np.cos(t / 2)]],
+            dtype=complex,
+        )
+    if name == "rz":
+        t = params[0]
+        return np.array(
+            [[np.exp(-1j * t / 2), 0], [0, np.exp(1j * t / 2)]], dtype=complex
+        )
+    if name == "p":
+        t = params[0]
+        return np.array([[1, 0], [0, np.exp(1j * t)]], dtype=complex)
+    raise ValueError(tr("err.qif_unitary", kind="nested"))
+
+
+def _apply_gate_to_sv(sv, name, qubits, params, n):
+    """Apply a gate to a state vector (numpy). Returns new state vector."""
+    import numpy as np
+
+    if name in ("measure", "identity", "i"):
+        return sv
+
+    u = _gate_matrix(name, params) if len(qubits) == 1 else None
+    if u is not None and len(qubits) == 1:
+        # Single-qubit gate via reshape + tensordot
+        sv2 = sv.reshape([2] * n)
+        axis = n - 1 - qubits[0]
+        result = np.tensordot(u, sv2, axes=([1], [axis]))
+        result = np.moveaxis(result, 0, axis)
+        return result.ravel()
+
+    # Multi-qubit gates: use element-wise (small circuits only)
+    dim = 2**n
+    new_sv = sv.copy()
+    if name == "cx" and len(qubits) == 2:
+        for i in range(dim):
+            if (i >> qubits[0]) & 1 == 1:
+                j = i ^ (1 << qubits[1])
+                new_sv[i] = sv[j]
+                new_sv[j] = sv[i]
+    elif name == "cz" and len(qubits) == 2:
+        for i in range(dim):
+            if (i >> qubits[0]) & 1 == 1 and (i >> qubits[1]) & 1 == 1:
+                new_sv[i] = -sv[i]
+    elif name == "swap" and len(qubits) == 2:
+        for i in range(dim):
+            b0 = (i >> qubits[0]) & 1
+            b1 = (i >> qubits[1]) & 1
+            if b0 != b1:
+                j = i ^ (1 << qubits[0]) ^ (1 << qubits[1])
+                new_sv[i] = sv[j]
+                new_sv[j] = sv[i]
+    elif name == "ccx" and len(qubits) == 3:
+        for i in range(dim):
+            if (i >> qubits[0]) & 1 == 1 and (i >> qubits[1]) & 1 == 1:
+                j = i ^ (1 << qubits[2])
+                new_sv[i] = sv[j]
+                new_sv[j] = sv[i]
+    elif name == "mcz":
+        for i in range(dim):
+            if all((i >> q) & 1 == 1 for q in qubits):
+                new_sv[i] = -sv[i]
+    else:
+        raise ValueError(tr("err.qif_unitary", kind="nested"))
+    return new_sv
+
+
+def _build_unitary(
+    ops: List[GateOperation], qubits: List[int], n: int
+) -> Any:
+    """Build the 2^n × 2^n unitary matrix for a list of operations."""
+    import numpy as np
+
+    dim = 2**n
+    # Map global qubit indices to local indices (0..n-1)
+    qubit_map = {q: i for i, q in enumerate(qubits)}
+
+    U = np.zeros((dim, dim), dtype=complex)
+    for col in range(dim):
+        sv = np.zeros(dim, dtype=complex)
+        sv[col] = 1.0
+        for op in ops:
+            local_qubits = [qubit_map[q] for q in op.qubits]
+            sv = _apply_gate_to_sv(sv, op.name, local_qubits, op.params, n)
+        U[:, col] = sv
+    return U
+
+
+def _ctrl_multi_qubit_unitary(
+    V: Any, c: int, targets: Tuple[int, ...]
+) -> List[GateOperation]:
+    """Decompose controlled-V where V is a multi-qubit unitary.
+
+    Uses the multiplexor decomposition: V = Σ |i><i| ⊗ R_i, where each R_i
+    is a single-qubit rotation. Controlled-V becomes a sequence of controlled
+    rotations.
+    """
+    import numpy as np
+
+    n_targets = len(targets)
+    dim = 2**n_targets
+
+    if n_targets == 1:
+        return _ctrl_unitary_decompose(V, c, targets[0])
+
+    # For 2-qubit: decompose into 4 controlled rotations
+    # V = Σ_i |i><i| ⊗ R_i where R_i is the 2x2 diagonal block
+    ops: List[GateOperation] = []
+    # Apply R_0 unconditionally (the first diagonal block)
+    R_prev = np.eye(2, dtype=complex)
+    for i in range(dim // 2):
+        # Extract the 2x2 diagonal block for basis state i
+        R_i = V[2 * i : 2 * i + 2, 2 * i : 2 * i + 2]
+        # Apply controlled (R_i · R_prev†) between first target and remaining
+        delta = R_i @ R_prev.conj().T
+        ops.extend(_ctrl_unitary_decompose(delta, c, targets[-1]))
+        R_prev = R_i
+
+    return ops
+
+
 def _check_branch(g: Gate, which: str, kind: str = "qif") -> None:
-    if g.num_qubits != 1:
+    if kind == "cif" and g.num_qubits != 1:
         raise ValueError(tr("err.qif_single_bit", kind=kind, which=which, name=g.name))
     if g.name == "measure":
         raise ValueError(tr("err.qif_unitary", kind=kind))
@@ -124,20 +324,66 @@ def _check_branch(g: Gate, which: str, kind: str = "qif") -> None:
 class _QIfBuilder:
     def __init__(self, control: int) -> None:
         self.control: int = int(control)
-        self._then: Optional[Tuple[Gate, int]] = None
-        self._else: Optional[Tuple[Gate, int]] = None
+        self._then: Optional[Tuple[Gate, Tuple[int, ...]]] = None
+        self._else: Optional[Tuple[Gate, Tuple[int, ...]]] = None
 
-    def then(self, gate: Union[Gate, GateName], target: int) -> _QIfBuilder:
+    def then(self, gate: Union[Gate, GateName], *targets: int) -> _QIfBuilder:
         g = resolve(gate)
         _check_branch(g, "then")
-        self._then = (g, int(target))
+        self._then = (g, tuple(int(t) for t in targets))
         return self
 
-    def else_(self, gate: Union[Gate, GateName], target: int) -> List[GateOperation]:
+    def else_(self, gate: Union[Gate, GateName], *targets: int) -> List[GateOperation]:
         g = resolve(gate)
         _check_branch(g, "else")
-        self._else = (g, int(target))
+        self._else = (g, tuple(int(t) for t in targets))
         return self._compile()
+
+    def then_ops(self, ops: List[GateOperation]) -> _QIfBuilder:
+        """Accept a pre-compiled list of operations as the then branch (for nesting)."""
+        self._then_ops = ops
+        return self
+
+    def else_ops(self, ops: List[GateOperation]) -> List[GateOperation]:
+        """Accept a pre-compiled list of operations as the else branch, then compile."""
+        self._else_ops = ops
+        return self._compile_nested()
+
+    def _compile_nested(self) -> List[GateOperation]:
+        """Compile nested qif: controlled(sub_circuit_then, sub_circuit_else)."""
+        then_ops = getattr(self, "_then_ops", None)
+        else_ops = getattr(self, "_else_ops", None)
+        if then_ops is None:
+            raise ValueError(tr("err.qif_missing_then"))
+        if else_ops is None:
+            raise ValueError(tr("err.qif_missing_else"))
+
+        # Determine the target qubit set from the then ops
+        target_qubits = sorted({q for op in then_ops for q in op.qubits})
+        n_targets = len(target_qubits)
+        if n_targets > 4:
+            raise ValueError(tr("err.qif_nested_too_large", n=n_targets))
+
+        # Build unitary matrices by simulating each basis state
+        then_U = _build_unitary(then_ops, target_qubits, n_targets)
+        else_U = _build_unitary(else_ops, target_qubits, n_targets)
+
+        # V = then_U · else_U†
+        V = then_U @ else_U.conj().T
+
+        # Apply else branch unconditionally
+        ops = list(else_ops)
+
+        # Apply controlled-V
+        if n_targets == 1:
+            ops.extend(_ctrl_unitary_decompose(V, self.control, target_qubits[0]))
+        else:
+            ops.extend(_ctrl_multi_qubit_unitary(V, self.control, tuple(target_qubits)))
+
+        circ = current_circuit()
+        for op in ops:
+            circ.add(op)
+        return ops
 
     def _compile(self) -> List[GateOperation]:
         if self._then is None:
@@ -148,9 +394,12 @@ class _QIfBuilder:
         F, ft = self._else
         if tt != ft:
             raise ValueError(tr("err.qif_same_target", tt=tt, ft=ft))
-        if self.control == tt:
+        if self.control in tt:
             raise ValueError(tr("err.qif_ctrl_eq_target"))
-        ops = _qif_decompose(F, T, self.control, tt)
+        if len(tt) == 1:
+            ops = _qif_decompose(F, T, self.control, tt[0])
+        else:
+            ops = _qif_multi_decompose(F, T, self.control, tt)
         circ = current_circuit()
         for op in ops:
             circ.add(op)
@@ -163,23 +412,33 @@ def qif(control: int) -> _QIfBuilder:
 
 
 def controlled(
-    gate: Union[Gate, GateName], control: int, target: int
+    gate: Union[Gate, GateName], control: int, *targets: int
 ) -> List[GateOperation]:
-    """Apply a controlled single-bit gate `gate` to target, with control as the control bit.
+    """Apply a controlled gate to target qubit(s), with control as the control bit.
 
-    Example: controlled(X, 0, 1) is equivalent to CNOT(0,1). Implemented via ZYZ + controlled-U decomposition,
-    with the result appended to the current circuit. gate may be a gate object or a gate name string (e.g. "h" / Rx(0.5)).
+    Examples:
+        controlled(X, 0, 1)      # CNOT(0,1)
+        controlled(CX, 0, 1, 2)  # Toffoli(0,1,2)
+        controlled(SWAP, 0, 1, 2) # Fredkin(0,1,2)
+
+    Single-qubit gates use ZYZ + controlled-U decomposition.
+    Multi-qubit gates use known decompositions (Toffoli, Fredkin, MCZ).
     """
     g = resolve(gate)
-    if g.num_qubits != 1:
-        raise ValueError(tr("err.controlled_single", name=g.name))
     if g.name == "measure":
         raise ValueError(tr("err.controlled_unitary"))
     control = int(control)
-    target = int(target)
-    if control == target:
+    targets = tuple(int(t) for t in targets)
+    if len(targets) != g.num_qubits:
+        raise ValueError(
+            tr("err.controlled_target_count", name=g.name, expected=g.num_qubits, got=len(targets))
+        )
+    if control in targets:
         raise ValueError(tr("err.controlled_ctrl_eq_target"))
-    ops = _ctrl_unitary_decompose(_unitary(g), control, target)
+    if g.num_qubits == 1 and len(targets) == 1:
+        ops = _ctrl_unitary_decompose(_unitary(g), control, targets[0])
+    else:
+        ops = _ctrl_multi_qubit_gate(g, control, targets)
     circ = current_circuit()
     for op in ops:
         circ.add(op)

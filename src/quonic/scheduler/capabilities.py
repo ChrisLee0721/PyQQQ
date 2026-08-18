@@ -61,11 +61,11 @@ BACKEND_CAPABILITIES: Dict[str, Set[str]] = {
     # Which simulation methods each backend supports (including v2 upgrades).
     "qiskit": {"statevector", "stabilizer", "matrix_product_state", "density_matrix", "gpu"},
     "cirq": {"statevector"},
-    "pennylane": {"statevector"},
+    "pennylane": {"statevector", "autodiff"},
     "native": {"statevector", "stabilizer", "matrix_product_state", "density_matrix"},
     "qi": {"statevector"},
     "qulacs": {"statevector", "density_matrix", "gpu"},
-    "tensorcircuit": {"statevector", "density_matrix", "gpu"},
+    "tensorcircuit": {"statevector", "density_matrix", "gpu", "autodiff"},
     "cudaq": {"statevector", "density_matrix", "gpu"},
     "mindquantum": {"statevector", "density_matrix", "gpu"},
     "qpanda": {"statevector", "density_matrix", "gpu"},

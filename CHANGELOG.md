@@ -2,6 +2,65 @@
 
 本项目所有重要变更都记录于此。All notable changes to this project are documented here.
 
+## [0.6.0] — 2026-08-19
+
+电路优化 + qif 多比特/嵌套 + API 文档 + GPU 基准 + 算法模板深化。Circuit
+optimization, qif multi-qubit/nesting, API docs, GPU benchmarks, and algorithm
+template upgrades.
+
+### 新增 Added
+
+- **电路优化 pass** `optimize()`：门消减（X·X=I）、交换重排（H·CX·H→CX）、
+  模式替换（CX·CX·CX→SWAP）。统一入口 `optimize(circuit, passes=("cancel","commute","peephole"))`。
+  **Circuit optimization** `optimize()`: gate cancellation, commutation reordering,
+  peephole pattern replacement.
+
+- **qif 多比特门**：`qif(0).then(CX, 1, 2)` = Toffoli，`qif(0).then(SWAP, 1, 2)` = Fredkin。
+  `controlled()` 同步支持多比特门。
+  **qif multi-qubit gates**: controlled-CX (Toffoli), controlled-SWAP (Fredkin), controlled-CZ (MCZ).
+
+- **qif 嵌套**：`then_ops(inner).else_ops(outer)` 接受子电路操作列表，支持嵌套 qif。
+  **qif nesting**: `then_ops()`/`else_ops()` accept sub-circuit operation lists for nested qif.
+
+- **`requires_grad`**：`Circuit.requires_grad` 属性，调度器自动选 pennylane/tensorcircuit。
+  `recommend_backend_autodiff()` 自动选最优 autodiff 后端。
+  **`requires_grad`**: Circuit attribute for autodiff-aware scheduling.
+
+- **MkDocs API 文档**：`mkdocs.yml` + `docs/api/`（9 个 API 页面）+ `docs/tutorials/`（5 个教程）。
+  **MkDocs API documentation**: full docs site with API reference and tutorials.
+
+- **Jupyter 教程**：`01_basics.ipynb` 到 `05_advanced.ipynb`，5 个教程 notebook。
+  **Jupyter tutorials**: 5 notebooks from basics to advanced features.
+
+- **算法模板深化**：QCNN（可配置层数 + 训练循环）、QGAN（对抗训练 + 梯度更新）、
+  表面码（可配置距离 + syndrome 解码）。
+  **Algorithm template upgrades**: QCNN, QGAN, surface code upgraded from minimal demos to
+  complete implementations.
+
+- **GPU 基准数据**：RTX 2070 上 qulacs + cupy benchmark 数据写入 `benchmarks.json`。
+  **GPU benchmark data**: measured on RTX 2070, stored in `benchmarks.json`.
+
+- **`pyproject.toml`**：新增 `docs` 和 `all-sim` optional dependencies。
+  **pyproject.toml**: new `docs` and `all-sim` optional dependencies.
+
+### 变更 Changed
+
+- **`recommend_backend_gpu()`**：读 measured 数据，fallback 硬编码阈值。
+  **`recommend_backend_gpu()`**: reads measured data from benchmarks.json, falls back to hardcoded thresholds.
+
+- **`scheduler/capabilities.py`**：pennylane/tensorcircuit 标记 `autodiff` 能力。
+  **Scheduler capabilities**: pennylane/tensorcircuit tagged with `autodiff` capability.
+
+### 修复 Fixed
+
+- **qif `_check_branch`**：cif 仍限制单比特门，qif 放开到多比特。
+  **qif `_check_branch`**: cif still restricts to single-qubit, qif allows multi-qubit.
+
+- **`controlled()` 目标数量校验**：`controlled(CX, 0, 1)` 现在抛清晰错误（CX 需要 2 个目标）。
+  **`controlled()` target count validation**: clear error when target count doesn't match gate.
+
+---
+
 ## [0.5.0] — 2026-08-19
 
 GPU 智能调度 + 7 个新后端 + 误差缓解增强 + 大量 bug 修复。GPU smart scheduling,

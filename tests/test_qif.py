@@ -249,10 +249,10 @@ def test_controlled_uses_only_basic_gates():
         assert op.name in basic, f"controlled 编译出了非基础门 '{op.name}'"
 
 
-def test_controlled_rejects_multi_qubit():
+def test_controlled_rejects_wrong_target_count():
     reset()
-    with pytest.raises(ValueError, match="single-qubit"):
-        controlled(CX, 0, 1)
+    with pytest.raises(ValueError, match="requires 2 target"):
+        controlled(CX, 0, 1)  # CX needs 2 targets, only 1 given
 
 
 def test_controlled_rejects_measure():

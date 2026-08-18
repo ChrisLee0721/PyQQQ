@@ -124,6 +124,7 @@ class Circuit:
     def __init__(self) -> None:
         self.ops: List[object] = []
         self.num_qubits: int = 0
+        self.requires_grad: bool = False
 
     def add(self, op: object) -> None:
         self.ops.append(op)

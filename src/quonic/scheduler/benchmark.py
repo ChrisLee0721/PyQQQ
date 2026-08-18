@@ -309,6 +309,89 @@ def _meta(backend: str, shots: int) -> Dict[str, Any]:
     }
 
 
+# ---------------------------------------------------------------------------
+# GPU backend benchmark
+# ---------------------------------------------------------------------------
+
+def benchmark_gpu_backends(
+    n_values: Iterable[int] = (8, 12, 16, 20, 24),
+    backends: Iterable[str] = ("qulacs", "tensorcircuit", "cupy"),
+    shots: int = 256,
+    repeats: int = 3,
+) -> List[Dict[str, Any]]:
+    """Measure GPU backend timings across circuit families and qubit counts.
+
+    Returns a list of dicts: {"n", "class", "backend", "time"}.
+    """
+    backends = list(backends)
+    # warm-up: trigger import/compile for each backend
+    for b in backends:
+        _timed_run(_ghz(4), b, "gpu", shots)
+
+    performance: List[Dict[str, Any]] = []
+    for n in n_values:
+        for cls, fn in [("clifford", _ghz), ("low_tw", _chain_rotation), ("general", _grover)]:
+            for b in backends:
+                samples: List[float] = []
+                for _ in range(repeats):
+                    t = _timed_run(fn(n), b, "gpu", shots)
+                    if t is not None:
+                        samples.append(t)
+                if samples:
+                    performance.append({
+                        "n": n,
+                        "class": cls,
+                        "backend": b,
+                        "time": round(min(samples), 4),
+                    })
+    return performance
+
+
+def derive_gpu_decision(
+    performance: List[Dict[str, Any]], margin: float = 0.2
+) -> Dict[str, Dict[str, Any]]:
+    """Derive the best GPU backend for each circuit class from measured data.
+
+    For each class, find the fastest backend across all n values.
+    When no data exists, returns empty dict (caller falls back to hardcoded defaults).
+    """
+    decision: Dict[str, Dict[str, Any]] = {}
+    classes = {r["class"] for r in performance}
+    for cls in classes:
+        rows = [r for r in performance if r["class"] == cls]
+        if not rows:
+            continue
+        # Find the backend with the best (lowest) average time
+        backend_times: Dict[str, List[float]] = {}
+        for r in rows:
+            backend_times.setdefault(r["backend"], []).append(r["time"])
+        best_backend = min(backend_times, key=lambda b: sum(backend_times[b]) / len(backend_times[b]))
+        decision[cls] = {"backend": best_backend}
+    return decision
+
+
+def build_gpu_benchmark_data(
+    n_values: Iterable[int] = (8, 12, 16, 20, 24),
+    backends: Iterable[str] = ("qulacs", "tensorcircuit", "cupy"),
+    shots: int = 256,
+    repeats: int = 3,
+) -> Dict[str, Any]:
+    """Run the full GPU benchmark and return structured data.
+
+    Produces:
+        meta        -- machine/version information
+        performance -- per-backend timings per circuit class per n
+        decision    -- best backend per circuit class
+    """
+    backends = list(backends)
+    performance = benchmark_gpu_backends(n_values, backends=backends, shots=shots, repeats=repeats)
+    return {
+        "meta": {"backends": backends, "shots": shots, **_meta("gpu", shots)},
+        "performance": performance,
+        "decision": derive_gpu_decision(performance),
+    }
+
+
 def build_benchmark_data(
     n_values: Iterable[int] = (8, 12, 16, 20, 24),
     noise_n: Iterable[int] = (2, 4, 6, 8, 10, 12),

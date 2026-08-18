@@ -103,6 +103,12 @@ class CupyEngineBackend(EngineBackend):
             counts = self._apply_readout_noise(counts, n, nm.readout)
         return Result.from_counts(counts, shots)
 
+    def _run_dynamic(self, circuit, shots, nm, method):
+        """Override: use CuPy statevector for classical control flow."""
+        xp = _xp()
+        _check_gpu_memory(circuit.num_qubits, xp)
+        return self._run_gpu_dynamic(circuit, shots, nm, xp)
+
     def _run_gpu_dynamic(
         self, circuit: Circuit, shots: int, nm: NoiseModel, xp: Any
     ) -> Result:

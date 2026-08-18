@@ -92,6 +92,7 @@ def circuit_features(circuit: Circuit) -> Dict[str, Any]:
         "treewidth_ub": tw,
         "entanglement": _entanglement_level(tw, circuit.num_qubits),
         "has_ctrl": has_ctrl,
+        "requires_grad": getattr(circuit, "requires_grad", False),
     }
     feats["key"] = _bucket_key(feats)
     return feats

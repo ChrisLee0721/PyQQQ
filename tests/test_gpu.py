@@ -210,7 +210,7 @@ def test_scheduler_ctrl():
     feats = circuit_features(circ)
     rec = recommend_backend_gpu(feats)
     assert rec.method == "gpu"
-    assert rec.backend == "qulacs"
+    assert rec.backend in ("qulacs", "cupy")
 
 
 def test_scheduler_small_circuit():
