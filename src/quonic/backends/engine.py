@@ -18,7 +18,6 @@ v2 adds optional hooks for noise injection and classical control flow:
 
 from __future__ import annotations
 
-import random
 from abc import abstractmethod
 from typing import Any, Dict, FrozenSet, Iterable, Optional, Tuple, Union
 
@@ -222,14 +221,40 @@ class EngineBackend(Backend):
     def _apply_readout_noise(
         counts: Dict[str, int], n: int, readout_prob: float
     ) -> Dict[str, int]:
-        """Apply bit-flip readout noise to a counts dict (per-shot)."""
+        """Apply bit-flip readout noise to a counts dict.
+
+        For each unique bitstring, compute the probability of each possible
+        output bitstring using the tensor product of per-qubit confusion
+        matrices, then distribute counts accordingly.  O(unique_states × 2^n).
+        """
+        import numpy as np
+
+        if not counts or readout_prob <= 0:
+            return dict(counts)
+
+        p = readout_prob
+        # Per-qubit confusion matrix: [[1-p, p], [p, 1-p]]
+        # Tensor product over n qubits gives 2^n × 2^n transition matrix
+        single = np.array([[1 - p, p], [p, 1 - p]])
+        mat = single
+        for _ in range(n - 1):
+            mat = np.kron(mat, single)
+
         noisy: Dict[str, int] = {}
+        fmt = f"0{n}b"
         for bs, c in counts.items():
-            for _ in range(c):
-                new_bs = list(bs)
-                for i in range(len(new_bs)):
-                    if random.random() < readout_prob:
-                        new_bs[i] = "1" if new_bs[i] == "0" else "0"
-                new_key = "".join(new_bs)
-                noisy[new_key] = noisy.get(new_key, 0) + 1
+            # Input index
+            in_idx = int(bs, 2)
+            # Output probabilities for this input
+            probs = mat[:, in_idx]
+            # Distribute counts
+            for out_idx in range(2**n):
+                expected = probs[out_idx] * c
+                if expected > 0.5:  # round to nearest integer
+                    out_bs = format(out_idx, fmt)
+                    noisy[out_bs] = noisy.get(out_bs, 0) + round(expected)
+                elif expected > 0.001:  # keep small but non-negligible
+                    out_bs = format(out_idx, fmt)
+                    noisy[out_bs] = noisy.get(out_bs, 0) + max(1, round(expected))
+
         return noisy

@@ -5,7 +5,6 @@ from __future__ import annotations
 from typing import Any, Dict, Tuple
 
 from .._i18n import tr
-from ..noise import NoiseModel
 from .engine import EngineBackend
 
 
@@ -56,15 +55,11 @@ class QulacsBackend(EngineBackend):
         elif name == "rz":
             engine.add_gate(gate.RZ(qubits[0], params[0]))
         elif name == "p":
-            # P(θ) = diag(1, e^{iθ}) — use DenseMatrix for exact implementation
             import numpy as np
-
             mat = np.array([[1.0, 0.0], [0.0, np.exp(1j * params[0])]])
             engine.add_gate(gate.DenseMatrix(qubits[0], mat))
         elif name == "cp":
-            # CP(θ) = diag(1, 1, 1, e^{iθ}) — decompose into CNOT + P + CNOT
             import numpy as np
-
             p_mat = np.array([[1.0, 0.0], [0.0, np.exp(1j * params[0])]])
             engine.add_gate(gate.CNOT(qubits[0], qubits[1]))
             engine.add_gate(gate.DenseMatrix(qubits[1], p_mat))
@@ -79,7 +74,6 @@ class QulacsBackend(EngineBackend):
     @staticmethod
     def _apply_mcz(engine: Any, qubits: list[int]) -> None:
         from qulacs import gate
-
         if len(qubits) == 2:
             engine.add_gate(gate.CZ(qubits[0], qubits[1]))
         elif len(qubits) == 3:
@@ -96,7 +90,6 @@ class QulacsBackend(EngineBackend):
 
     def _sample(self, engine: Any, shots: int, n: int) -> Dict[str, int]:
         from qulacs import QuantumState
-
         state = QuantumState(n)
         engine.update_quantum_state(state)
         raw = state.sampling(shots)
@@ -107,24 +100,152 @@ class QulacsBackend(EngineBackend):
         return counts
 
     # ------------------------------------------------------------------ #
+    #  Dynamic path (v2) — stateful engine for mid-circuit measurement
+    # ------------------------------------------------------------------ #
+
+    def _run_dynamic(self, circuit, shots, nm, method):
+        """Override: use stateful engine that collapses on measurement."""
+        from qulacs import QuantumState
+
+        counts: Dict[str, int] = {}
+        n = circuit.num_qubits
+
+        for _ in range(shots):
+            state = QuantumState(n)
+            cregs: Dict[str, int] = {}
+            self._execute_shot_stateful(state, circuit.ops, cregs, n)
+            # Sample the final state
+            raw = state.sampling(1)
+            bs = format(raw[0], f"0{n}b")[::-1]
+            counts[bs] = counts.get(bs, 0) + 1
+
+        if nm.readout > 0:
+            counts = self._apply_readout_noise(counts, n, nm.readout)
+        from ..result import Result
+        return Result.from_counts(counts, shots)
+
+    def _execute_shot_stateful(self, state, ops, cregs, n):
+        """Execute ops on a QuantumState, collapsing on measurement."""
+
+        for op in ops:
+            name = op.name
+            if name == "cmeasure":
+                outcome = self._measure_and_collapse(state, op.qubit, n)
+                v = cregs.get(op.creg, 0)
+                cregs[op.creg] = (v & ~(1 << op.bit)) | (outcome << op.bit)
+            elif name == "cif":
+                if isinstance(op.control, int):
+                    outcome = self._measure_and_collapse(state, op.control, n)
+                    hit = outcome == 1
+                elif isinstance(op.control, __import__("quonic.ir", fromlist=["CRegCondition"]).CRegCondition):
+                    hit = cregs.get(op.control.creg, 0) == op.control.value
+                else:
+                    hit = cregs.get(op.control, 0) == 1
+                branch = op.then_op if hit else op.else_op
+                self._apply_gate_stateful(state, branch.name, list(branch.qubits), branch.params, n)
+            elif name == "cwhile":
+                iters = 0
+                while cregs.get(op.creg, 0) != op.until:
+                    self._execute_shot_stateful(state, op.body, cregs, n)
+                    iters += 1
+                    if iters > 100000:
+                        raise RuntimeError("cwhile limit exceeded")
+            elif name == "measure":
+                pass
+            else:
+                self._apply_gate_stateful(state, name, list(op.qubits), op.params, n)
+
+    def _apply_gate_stateful(self, state, name, qubits, params, n):
+        """Apply a gate directly to a QuantumState."""
+        import numpy as np
+        from qulacs import QuantumCircuit
+        from qulacs import gate as G
+
+        # Build a tiny circuit with one gate, apply to state
+        qc = QuantumCircuit(n)
+        if name in ("identity", "i"):
+            qc.add_gate(G.Identity(qubits[0]))
+        elif name == "h":
+            qc.add_gate(G.H(qubits[0]))
+        elif name == "x":
+            qc.add_gate(G.X(qubits[0]))
+        elif name == "y":
+            qc.add_gate(G.Y(qubits[0]))
+        elif name == "z":
+            qc.add_gate(G.Z(qubits[0]))
+        elif name == "cx":
+            qc.add_gate(G.CNOT(qubits[0], qubits[1]))
+        elif name == "cz":
+            qc.add_gate(G.CZ(qubits[0], qubits[1]))
+        elif name == "swap":
+            qc.add_gate(G.SWAP(qubits[0], qubits[1]))
+        elif name == "ccx":
+            qc.add_gate(G.TOFFOLI(qubits[0], qubits[1], qubits[2]))
+        elif name == "rx":
+            qc.add_gate(G.RX(qubits[0], params[0]))
+        elif name == "ry":
+            qc.add_gate(G.RY(qubits[0], params[0]))
+        elif name == "rz":
+            qc.add_gate(G.RZ(qubits[0], params[0]))
+        elif name == "p":
+            mat = np.array([[1.0, 0.0], [0.0, np.exp(1j * params[0])]])
+            qc.add_gate(G.DenseMatrix(qubits[0], mat))
+        elif name == "cp":
+            p_mat = np.array([[1.0, 0.0], [0.0, np.exp(1j * params[0])]])
+            qc.add_gate(G.CNOT(qubits[0], qubits[1]))
+            qc.add_gate(G.DenseMatrix(qubits[1], p_mat))
+            qc.add_gate(G.CNOT(qubits[0], qubits[1]))
+        elif name == "mcz":
+            if len(qubits) == 2:
+                qc.add_gate(G.CZ(qubits[0], qubits[1]))
+            else:
+                target = qubits[-1]
+                qc.add_gate(G.H(target))
+                for i in range(len(qubits) - 1):
+                    qc.add_gate(G.CNOT(qubits[i], target))
+                qc.add_gate(G.H(target))
+        elif name in ("measure", "i"):
+            return
+        else:
+            return  # skip unknown gates in dynamic mode
+        qc.update_quantum_state(state)
+
+    def _measure_and_collapse(self, state, qubit, n):
+        """Measure qubit, collapse state, return outcome."""
+        import numpy as np
+
+        sv = state.get_vector()
+        idx = np.arange(2**n)
+        bit = (idx >> qubit) & 1
+        p0 = float(np.sum(np.abs(sv[bit == 0]) ** 2))
+        outcome = 0 if np.random.random() < p0 else 1
+
+        # Collapse: zero out the non-measured branches, renormalize
+        sv_new = sv.copy()
+        sv_new[bit != outcome] = 0.0
+        norm = np.linalg.norm(sv_new)
+        if norm > 0:
+            sv_new /= norm
+        # Write back to state using load()
+        state.load(sv_new)
+        return outcome
+
+    # ------------------------------------------------------------------ #
     #  Density-matrix path (v2)
     # ------------------------------------------------------------------ #
 
     def _create_dm(self, n: int) -> Any:
-        """Create a (circuit, density_matrix) tuple."""
         try:
             import qulacs
         except ImportError as e:
             raise ImportError(tr(self._MISSING_ERR)) from e
         return (qulacs.QuantumCircuit(n), qulacs.DensityMatrix(n))
 
-    def _apply_one_dm(
-        self, engine: Any, name: str, qubits: list[int], params: Tuple[float, ...]
-    ) -> None:
+    def _apply_one_dm(self, engine, name, qubits, params):
         circuit, _dm = engine
         self._apply_one(circuit, name, qubits, params)
 
-    def _sample_dm(self, engine: Any, shots: int, n: int) -> Dict[str, int]:
+    def _sample_dm(self, engine, shots, n):
         circuit, dm = engine
         dm.set_zero_state()
         circuit.update_quantum_state(dm)
@@ -135,33 +256,27 @@ class QulacsBackend(EngineBackend):
             counts[bs] = counts.get(bs, 0) + 1
         return counts
 
-    def _apply_noise_after_gate(
-        self, engine: Any, qubits: list[int], nm: NoiseModel
-    ) -> None:
+    def _apply_noise_after_gate(self, engine, qubits, nm):
         from qulacs import gate
-
         circuit, _dm = engine
         p = nm.single if len(qubits) == 1 else nm.double
         if p > 0:
             for q in qubits:
                 circuit.add_gate(gate.DepolarizingNoise(q, p))
 
-    def _measure_qubit(self, engine: Any, qubit: int) -> int:
-        """Mid-circuit measurement: compute P(1) from statevector or density matrix."""
+    def _measure_qubit(self, engine, qubit):
+        """Mid-circuit measurement with state collapse."""
         import numpy as np
         from qulacs import QuantumState
 
-        # Handle both tuple (circuit, dm) and plain circuit
         if isinstance(engine, tuple):
             circuit, dm = engine
             n = dm.get_qubit_count()
-            # Execute circuit on density matrix to get current state
             dm.set_zero_state()
             circuit.update_quantum_state(dm)
             data = dm.get_matrix()
             diag = np.real(np.diag(data))
         else:
-            # Plain QuantumCircuit — use statevector
             n = engine.get_qubit_count()
             state = QuantumState(n)
             engine.update_quantum_state(state)
