@@ -24,7 +24,7 @@ No `QuantumCircuit` to learn, no `backend` to understand, no manual `measure`. I
 
 ---
 
-## 🚀 30-second quick start
+##  30-second quick start
 
 ```python
 from quonic import qgate, qshow
@@ -41,7 +41,7 @@ More copy-and-run examples (GHZ, `qif`, `QInt`, Grover, VQE, QAOA, noise, GPU ac
 
 ---
 
-## 📦 Installation
+##  Installation
 
 ```bash
 pip install quonic
@@ -61,7 +61,7 @@ Visualization is a separate optional dependency: `pip install 'quonic[viz]'` (ma
 
 ---
 
-## ✨ Core features
+##  Core features
 
 ### 1. Minimal syntax: a Bell state in 3 lines
 
@@ -185,7 +185,7 @@ The 23 chart types span four layers: **core needs** (circuit / histogram / topol
 
 ---
 
-## 📊 QuoNic vs Qiskit
+##  QuoNic vs Qiskit
 
 | Scenario | Qiskit | QuoNic |
 |------|--------|-------|
@@ -196,7 +196,7 @@ The 23 chart types span four layers: **core needs** (circuit / histogram / topol
 
 ---
 
-## 🧠 Why the name QuoNic?
+##  Why the name QuoNic?
 
 QuoNic is an acronym for **Quantum Unified Operation Native Interface Core**:
 
@@ -213,7 +213,7 @@ Pronounced /ˈkwɑnɪk/ ("kwah-nik").
 
 ---
 
-## 🛠️ Currently supported backends
+##  Currently supported backends
 
 | Backend | Status | Notes |
 |------|------|------|
@@ -252,7 +252,7 @@ results = run_circuits([bell, flip], backend='qiskit')
 
 ---
 
-## 🧮 77 Algorithm Templates
+##  77 Algorithm Templates
 
 QuoNic ships 77 algorithm templates across 10 domains — from foundational quantum computing to cutting-edge research demos. Each algorithm has documented boundary conditions and usage examples. See the [full algorithm report](docs/QuoNic_Algorithm_Report.pdf).
 
@@ -294,7 +294,7 @@ result = deutsch_jozsa(2, my_oracle, shots=100)
 
 ---
 
-## 📖 Docs and tutorials
+##  Docs and tutorials
 
 - [Quickstart](docs/quickstart.md) — up and running in 5 minutes
 - [Jupyter tutorial](docs/tutorial.ipynb) — runnable interactive notebook
@@ -304,7 +304,7 @@ result = deutsch_jozsa(2, my_oracle, shots=100)
 
 ---
 
-## 🤝 Contributing
+##  Contributing
 
 QuoNic is open source (Apache 2.0) and welcomes all kinds of contribution:
 
@@ -317,12 +317,12 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for the development setup, code style, an
 
 ---
 
-## 📄 License
+##  License
 
 QuoNic is licensed under the [Apache License 2.0](LICENSE) — friendly to commercial and closed-source use, with patent protection.
 
 ---
 
-## 🌟 Star the project
+##  Star the project
 
 If QuoNic helps you, please give us a ⭐️ on GitHub. Your support keeps us going.
