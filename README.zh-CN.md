@@ -24,7 +24,7 @@
 
 ---
 
-## 🚀 30 秒快速开始
+##  30 秒快速开始
 
 ```python
 from quonic import qgate, qshow
@@ -41,7 +41,7 @@ qshow()
 
 ---
 
-## 📦 安装
+##  安装
 
 ```bash
 pip install quonic
@@ -61,7 +61,7 @@ pip install 'quonic[qiskit,cirq,pennylane,algorithms,all-sim]'
 
 ---
 
-## ✨ 核心特性
+##  核心特性
 
 ### 1. 极简语法：3 行代码跑通贝尔态
 
@@ -192,7 +192,7 @@ plot_decision_tree()         # 调度决策树
 
 ---
 
-## 📊 对比：QuoNic vs Qiskit
+##  对比：QuoNic vs Qiskit
 
 | 场景 | Qiskit | QuoNic |
 |------|--------|-------|
@@ -203,7 +203,7 @@ plot_decision_tree()         # 调度决策树
 
 ---
 
-## 🧠 为什么叫 QuoNic？
+##  为什么叫 QuoNic？
 
 QuoNic 是 **Quantum Unified Operation Native Interface Core** 的首字母缩写：
 
@@ -220,7 +220,7 @@ QuoNic 是 **Quantum Unified Operation Native Interface Core** 的首字母缩�
 
 ---
 
-## 🛠️ 当前支持的后端
+##  当前支持的后端
 
 | 后端 | 状态 | 说明 |
 |------|------|------|
@@ -261,7 +261,7 @@ results = run_circuits([bell, flip], backend='qiskit')
 
 ---
 
-## 🧮 77 个算法模板
+##  77 个算法模板
 
 QuoNic 内置 77 个算法模板，覆盖 10 大领域——从基础量子计算到前沿研究演示。每个算法均有边界条件和使用案例说明。详见[完整算法报告](docs/QuoNic_Algorithm_Report.pdf)。
 
@@ -303,7 +303,7 @@ result = deutsch_jozsa(2, my_oracle, shots=100)
 
 ---
 
-## 📖 文档与教程
+##  文档与教程
 
 - [快速入门](docs/quickstart.md) — 5 分钟上手 QuoNic
 - [Jupyter 教程](docs/tutorial.ipynb) — 可运行的交互单元
@@ -313,7 +313,7 @@ result = deutsch_jozsa(2, my_oracle, shots=100)
 
 ---
 
-## 🤝 贡献指南
+##  贡献指南
 
 QuoNic 是一个开源项目（Apache 2.0），欢迎任何形式的贡献：
 
@@ -326,12 +326,12 @@ QuoNic 是一个开源项目（Apache 2.0），欢迎任何形式的贡献：
 
 ---
 
-## 📄 许可证
+##  许可证
 
 QuoNic 使用 [Apache License 2.0](LICENSE)，对商用和闭源友好，同时提供专利保护。
 
 ---
 
-## 🌟 给项目加星
+##  给项目加星
 
 如果 QuoNic 对你有帮助，请在 GitHub 上给我们一个 ⭐️。你的支持是我们持续改进的动力。
