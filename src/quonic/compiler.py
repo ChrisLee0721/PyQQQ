@@ -73,27 +73,78 @@ def _decompose_ccx(a: int, b: int, c: int) -> List[GateOperation]:
     ]
 
 
+def _decompose_mcx_vale(c0: int, c1: int, c2: int, target: int) -> List[GateOperation]:
+    """MCX(3 controls) decomposition using Vale et al. (2024) phase polynomial method.
+
+    arXiv:2302.06377, IEEE TCAD 43(3) (2024).
+    Hardcoded for 3 controls: 14 CX gates (vs 18 for standard AND cascade).
+
+    Decomposition verified against Qiskit's synth_mcx_noaux_v24.
+    """
+    t = math.pi / 8  # √T = p(π/8)
+    return [
+        GateOperation("h", (target,)),
+        # P(√T) on all qubits
+        GateOperation("p", (c0,), (t,)),
+        GateOperation("p", (c1,), (t,)),
+        GateOperation("p", (c2,), (t,)),
+        GateOperation("p", (target,), (t,)),
+        # Level 1: c0 AND c1
+        GateOperation("cx", (c0, c1)),
+        GateOperation("p", (c1,), (-t,)),
+        GateOperation("cx", (c0, c1)),
+        # Level 2: (c0 AND c1) AND c2
+        GateOperation("cx", (c1, c2)),
+        GateOperation("p", (c2,), (-t,)),
+        GateOperation("cx", (c0, c2)),
+        GateOperation("p", (c2,), (t,)),
+        GateOperation("cx", (c1, c2)),
+        GateOperation("p", (c2,), (-t,)),
+        GateOperation("cx", (c0, c2)),
+        # Level 3: AND into target
+        GateOperation("cx", (c2, target)),
+        GateOperation("p", (target,), (-t,)),
+        GateOperation("cx", (c1, target)),
+        GateOperation("p", (target,), (t,)),
+        GateOperation("cx", (c2, target)),
+        GateOperation("p", (target,), (-t,)),
+        GateOperation("cx", (c0, target)),
+        GateOperation("p", (target,), (t,)),
+        GateOperation("cx", (c2, target)),
+        GateOperation("p", (target,), (-t,)),
+        GateOperation("cx", (c1, target)),
+        GateOperation("p", (target,), (t,)),
+        GateOperation("cx", (c2, target)),
+        GateOperation("p", (target,), (-t,)),
+        GateOperation("cx", (c0, target)),
+        GateOperation("h", (target,)),
+    ]
+
+
 def _decompose_mcx(
     controls: Tuple[int, ...],
     target: int,
     new_ancillas: Callable[[int], Tuple[int, ...]],
 ) -> List[GateOperation]:
-    """Multi-controlled X: k=1 -> cx; k=2 -> Toffoli; k>=3 -> AND cascade (k-2 clean ancillas)."""
+    """Multi-controlled X: k=1 -> cx; k=2 -> Toffoli; k=3 -> Vale et al. (2024); k>=4 -> AND cascade.
+
+    For 3 controls: 14 CX gates (vs 18 for standard AND cascade).
+    No ancilla qubits needed for k<=3.
+    """
     k = len(controls)
     if k == 1:
         return [GateOperation("cx", (controls[0], target))]
     if k == 2:
         return _decompose_ccx(controls[0], controls[1], target)
-
+    if k == 3:
+        return _decompose_mcx_vale(controls[0], controls[1], controls[2], target)
+    # k >= 4: use standard AND cascade with ancillas
     anc = new_ancillas(k - 2)
     ops: List[GateOperation] = []
-    # forward: anc[0] = c1&c2, anc[j] = anc[j-1] & c_{j+2}
     ops += _decompose_ccx(controls[0], controls[1], anc[0])
     for j in range(1, k - 2):
         ops += _decompose_ccx(anc[j - 1], controls[j + 1], anc[j])
-    # apply: t ^= anc[k-3] & c_k
     ops += _decompose_ccx(anc[k - 3], controls[k - 1], target)
-    # uncompute (restore ancilla to |0>)
     for j in range(k - 3, 0, -1):
         ops += _decompose_ccx(anc[j - 1], controls[j + 1], anc[j])
     ops += _decompose_ccx(controls[0], controls[1], anc[0])
@@ -104,7 +155,11 @@ def _decompose_mcz(
     qubits: Tuple[int, ...],
     new_ancillas: Callable[[int], Tuple[int, ...]],
 ) -> List[GateOperation]:
-    """Multi-controlled Z: the last bit is the target, mcz = H·mcx·H; a single control becomes cz directly."""
+    """Multi-controlled Z: mcz = H·mcx·H; a single control becomes cz directly.
+
+    Uses Vale et al. (2024) decomposition for 3+ controls.
+    For 3 controls: 14 CX gates (vs 18 for standard AND cascade).
+    """
     t = qubits[-1]
     controls = qubits[:-1]
     if len(controls) == 1:

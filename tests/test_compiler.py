@@ -186,20 +186,21 @@ def test_decompose_mcz_matches():
 
 
 def test_decompose_mcz_ancilla_count():
-    # mcz(0,1,2,3)：3 控制 -> 1 个 ancilla
+    # mcz(0,1,2,3)：3 控制 -> Vale 分解不需要 ancilla
     c = Circuit()
     c.add(GateOperation("mcz", (0, 1, 2, 3)))
     out = decompose(c)
-    assert out.num_qubits == 5
+    # Vale et al. (2024) decomposition doesn't need ancilla for 3 controls
+    assert out.num_qubits == 4
 
 
 def test_decompose_mcz_ancilla_recycled():
-    # 两个各需 1 个 ancilla 的 mcz，复用同一组，总 ancilla 仍为 1（不累加）
+    # 两个 mcz，Vale 分解不需要 ancilla
     c = Circuit()
     c.add(GateOperation("mcz", (0, 1, 2, 3)))
     c.add(GateOperation("mcz", (0, 1, 2, 3)))
     out = decompose(c)
-    assert out.num_qubits == 5
+    assert out.num_qubits == 4
 
 
 def test_decompose_mcz_recycled_equiv():
