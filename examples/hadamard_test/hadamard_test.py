@@ -8,6 +8,7 @@ from quonic import qgate
 from quonic.algorithms import hadamard_test
 from quonic.gates import X
 
+
 # prepare_psi(circuit, qubit_index, n_qubits)
 def prep_psi(circuit, q, n):
     qgate(X, q)  # |1>

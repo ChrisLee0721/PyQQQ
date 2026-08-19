@@ -7,6 +7,7 @@ from quonic import qgate
 from quonic.algorithms import swap_test
 from quonic.gates import X
 
+
 # prepare(circuit, qubit_index, n_qubits)
 def prep_a(circuit, q, n):
     pass  # |0>
