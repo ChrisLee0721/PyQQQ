@@ -127,6 +127,8 @@ def optimize_zx(graph: ZXGraph, max_rounds: int = 10) -> ZXGraph:
         changed |= _remove_identities(g)
         changed |= _eliminate_h_edges(g)
         changed |= _supplementarity(g)
+        changed |= _phase_copy(g)
+        changed |= _bialgebra(g)
         if not changed:
             break
 
@@ -396,6 +398,104 @@ def _supplementarity(g: ZXGraph) -> bool:
             g.remove_spider(e.dst)
             changed = True
             break
+
+    return changed
+
+
+def _phase_copy(g: ZXGraph) -> bool:
+    """Phase copy rule: a Z-spider with phase 0 connected to multiple same-type
+    spiders can be absorbed, distributing its connections.
+
+    If spider S has phase 0 and connects to multiple same-type neighbors,
+    S can be removed and the neighbors connected directly.
+    """
+    changed = False
+
+    for sid in list(g.spiders.keys()):
+        if sid not in g.spiders:
+            continue
+        s = g.spiders[sid]
+        if s.stype == SpiderType.BOUNDARY:
+            continue
+        if abs(s.phase) > 1e-10:
+            continue
+
+        nbs = g.neighbors(sid)
+        same_type_nbs = [nb for nb in nbs if nb in g.spiders and g.spiders[nb].stype == s.stype]
+
+        # If all neighbors are same type and there are ≥ 2, can distribute
+        if len(same_type_nbs) >= 2 and len(same_type_nbs) == len(nbs):
+            # Connect all pairs of same-type neighbors
+            for i in range(len(same_type_nbs)):
+                for j in range(i + 1, len(same_type_nbs)):
+                    existing = False
+                    for e in g.edges:
+                        if e.src == -1:
+                            continue
+                        if (e.src == same_type_nbs[i] and e.dst == same_type_nbs[j]) or \
+                           (e.src == same_type_nbs[j] and e.dst == same_type_nbs[i]):
+                            existing = True
+                            break
+                    if not existing:
+                        g.add_edge(same_type_nbs[i], same_type_nbs[j])
+            g.remove_spider(sid)
+            changed = True
+            break
+
+    return changed
+
+
+def _bialgebra(g: ZXGraph) -> bool:
+    """Bialgebra rule: Z-spider with n neighbors connected to X-spider with m
+    neighbors (where the connection is the only shared edge) can be replaced
+    with direct connections between all Z-neighbors and X-neighbors.
+
+    Simplified: if a Z-spider and X-spider are connected, and each has exactly
+    2 neighbors (including each other), they form a basic bialgebra pattern
+    that can be simplified.
+    """
+    changed = False
+
+    for eidx, e in enumerate(g.edges):
+        if e.src == -1:
+            continue
+        s1 = g.spiders.get(e.src)
+        s2 = g.spiders.get(e.dst)
+        if s1 is None or s2 is None:
+            continue
+        if s1.stype == SpiderType.BOUNDARY or s2.stype == SpiderType.BOUNDARY:
+            continue
+        if s1.stype == s2.stype:
+            continue
+
+        # Both have exactly 2 neighbors (each other + one other)
+        nbs1 = g.neighbors(e.src)
+        nbs2 = g.neighbors(e.dst)
+
+        if len(nbs1) == 2 and len(nbs2) == 2:
+            other1 = [nb for nb in nbs1 if nb != e.dst][0]
+            other2 = [nb for nb in nbs2 if nb != e.src][0]
+
+            # If both other neighbors are boundaries, connect them
+            sp1 = g.spiders.get(other1)
+            sp2 = g.spiders.get(other2)
+            if sp1 is not None and sp2 is not None:
+                if sp1.stype == SpiderType.BOUNDARY and sp2.stype == SpiderType.BOUNDARY:
+                    # Connect the two boundaries directly
+                    existing = False
+                    for e2 in g.edges:
+                        if e2.src == -1:
+                            continue
+                        if (e2.src == other1 and e2.dst == other2) or \
+                           (e2.src == other2 and e2.dst == other1):
+                            existing = True
+                            break
+                    if not existing:
+                        g.add_edge(other1, other2)
+                    g.remove_spider(e.src)
+                    g.remove_spider(e.dst)
+                    changed = True
+                    break
 
     return changed
 

@@ -329,10 +329,11 @@ class MPSEngine:
         return float(np.sqrt(np.real(left[0, 0])))
 
     def dmrg_sweep(self, hamiltonian: List[Tuple[float, str]], max_sweeps: int = 10) -> float:
-        """One DMRG sweep to minimize energy ⟨ψ|H|ψ⟩.
+        """2-site DMRG sweep to minimize energy ⟨ψ|H|ψ⟩.
 
-        Sweeps left-to-right and right-to-left, optimizing one MPS tensor at a time.
-        The Hamiltonian is specified as a list of (coefficient, Pauli_string) terms.
+        True 2-site DMRG: merges pairs of adjacent tensors, optimizes the
+        merged tensor via local eigenvalue problem, then SVDs back with
+        truncation to chi_max.
 
         Args:
             hamiltonian: list of (coeff, pauli_string) terms, e.g. [(1.0, "ZZ"), (0.5, "X")]
@@ -341,32 +342,14 @@ class MPSEngine:
         Returns:
             Final energy expectation value.
         """
-        # Build left environments for each site
-        def build_left_envs():
-            envs = [None] * (self.n + 1)
-            envs[0] = np.array([[1.0 + 0j]])
-            for i in range(self.n):
-                m = self.M[i]
-                envs[i + 1] = np.einsum("ab,asc,bsd->cd", envs[i], m, m.conj())
-            return envs
+        pauli_map = {
+            "I": np.eye(2, dtype=complex),
+            "X": np.array([[0, 1], [1, 0]], dtype=complex),
+            "Y": np.array([[0, -1j], [1j, 0]], dtype=complex),
+            "Z": np.array([[1, 0], [0, -1]], dtype=complex),
+        }
 
-        # Build right environments for each site
-        def build_right_envs():
-            envs = [None] * (self.n + 1)
-            envs[self.n] = np.array([[1.0 + 0j]])
-            for i in range(self.n - 1, -1, -1):
-                m = self.M[i]
-                envs[i] = np.einsum("asc,cd,bsd->ab", m, envs[i + 1], m.conj())
-            return envs
-
-        # Compute energy for a given MPS
         def compute_energy():
-            pauli_map = {
-                "I": np.eye(2, dtype=complex),
-                "X": np.array([[0, 1], [1, 0]], dtype=complex),
-                "Y": np.array([[0, -1j], [1j, 0]], dtype=complex),
-                "Z": np.array([[1, 0], [0, -1]], dtype=complex),
-            }
             energy = 0.0
             for coeff, pauli_str in hamiltonian:
                 left = np.array([[1.0 + 0j]])
@@ -377,33 +360,125 @@ class MPSEngine:
                 energy += coeff * float(np.real(left[0, 0]))
             return energy
 
-        # Simple variational sweep: perturb each tensor and keep if energy improves
+        def build_h_eff_2site(site: int):
+            """Build the effective Hamiltonian for sites (site, site+1).
+
+            Returns H_eff as a matrix acting on the merged tensor
+            θ[chiL, d1, d2, chiR] reshaped to [chiL*d1*d2*chiR, ...].
+            """
+            chi_l = self.M[site].shape[0]
+            d1 = self.M[site].shape[1]
+            d2 = self.M[site + 1].shape[1]
+            chi_r = self.M[site + 1].shape[2]
+            dim = chi_l * d1 * d2 * chi_r
+
+            # Build left environment L[α, β] = ⟨α|ρ_left|β⟩
+            L = np.array([[1.0 + 0j]])
+            for i in range(site):
+                m = self.M[i]
+                L = np.einsum("ab,asc,bsd->cd", L, m, m.conj())
+
+            # Build right environment R[α, β] = ⟨α|ρ_right|β⟩
+            R = np.array([[1.0 + 0j]])
+            for i in range(self.n - 1, site + 2, -1):
+                m = self.M[i]
+                R = np.einsum("asc,cd,bsd->ab", m, R, m.conj())
+
+            # Build H_eff as sum of terms
+            H_eff = np.zeros((dim, dim), dtype=complex)
+
+            for coeff, pauli_str in hamiltonian:
+                # Get Pauli matrices for site and site+1
+                p1 = pauli_map[pauli_str[site]] if site < len(pauli_str) else np.eye(2, dtype=complex)
+                p2 = pauli_map[pauli_str[site + 1]] if site + 1 < len(pauli_str) else np.eye(2, dtype=complex)
+
+                # H_eff[α,s1,s2,γ, β,t1,t2,δ] = L[α,β] * P1[s1,t1] * P2[s2,t2] * R[γ,δ]
+                term = np.einsum("ab,st,uv,gd->asugb tvd", L, p1, p2, R)
+                term = term.reshape(dim, dim)
+                H_eff += coeff * term
+
+            return H_eff
+
         best_energy = compute_energy()
 
         for sweep in range(max_sweeps):
             # Left-to-right sweep
-            for i in range(self.n):
-                chi_l, d, chi_r = self.M[i].shape
-                # Try small perturbations
-                old_tensor = self.M[i].copy()
-                perturbation = np.random.randn(chi_l, d, chi_r) * 0.01
-                self.M[i] = old_tensor + perturbation
-                new_energy = compute_energy()
-                if new_energy < best_energy:
-                    best_energy = new_energy
-                else:
-                    self.M[i] = old_tensor
+            for i in range(self.n - 1):
+                # Merge sites i and i+1
+                theta = np.einsum("asb,btc->astc", self.M[i], self.M[i + 1])
+                chi_l, d1, d2, chi_r = theta.shape
+                dim = chi_l * d1 * d2 * chi_r
+
+                # Build effective Hamiltonian
+                H_eff = build_h_eff_2site(i)
+
+                # Solve eigenvalue problem: H_eff @ v = E * v
+                # Use power iteration for the ground state
+                v = np.random.randn(dim) + 1j * np.random.randn(dim)
+                v /= np.linalg.norm(v)
+
+                for _ in range(20):
+                    v_new = H_eff @ v
+                    v_new /= np.linalg.norm(v_new)
+                    if np.allclose(v_new, v, atol=1e-10):
+                        break
+                    v = v_new
+
+                energy = np.real(np.conj(v) @ H_eff @ v)
+
+                # Reshape back to tensor
+                theta_new = v.reshape(chi_l, d1, d2, chi_r)
+
+                # SVD to split back into two tensors
+                mat = theta_new.reshape(chi_l * d1, d2 * chi_r)
+                u, s, vh = np.linalg.svd(mat, full_matrices=False)
+                chi_new = min(len(s), self.chi_max)
+                u = u[:, :chi_new]
+                s = s[:chi_new]
+                vh = vh[:chi_new, :]
+
+                # Normalize
+                s = s / np.linalg.norm(s)
+
+                self.M[i] = u.reshape(chi_l, d1, chi_new)
+                self.M[i + 1] = (np.diag(s) @ vh).reshape(chi_new, d2, chi_r)
+
+                if energy < best_energy:
+                    best_energy = energy
 
             # Right-to-left sweep
-            for i in range(self.n - 1, -1, -1):
-                chi_l, d, chi_r = self.M[i].shape
-                old_tensor = self.M[i].copy()
-                perturbation = np.random.randn(chi_l, d, chi_r) * 0.01
-                self.M[i] = old_tensor + perturbation
-                new_energy = compute_energy()
-                if new_energy < best_energy:
-                    best_energy = new_energy
-                else:
-                    self.M[i] = old_tensor
+            for i in range(self.n - 2, -1, -1):
+                theta = np.einsum("asb,btc->astc", self.M[i], self.M[i + 1])
+                chi_l, d1, d2, chi_r = theta.shape
+                dim = chi_l * d1 * d2 * chi_r
+
+                H_eff = build_h_eff_2site(i)
+
+                v = np.random.randn(dim) + 1j * np.random.randn(dim)
+                v /= np.linalg.norm(v)
+
+                for _ in range(20):
+                    v_new = H_eff @ v
+                    v_new /= np.linalg.norm(v_new)
+                    if np.allclose(v_new, v, atol=1e-10):
+                        break
+                    v = v_new
+
+                energy = np.real(np.conj(v) @ H_eff @ v)
+                theta_new = v.reshape(chi_l, d1, d2, chi_r)
+
+                mat = theta_new.reshape(chi_l * d1, d2 * chi_r)
+                u, s, vh = np.linalg.svd(mat, full_matrices=False)
+                chi_new = min(len(s), self.chi_max)
+                u = u[:, :chi_new]
+                s = s[:chi_new]
+                vh = vh[:chi_new, :]
+                s = s / np.linalg.norm(s)
+
+                self.M[i] = u.reshape(chi_l, d1, chi_new)
+                self.M[i + 1] = (np.diag(s) @ vh).reshape(chi_new, d2, chi_r)
+
+                if energy < best_energy:
+                    best_energy = energy
 
         return best_energy
