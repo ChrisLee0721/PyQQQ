@@ -2,6 +2,32 @@
 
 本项目所有重要变更都记录于此。All notable changes to this project are documented here.
 
+## [0.8.3] — 2026-08-20
+
+测试补齐 + 算法 example 全覆盖 + tutorial notebook 修复。Test coverage boost, full algorithm examples, tutorial fixes.
+
+### 新增 Added
+
+- **56 个算法 example**：覆盖全部 75 个算法函数（之前只有 15 个有 example）。
+  **56 algorithm examples**: all 75 algorithm functions now have runnable examples (was 15).
+
+- **CP 门**：新增 controlled-phase 参数化门 `CP(theta)`。
+  **CP gate**: new controlled-phase parametric gate `CP(theta)`.
+
+- **测试覆盖提升**：安装可选依赖后 passed 从 431 提升到 615（+184），skipped 从 190 降到 61。
+  **Test coverage boost**: passed 431→615 (+184), skipped 190→61 with optional deps installed.
+
+### 修复 Fixed
+
+- **quantum_kernel.py**：`GateOperation("ry", (start + i), ...)` 元组语法错误 → `(start + i,)`。
+- **qbm.py**：能量字典去重导致概率数组大小不匹配。
+- **qnn.py**：`expectation("Z")` Pauli 长度与 qubit 数不匹配。
+- **test_coupling_matrix.py**：native 后端被误当作 Python module 跳过。
+- **test_backends.py**：`test_backend_auto` 不接受 native 后端。
+- **Notebook 02**：QFT 电路使用不存在的 CP 门。
+- **Notebook 03**：readout 校准比特数（2）与电路比特数（1）不匹配。
+- **Notebook 04**：`qshow()` 使用不存在的 `method` 参数。
+
 ## [0.8.2] — 2026-08-19
 
 学习型调度器 + qif Gray code 分解 + CI 修复。Learning scheduler, qif Gray code decomposition, CI fixes.
