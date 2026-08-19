@@ -1,6 +1,7 @@
 """算法模板测试：Grover / VQE / QAOA。"""
 
 import numpy as np
+import pytest
 
 from quonic.algorithms import (
     diffusion,
@@ -52,6 +53,7 @@ def test_grover_four_qubits():
 
 
 def test_from_qiskit_nature():
+    pytest.importorskip("qiskit")
     # 把 Qiskit 的 SparsePauliOp 转成 [(coeff, pauli)] 再喂 vqe，能量应与直接传一致
     from qiskit.quantum_info import SparsePauliOp
 
@@ -63,6 +65,7 @@ def test_from_qiskit_nature():
 
 
 def test_vqe_transverse_ising():
+    pytest.importorskip("scipy")
     # H = Z⊗Z + X⊗I + I⊗X，精确基态能量为 -sqrt(5) ≈ -2.236
     hamiltonian = [(1.0, "ZZ"), (1.0, "XI"), (1.0, "IX")]
     result = vqe(hamiltonian, 2, init_params=[0.1] * 4, maxiter=500)
@@ -71,6 +74,7 @@ def test_vqe_transverse_ising():
 
 
 def test_qaoa_maxcut_triangle():
+    pytest.importorskip("scipy")
     # 三角形图最大割 = 2（任取两个顶点分到一侧）
     edges = [(0, 1), (1, 2), (0, 2)]
     result = qaoa_maxcut(edges, 3, p=1, init_params=[0.3, 0.3], maxiter=500)

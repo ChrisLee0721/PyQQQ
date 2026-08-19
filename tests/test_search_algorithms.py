@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import pytest
+
 from quonic.algorithms import (
     qaoa,
     qaoa_knapsack,
@@ -12,6 +14,7 @@ from quonic.algorithms import (
 
 
 def test_qaoa_generic_triangle():
+    pytest.importorskip("scipy")
     """QAOA on triangle MaxCut should find cut ≥ 1."""
     edges = [(0, 1), (1, 2), (0, 2)]
     # MaxCut Hamiltonian: -sum(Z_iZ_j) for edges
@@ -27,6 +30,7 @@ def test_qaoa_generic_triangle():
 
 
 def test_qaoa_maxcut_triangle():
+    pytest.importorskip("scipy")
     """QAOA MaxCut on triangle should find cut ≥ 2."""
     edges = [(0, 1), (1, 2), (0, 2)]
     result = qaoa_maxcut(edges, 3, p=1, maxiter=50)
@@ -34,6 +38,7 @@ def test_qaoa_maxcut_triangle():
 
 
 def test_qaoa_mis_path():
+    pytest.importorskip("scipy")
     """QAOA MIS on path graph 0-1-2 should return non-negative MIS estimate."""
     edges = [(0, 1), (1, 2)]
     result = qaoa_mis(edges, 3, p=1, maxiter=30)
@@ -41,6 +46,7 @@ def test_qaoa_mis_path():
 
 
 def test_qaoa_knapsack_basic():
+    pytest.importorskip("scipy")
     """QAOA Knapsack should return positive value."""
     weights = [2, 3, 4]
     values = [3, 4, 5]

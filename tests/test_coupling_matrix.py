@@ -399,6 +399,8 @@ def test_vqe_pipeline():
 
 def test_error_mitigation_pipeline():
     """Error mitigation: ZNE + noise + backend."""
+    import pytest
+    pytest.importorskip("scipy")
     c = Circuit()
     c.allocate(1)
     c.add(GateOperation("x", (0,)))

@@ -111,6 +111,7 @@ def test_cwhile_rejects_qiskit_backend():
 
 @pytest.mark.parametrize("backend", ["cirq", "pennylane"])
 def test_cwhile_rejects_unsupported_backends(backend):
+    pytest.importorskip(backend)
     reset()
     flag = creg("flag")
     with cwhile(flag, until=1):

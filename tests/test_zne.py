@@ -305,6 +305,7 @@ def test_zne_calibration_n_mismatch():
 # ---------------------------------------------------------------------------
 
 def test_zne_exponential_expectation_recovers_clean_value():
+    pytest.importorskip("scipy")
     # X|0> = |1>, <Z> = -1. Depolarizing noise decays <Z> geometrically in λ,
     # which the 3-param exponential fit recovers exactly at λ=0.
     c = Circuit()
@@ -316,6 +317,7 @@ def test_zne_exponential_expectation_recovers_clean_value():
 
 
 def test_zne_exponential_success_recovers_clean_value():
+    pytest.importorskip("scipy")
     c = Circuit()
     c.add(GateOperation("x", (0,)))
     c.add(GateOperation("measure", (0,)))

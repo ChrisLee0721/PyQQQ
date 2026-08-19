@@ -5,9 +5,16 @@ import pytest
 from quonic import qgate, qshow
 from quonic.gates import CX, H, X
 
+_OPTIONAL = {"qiskit": "qiskit", "cirq": "cirq", "pennylane": "pennylane"}
+
+
+def _skip_if_missing(backend: str):
+    pytest.importorskip(_OPTIONAL[backend])
+
 
 @pytest.mark.parametrize("backend", ["qiskit", "cirq", "pennylane"])
 def test_bell_state_consistent(backend, capsys):
+    _skip_if_missing(backend)
     qgate(H, 0)
     qgate(CX, 0, 1)
     result = qshow(backend=backend, shots=1024)
@@ -23,6 +30,7 @@ def test_bell_state_consistent(backend, capsys):
 
 @pytest.mark.parametrize("backend", ["qiskit", "cirq", "pennylane"])
 def test_bitstring_order_consistent(backend, capsys):
+    _skip_if_missing(backend)
     # X 作用在 qubit 1：qubit0=0, qubit1=1 -> 按统一约定应是 "10"
     qgate(X, 1)
     result = qshow(backend=backend, shots=100)
@@ -34,6 +42,7 @@ def test_bitstring_order_consistent(backend, capsys):
 
 @pytest.mark.parametrize("backend", ["qiskit", "cirq", "pennylane"])
 def test_depolarizing_noise(backend):
+    _skip_if_missing(backend)
     from quonic.backends import get_backend
     from quonic.ir import Circuit, GateOperation
 
@@ -72,10 +81,11 @@ def test_backend_auto(capsys):
     from quonic.backends import get_backend
 
     name = get_backend("auto").name
-    assert name in ("qiskit", "cirq", "pennylane"), f"auto -> {name}"
+    assert name in ("qiskit", "cirq", "pennylane", "native"), f"auto -> {name}"
 
 
 def test_qshow_report(capsys):
+    pytest.importorskip("qiskit")
     qgate(H, 0)
     qgate(CX, 0, 1)
     qshow(backend="qiskit", shots=10, report=True)
@@ -86,6 +96,7 @@ def test_qshow_report(capsys):
 
 @pytest.mark.parametrize("backend", ["qiskit", "cirq", "pennylane"])
 def test_qft_cp_consistent(backend, capsys):
+    _skip_if_missing(backend)
     # QFT 走原生 cp 门：QInt 加法 |1> + 3 = |4> 在三个后端一致
     from quonic import QInt, reset
 
