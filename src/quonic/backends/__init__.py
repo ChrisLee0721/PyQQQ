@@ -82,8 +82,13 @@ def resolve_target(
                 )
             )
         return alias_engine, alias_device
-    if device is not None and backend != "qi":
-        raise ValueError(tr("err.device_only_qi", backend=backend))
+    # Backends that accept device parameter
+    _DEVICE_BACKENDS = {"qi", "braket", "ibm", "azure", "ionq", "rigetti", "xanadu", "quera"}
+    if device is not None and backend not in _DEVICE_BACKENDS:
+        raise ValueError(
+            tr("err.device_only_qi", backend=backend)
+            + f"\nBackends that support device: {', '.join(sorted(_DEVICE_BACKENDS))}"
+        )
     return backend, device
 
 
@@ -117,8 +122,15 @@ def get_backend(name: str, device: Optional[str] = None) -> Backend:
             + hint
         )
     if device is not None:
-        # resolve_target already guarantees device is only valid for qi, so this is always qi
-        return QuantumInspireBackend(device)
+        # Backends that accept device parameter
+        if name == "qi":
+            return QuantumInspireBackend(device)
+        elif name == "braket":
+            from .braket import BraketBackend
+            return BraketBackend(device)
+        elif name in ("ibm", "azure", "ionq", "rigetti", "xanadu", "quera"):
+            cls = _REGISTRY[name]
+            return cls(device=device)
     return _REGISTRY[name]
 
 
