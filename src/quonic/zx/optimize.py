@@ -139,8 +139,8 @@ def extract_circuit(graph: ZXGraph) -> Circuit:
     """Extract a quantum circuit from a simplified ZX-graph.
 
     Traverses the graph from inputs to outputs, emitting gates for each
-    non-boundary spider. Handles both Z-type and X-type spiders, and
-    entangling edges (regular and Hadamard).
+    non-boundary spider. Handles both Z-type and X-type spiders, entangling
+    edges (regular and Hadamard), and multi-qubit gates.
 
     Args:
         graph: simplified ZX-graph
@@ -152,61 +152,70 @@ def extract_circuit(graph: ZXGraph) -> Circuit:
     c = Circuit()
     c.allocate(n)
 
-    # Track which spiders have been processed
+    # Map each spider to its qubit (BFS from inputs)
+    spider_qubit = {}
+    for q_idx, inp_id in enumerate(graph.inputs):
+        spider_qubit[inp_id] = q_idx
+        queue = [inp_id]
+        visited = {inp_id}
+        while queue:
+            current = queue.pop(0)
+            for nb in graph.neighbors(current):
+                if nb not in visited:
+                    visited.add(nb)
+                    s = graph.spiders.get(nb)
+                    if s is not None:
+                        # Boundary spiders inherit the qubit
+                        if s.stype == SpiderType.BOUNDARY:
+                            spider_qubit[nb] = q_idx
+                            queue.append(nb)
+                        # Non-boundary spiders: assign to this qubit initially
+                        elif nb not in spider_qubit:
+                            spider_qubit[nb] = q_idx
+                            queue.append(nb)
+
+    # Emit gates: first single-qubit gates, then entangling gates
     processed = set()
 
-    for q_idx, inp_id in enumerate(graph.inputs):
-        current = inp_id
-        visited = {current}
+    # Pass 1: single-qubit gates
+    for sid, s in graph.spiders.items():
+        if s.stype == SpiderType.BOUNDARY:
+            continue
+        q = spider_qubit.get(sid)
+        if q is None:
+            continue
+        if sid not in processed and abs(s.phase) > 1e-10:
+            processed.add(sid)
+            if s.stype == SpiderType.Z:
+                c.add(GateOperation("rz", (q,), (s.phase,)))
+            elif s.stype == SpiderType.X:
+                c.add(GateOperation("rx", (q,), (s.phase,)))
 
-        while True:
-            nbs = graph.neighbors(current)
-            next_sp = None
-            for nb in nbs:
-                if nb not in visited:
-                    next_sp = nb
-                    break
+    # Pass 2: entangling gates
+    for e in graph.edges:
+        if e.src == -1:
+            continue
+        s1 = graph.spiders.get(e.src)
+        s2 = graph.spiders.get(e.dst)
+        if s1 is None or s2 is None:
+            continue
+        if s1.stype == SpiderType.BOUNDARY or s2.stype == SpiderType.BOUNDARY:
+            continue
 
-            if next_sp is None:
-                break
+        q1 = spider_qubit.get(e.src)
+        q2 = spider_qubit.get(e.dst)
+        if q1 is None or q2 is None or q1 == q2:
+            continue
 
-            visited.add(next_sp)
-            s = graph.spiders.get(next_sp)
-
-            if s is None or s.stype == SpiderType.BOUNDARY:
-                current = next_sp
-                continue
-
-            # Emit gate for this spider (only if not already processed)
-            if next_sp not in processed:
-                processed.add(next_sp)
-                if abs(s.phase) > 1e-10:
-                    if s.stype == SpiderType.Z:
-                        c.add(GateOperation("rz", (q_idx,), (s.phase,)))
-                    elif s.stype == SpiderType.X:
-                        c.add(GateOperation("rx", (q_idx,), (s.phase,)))
-
-            # Check for entangling edges
-            for nb in graph.neighbors(next_sp):
-                if nb in visited:
-                    continue
-                nb_sp = graph.spiders.get(nb)
-                if nb_sp is not None and nb_sp.stype != SpiderType.BOUNDARY:
-                    target_q = _find_qubit_for_spider(graph, nb, graph.inputs)
-                    if target_q is not None and target_q != q_idx:
-                        edge = _find_edge(graph, next_sp, nb)
-                        if edge and edge.hadamard:
-                            c.add(GateOperation("cz", (q_idx, target_q)))
-                        else:
-                            # CX: Z-spider connected to X-spider
-                            if s.stype == SpiderType.Z and nb_sp.stype == SpiderType.X:
-                                c.add(GateOperation("cx", (q_idx, target_q)))
-                            elif s.stype == SpiderType.X and nb_sp.stype == SpiderType.Z:
-                                c.add(GateOperation("cx", (target_q, q_idx)))
-                            else:
-                                c.add(GateOperation("cz", (q_idx, target_q)))
-
-            current = next_sp
+        # Emit entangling gate
+        if e.hadamard:
+            c.add(GateOperation("cz", (q1, q2)))
+        elif s1.stype == SpiderType.Z and s2.stype == SpiderType.X:
+            c.add(GateOperation("cx", (q1, q2)))
+        elif s1.stype == SpiderType.X and s2.stype == SpiderType.Z:
+            c.add(GateOperation("cx", (q2, q1)))
+        else:
+            c.add(GateOperation("cz", (q1, q2)))
 
     return c
 

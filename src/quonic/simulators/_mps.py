@@ -399,45 +399,84 @@ class MPSEngine:
 
             return H_eff
 
+        def lanczos_ground_state(H_eff: Any, dim: int, krylov_dim: int = 20) -> Tuple[float, Any]:
+            """Find the ground state of H_eff using Lanczos iteration.
+
+            Builds a Krylov subspace and diagonalizes the tridiagonal matrix.
+            Much faster convergence than power iteration.
+
+            Returns (eigenvalue, eigenvector).
+            """
+            # Start with random vector
+            v = np.random.randn(dim) + 1j * np.random.randn(dim)
+            v /= np.linalg.norm(v)
+
+            # Lanczos iteration
+            krylov_vecs = [v]
+            alphas = []
+            betas = []
+
+            w = H_eff @ v
+            alpha = np.real(np.conj(v) @ w)
+            alphas.append(alpha)
+            w = w - alpha * v
+
+            for j in range(1, krylov_dim):
+                beta = np.linalg.norm(w)
+                if beta < 1e-12:
+                    break
+                betas.append(beta)
+                v_next = w / beta
+                krylov_vecs.append(v_next)
+
+                w = H_eff @ v_next
+                alpha = np.real(np.conj(v_next) @ w)
+                alphas.append(alpha)
+                w = w - alpha * v_next - beta * krylov_vecs[-2]
+
+                # Reorthogonalize (important for numerical stability)
+                for kv in krylov_vecs[:-1]:
+                    w -= np.dot(np.conj(kv), w) * kv
+
+            # Build tridiagonal matrix
+            len(alphas)
+            T = np.diag(alphas)
+            for j in range(len(betas)):
+                T[j, j + 1] = betas[j]
+                T[j + 1, j] = betas[j]
+
+            # Diagonalize tridiagonal matrix
+            eigvals, eigvecs = np.linalg.eigh(T)
+            # Ground state is the eigenvector with smallest eigenvalue
+            idx = np.argmin(eigvals)
+            energy = eigvals[idx]
+
+            # Reconstruct full eigenvector from Krylov basis
+            K = np.column_stack(krylov_vecs)
+            v_ground = K @ eigvecs[:, idx]
+            v_ground /= np.linalg.norm(v_ground)
+
+            return energy, v_ground
+
         best_energy = compute_energy()
 
         for sweep in range(max_sweeps):
             # Left-to-right sweep
             for i in range(self.n - 1):
-                # Merge sites i and i+1
                 theta = np.einsum("asb,btc->astc", self.M[i], self.M[i + 1])
                 chi_l, d1, d2, chi_r = theta.shape
                 dim = chi_l * d1 * d2 * chi_r
 
-                # Build effective Hamiltonian
                 H_eff = build_h_eff_2site(i)
+                energy, v = lanczos_ground_state(H_eff, dim)
 
-                # Solve eigenvalue problem: H_eff @ v = E * v
-                # Use power iteration for the ground state
-                v = np.random.randn(dim) + 1j * np.random.randn(dim)
-                v /= np.linalg.norm(v)
-
-                for _ in range(20):
-                    v_new = H_eff @ v
-                    v_new /= np.linalg.norm(v_new)
-                    if np.allclose(v_new, v, atol=1e-10):
-                        break
-                    v = v_new
-
-                energy = np.real(np.conj(v) @ H_eff @ v)
-
-                # Reshape back to tensor
                 theta_new = v.reshape(chi_l, d1, d2, chi_r)
-
-                # SVD to split back into two tensors
                 mat = theta_new.reshape(chi_l * d1, d2 * chi_r)
                 u, s, vh = np.linalg.svd(mat, full_matrices=False)
                 chi_new = min(len(s), self.chi_max)
                 u = u[:, :chi_new]
                 s = s[:chi_new]
                 vh = vh[:chi_new, :]
-
-                # Normalize
                 s = s / np.linalg.norm(s)
 
                 self.M[i] = u.reshape(chi_l, d1, chi_new)
@@ -453,20 +492,9 @@ class MPSEngine:
                 dim = chi_l * d1 * d2 * chi_r
 
                 H_eff = build_h_eff_2site(i)
+                energy, v = lanczos_ground_state(H_eff, dim)
 
-                v = np.random.randn(dim) + 1j * np.random.randn(dim)
-                v /= np.linalg.norm(v)
-
-                for _ in range(20):
-                    v_new = H_eff @ v
-                    v_new /= np.linalg.norm(v_new)
-                    if np.allclose(v_new, v, atol=1e-10):
-                        break
-                    v = v_new
-
-                energy = np.real(np.conj(v) @ H_eff @ v)
                 theta_new = v.reshape(chi_l, d1, d2, chi_r)
-
                 mat = theta_new.reshape(chi_l * d1, d2 * chi_r)
                 u, s, vh = np.linalg.svd(mat, full_matrices=False)
                 chi_new = min(len(s), self.chi_max)
