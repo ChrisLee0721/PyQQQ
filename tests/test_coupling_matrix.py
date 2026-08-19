@@ -35,7 +35,7 @@ from quonic.stack import current_circuit
 
 BACKENDS = ["native", "qulacs"]
 
-_MODULE_MAP = {"qpanda": "pyqpanda3"}
+_MODULE_MAP = {"qpanda": "pyqpanda3", "native": None}
 
 
 def _import_backend(backend: str):
@@ -43,7 +43,8 @@ def _import_backend(backend: str):
         from quonic.backends.tensorcircuit import _ensure_tc_numpy_compat
         _ensure_tc_numpy_compat()
     mod = _MODULE_MAP.get(backend, backend)
-    return pytest.importorskip(mod)
+    if mod is not None:
+        return pytest.importorskip(mod)
 
 
 # ===================================================================
