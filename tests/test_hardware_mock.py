@@ -66,3 +66,80 @@ def test_hardware_backend_has_capabilities(backend_name):
     cls = _REGISTRY[backend_name]
     if hasattr(cls, "_CAPABILITIES"):
         assert isinstance(cls._CAPABILITIES, dict)
+
+
+# ---------------------------------------------------------------------------
+# Braket backend specific tests
+# ---------------------------------------------------------------------------
+
+
+def test_braket_device_resolution():
+    """Braket should resolve shorthand device names to ARNs."""
+    from quonic.backends.braket import BraketBackend
+
+    b = BraketBackend("sv1")
+    assert "sv1" in b.device.lower()
+
+    b2 = BraketBackend("dm1")
+    assert "dm1" in b2.device.lower()
+
+    b3 = BraketBackend("tn1")
+    assert "tn1" in b3.device.lower()
+
+
+def test_braket_local_device():
+    """Braket local device should use LocalSimulator."""
+    from quonic.backends.braket import BraketBackend
+
+    b = BraketBackend("local")
+    assert b.device == "local"
+
+
+def test_braket_custom_arn():
+    """Braket should accept custom device ARNs."""
+    from quonic.backends.braket import BraketBackend
+
+    arn = "arn:aws:braket:us-east-1:123456:device/qpu/ionq/Aria-1"
+    b = BraketBackend(arn)
+    assert b.device == arn
+
+
+def test_braket_capabilities():
+    """Braket should declare correct capabilities."""
+    from quonic.backends.braket import BraketBackend
+
+    b = BraketBackend()
+    assert b._CAPABILITIES["noise"] is True
+    assert b._CAPABILITIES["ctrl"] is False
+    assert b.name == "braket"
+
+
+def test_braket_gate_translation():
+    """Braket gate translation should handle standard gates."""
+    from quonic.backends.braket import _translate_gate
+
+    # Mock Braket circuit
+    class MockCircuit:
+        def __init__(self):
+            self.ops = []
+        def h(self, q): self.ops.append(("h", q))
+        def x(self, q): self.ops.append(("x", q))
+        def cnot(self, c, t): self.ops.append(("cnot", c, t))
+        def rz(self, q, theta): self.ops.append(("rz", q, theta))
+
+    bc = MockCircuit()
+
+    # Test H gate
+    op = type("Op", (), {"name": "h", "qubits": (0,), "params": ()})()
+    _translate_gate(bc, None, op)
+    assert ("h", 0) in bc.ops
+
+    # Test CX gate
+    op = type("Op", (), {"name": "cx", "qubits": (0, 1), "params": ()})()
+    _translate_gate(bc, None, op)
+    assert ("cnot", 0, 1) in bc.ops
+
+    # Test Rz gate
+    op = type("Op", (), {"name": "rz", "qubits": (0,), "params": (0.5,)})()
+    _translate_gate(bc, None, op)
+    assert ("rz", 0, 0.5) in bc.ops
