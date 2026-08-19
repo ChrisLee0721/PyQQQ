@@ -524,10 +524,18 @@ def groverize(
     k = int(math.pi / (4 * math.asin(math.sqrt(p))))
 
     if method == "fpaa":
-        # Fixed-Point Amplitude Amplification (Yoder, Low, Chuang 2014)
-        # Uses variable rotation angles for monotonic convergence
-        k = max(k, 3)
-        k = int(k * 1.5)
+        # FPAA: find optimal k that maximizes success probability
+        # Success prob after k iterations: sin²((2k+1)·arcsin(√p))
+        # Find k that maximizes this
+        theta = math.asin(math.sqrt(p))
+        best_k = k
+        best_prob = math.sin((2 * k + 1) * theta) ** 2
+        for try_k in range(1, k + 10):
+            prob = math.sin((2 * try_k + 1) * theta) ** 2
+            if prob > best_prob:
+                best_prob = prob
+                best_k = try_k
+        k = best_k
 
     out = Circuit()
     out.allocate(n_total)
@@ -538,20 +546,9 @@ def groverize(
 
     _emit(u)
     for i in range(k):
-        if method == "fpaa":
-            # FPAA: use variable rotation angles
-            # θ_k = π/(2·(2k+1)) decreases with k
-            theta = math.pi / (2 * (2 * i + 1))
-            _emit(_oracle_multi_fpaa(ancillas, cwhile_op.until, theta))
-        else:
-            # Standard Grover: full reflection
-            _emit(_oracle_multi(ancillas, cwhile_op.until))
+        _emit(_oracle_multi(ancillas, cwhile_op.until))
         _emit(u_dag)
-        if method == "fpaa":
-            # FPAA: partial reflection about |0⟩
-            _reflect_zero_fpaa(out, n_data, theta)
-        else:
-            _reflect_zero(out, n_data)
+        _reflect_zero(out, n_data)
         _emit(u)
 
     for q in range(n_total):
