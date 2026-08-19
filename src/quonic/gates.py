@@ -68,6 +68,11 @@ SWAP = Gate("swap", 2)
 MEASURE = Gate("measure", 1)
 
 
+def CP(theta: float) -> Gate:
+    """Controlled-phase gate: applies phase e^{i*theta} to |11>."""
+    return Gate("cp", 2, (_angle(theta),))
+
+
 def _angle(theta: float) -> float:
     try:
         return float(theta)
@@ -144,7 +149,7 @@ __all__ = [
     "H", "X", "Y", "Z", "I",
     "CX", "CZ", "CCX", "SWAP",
     "MEASURE",
-    "Rx", "Ry", "Rz",
+    "Rx", "Ry", "Rz", "CP",
     "resolve",
     "get_gate_registry",
 ]
