@@ -4,16 +4,16 @@ Implements the core ZX-calculus rewrite rules:
 1. Spider fusion: merge adjacent same-type spiders
 2. Identity removal: remove 0-phase spiders with ≤ 2 neighbors
 3. H-edge elimination: remove Hadamard edges between same-type spiders
-4. Phase teleportation: move phases to boundary spiders
+4. Supplementarity: if two spiders of opposite type share all neighbors, simplify
 5. Circuit extraction: convert simplified ZX-graph back to a circuit
 
 Example::
 
-    from quonic.zx import circuit_to_zx, optimize_zx
+    from quonic.zx import circuit_to_zx, optimize_zx, extract_circuit
 
     graph = circuit_to_zx(circuit)
     simplified = optimize_zx(graph)
-    optimized_circuit = simplified.to_circuit()
+    optimized = extract_circuit(simplified)
 """
 
 from __future__ import annotations
@@ -108,8 +108,8 @@ def circuit_to_zx(circuit: Circuit) -> ZXGraph:
 def optimize_zx(graph: ZXGraph, max_rounds: int = 10) -> ZXGraph:
     """Simplify a ZX-graph using rewrite rules.
 
-    Applies spider fusion, identity removal, and H-edge elimination
-    until no more simplifications are possible.
+    Applies spider fusion, identity removal, H-edge elimination,
+    and supplementarity until no more simplifications are possible.
 
     Args:
         graph: input ZX-graph
@@ -125,6 +125,7 @@ def optimize_zx(graph: ZXGraph, max_rounds: int = 10) -> ZXGraph:
         changed |= _fuse_spiders(g)
         changed |= _remove_identities(g)
         changed |= _eliminate_h_edges(g)
+        changed |= _supplementarity(g)
         if not changed:
             break
 
@@ -135,8 +136,8 @@ def extract_circuit(graph: ZXGraph) -> Circuit:
     """Extract a quantum circuit from a simplified ZX-graph.
 
     Traverses the graph from inputs to outputs, emitting gates for each
-    non-boundary spider. This is a simplified extraction that works for
-    graphs in a "graph-like" form (all spiders are Z-type with Pauli edges).
+    non-boundary spider. Handles both Z-type and X-type spiders, and
+    entangling edges (regular and Hadamard).
 
     Args:
         graph: simplified ZX-graph
@@ -148,15 +149,15 @@ def extract_circuit(graph: ZXGraph) -> Circuit:
     c = Circuit()
     c.allocate(n)
 
-    # Build adjacency from inputs to outputs
-    # For each input, trace the wire through the graph
+    # Track which spiders have been processed
+    processed = set()
+
     for q_idx, inp_id in enumerate(graph.inputs):
         current = inp_id
         visited = {current}
 
         while True:
             nbs = graph.neighbors(current)
-            # Find the next spider on this wire (not the one we came from)
             next_sp = None
             for nb in nbs:
                 if nb not in visited:
@@ -170,41 +171,45 @@ def extract_circuit(graph: ZXGraph) -> Circuit:
             s = graph.spiders.get(next_sp)
 
             if s is None or s.stype == SpiderType.BOUNDARY:
-                # Reached output
                 current = next_sp
                 continue
 
-            # Emit gate for this spider
-            if abs(s.phase) > 1e-10:
-                if s.stype == SpiderType.Z:
-                    c.add(GateOperation("rz", (q_idx,), (s.phase,)))
-                elif s.stype == SpiderType.X:
-                    c.add(GateOperation("rx", (q_idx,), (s.phase,)))
+            # Emit gate for this spider (only if not already processed)
+            if next_sp not in processed:
+                processed.add(next_sp)
+                if abs(s.phase) > 1e-10:
+                    if s.stype == SpiderType.Z:
+                        c.add(GateOperation("rz", (q_idx,), (s.phase,)))
+                    elif s.stype == SpiderType.X:
+                        c.add(GateOperation("rx", (q_idx,), (s.phase,)))
 
-            # Check for entangling edges to other qubits
+            # Check for entangling edges
             for nb in graph.neighbors(next_sp):
                 if nb in visited:
                     continue
                 nb_sp = graph.spiders.get(nb)
                 if nb_sp is not None and nb_sp.stype != SpiderType.BOUNDARY:
-                    # This is an entangling edge — find which qubit it connects to
-                    target_q = _find_qubit_for_spider(graph, nb, graph.inputs, graph.outputs)
+                    target_q = _find_qubit_for_spider(graph, nb, graph.inputs)
                     if target_q is not None and target_q != q_idx:
-                        # Check edge type
                         edge = _find_edge(graph, next_sp, nb)
                         if edge and edge.hadamard:
                             c.add(GateOperation("cz", (q_idx, target_q)))
                         else:
-                            c.add(GateOperation("cx", (q_idx, target_q)))
+                            # CX: Z-spider connected to X-spider
+                            if s.stype == SpiderType.Z and nb_sp.stype == SpiderType.X:
+                                c.add(GateOperation("cx", (q_idx, target_q)))
+                            elif s.stype == SpiderType.X and nb_sp.stype == SpiderType.Z:
+                                c.add(GateOperation("cx", (target_q, q_idx)))
+                            else:
+                                c.add(GateOperation("cz", (q_idx, target_q)))
 
             current = next_sp
 
     return c
 
 
-def _find_qubit_for_spider(graph: ZXGraph, sid: int, inputs: list, outputs: list) -> Optional[int]:
+def _find_qubit_for_spider(graph: ZXGraph, sid: int, inputs: list) -> Optional[int]:
     """Find which qubit a spider belongs to by tracing back to an input."""
-    # BFS backwards to find the nearest input
     visited = {sid}
     queue = [sid]
     while queue:
@@ -278,7 +283,7 @@ def _eliminate_h_edges(g: ZXGraph) -> bool:
     """Eliminate Hadamard edges between same-type spiders.
 
     Rule: If two same-type spiders are connected by an H-edge, and one has
-    phase 0, the H-edge can be removed and the phases adjusted.
+    phase 0, the H-edge can be removed.
     """
     changed = False
     for eidx, e in enumerate(g.edges):
@@ -293,11 +298,60 @@ def _eliminate_h_edges(g: ZXGraph) -> bool:
         if s1.stype == SpiderType.BOUNDARY:
             continue
 
-        # If one spider has phase 0, we can eliminate the H-edge
         if abs(s1.phase) < 1e-10 or abs(s2.phase) < 1e-10:
-            # Remove H-edge: just toggle the hadamard flag
             e.hadamard = False
             changed = True
+
+    return changed
+
+
+def _supplementarity(g: ZXGraph) -> bool:
+    """Supplementarity rule: if a Z-spider and X-spider share all neighbors
+    and have complementary phases, both can be removed.
+
+    Rule: Z(α) and X(β) connected, sharing the same neighbor set N.
+    If α + β = 0 (mod 2π), remove both spiders. The neighbors in N are
+    already connected through the graph structure.
+    """
+    changed = False
+
+    for eidx, e in enumerate(g.edges):
+        if e.src == -1:
+            continue
+        s1 = g.spiders.get(e.src)
+        s2 = g.spiders.get(e.dst)
+        if s1 is None or s2 is None:
+            continue
+        if s1.stype == SpiderType.BOUNDARY or s2.stype == SpiderType.BOUNDARY:
+            continue
+        if s1.stype == s2.stype:
+            continue
+
+        # Get neighbors excluding each other
+        nbs1 = set(g.neighbors(e.src)) - {e.dst}
+        nbs2 = set(g.neighbors(e.dst)) - {e.src}
+
+        # Same neighbors and complementary phases
+        if nbs1 == nbs2 and abs(s1.phase + s2.phase) % (2 * np.pi) < 1e-10:
+            # Connect each pair of shared neighbors directly
+            nbs_list = list(nbs1)
+            for i in range(len(nbs_list)):
+                for j in range(i + 1, len(nbs_list)):
+                    # Check if edge already exists
+                    existing = False
+                    for e2 in g.edges:
+                        if e2.src == -1:
+                            continue
+                        if (e2.src == nbs_list[i] and e2.dst == nbs_list[j]) or \
+                           (e2.src == nbs_list[j] and e2.dst == nbs_list[i]):
+                            existing = True
+                            break
+                    if not existing:
+                        g.add_edge(nbs_list[i], nbs_list[j])
+            g.remove_spider(e.src)
+            g.remove_spider(e.dst)
+            changed = True
+            break
 
     return changed
 

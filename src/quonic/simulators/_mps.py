@@ -134,7 +134,37 @@ class MPSEngine:
                 raise NotImplementedError(tr("err.mps_swap"))
             self._swap_adjacent(min(a, b))
         else:
-            raise ValueError(tr("err.mps_gate", name=name))
+            # Try custom gate registry
+            from ..gates import _GATE_REGISTRY
+            if name in _GATE_REGISTRY:
+                gate = _GATE_REGISTRY[name]
+                if gate.matrix is not None and len(qubits) == 1:
+                    self._apply_single(qubits[0], gate.matrix)
+                else:
+                    raise ValueError(tr("err.mps_gate", name=name))
+            else:
+                raise ValueError(tr("err.mps_gate", name=name))
+
+    def apply_noise(self, qubits: Sequence[int], p: float) -> None:
+        """Apply depolarizing noise to the specified qubits.
+
+        With probability p, applies a random Pauli error (X, Y, or Z) to each qubit.
+
+        Args:
+            qubits: qubit indices to apply noise to
+            p: depolarizing error probability
+        """
+        if p <= 0:
+            return
+        paulis = [
+            np.array([[0, 1], [1, 0]], dtype=complex),      # X
+            np.array([[0, -1j], [1j, 0]], dtype=complex),   # Y
+            np.array([[1, 0], [0, -1]], dtype=complex),      # Z
+        ]
+        for q in qubits:
+            if np.random.random() < p:
+                pauli = paulis[np.random.randint(3)]
+                self._apply_single(q, pauli)
 
     # ------------------------------------------------------------------
     # sampling: right environment + per-bit conditional probabilities
