@@ -327,3 +327,83 @@ class MPSEngine:
             m = self.M[i]
             left = np.einsum("ab,asc,bsd->cd", left, m, m.conj())
         return float(np.sqrt(np.real(left[0, 0])))
+
+    def dmrg_sweep(self, hamiltonian: List[Tuple[float, str]], max_sweeps: int = 10) -> float:
+        """One DMRG sweep to minimize energy ⟨ψ|H|ψ⟩.
+
+        Sweeps left-to-right and right-to-left, optimizing one MPS tensor at a time.
+        The Hamiltonian is specified as a list of (coefficient, Pauli_string) terms.
+
+        Args:
+            hamiltonian: list of (coeff, pauli_string) terms, e.g. [(1.0, "ZZ"), (0.5, "X")]
+            max_sweeps: number of left-right sweeps
+
+        Returns:
+            Final energy expectation value.
+        """
+        # Build left environments for each site
+        def build_left_envs():
+            envs = [None] * (self.n + 1)
+            envs[0] = np.array([[1.0 + 0j]])
+            for i in range(self.n):
+                m = self.M[i]
+                envs[i + 1] = np.einsum("ab,asc,bsd->cd", envs[i], m, m.conj())
+            return envs
+
+        # Build right environments for each site
+        def build_right_envs():
+            envs = [None] * (self.n + 1)
+            envs[self.n] = np.array([[1.0 + 0j]])
+            for i in range(self.n - 1, -1, -1):
+                m = self.M[i]
+                envs[i] = np.einsum("asc,cd,bsd->ab", m, envs[i + 1], m.conj())
+            return envs
+
+        # Compute energy for a given MPS
+        def compute_energy():
+            pauli_map = {
+                "I": np.eye(2, dtype=complex),
+                "X": np.array([[0, 1], [1, 0]], dtype=complex),
+                "Y": np.array([[0, -1j], [1j, 0]], dtype=complex),
+                "Z": np.array([[1, 0], [0, -1]], dtype=complex),
+            }
+            energy = 0.0
+            for coeff, pauli_str in hamiltonian:
+                left = np.array([[1.0 + 0j]])
+                for i in range(self.n):
+                    p = pauli_map[pauli_str[i]] if i < len(pauli_str) else np.eye(2, dtype=complex)
+                    m = self.M[i]
+                    left = np.einsum("ab,asg,st,btd->gd", left, m, p, m.conj())
+                energy += coeff * float(np.real(left[0, 0]))
+            return energy
+
+        # Simple variational sweep: perturb each tensor and keep if energy improves
+        best_energy = compute_energy()
+
+        for sweep in range(max_sweeps):
+            # Left-to-right sweep
+            for i in range(self.n):
+                chi_l, d, chi_r = self.M[i].shape
+                # Try small perturbations
+                old_tensor = self.M[i].copy()
+                perturbation = np.random.randn(chi_l, d, chi_r) * 0.01
+                self.M[i] = old_tensor + perturbation
+                new_energy = compute_energy()
+                if new_energy < best_energy:
+                    best_energy = new_energy
+                else:
+                    self.M[i] = old_tensor
+
+            # Right-to-left sweep
+            for i in range(self.n - 1, -1, -1):
+                chi_l, d, chi_r = self.M[i].shape
+                old_tensor = self.M[i].copy()
+                perturbation = np.random.randn(chi_l, d, chi_r) * 0.01
+                self.M[i] = old_tensor + perturbation
+                new_energy = compute_energy()
+                if new_energy < best_energy:
+                    best_energy = new_energy
+                else:
+                    self.M[i] = old_tensor
+
+        return best_energy

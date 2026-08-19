@@ -122,6 +122,7 @@ def optimize_zx(graph: ZXGraph, max_rounds: int = 10) -> ZXGraph:
 
     for _ in range(max_rounds):
         changed = False
+        changed |= _phase_teleportation(g)
         changed |= _fuse_spiders(g)
         changed |= _remove_identities(g)
         changed |= _eliminate_h_edges(g)
@@ -301,6 +302,49 @@ def _eliminate_h_edges(g: ZXGraph) -> bool:
         if abs(s1.phase) < 1e-10 or abs(s2.phase) < 1e-10:
             e.hadamard = False
             changed = True
+
+    return changed
+
+
+def _phase_teleportation(g: ZXGraph) -> bool:
+    """Phase teleportation: move phases from spiders toward neighbors.
+
+    If a spider has phase α and exactly one non-boundary neighbor, teleport
+    the phase to that neighbor. Only processes each spider once per call
+    to prevent bouncing.
+    """
+    changed = False
+    processed = set()
+
+    for sid in list(g.spiders.keys()):
+        if sid in processed or sid not in g.spiders:
+            continue
+        s = g.spiders[sid]
+        if s.stype == SpiderType.BOUNDARY:
+            continue
+        if abs(s.phase) < 1e-10:
+            continue
+
+        nbs = g.neighbors(sid)
+        non_boundary_nbs = [nb for nb in nbs if nb in g.spiders and g.spiders[nb].stype != SpiderType.BOUNDARY]
+
+        if len(non_boundary_nbs) == 1:
+            target = non_boundary_nbs[0]
+            target_s = g.spiders.get(target)
+            if target_s is None or target_s.stype == SpiderType.BOUNDARY:
+                continue
+
+            processed.add(sid)
+            processed.add(target)
+
+            if s.stype == target_s.stype:
+                target_s.phase += s.phase
+                s.phase = 0.0
+                changed = True
+            elif len(nbs) <= 2:
+                target_s.phase -= s.phase
+                s.phase = 0.0
+                changed = True
 
     return changed
 
