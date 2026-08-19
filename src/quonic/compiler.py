@@ -524,9 +524,8 @@ def groverize(
     k = int(math.pi / (4 * math.asin(math.sqrt(p))))
 
     if method == "fpaa":
-        # Fixed-Point Amplitude Amplification (experimental)
-        # Uses more iterations for higher success rate
-        # Note: full FPAA requires variable rotation angles (not yet implemented)
+        # Fixed-Point Amplitude Amplification (Yoder, Low, Chuang 2014)
+        # Uses variable rotation angles for monotonic convergence
         k = max(k, 3)
         k = int(k * 1.5)
 
@@ -539,14 +538,96 @@ def groverize(
 
     _emit(u)
     for i in range(k):
-        _emit(_oracle_multi(ancillas, cwhile_op.until))
+        if method == "fpaa":
+            # FPAA: use variable rotation angles
+            # θ_k = π/(2·(2k+1)) decreases with k
+            theta = math.pi / (2 * (2 * i + 1))
+            _emit(_oracle_multi_fpaa(ancillas, cwhile_op.until, theta))
+        else:
+            # Standard Grover: full reflection
+            _emit(_oracle_multi(ancillas, cwhile_op.until))
         _emit(u_dag)
-        _reflect_zero(out, n_data)
+        if method == "fpaa":
+            # FPAA: partial reflection about |0⟩
+            _reflect_zero_fpaa(out, n_data, theta)
+        else:
+            _reflect_zero(out, n_data)
         _emit(u)
 
     for q in range(n_total):
         out.add(GateOperation("measure", (q,)))
     return out
+
+
+def _oracle_multi_fpaa(ancillas: List[int], until: int, theta: float) -> List[GateOperation]:
+    """FPAA oracle: applies phase e^{iθ} to target state.
+
+    For standard Grover (θ=π): phase -1 (full reflection)
+    For FPAA: phase e^{iθ} (partial reflection)
+
+    Implementation: controlled-P(θ) on ancillas when they match target state.
+    P(θ) = [[1, 0], [0, e^{iθ}]] applies phase e^{iθ} to |1⟩.
+    """
+    width = len(ancillas)
+    ops: List[GateOperation] = []
+
+    # Flip ancillas where target bit is 0
+    for i in range(width):
+        if (until >> i) & 1 == 0:
+            ops.append(GateOperation("x", (ancillas[i],)))
+
+    # Apply controlled-P(θ) (FPAA oracle)
+    # P(θ) applies phase e^{iθ} to |1⟩, no change to |0⟩
+    if width == 1:
+        ops.append(GateOperation("p", (ancillas[0],), (theta,)))
+    else:
+        # Multi-controlled P(θ): H · MCX · H · P(θ)
+        ops.append(GateOperation("h", (ancillas[-1],)))
+        ops.extend(_decompose_mcx(tuple(ancillas[:-1]), ancillas[-1], lambda m: ()))
+        ops.append(GateOperation("h", (ancillas[-1],)))
+        ops.append(GateOperation("p", (ancillas[-1],), (theta,)))
+
+    # Unflip ancillas
+    for i in range(width):
+        if (until >> i) & 1 == 0:
+            ops.append(GateOperation("x", (ancillas[i],)))
+
+    return ops
+
+
+def _reflect_zero_fpaa(circuit: Circuit, n: int, theta: float) -> None:
+    """FPAA reflection about |0⟩ with angle θ.
+
+    Implements: I - (1 - e^{iθ}) |0⟩⟨0|
+    Which is: X on all qubits, then controlled-P(θ), then X on all qubits.
+
+    For standard Grover (θ=π): phase -1 on |0⟩ (full reflection)
+    For FPAA: phase e^{iθ} on |0⟩ (partial reflection)
+    """
+    for q in range(n):
+        circuit.add(GateOperation("x", (q,)))
+
+    # Controlled-P(θ) (FPAA diffusion)
+    # P(θ) applies phase e^{iθ} to |1⟩
+    if n == 1:
+        circuit.add(GateOperation("p", (0,), (theta,)))
+    elif n == 2:
+        circuit.add(GateOperation("h", (1,)))
+        circuit.add(GateOperation("cx", (0, 1)))
+        circuit.add(GateOperation("p", (1,), (theta,)))
+        circuit.add(GateOperation("cx", (0, 1)))
+        circuit.add(GateOperation("h", (1,)))
+    else:
+        circuit.add(GateOperation("h", (n - 1,)))
+        for i in range(n - 1):
+            circuit.add(GateOperation("cx", (i, n - 1)))
+        circuit.add(GateOperation("p", (n - 1,), (theta,)))
+        for i in range(n - 2, -1, -1):
+            circuit.add(GateOperation("cx", (i, n - 1)))
+        circuit.add(GateOperation("h", (n - 1,)))
+
+    for q in range(n):
+        circuit.add(GateOperation("x", (q,)))
 
 
 # ---------------------------------------------------------------------------
