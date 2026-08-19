@@ -103,7 +103,11 @@ class ZXGraph:
         result = []
         for eidx in self._adj.get(sid, []):
             e = self.edges[eidx]
-            result.append(e.other(sid))
+            if e.src == -1:
+                continue
+            other = e.other(sid)
+            if other != -1:
+                result.append(other)
         return result
 
     def edges_of(self, sid: int) -> List[int]:
@@ -196,13 +200,14 @@ class ZXGraph:
         else:
             # 2 neighbors: connect them directly
             n1, n2 = nbs
-            # Check if edge already exists
+            # Check if edge already exists (skip tombstoned edges)
             existing = False
             for eidx in self._adj.get(n1, []):
                 e = self.edges[eidx]
+                if e.src == -1:
+                    continue
                 if e.other(n1) == n2:
                     existing = True
-                    # Toggle Hadamard if one of the removed edges was H
                     break
             if not existing:
                 self.add_edge(n1, n2)

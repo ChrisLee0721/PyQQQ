@@ -122,6 +122,7 @@ def optimize_zx(graph: ZXGraph, max_rounds: int = 10) -> ZXGraph:
 
     for _ in range(max_rounds):
         changed = False
+        changed |= _match_patterns(g)
         changed |= _phase_teleportation(g)
         changed |= _fuse_spiders(g)
         changed |= _remove_identities(g)
@@ -505,6 +506,80 @@ def _bialgebra(g: ZXGraph) -> bool:
                     g.remove_spider(e.dst)
                     changed = True
                     break
+
+    return changed
+
+
+def _match_patterns(g: ZXGraph) -> bool:
+    """Match and simplify common ZX-graph patterns.
+
+    Patterns:
+    1. HZH = X: Z-spider with phase π connected via H-edge → convert to X
+    2. HXH = Z: X-spider with phase π connected via H-edge → convert to Z
+    3. Adjacent H-edges cancel: two H-edges from same spider → remove both
+    4. Phase propagation: move phases through H-edges
+    """
+    changed = False
+
+    # Pattern 1 & 2: H-conjugation (any H-edge with non-boundary spider)
+    for e in g.edges:
+        if e.src == -1 or not e.hadamard:
+            continue
+        s1 = g.spiders.get(e.src)
+        s2 = g.spiders.get(e.dst)
+        if s1 is None or s2 is None:
+            continue
+
+        # Check each spider connected by H-edge
+        for s in [s1, s2]:
+            if s.stype == SpiderType.BOUNDARY:
+                continue
+            # HZH = X: Z-spider with phase π
+            if s.stype == SpiderType.Z and abs(s.phase - np.pi) < 1e-10:
+                s.stype = SpiderType.X
+                s.phase = 0.0
+                changed = True
+            # HXH = Z: X-spider with phase π
+            elif s.stype == SpiderType.X and abs(s.phase - np.pi) < 1e-10:
+                s.stype = SpiderType.Z
+                s.phase = 0.0
+                changed = True
+
+    # Pattern 3: Adjacent H-edges cancel
+    for e1 in g.edges:
+        if e1.src == -1 or not e1.hadamard:
+            continue
+        s1 = g.spiders.get(e1.src)
+        if s1 is None or s1.stype == SpiderType.BOUNDARY:
+            continue
+
+        for e2 in g.edges:
+            if e2.src == -1 or not e2.hadamard:
+                continue
+            if e2 is e1:
+                continue
+            if e2.src == e1.src or e2.dst == e1.src:
+                e1.hadamard = False
+                e2.hadamard = False
+                changed = True
+                break
+
+    # Pattern 4: Phase propagation through H-edges
+    for e in g.edges:
+        if e.src == -1 or not e.hadamard:
+            continue
+        s1 = g.spiders.get(e.src)
+        s2 = g.spiders.get(e.dst)
+        if s1 is None or s2 is None:
+            continue
+        if s1.stype == SpiderType.BOUNDARY or s2.stype == SpiderType.BOUNDARY:
+            continue
+
+        if abs(s1.phase) > 1e-10 and abs(s2.phase) < 1e-10:
+            if s1.stype == s2.stype:
+                s2.phase = s1.phase
+                s1.phase = 0.0
+                changed = True
 
     return changed
 

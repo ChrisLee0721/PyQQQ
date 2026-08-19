@@ -399,22 +399,21 @@ class MPSEngine:
 
             return H_eff
 
-        def lanczos_ground_state(H_eff: Any, dim: int, krylov_dim: int = 20) -> Tuple[float, Any]:
+        def lanczos_ground_state(H_eff: Any, dim: int, krylov_dim: int = 20, tol: float = 1e-10) -> Tuple[float, Any]:
             """Find the ground state of H_eff using Lanczos iteration.
 
             Builds a Krylov subspace and diagonalizes the tridiagonal matrix.
-            Much faster convergence than power iteration.
+            Converges when the eigenvalue change between iterations is below tol.
 
             Returns (eigenvalue, eigenvector).
             """
-            # Start with random vector
             v = np.random.randn(dim) + 1j * np.random.randn(dim)
             v /= np.linalg.norm(v)
 
-            # Lanczos iteration
             krylov_vecs = [v]
             alphas = []
             betas = []
+            prev_energy = None
 
             w = H_eff @ v
             alpha = np.real(np.conj(v) @ w)
@@ -434,24 +433,32 @@ class MPSEngine:
                 alphas.append(alpha)
                 w = w - alpha * v_next - beta * krylov_vecs[-2]
 
-                # Reorthogonalize (important for numerical stability)
                 for kv in krylov_vecs[:-1]:
                     w -= np.dot(np.conj(kv), w) * kv
 
-            # Build tridiagonal matrix
-            len(alphas)
+                # Check convergence: diagonalize current tridiagonal matrix
+                if len(alphas) >= 2:
+                    T = np.diag(alphas)
+                    for k in range(len(betas)):
+                        T[k, k + 1] = betas[k]
+                        T[k + 1, k] = betas[k]
+                    eigvals = np.linalg.eigh(T)[0]
+                    current_energy = eigvals[0]
+
+                    if prev_energy is not None and abs(current_energy - prev_energy) < tol:
+                        break
+                    prev_energy = current_energy
+
+            # Final diagonalization
             T = np.diag(alphas)
             for j in range(len(betas)):
                 T[j, j + 1] = betas[j]
                 T[j + 1, j] = betas[j]
 
-            # Diagonalize tridiagonal matrix
             eigvals, eigvecs = np.linalg.eigh(T)
-            # Ground state is the eigenvector with smallest eigenvalue
             idx = np.argmin(eigvals)
             energy = eigvals[idx]
 
-            # Reconstruct full eigenvector from Krylov basis
             K = np.column_stack(krylov_vecs)
             v_ground = K @ eigvecs[:, idx]
             v_ground /= np.linalg.norm(v_ground)
