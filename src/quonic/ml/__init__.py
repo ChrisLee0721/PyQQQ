@@ -15,7 +15,7 @@ from .ansatz import Ansatz
 from .encoding import amplitude_encode, angle_encode, iqp_encode
 from .loss import cross_entropy_loss, expectation_loss, fidelity_loss
 from .optimizer import AdamOptimizer, QNGOptimizer, SPSAOptimizer
-from .trainer import train
+from .trainer import param_shift_grad, train
 
 __all__ = [
     "Ansatz",
@@ -28,5 +28,6 @@ __all__ = [
     "SPSAOptimizer",
     "AdamOptimizer",
     "QNGOptimizer",
+    "param_shift_grad",
     "train",
 ]

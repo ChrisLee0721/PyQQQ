@@ -13,6 +13,7 @@ from quonic.ml import (
     angle_encode,
     expectation_loss,
     fidelity_loss,
+    param_shift_grad,
     train,
 )
 
@@ -105,3 +106,36 @@ def test_train():
     result = train(ansatz, opt, lambda p: p[0] ** 2)
     assert result.n_steps == 5
     assert len(result.loss_history) == 5
+
+
+# ---------------------------------------------------------------------------
+# 6. Parameter-shift gradient
+# ---------------------------------------------------------------------------
+
+
+def test_param_shift_grad_direction():
+    """Parameter-shift gradient should have correct sign/direction."""
+    # For f(x) = x^2, gradient should point away from 0 (positive for x>0)
+    grad = param_shift_grad(lambda p: np.sum(p**2), np.array([1.0, 2.0]))
+    assert all(g > 0 for g in grad), f"Expected positive grad, got {grad}"
+
+    # For f(x) = -x^2, gradient should be negative
+    grad = param_shift_grad(lambda p: -np.sum(p**2), np.array([1.0, 2.0]))
+    assert all(g < 0 for g in grad), f"Expected negative grad, got {grad}"
+
+
+def test_param_shift_grad_relative():
+    """Parameter-shift gradient magnitude should scale with parameter."""
+    # For f(x) = x^2, grad at x=2 should be ~2x grad at x=1
+    g1 = param_shift_grad(lambda p: p[0] ** 2, np.array([1.0]))[0]
+    g2 = param_shift_grad(lambda p: p[0] ** 2, np.array([2.0]))[0]
+    assert abs(g2 / g1 - 2.0) < 0.1, f"Expected ratio ~2, got {g2/g1}"
+
+
+def test_train_with_param_shift():
+    """Train with parameter-shift gradient should converge."""
+    ansatz = Ansatz.hardware_efficient(n_qubits=1, layers=1)
+    opt = SPSAOptimizer(maxiter=20, lr=0.3)
+    result = train(ansatz, opt, lambda p: p[0] ** 2, gradient="param_shift")
+    # Should converge near 0
+    assert abs(result.final_loss) < 0.5

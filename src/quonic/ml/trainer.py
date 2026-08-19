@@ -1,5 +1,7 @@
 """Training loop for variational quantum algorithms.
 
+Provides parameter-shift and SPSA gradient estimation for quantum circuits.
+
 Example::
 
     from quonic.ml import Ansatz, angle_encode, SPSAOptimizer, expectation_loss, train
@@ -29,11 +31,43 @@ class TrainResult:
     n_steps: int
 
 
+def param_shift_grad(
+    loss_fn: Callable[[np.ndarray], float],
+    params: np.ndarray,
+    shift: float = np.pi / 2,
+) -> np.ndarray:
+    """Estimate gradient using the parameter-shift rule.
+
+    For each parameter θ_i, compute:
+        ∂L/∂θ_i = [L(θ + π/2·e_i) - L(θ - π/2·e_i)] / 2
+
+    This is exact for gates of the form exp(-iθG/2) where G has eigenvalues ±1
+    (e.g. Rx, Ry, Rz). For other gate types it's a good approximation.
+
+    Args:
+        loss_fn: loss function(params) -> float
+        params: current parameters
+        shift: shift amount (default π/2)
+
+    Returns:
+        Estimated gradient vector.
+    """
+    grad = np.zeros_like(params)
+    for i in range(len(params)):
+        params_plus = params.copy()
+        params_plus[i] += shift
+        params_minus = params.copy()
+        params_minus[i] -= shift
+        grad[i] = (loss_fn(params_plus) - loss_fn(params_minus)) / 2
+    return grad
+
+
 def train(
     ansatz: AnsatzBuilder,
     optimizer: Any,
     loss_fn: Callable[[np.ndarray], float],
     init_params: Optional[np.ndarray] = None,
+    gradient: str = "param_shift",
     seed: int = 42,
     verbose: bool = False,
 ) -> TrainResult:
@@ -44,6 +78,7 @@ def train(
         optimizer: optimizer with init() and step() methods
         loss_fn: loss function(params) -> float
         init_params: initial parameters (random if None)
+        gradient: gradient method ("param_shift", "spsa", "numerical")
         seed: random seed
         verbose: print progress
 
@@ -65,11 +100,13 @@ def train(
         if verbose and step % 10 == 0:
             print(f"  Step {step:4d}: loss = {loss:.6f}")
 
-        # Estimate gradient (SPSA or parameter-shift)
-        if hasattr(optimizer, "estimate_grad"):
+        # Estimate gradient
+        if gradient == "spsa" and hasattr(optimizer, "estimate_grad"):
             grad = optimizer.estimate_grad(loss_fn, params)
+        elif gradient == "param_shift":
+            grad = param_shift_grad(loss_fn, params)
         else:
-            # Numerical gradient
+            # Numerical gradient (fallback)
             grad = np.zeros_like(params)
             eps = 1e-5
             for i in range(len(params)):

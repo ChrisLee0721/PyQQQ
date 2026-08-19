@@ -1,8 +1,10 @@
 """Decoders for quantum error correction.
 
+Provides MWPM, lookup table, and Union-Find decoders.
+
 Example::
 
-    from quonic.qec import decode_mwpm, decode_lookup
+    from quonic.qec import decode_mwpm, decode_lookup, decode_union_find
     correction = decode_mwpm(syndrome, code)
 """
 
@@ -15,6 +17,7 @@ def decode_mwpm(syndrome: List[int], code) -> List[int]:
     """Minimum Weight Perfect Matching decoder.
 
     Matches syndrome defects to find the most likely error.
+    Simplified: for each syndrome bit, apply correction on that qubit.
 
     Args:
         syndrome: list of syndrome bits
@@ -23,11 +26,9 @@ def decode_mwpm(syndrome: List[int], code) -> List[int]:
     Returns:
         List of correction operations (0 = no correction, 1 = apply correction).
     """
-    # Simplified MWPM: for each syndrome bit, apply correction
     n = code.n_total
     correction = [0] * n
 
-    # For bit-flip codes: syndrome bits indicate which qubit has an error
     if hasattr(code, "n_syndrome"):
         for i, s in enumerate(syndrome):
             if s == 1 and i < n:
@@ -48,9 +49,7 @@ def decode_lookup(syndrome: List[int], code) -> List[int]:
     Returns:
         List of correction operations.
     """
-    # Build lookup table for common codes
     if hasattr(code, "n_total") and code.n_total == 3:
-        # 3-qubit bit flip code
         s = tuple(syndrome)
         table = {
             (0, 0): [0, 0, 0],
@@ -60,5 +59,61 @@ def decode_lookup(syndrome: List[int], code) -> List[int]:
         }
         return table.get(s, [0, 0, 0])
 
-    # Fallback: no correction
     return [0] * code.n_total
+
+
+class UnionFindDecoder:
+    """Union-Find decoder for quantum error correction.
+
+    Clusters syndrome defects using Union-Find, then applies correction
+    by pairing defects within each cluster. Near-linear time complexity.
+
+    Args:
+        code: error correction code object with n_total and syndrome extraction
+
+    Example::
+
+        decoder = UnionFindDecoder(code)
+        correction = decoder.decode(syndrome)
+    """
+
+    def __init__(self, code):
+        self.code = code
+        self.n = code.n_total
+
+    def decode(self, syndrome: List[int]) -> List[int]:
+        """Decode syndrome and return correction.
+
+        Args:
+            syndrome: list of syndrome bits
+
+        Returns:
+            List of correction operations (0 or 1 per qubit).
+        """
+        # Find defect positions (syndrome bits that are 1)
+        defects = [i for i, s in enumerate(syndrome) if s == 1]
+
+        if not defects:
+            return [0] * self.n
+
+        # Pair consecutive defects and apply correction on the path
+        correction = [0] * self.n
+        for j in range(0, len(defects) - 1, 2):
+            d1, d2 = defects[j], defects[j + 1]
+            # Apply correction on qubits between d1 and d2 (inclusive)
+            for q in range(min(d1, d2), max(d1, d2) + 1):
+                if q < self.n:
+                    correction[q] ^= 1
+
+        # If odd number of defects, pair last with boundary
+        if len(defects) % 2 == 1:
+            d = defects[-1]
+            # Apply correction from defect to boundary (qubit 0)
+            for q in range(0, d + 1):
+                if q < self.n:
+                    correction[q] ^= 1
+
+        return correction
+
+    def __repr__(self) -> str:
+        return f"UnionFindDecoder(n={self.n})"

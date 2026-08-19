@@ -12,7 +12,7 @@ Example::
 """
 
 from .code import BitFlipCode, ColorCode, CSSCode, PhaseFlipCode, ShorCode, SteaneCode, SurfaceCode
-from .decoder import decode_lookup, decode_mwpm
+from .decoder import UnionFindDecoder, decode_lookup, decode_mwpm
 from .stabilizer import StabilizerCode
 
 __all__ = [
@@ -24,6 +24,7 @@ __all__ = [
     "ColorCode",
     "CSSCode",
     "StabilizerCode",
+    "UnionFindDecoder",
     "decode_mwpm",
     "decode_lookup",
 ]
