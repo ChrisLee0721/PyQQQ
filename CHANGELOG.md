@@ -2,6 +2,46 @@
 
 本项目所有重要变更都记录于此。All notable changes to this project are documented here.
 
+## [0.10.0] — 2026-08-20
+
+进阶案例 + 论文复现 + 双语文档 + FPAA 优化。Advanced examples, paper reproductions, bilingual docs, FPAA optimization.
+
+### 新增 Added
+
+- **5 个进阶工作流案例**：
+  - 量子化学工作流（VQE + 噪声 + ZNE + 梯度）
+  - 量子优化工作流（QAOA + 多后端对比 + 电路优化）
+  - 量子纠错工作流（QEC + 稳定子 + 解码器）
+  - 硬件感知编译（分解 + 优化 + SWAP 路由 + 门融合）
+  - 量子机器学习（VQC + 参数偏移 + 训练循环）
+
+- **3 个论文复现**：
+  - Peruzzo et al. (2014)：VQE 计算 H₂ 基态能量
+  - Farhi et al. (2014)：QAOA 求解 MaxCut
+  - Grover (1996)：量子搜索算法
+
+- **5 个 example 加双语文档**：bell/grover/vqe/qft/teleportation
+
+- **FPAA 优化**：找最优迭代次数，成功率从 70% 提升到 100%
+
+- **Vale et al. (2024) MCX 分解**：14 CX（原 18 CX，-22%）
+
+- **CP 门**：controlled-phase 参数化门
+
+### 修复 Fixed
+
+- 26 个测试补 importorskip（qiskit/cirq/pennylane/scipy）
+- native 后端在 coupling_matrix 测试中误跳过
+- test_backend_auto 不接受 native
+- Notebook 02/03/04 多个执行错误
+
+### 统计 Stats
+
+- 740 passed, 61 skipped, 0 failed
+- 19 backends, 75 algorithms, 25 visualizations
+- 80+ examples (including 5 advanced + 3 papers)
+- 5/5 tutorial notebooks working
+
 ## [0.9.0] — 2026-08-20
 
 MPS 张量网络 + ZX-calculus 编译器 + 全模块 100% 完成。MPS tensor network + ZX-calculus compiler + all modules 100% complete.

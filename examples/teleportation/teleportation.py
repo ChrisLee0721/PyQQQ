@@ -1,14 +1,26 @@
-"""Quantum Teleportation — teleport a qubit state using entanglement and classical communication.
+"""Teleport quantum state / 隐形传态量子态
 
-Demonstrates the teleportation protocol:
-1. Create Bell pair between Alice (q1) and Bob (q2)
-2. Alice applies CNOT + H on her qubits (q0, q1)
-3. Alice measures q0 and q1
-4. Bob applies corrections based on Alice's measurement results
+Transfer quantum state from one location to another using entanglement.
+使用纠缠将量子态从一个位置传送到另一个位置。
 
-Usage:
-    python examples/teleportation/teleportation.py
+## Application / 应用场景
+- Quantum communication (量子通信)
+- Quantum networks (量子网络)
+- Distributed quantum computing (分布式量子计算)
+
+## How it works / 原理
+Bell pair + Bell measurement + classical communication + correction.
+Bell 对 + Bell 测量 + 经典通信 + 纠正。
+
+## Output / 输出说明
+Target qubit receives the original state (with classical corrections).
+目标量子比特接收原始态（需要经典纠正）。
+
+## Classical vs Quantum / 经典 vs 量子
+Classical: can't transmit unknown quantum state. Quantum: instant transfer.
+经典：无法传输未知量子态。量子：即时传输。
 """
+
 
 import math
 
