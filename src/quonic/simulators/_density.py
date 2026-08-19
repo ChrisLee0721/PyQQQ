@@ -44,6 +44,32 @@ class DensityMatrixEngine:
     def _apply_single(self, u: Any, q: int) -> None:
         self.rho = self._apply_single_to(self.rho, u, q, self.n)
 
+    def _apply_custom(self, matrix: Any, qubits: Sequence[int]) -> None:
+        """Apply an arbitrary unitary matrix to the density matrix."""
+        dim = matrix.shape[0]
+        n_qubits = int(np.log2(dim))
+        other_qubits = [q for q in range(self.n) if q not in qubits]
+
+        if not other_qubits:
+            # All qubits are target qubits
+            self.rho = matrix @ self.rho @ matrix.conj().T
+            return
+
+        # Reorder: target qubits first
+        perm = list(qubits) + other_qubits
+        inv_perm = [0] * self.n
+        for i, q in enumerate(perm):
+            inv_perm[q] = i
+
+        # Apply U ⊗ I to rho: ρ' = U ρ U†
+        dim_other = 2 ** len(other_qubits)
+        # For multi-qubit: reshape, apply, reshape back
+        rho_flat = self.rho.reshape(dim, dim_other, dim, dim_other)
+        result = np.einsum("ij,jkln,ml->ikmn", matrix, rho_flat, matrix.conj())
+        result = result.reshape([2] * n_qubits + [2] * len(other_qubits) + [2] * n_qubits + [2] * len(other_qubits))
+        # Transpose back
+        self.rho = result.transpose(inv_perm + [self.n + p for p in inv_perm]).reshape(-1, -1)
+
     def _apply_phase(self, qubits: Sequence[int], angle: float) -> None:
         idx = np.arange(2 ** self.n)
         mask = np.ones(2 ** self.n, dtype=bool)
@@ -111,8 +137,14 @@ class DensityMatrixEngine:
     def apply(
         self, name: str, qubits: Sequence[int], params: Tuple[float, ...] = ()
     ) -> None:
+        from ..gates import _GATE_REGISTRY
+
         name = name.lower()
         if name == "measure":
+            return
+        # Check custom gate registry first
+        if name in _GATE_REGISTRY and _GATE_REGISTRY[name].matrix is not None:
+            self._apply_custom(_GATE_REGISTRY[name].matrix, qubits)
             return
         if name in ("i", "h", "x", "y", "z", "rx", "ry", "rz", "p"):
             self._apply_single(single(name, params), qubits[0])

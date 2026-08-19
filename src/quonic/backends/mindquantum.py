@@ -117,7 +117,7 @@ class MindQuantumBackend(EngineBackend):
     #  Dynamic path (v2) — stateful Simulator for mid-circuit measurement
     # ------------------------------------------------------------------ #
 
-    def _run_dynamic(self, circuit, shots, nm, method):
+    def _run_dynamic(self, circuit, shots, nm, method, return_state=False):
         """Override: use MindQuantum Simulator directly for stateful execution with collapse."""
         from mindquantum import Simulator
 

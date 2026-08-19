@@ -28,6 +28,36 @@ from ..result import Result
 from .base import Backend
 
 
+def _try_groverize(circuit: Circuit) -> Circuit:
+    """Attempt to groverize cwhile loops into static circuits.
+
+    If the circuit contains cwhile ops, each one is compiled into a static
+    Grover circuit.  If groverize fails (e.g. missing cmeasure), the
+    original circuit is returned unchanged.
+    """
+    from ..compiler import groverize
+
+    has_cwhile = any(op.name == "cwhile" for op in circuit.ops)
+    if not has_cwhile:
+        return circuit
+
+    # Build a new circuit with cwhile ops replaced by groverized static circuits
+    out = Circuit()
+    out.allocate(circuit.num_qubits)
+    for op in circuit.ops:
+        if op.name == "cwhile":
+            try:
+                static = groverize(op)
+                for gate_op in static.ops:
+                    out.add(gate_op)
+            except Exception:
+                # groverize failed — add the original op (will fail at runtime)
+                out.add(op)
+        else:
+            out.add(op)
+    return out
+
+
 class EngineBackend(Backend):
     """Generic simulator backend.  Subclasses fill _create / _apply_one / _sample.
 
@@ -59,13 +89,17 @@ class EngineBackend(Backend):
         shots: int = 1024,
         noise: Optional[Union[NoiseModel, float, int]] = None,
         method: str = "statevector",
-    ) -> Result:
+        return_state: bool = False,
+    ) -> Any:
         nm = resolve_noise(noise)
         has_ctrl = any(op.name in ("cif", "cmeasure", "cwhile") for op in circuit.ops)
 
         if method == "gpu":
             if not self._CAPABILITIES.get("gpu", False):
                 raise NotImplementedError(tr("err.no_gpu", name=self.name))
+            # Auto-groverize cwhile loops into static circuits for GPU execution
+            if has_ctrl:
+                circuit = _try_groverize(circuit)
             return self._run_gpu(circuit, shots, nm)
 
         if has_ctrl and not self._CAPABILITIES.get("ctrl", False):
@@ -74,14 +108,21 @@ class EngineBackend(Backend):
             raise NotImplementedError(tr("err.engine_noise", name=self.name))
 
         if has_ctrl:
-            return self._run_dynamic(circuit, shots, nm, method)
+            return self._run_dynamic(circuit, shots, nm, method, return_state)
         if nm.enabled:
-            return self._run_noisy(circuit, shots, nm, method)
+            return self._run_noisy(circuit, shots, nm, method, return_state)
 
         # Clean statevector path (v1 behavior, unchanged)
         engine = self._create(circuit.num_qubits)
         for op in circuit.ops:
             self._apply_one(engine, op.name, list(op.qubits), op.params)
+
+        if return_state:
+            from ..statevector import StateVector
+
+            sv = self._get_statevector(engine, circuit.num_qubits)
+            return StateVector(sv)
+
         counts = self._sample(engine, shots, circuit.num_qubits)
         return Result.from_counts(counts, shots)
 
@@ -90,8 +131,9 @@ class EngineBackend(Backend):
     # ------------------------------------------------------------------ #
 
     def _run_noisy(
-        self, circuit: Circuit, shots: int, nm: NoiseModel, method: str
-    ) -> Result:
+        self, circuit: Circuit, shots: int, nm: NoiseModel, method: str,
+        return_state: bool = False,
+    ) -> Any:
         """Run with noise injection using density-matrix simulation.
 
         Subclasses may override for framework-specific noise models (e.g. CUDA-Q's
@@ -108,6 +150,12 @@ class EngineBackend(Backend):
                 self._apply_noise_after_gate(engine, list(op.qubits), nm)
             elif nq == 2 and nm.double > 0:
                 self._apply_noise_after_gate(engine, list(op.qubits), nm)
+
+        if return_state:
+            from ..statevector import MixedState
+            rho = self._get_density_matrix(engine, circuit.num_qubits)
+            return MixedState(rho)
+
         counts = self._sample_dm(engine, shots, circuit.num_qubits)
         if nm.readout > 0:
             counts = self._apply_readout_noise(counts, circuit.num_qubits, nm.readout)
@@ -118,12 +166,16 @@ class EngineBackend(Backend):
     # ------------------------------------------------------------------ #
 
     def _run_dynamic(
-        self, circuit: Circuit, shots: int, nm: NoiseModel, method: str
-    ) -> Result:
+        self, circuit: Circuit, shots: int, nm: NoiseModel, method: str,
+        return_state: bool = False,
+    ) -> Any:
         """Per-shot simulation for classical control flow (cif/cmeasure/cwhile).
 
         Each shot creates a fresh engine, executes ops sequentially with Python-level
         classical register tracking.  Modeled after NativeBackend._run_dynamic.
+
+        Note: return_state is not supported for dynamic circuits (each shot has
+        a different state).  Always returns counts.
         """
         use_dm = nm.enabled
         counts: Dict[str, int] = {}
@@ -242,6 +294,14 @@ class EngineBackend(Backend):
         """Sample from the DM engine.  Default: delegates to _sample."""
         return self._sample(engine, shots, n)
 
+    def _get_statevector(self, engine: Any, n: int) -> Any:
+        """Extract the state vector as a numpy array.  Override in subclasses."""
+        raise NotImplementedError(tr("err.engine_no_sv", name=self.name))
+
+    def _get_density_matrix(self, engine: Any, n: int) -> Any:
+        """Extract the density matrix as a numpy array.  Override in subclasses."""
+        raise NotImplementedError(tr("err.engine_no_sv", name=self.name))
+
     def _apply_noise_after_gate(
         self, engine: Any, qubits: list[int], nm: NoiseModel
     ) -> None:
@@ -321,9 +381,14 @@ class EngineBackend(Backend):
 
     def _sv_apply_gate(self, sv, name, qubits, params, n):
         """Apply a gate to a numpy state vector."""
+        from ..gates import _GATE_REGISTRY
 
         if name in ("measure", "identity", "i"):
             return sv
+
+        # Check custom gate registry
+        if name in _GATE_REGISTRY and _GATE_REGISTRY[name].matrix is not None:
+            return self._sv_apply_custom(sv, _GATE_REGISTRY[name].matrix, qubits, n)
 
         u = self._sv_gate_matrix(name, params)
         if u is not None and len(qubits) == 1:
@@ -390,6 +455,30 @@ class EngineBackend(Backend):
                 new_sv[i] = u[0, 0] * a + u[0, 1] * b
                 new_sv[j] = u[1, 0] * a + u[1, 1] * b
         return new_sv
+
+    @staticmethod
+    def _sv_apply_custom(sv, matrix, qubits, n):
+        """Apply an arbitrary unitary matrix to the specified qubits."""
+        import numpy as np
+
+        dim = matrix.shape[0]
+        n_qubits = int(np.log2(dim))
+        other_qubits = [q for q in range(n) if q not in qubits]
+
+        if not other_qubits:
+            # All qubits are target qubits — simple matrix-vector multiply
+            return matrix @ sv
+
+        perm = list(qubits) + other_qubits
+        state_t = sv.reshape([2] * n).transpose(perm)
+        state_flat = state_t.reshape(dim, -1)
+        result = matrix @ state_flat
+        result = result.reshape([2] * n_qubits + [2 ** len(other_qubits)])
+        inv_perm = [0] * n
+        for i, q in enumerate(perm):
+            inv_perm[q] = i
+        result = result.transpose(inv_perm)
+        return result.reshape(-1)
 
     @staticmethod
     def _sv_apply_cx(sv, control, target, n):

@@ -261,7 +261,7 @@ class TensorCircuitBackend(EngineBackend):
         """Apply gate to TC engine for dynamic path (numpy SV, 0=LSB)."""
         self._apply_one(engine, name, qubits, params)
 
-    def _run_dynamic(self, circuit, shots, nm, method):
+    def _run_dynamic(self, circuit, shots, nm, method, return_state=False):
         """Override: segment-by-segment DMCircuit execution with mid-circuit collapse."""
         with _tc_compat():
             import numpy as np

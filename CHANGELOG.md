@@ -2,6 +2,70 @@
 
 本项目所有重要变更都记录于此。All notable changes to this project are documented here.
 
+## [0.7.0] — 2026-08-19
+
+高阶用户功能 + 不兼容修复 + 功能耦合测试。Advanced user features, incompatibility fixes, and feature coupling tests.
+
+### 新增 Added
+
+- **自定义门** `Gate.from_matrix(name, matrix)`：任意酉矩阵定义自定义门，支持 native/qulacs/qiskit/cirq/pennylane 全后端。
+  **Custom gates** `Gate.from_matrix(name, matrix)`: define gates from arbitrary unitary matrices, works on all backends.
+
+- **态矢量访问** `run(circuit, return_state=True)`：返回 `StateVector` 对象，支持 `amplitude()`/`probabilities()`/`expectation()`/`fidelity()`。
+  **Statevector access** `run(circuit, return_state=True)`: returns `StateVector` with `amplitude()`/`probabilities()`/`expectation()`/`fidelity()`.
+
+- **混合态** `MixedState`：噪声路径返回密度矩阵封装，支持 `probabilities()`/`expectation()`/`purity()`。
+  **MixedState**: noise path returns density-matrix wrapper with `probabilities()`/`expectation()`/`purity()`.
+
+- **梯度 API** `param_shift()` / `numerical_gradient()`：参数平移法和有限差分梯度计算。
+  **Gradient API** `param_shift()` / `numerical_gradient()`: parameter-shift and finite-difference gradients.
+
+- **电路内省**：`Circuit` 支持 `__iter__`/`__len__`/`__repr__`/`copy()`/`filter()`/`slice()`/`inverse()`/`__add__`。
+  **Circuit introspection**: `Circuit` supports iteration, repr, copy, filter, slice, inverse, concatenation.
+
+- **电路序列化**：`to_json()`/`from_json()`/`to_qasm3()`/`to_dict()`/`from_dict()`。
+  **Circuit serialization**: JSON and OpenQASM 3.0 import/export.
+
+- **电路分析** `analyze(circuit)`：返回 `CircuitReport`（depth/gate_count/cx_count/fidelity_estimate）。
+  **Circuit analysis** `analyze(circuit)`: returns `CircuitReport` with depth, gate counts, fidelity estimate.
+
+- **自定义优化 pass**：`optimize()` 接受 callable 函数作为 pass。
+  **Custom optimization passes**: `optimize()` accepts callable functions.
+
+- **参数化电路** `Parameter` + `bind_params()` / `bind_batch()`：符号参数绑定。
+  **Parameterized circuits** `Parameter` + `bind_params()` / `bind_batch()`.
+
+- **批量执行** `run_batch(circuits, backend)`：多电路批量运行。
+  **Batch execution** `run_batch(circuits, backend)`.
+
+- **数据编码** `angle_encode()` / `amplitude_encode()`：经典数据编码为量子态。
+  **Data encoding** `angle_encode()` / `amplitude_encode()`.
+
+- **单步执行** `StepExecutor(circuit)`：逐步执行，每步返回态矢量。
+  **Step-by-step execution** `StepExecutor(circuit)`: execute gate-by-gate, inspect state at each step.
+
+- **cwhile + GPU 自动 groverize**：`run(method="gpu")` 自动将 cwhile 编译成静态电路再跑 GPU。
+  **cwhile + GPU auto-groverize**: `run(method="gpu")` auto-compiles cwhile to static circuit for GPU.
+
+- **翻译器自定义门**：qiskit/cirq/pennylane 翻译器遇到自定义门时自动查 `_GATE_REGISTRY` 翻译。
+  **Translator custom gate support**: qiskit/cirq/pennylane translators look up `_GATE_REGISTRY` for custom gates.
+
+- **功能耦合测试**：27 个集成测试 + 27 个耦合矩阵测试 + 15 个嵌套测试 = 69 个跨功能测试。
+  **Feature coupling tests**: 27 integration + 27 coupling matrix + 15 nesting = 69 cross-feature tests.
+
+### 修复 Fixed
+
+- **`_run_dynamic` 签名统一**：所有后端的 `_run_dynamic` 统一接受 `return_state` 参数。
+  **`_run_dynamic` signature unification**: all backends accept `return_state` parameter.
+
+- **密度矩阵自定义门**：`_density.py` 支持 `_apply_custom`（自定义门在密度矩阵引擎上执行）。
+  **Density matrix custom gates**: `_density.py` supports `_apply_custom`.
+
+- **qif 自定义门**：`_unitary()` 支持从 `Gate.matrix` 取矩阵。
+  **qif custom gates**: `_unitary()` reads from `Gate.matrix`.
+
+---
+
 ## [0.6.0] — 2026-08-19
 
 电路优化 + qif 多比特/嵌套 + API 文档 + GPU 基准 + 算法模板深化。Circuit

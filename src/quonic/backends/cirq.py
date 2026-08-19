@@ -12,6 +12,19 @@ from .base import Backend
 from .translators import TRANSLATORS
 
 
+def _translate_custom_gate_cirq(cirq, op, qubits):
+    """Translate a custom gate to Cirq operations."""
+    from ..gates import _GATE_REGISTRY
+
+    if op.name in _GATE_REGISTRY and _GATE_REGISTRY[op.name].matrix is not None:
+        import numpy as np
+
+        matrix = np.asarray(_GATE_REGISTRY[op.name].matrix, dtype=complex)
+        gate = cirq.MatrixGate(matrix)
+        return [gate.on(*[qubits[q] for q in op.qubits])]
+    raise ValueError(tr("err.cirq_gate", name=op.name))
+
+
 class CirqBackend(Backend):
     name = "cirq"
     methods = frozenset({"statevector"})
@@ -36,7 +49,10 @@ class CirqBackend(Backend):
         ops = []
         cregs = {}
         for op in circuit.ops:
-            ops.extend(TRANSLATORS[op.name].to_cirq(cirq, op, qubits, cregs))
+            if op.name in TRANSLATORS:
+                ops.extend(TRANSLATORS[op.name].to_cirq(cirq, op, qubits, cregs))
+            else:
+                ops.extend(_translate_custom_gate_cirq(cirq, op, qubits))
             if nm.enabled and op.name != "measure":
                 nq = len(op.qubits)
                 if nq == 1 and nm.single > 0.0:

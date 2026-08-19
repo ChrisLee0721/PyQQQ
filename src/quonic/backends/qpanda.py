@@ -183,6 +183,6 @@ class QPandaBackend(EngineBackend):
         p0 = float(np.sum(np.array(probs)[bit == 0]))
         return 0 if np.random.random() < p0 else 1
 
-    def _run_dynamic(self, circuit, shots, nm, method):
+    def _run_dynamic(self, circuit, shots, nm, method, return_state=False):
         """Use numpy SV for dynamic circuits (QPanda3 doesn't support state injection)."""
         return self._run_dynamic_sv(circuit, shots, nm)
