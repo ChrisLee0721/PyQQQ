@@ -14,13 +14,17 @@ from .entanglement import (
     teleport_state,
 )
 from .network import Node, QuantumNetwork
+from .scheduler import ScheduleStep, TaskSchedule, schedule_task
 
 __all__ = [
     "QuantumNetwork",
     "Node",
     "EntanglementPair",
+    "ScheduleStep",
+    "TaskSchedule",
     "create_bell_pair",
     "distribute_entanglement",
     "remote_cnot",
+    "schedule_task",
     "teleport_state",
 ]

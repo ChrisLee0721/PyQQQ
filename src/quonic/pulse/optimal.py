@@ -145,6 +145,96 @@ def grape_optimize(
     )
 
 
+def krotov_optimize(
+    target: np.ndarray,
+    n_steps: int = 50,
+    maxiter: int = 200,
+    dt: float = 1.0,
+    max_amp: float = 1.0,
+    lambda_a: float = 1.0,
+    seed: int = 42,
+    h_drift: Optional[np.ndarray] = None,
+) -> GRAPEResult:
+    """Optimize a pulse using Krotov's method.
+
+    Krotov's method updates pulse amplitudes iteratively using forward-backward
+    propagation. It's more stable than GRAPE for large systems.
+
+    Args:
+        target: target 2x2 unitary matrix
+        n_steps: number of time steps
+        maxiter: maximum iterations
+        dt: time step duration
+        max_amp: maximum pulse amplitude
+        lambda_a: update scaling factor
+        seed: random seed
+        h_drift: drift Hamiltonian
+
+    Returns:
+        GRAPEResult with optimized pulse and fidelity.
+    """
+    rng = np.random.RandomState(seed)
+
+    X = np.array([[0, 1], [1, 0]], dtype=complex)
+    Y = np.array([[0, -1j], [1j, 0]], dtype=complex)
+    I2 = np.eye(2, dtype=complex)
+    H_drift = h_drift if h_drift is not None else np.zeros((2, 2), dtype=complex)
+
+    pulse = rng.randn(n_steps, 2) * 0.01
+    loss_history = []
+
+    for iteration in range(maxiter):
+        # Forward propagation
+        U_fwd = I2.copy()
+        fwd_props = []
+        for k in range(n_steps):
+            H_k = H_drift + pulse[k, 0] * X + pulse[k, 1] * Y
+            U_k = _expm_i(H_k * dt)
+            fwd_props.append(U_k)
+            U_fwd = U_k @ U_fwd
+
+        overlap = np.trace(target.conj().T @ U_fwd)
+        fidelity = float(np.abs(overlap) ** 2 / 4)
+        loss_history.append(fidelity)
+
+        if fidelity > 1 - 1e-10:
+            break
+
+        # Backward propagation: target† @ U_fwd gives the error
+        # Krotov update: Δu_k ∝ Im(Tr(B_k† @ σ_k))
+        # where B_k = -i * H_control, σ_k = forward_state @ backward_state†
+        U_bwd = target.conj().T  # start from target†
+        for k in range(n_steps - 1, -1, -1):
+            H_k = H_drift + pulse[k, 0] * X + pulse[k, 1] * Y
+            U_k = _expm_i(H_k * dt)
+            # Compute sigma_k = fwd_props[k] @ U_bwd
+            sigma = fwd_props[k] @ U_bwd
+            # Update: Δu_x = lambda * Im(Tr(X @ sigma))
+            delta_x = lambda_a * np.imag(np.trace(X @ sigma))
+            delta_y = lambda_a * np.imag(np.trace(Y @ sigma))
+            pulse[k, 0] += delta_x
+            pulse[k, 1] += delta_y
+            U_bwd = U_k.conj().T @ U_bwd
+
+        pulse = np.clip(pulse, -max_amp, max_amp)
+
+    # Final fidelity
+    U_final = I2.copy()
+    for k in range(n_steps):
+        H_k = H_drift + pulse[k, 0] * X + pulse[k, 1] * Y
+        U_final = _expm_i(H_k * dt) @ U_final
+
+    final_fidelity = float(np.abs(np.trace(target.conj().T @ U_final)) ** 2 / 4)
+    waveform = pulse[:, 0] + 1j * pulse[:, 1]
+
+    return GRAPEResult(
+        pulse=waveform,
+        fidelity=final_fidelity,
+        n_iter=len(loss_history),
+        loss_history=loss_history,
+    )
+
+
 def _expm_i(H: np.ndarray) -> np.ndarray:
     """Compute exp(-iH) for a 2x2 Hermitian matrix using eigendecomposition."""
     eigvals, eigvecs = np.linalg.eigh(H)

@@ -11,7 +11,7 @@ Example::
 
 from .calibration import rabi_calibration, t1_calibration, t2_calibration
 from .decoupling import cpmg_sequence, xy4_sequence
-from .optimal import GRAPEResult, grape_optimize
+from .optimal import GRAPEResult, grape_optimize, krotov_optimize
 from .pulse import CrossResonancePulse, DragPulse, GaussianPulse
 
 __all__ = [
@@ -20,6 +20,7 @@ __all__ = [
     "CrossResonancePulse",
     "GRAPEResult",
     "grape_optimize",
+    "krotov_optimize",
     "rabi_calibration",
     "t1_calibration",
     "t2_calibration",
