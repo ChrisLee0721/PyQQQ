@@ -66,6 +66,8 @@ def schedule(
 
     Args:
         cache: local cache (LocalCacheRegistry), highest priority.
+            If the cache has timing data, the backend with the best average
+            time is chosen (learning scheduler).
         table: static parameter table (FileRegistry / MemoryRegistry), next.
         noise: whether to enable depolarizing noise (when enabled, method is
             always density_matrix).
@@ -79,9 +81,23 @@ def schedule(
     feats = circuit_features(circuit)
     backend: Optional[str] = None
     method: Optional[str] = None
-    for reg in (cache, table):
-        if reg is not None and backend is None:
-            backend, method = _parse(reg.get_recommendation(feats))
+
+    # 1. Check cache (highest priority)
+    if cache is not None:
+        # Try learning-based recommendation first (timing-aware)
+        if hasattr(cache, "get_best_backend"):
+            best = cache.get_best_backend(feats)
+            if best is not None:
+                backend = best
+        # Fall back to key-based lookup
+        if backend is None:
+            backend, method = _parse(cache.get_recommendation(feats))
+
+    # 2. Check static table
+    if backend is None and table is not None:
+        backend, method = _parse(table.get_recommendation(feats))
+
+    # 3. Fall back to built-in rules
     if backend is None:
         backend = _BUILTIN.get_recommendation(feats)
     if method is None or noise:

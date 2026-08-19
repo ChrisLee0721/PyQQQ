@@ -3,7 +3,7 @@
 [![CI](https://github.com/ChrisLee0721/QuoNic/actions/workflows/ci.yml/badge.svg)](https://github.com/ChrisLee0721/QuoNic/actions/workflows/ci.yml)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
 [![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/)
-[![Version](https://img.shields.io/badge/version-0.8.1-purple.svg)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-0.8.2-purple.svg)](CHANGELOG.md)
 
 [![Qiskit](https://img.shields.io/badge/Qiskit-1.0+-green.svg)](https://qiskit.org/)
 [![Cirq](https://img.shields.io/badge/Cirq-1.0+-orange.svg)](https://quantumai.google/cirq)

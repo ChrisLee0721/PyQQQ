@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "quonic"
-version = "0.8.1"
+version = "0.8.2"
 description = "量子编程，像写 Python 一样简单 — 12+ 后端统一抽象层，智能调度，极简语法"
 readme = "README.md"
 requires-python = ">=3.9"

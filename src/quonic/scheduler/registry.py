@@ -216,22 +216,42 @@ class FileRegistry(BackendRegistry):
 
 
 class LocalCacheRegistry(BackendRegistry):
-    """Local persistent cache: records (key -> backend) pairs the user has run.
+    """Local persistent cache with learning: records (key -> backend) pairs and
+    timing data the user has run.
 
     When fine-tuning a circuit the key stays the same, so it directly hits the
-    cache without re-deciding. report_result writes each run result back to the
-    file so the next query can reuse it.
+    cache without re-deciding. report_result writes each run result (including
+    timing) back to the file so the next query can pick the fastest backend.
     """
 
     def __init__(self, path: str) -> None:
         self.path: str = path
         self.table: Dict[str, str] = {}
+        # key -> {backend: [list of durations]}
+        self.timings: Dict[str, Dict[str, list]] = {}
         if os.path.exists(path):
             with open(path, encoding="utf-8") as f:
-                self.table = json.load(f)
+                data = json.load(f)
+                if isinstance(data, dict):
+                    if "table" in data:
+                        self.table = data["table"]
+                        self.timings = data.get("timings", {})
+                    else:
+                        # Legacy format: just key->backend
+                        self.table = data
 
     def get_recommendation(self, features: Dict[str, Any]) -> Optional[str]:
         return self.table.get(features["key"])
+
+    def get_best_backend(self, features: Dict[str, Any]) -> Optional[str]:
+        """Pick the backend with the best average timing for this circuit key."""
+        key = features.get("key")
+        if key and key in self.timings:
+            timings = self.timings[key]
+            if timings:
+                best = min(timings, key=lambda b: sum(timings[b]) / len(timings[b]))
+                return best
+        return None
 
     def report_result(
         self,
@@ -240,12 +260,21 @@ class LocalCacheRegistry(BackendRegistry):
         duration: float,
         memory: Optional[Any],
     ) -> None:
-        self.table[features["key"]] = backend_name
+        key = features["key"]
+        self.table[key] = backend_name
+        if key not in self.timings:
+            self.timings[key] = {}
+        if backend_name not in self.timings[key]:
+            self.timings[key][backend_name] = []
+        self.timings[key][backend_name].append(duration)
+        # Keep only last 10 timings per backend
+        self.timings[key][backend_name] = self.timings[key][backend_name][-10:]
         self._save()
 
     def _save(self) -> None:
+        data = {"table": self.table, "timings": self.timings}
         with open(self.path, "w", encoding="utf-8") as f:
-            json.dump(self.table, f, ensure_ascii=False, indent=2)
+            json.dump(data, f, ensure_ascii=False, indent=2)
 
     def __repr__(self) -> str:
         return f"LocalCacheRegistry({len(self.table)} entries, {self.path})"

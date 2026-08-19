@@ -2,6 +2,34 @@
 
 本项目所有重要变更都记录于此。All notable changes to this project are documented here.
 
+## [0.8.2] — 2026-08-19
+
+学习型调度器 + qif Gray code 分解 + CI 修复。Learning scheduler, qif Gray code decomposition, CI fixes.
+
+### 新增 Added
+
+- **学习型调度器**：`LocalCacheRegistry` 记录每次运行的 `(backend, duration)`，`get_best_backend()` 按平均耗时选最优后端。
+  **Learning scheduler**: `LocalCacheRegistry` records per-run timing data, `get_best_backend()` picks fastest backend by average duration.
+
+- **qif Gray code 分解**：`_qif_multi_decompose` 支持通用受控多比特酉分解（4×4 对角块分解）。
+  **qif Gray code decomposition**: `_qif_multi_decompose` supports general controlled multi-qubit unitary decomposition (4×4 diagonal block).
+
+- **多比特门酉矩阵**：`_unitary_multi()` 构建 CX/CZ/SWAP/CCX 的酉矩阵。
+  **Multi-qubit unitary matrices**: `_unitary_multi()` builds unitary matrices for CX/CZ/SWAP/CCX.
+
+### 修复 Fixed
+
+- **CI lint**：`scripts/benchmark_suite.py` 缩进修复，移除未使用 imports。
+  **CI lint**: `benchmark_suite.py` indentation fix, remove unused imports.
+
+- **CI tests**：`tests/test_integration.py` 添加 `pytest` import + qulacs 测试加 `importorskip`。
+  **CI tests**: `test_integration.py` add pytest import + qulacs importorskip.
+
+- **.gitignore**：添加 `.venv_test/`。
+  **.gitignore**: add `.venv_test/`.
+
+---
+
 ## [0.8.0] — 2026-08-19
 
 全量教学 + 7 个新模块 + 7 个硬件后端 + 22-Phase 战略落地。Full tutorials, 7 new modules, 7 hardware backends, and 22-phase roadmap execution.

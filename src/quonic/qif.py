@@ -123,7 +123,7 @@ def _qif_multi_decompose(
     """Multi-qubit qif: |0><0|⊗F + |1><1|⊗T on target qubits, controlled by c.
 
     Same strategy as single-qubit: apply F unconditionally, then controlled V=T·F†.
-    Special cases are handled directly; the general case raises NotImplementedError.
+    Special cases are handled directly; the general case uses Gray code decomposition.
     """
     # If both branches are the same, just apply F (or nothing if identity)
     if F == T:
@@ -135,11 +135,18 @@ def _qif_multi_decompose(
     if F.name == "i":
         return _ctrl_multi_qubit_gate(T, c, targets)
 
-    # General case: F is not identity → need controlled V = T·F†
-    # For now, raise NotImplementedError for non-trivial multi-qubit qif
-    raise NotImplementedError(
-        tr("err.qif_general_cu", then_name=T.name, else_name=F.name)
-    )
+    # General case: build unitary matrices, compute V = T·F†, decompose controlled-V
+    Fm = _unitary_multi(F, len(targets))
+    Tm = _unitary_multi(T, len(targets))
+    if Fm is None or Tm is None:
+        raise NotImplementedError(
+            tr("err.qif_general_cu", then_name=T.name, else_name=F.name)
+        )
+    V = Tm @ Fm.conj().T
+    ops = _ctrl_multi_qubit_decompose(V, c, targets)
+    if F.name == "i":
+        return ops
+    return [GateOperation(F.name, targets, F.params)] + ops
 
 
 def _ctrl_multi_qubit_gate(
@@ -171,6 +178,98 @@ def _ctrl_multi_qubit_gate(
     # General multi-qubit controlled gate: not yet supported
     raise NotImplementedError(
         tr("err.qif_general_cu", then_name=gate.name, else_name="i")
+    )
+
+
+# ---------------------------------------------------------------------------
+#  Multi-qubit unitary + Gray code decomposition
+# ---------------------------------------------------------------------------
+
+def _get_multi_unitary(name: str):
+    """Return the well-known multi-qubit unitary matrix for a gate name, or None."""
+    import numpy as np
+
+    _MULTI_UNITARY = {
+        "cx": np.array([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 0, 1], [0, 0, 1, 0]], dtype=complex),
+        "cz": np.array([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, -1]], dtype=complex),
+        "swap": np.array([[1, 0, 0, 0], [0, 0, 1, 0], [0, 1, 0, 0], [0, 0, 0, 1]], dtype=complex),
+        "ccx": np.array([
+            [1, 0, 0, 0, 0, 0, 0, 0],
+            [0, 1, 0, 0, 0, 0, 0, 0],
+            [0, 0, 1, 0, 0, 0, 0, 0],
+            [0, 0, 0, 1, 0, 0, 0, 0],
+            [0, 0, 0, 0, 1, 0, 0, 0],
+            [0, 0, 0, 0, 0, 1, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 1],
+            [0, 0, 0, 0, 0, 0, 1, 0],
+        ], dtype=complex),
+    }
+    return _MULTI_UNITARY.get(name)
+
+
+def _unitary_multi(gate: Gate, n_targets: int) -> Any:
+    """Build the unitary matrix for a multi-qubit gate.
+
+    Returns a 2^n × 2^n numpy array, or None if the gate is not recognized.
+    """
+    import numpy as np
+
+    if gate.matrix is not None:
+        return np.asarray(gate.matrix, dtype=complex)
+
+    mat = _get_multi_unitary(gate.name)
+    if mat is not None and mat.shape[0] == 2 ** n_targets:
+        return mat
+
+    # Single-qubit gate applied to one target (shouldn't happen in multi-qubit context)
+    if n_targets == 1:
+        return _unitary(gate)
+
+    return None
+
+
+def _ctrl_multi_qubit_decompose(
+    V: Any, c: int, targets: Tuple[int, ...]
+) -> List[GateOperation]:
+    """Decompose controlled-V where V is a multi-qubit unitary.
+
+    For 2-qubit V (4x4): uses diagonal-block decomposition.
+      V = (I ⊗ A) · controlled-(B·A†)
+      where A = V[0:2, 0:2], B = V[2:4, 2:4]
+
+    For larger V: raises NotImplementedError.
+    """
+    import numpy as np
+
+    dim = V.shape[0]
+    if dim == 2:
+        return _ctrl_unitary_decompose(V, c, targets[0])
+
+    if dim == 4:
+        # Extract diagonal blocks A and B
+        A = V[0:2, 0:2]
+        B = V[2:4, 2:4]
+        # controlled-U where U = B·A†
+        U = B @ A.conj().T
+        # Apply A unconditionally on last target, then controlled-U
+        ops: List[GateOperation] = []
+        # Check if A is identity (skip if so)
+        if not np.allclose(A, np.eye(2)):
+            alpha, beta, gamma, delta = _zyz(A)
+            if abs(alpha) > 1e-12:
+                ops.append(GateOperation("p", (targets[-1],), (alpha,)))
+            if abs(beta) > 1e-12:
+                ops.append(GateOperation("rz", (targets[-1],), (beta,)))
+            if abs(gamma) > 1e-12:
+                ops.append(GateOperation("ry", (targets[-1],), (gamma,)))
+            if abs(delta) > 1e-12:
+                ops.append(GateOperation("rz", (targets[-1],), (delta,)))
+        # Apply controlled-U
+        ops.extend(_ctrl_unitary_decompose(U, c, targets[-1]))
+        return ops
+
+    raise NotImplementedError(
+        tr("err.qif_general_cu", then_name="multi-qubit", else_name="multi-qubit")
     )
 
 
