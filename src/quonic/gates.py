@@ -95,6 +95,20 @@ _BY_NAME = {g.name: g for g in (H, X, Y, Z, I, CX, CZ, CCX, SWAP, MEASURE)}
 GateName = Literal["h", "x", "y", "z", "i", "cx", "cz", "ccx", "swap", "measure"]
 
 
+_GATE_ALIASES = {
+    "hadamard": "h",
+    "cnot": "cx",
+    "toffoli": "ccx",
+    "fredkin": "swap",
+    "pauli_x": "x",
+    "pauli_y": "y",
+    "pauli_z": "z",
+    "identity": "i",
+    "phase": "p",
+    "controlled_z": "cz",
+}
+
+
 def resolve(gate: Union[Gate, GateName]) -> Gate:
     """Resolve a gate object or gate name string into a Gate object."""
     if isinstance(gate, Gate):
@@ -103,6 +117,21 @@ def resolve(gate: Union[Gate, GateName]) -> Gate:
         name = gate.strip().lower()
         if name in _BY_NAME:
             return _BY_NAME[name]
+        # Check aliases
+        if name in _GATE_ALIASES:
+            return _BY_NAME[_GATE_ALIASES[name]]
+        # Fuzzy match
+        import difflib
+        all_names = list(_BY_NAME.keys()) + list(_GATE_ALIASES.keys())
+        matches = difflib.get_close_matches(name, all_names, n=1, cutoff=0.4)
+        if matches:
+            target = matches[0]
+            if target in _GATE_ALIASES:
+                target = _GATE_ALIASES[target]
+            raise ValueError(
+                tr("err.unknown_gate", gate=gate, gates=", ".join(sorted(_BY_NAME)))
+                + f" Did you mean '{target}'?"
+            )
         raise ValueError(
             tr("err.unknown_gate", gate=gate, gates=", ".join(sorted(_BY_NAME)))
         )

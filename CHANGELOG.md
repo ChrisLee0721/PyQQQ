@@ -2,6 +2,69 @@
 
 本项目所有重要变更都记录于此。All notable changes to this project are documented here.
 
+## [0.8.0] — 2026-08-19
+
+全量教学 + 7 个新模块 + 7 个硬件后端 + 22-Phase 战略落地。Full tutorials, 7 new modules, 7 hardware backends, and 22-phase roadmap execution.
+
+### 新增 Added
+
+- **量子机器学习框架** `ml/`：ansatz（硬件高效/QAOA/UCCSD）、encoding（振幅/角度/IQP）、optimizer（SPSA/Adam/QNG）、loss（期望值/保真度/交叉熵）、trainer 训练循环。
+  **Quantum ML framework** `ml/`: ansatz, encoding, optimizer, loss, trainer.
+
+- **量子纠错框架** `qec/`：BitFlip/PhaseFlip/Shor/Steane/Surface/Color/CSS 码、稳定子形式、MWPM/lookup 解码器。
+  **Quantum error correction** `qec/`: stabilizer codes, syndrome extraction, decoders.
+
+- **插件系统** `plugins/`：BackendPlugin/PassPlugin/AlgorithmPlugin 基类 + 注册表。
+  **Plugin system** `plugins/`: custom backend/pass/algorithm plugins with registry.
+
+- **脉冲控制** `pulse/`：Gaussian/DRAG/CR 脉冲、Rabi/T1/T2 校准、CPMG/XY-4 解耦序列。
+  **Quantum control** `pulse/`: pulse definitions, calibration routines, decoupling sequences.
+
+- **分布式量子计算** `distributed/`：QuantumNetwork 拓扑（star/ring/linear）、EntanglementPair、remote_cnot。
+  **Distributed quantum computing** `distributed/`: network topology, entanglement, remote gates.
+
+- **7 个硬件后端骨架**：IBM Quantum / AWS Braket / Azure Quantum / IonQ / Rigetti / Xanadu / QuEra。代码已写好，未经真机测试（已声明 ⚠️ UNTESTED）。
+  **7 hardware backend skeletons**: IBM Quantum / AWS Braket / Azure Quantum / IonQ / Rigetti / Xanadu / QuEra. Code written, untested on real hardware (⚠️ UNTESTED disclaimer added).
+
+- **5 个新 example**：teleportation / bb84 / bit_flip_code / vqc / trotter。
+  **5 new examples**: quantum teleportation, BB84, bit flip code, VQC, Trotter simulation.
+
+- **QuoNic vs Qiskit benchmark**：`scripts/benchmark_vs_qiskit.py` 代码量 + 速度对比。
+  **QuoNic vs Qiskit benchmark**: code size and speed comparison.
+
+- **端到端 benchmark 套件**：`scripts/benchmark_suite.py`（Quantum Volume / 交叉熵 / 算法 benchmark）。
+  **End-to-end benchmark suite**: Quantum Volume, cross-entropy, algorithm benchmarks.
+
+- **智能错误提示**：`resolve()` 和 `get_backend()` 加 fuzzy matching（"Did you mean..."）。
+  **Smart error messages**: fuzzy matching in `resolve()` and `get_backend()`.
+
+- **README「5 分钟上手」教程**：中英双语 5 步教程。
+  **README 5-minute tutorial**: bilingual 5-step guide.
+
+- **22-Phase 战略文档**：`docs/roadmap.md`、`docs/paper-outline.md`、`docs/community.md`、`docs/quonic-hub.md`、`docs/performance-optimization.md`、`docs/scheduler-enhancement.md`、`docs/tech-debt.md`。
+  **22-phase strategy docs**: roadmap, paper outline, community plan, hub design, performance, scheduler, tech debt.
+
+- **模块测试**：`test_ml.py`（8 个）、`test_qec.py`（9 个）、`test_plugins.py`（7 个）、`test_pulse.py`（7 个）、`test_distributed.py`（7 个）。
+  **Module tests**: QML (8), QEC (9), plugins (7), pulse (7), distributed (7).
+
+### 变更 Changed
+
+- **硬件后端声明**：7 个硬件后端加 `⚠️ UNTESTED` 警告，README 加未测试声明。
+  **Hardware backends**: 7 backends marked with ⚠️ UNTESTED disclaimer.
+
+- **PyPI 页面**：description/keywords/classifiers/urls 全面优化。
+  **PyPI page**: description, keywords, classifiers, URLs optimized.
+
+### 修复 Fixed
+
+- **QEC decoder**：`n_data` → `n_total`（物理比特数 vs 逻辑比特数）。
+  **QEC decoder**: `n_data` → `n_total` (physical vs logical qubit count).
+
+- **pulse calibration**：加缺失的 gate imports（Ry / X / H）。
+  **pulse calibration**: added missing gate imports.
+
+---
+
 ## [0.7.0] — 2026-08-19
 
 高阶用户功能 + 不兼容修复 + 功能耦合测试。Advanced user features, incompatibility fixes, and feature coupling tests.

@@ -427,6 +427,95 @@ _MESSAGES: Dict[str, Dict[str, str]] = {
     },
 
 
+    # -- hardware backend errors --
+    "err.ibm_missing": {
+        "en": "IBM Quantum backend requires qiskit-ibm-runtime:\n"
+              "    pip install 'quonic[ibm]'\nor: pip install qiskit-ibm-runtime",
+        "zh": "使用 IBM Quantum 后端需要安装 qiskit-ibm-runtime：\n"
+              "    pip install 'quonic[ibm]'\n或： pip install qiskit-ibm-runtime",
+    },
+    "err.braket_missing": {
+        "en": "AWS Braket backend requires amazon-braket-sdk:\n"
+              "    pip install 'quonic[braket]'\nor: pip install amazon-braket-sdk",
+        "zh": "使用 AWS Braket 后端需要安装 amazon-braket-sdk：\n"
+              "    pip install 'quonic[braket]'\n或： pip install amazon-braket-sdk",
+    },
+    "err.braket_noise": {
+        "en": "Braket backend does not support noise injection; "
+              "use the Braket simulator's native noise model",
+        "zh": "Braket 后端不支持噪声注入；请使用 Braket 模拟器的原生噪声模型",
+    },
+    "err.braket_gate": {
+        "en": "Braket backend does not support gate '{name}'",
+        "zh": "Braket 后端不支持门 '{name}'",
+    },
+    "err.azure_missing": {
+        "en": "Azure Quantum backend requires azure-quantum:\n"
+              "    pip install 'quonic[azure]'\nor: pip install azure-quantum",
+        "zh": "使用 Azure Quantum 后端需要安装 azure-quantum：\n"
+              "    pip install 'quonic[azure]'\n或： pip install azure-quantum",
+    },
+    "err.azure_noise": {
+        "en": "Azure Quantum backend does not support noise injection",
+        "zh": "Azure Quantum 后端不支持噪声注入",
+    },
+    "err.ionq_missing": {
+        "en": "IonQ backend requires ionq-cirq:\n"
+              "    pip install 'quonic[ionq]'\nor: pip install ionq-cirq",
+        "zh": "使用 IonQ 后端需要安装 ionq-cirq：\n"
+              "    pip install 'quonic[ionq]'\n或： pip install ionq-cirq",
+    },
+    "err.ionq_noise": {
+        "en": "IonQ backend does not support noise injection",
+        "zh": "IonQ 后端不支持噪声注入",
+    },
+    "err.ionq_gate": {
+        "en": "IonQ backend does not support gate '{name}'",
+        "zh": "IonQ 后端不支持门 '{name}'",
+    },
+    "err.rigetti_missing": {
+        "en": "Rigetti backend requires pyquil:\n"
+              "    pip install 'quonic[rigetti]'\nor: pip install pyquil",
+        "zh": "使用 Rigetti 后端需要安装 pyquil：\n"
+              "    pip install 'quonic[rigetti]'\n或： pip install pyquil",
+    },
+    "err.rigetti_noise": {
+        "en": "Rigetti backend does not support noise injection",
+        "zh": "Rigetti 后端不支持噪声注入",
+    },
+    "err.rigetti_gate": {
+        "en": "Rigetti backend does not support gate '{name}'",
+        "zh": "Rigetti 后端不支持门 '{name}'",
+    },
+    "err.xanadu_missing": {
+        "en": "Xanadu backend requires strawberryfields:\n"
+              "    pip install 'quonic[xanadu]'\nor: pip install strawberryfields",
+        "zh": "使用 Xanadu 后端需要安装 strawberryfields：\n"
+              "    pip install 'quonic[xanadu]'\n或： pip install strawberryfields",
+    },
+    "err.xanadu_noise": {
+        "en": "Xanadu backend does not support noise injection",
+        "zh": "Xanadu 后端不支持噪声注入",
+    },
+    "err.xanadu_gate": {
+        "en": "Xanadu backend does not support gate '{name}'",
+        "zh": "Xanadu 后端不支持门 '{name}'",
+    },
+    "err.quera_missing": {
+        "en": "QuEra backend requires qurry:\n"
+              "    pip install 'quonic[quera]'\nor: pip install qurry",
+        "zh": "使用 QuEra 后端需要安装 qurry：\n"
+              "    pip install 'quonic[quera]'\n或： pip install qurry",
+    },
+    "err.quera_noise": {
+        "en": "QuEra backend does not support noise injection",
+        "zh": "QuEra 后端不支持噪声注入",
+    },
+    "err.quera_gate": {
+        "en": "QuEra backend does not support gate '{name}'",
+        "zh": "QuEra 后端不支持门 '{name}'",
+    },
+
     # -------------------------------------------------------- core errors
     "err.gate_angle": {
         "en": "parameterized gate rotation angle must be a number (radians), "

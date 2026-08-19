@@ -1,0 +1,29 @@
+"""Quantum Error Correction — stabilizer codes, syndrome extraction, and decoding.
+
+Example::
+
+    from quonic.qec import BitFlipCode, SteaneCode
+    from quonic.qec import decode_mwpm
+
+    code = BitFlipCode()
+    encoded = code.encode(circuit)
+    syndrome = code.syndrome(circuit)
+    corrected = decode_mwpm(syndrome, code)
+"""
+
+from .code import BitFlipCode, ColorCode, CSSCode, PhaseFlipCode, ShorCode, SteaneCode, SurfaceCode
+from .decoder import decode_lookup, decode_mwpm
+from .stabilizer import StabilizerCode
+
+__all__ = [
+    "BitFlipCode",
+    "PhaseFlipCode",
+    "ShorCode",
+    "SteaneCode",
+    "SurfaceCode",
+    "ColorCode",
+    "CSSCode",
+    "StabilizerCode",
+    "decode_mwpm",
+    "decode_lookup",
+]

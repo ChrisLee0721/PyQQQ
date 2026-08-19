@@ -3,7 +3,7 @@
 [![CI](https://github.com/ChrisLee0721/QuoNic/actions/workflows/ci.yml/badge.svg)](https://github.com/ChrisLee0721/QuoNic/actions/workflows/ci.yml)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
 [![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/)
-[![Version](https://img.shields.io/badge/version-0.7.0-purple.svg)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-0.8.0-purple.svg)](CHANGELOG.md)
 
 [![Qiskit](https://img.shields.io/badge/Qiskit-1.0+-green.svg)](https://qiskit.org/)
 [![Cirq](https://img.shields.io/badge/Cirq-1.0+-orange.svg)](https://quantumai.google/cirq)
@@ -14,7 +14,7 @@
 [![MindQuantum](https://img.shields.io/badge/MindQuantum-0.9+-blue.svg)](https://gitee.com/mindspore/mindquantum)
 [![QPanda3](https://img.shields.io/badge/QPanda3-3.0+-orange.svg)](https://qcloud.originqc.com.cn/)
 [![77 Algorithms](https://img.shields.io/badge/algorithms-77-blueviolet.svg)](src/quonic/algorithms/)
-[![578 Tests](https://img.shields.io/badge/tests-578%20passed-brightgreen.svg)](tests/)
+[![616 Tests](https://img.shields.io/badge/tests-616%20passed-brightgreen.svg)](tests/)
 
 **QuoNic 是一个让量子编程变得像写 Python 一样简单的工具。**
 
@@ -41,6 +41,45 @@ qshow()
 
 ---
 
+##  5 分钟上手
+
+**第 1 步：安装**
+```bash
+pip install quonic
+```
+
+**第 2 步：第一个量子电路（贝尔态）**
+```python
+from quonic import qgate, qshow
+from quonic.gates import H, CX
+
+qgate(H, 0)      # 对量子比特 0 施加 Hadamard 门
+qgate(CX, 0, 1)  # CNOT：纠缠量子比特 0 和 1
+qshow()           # 运行并显示结果
+```
+
+**第 3 步：切换后端（同一段代码，不同模拟器）**
+```python
+qshow(backend='qiskit')      # IBM Qiskit
+qshow(backend='cirq')        # Google Cirq
+qshow(backend='qulacs')      # Qulacs（高性能 C++）
+qshow(backend='tensorcircuit') # TensorCircuit（JAX）
+```
+
+**第 4 步：加噪声**
+```python
+qshow(noise=0.05)  # 5% 去极化噪声
+```
+
+**第 5 步：GPU 加速**
+```python
+qshow(method='gpu')  # 自动选最优 GPU 后端
+```
+
+**就这么简单。** 同一段代码，任何后端，任何硬件。这就是 QuoNic 的方式。
+
+---
+
 ##  安装
 
 ```bash
@@ -56,6 +95,12 @@ pip install 'quonic[qiskit,cirq,pennylane,algorithms,all-sim]'
 只装某一个后端，例如只用 Cirq：`pip install 'quonic[cirq]'`。未安装的后端在调用时会给出明确的英文提示（设置 `QUONIC_LANG=zh` 可切换为中文）。
 
 额外模拟器后端（Qulacs / TensorCircuit / CUDA-Q / MindQuantum / QPanda3 / CqLib）：`pip install 'quonic[all-sim]'` 或单独安装，如 `pip install 'quonic[qulacs]'`。
+
+硬件/云后端（IBM Quantum / AWS Braket / Azure Quantum / IonQ / Rigetti / Xanadu / QuEra）：`pip install 'quonic[all-hw]'` 或单独安装。
+
+> **⚠️ 硬件后端未经测试。** IBM Quantum、AWS Braket、Azure Quantum、IonQ、Rigetti、Xanadu、QuEra 后端按原样提供，未经真实硬件验证，不保证稳定性。本地模拟器（Qulacs / TensorCircuit / QPanda3 / CuPy / native）已完整测试。
+
+GPU 加速：`pip install 'quonic[gpu]'`（CuPy）。
 
 可视化是独立可选依赖：`pip install 'quonic[viz]'`（仅 matplotlib，不引入 Graphviz / Seaborn / NetworkX）。
 

@@ -3,7 +3,7 @@
 [![CI](https://github.com/ChrisLee0721/QuoNic/actions/workflows/ci.yml/badge.svg)](https://github.com/ChrisLee0721/QuoNic/actions/workflows/ci.yml)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
 [![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/)
-[![Version](https://img.shields.io/badge/version-0.7.0-purple.svg)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-0.8.0-purple.svg)](CHANGELOG.md)
 
 [![Qiskit](https://img.shields.io/badge/Qiskit-1.0+-green.svg)](https://qiskit.org/)
 [![Cirq](https://img.shields.io/badge/Cirq-1.0+-orange.svg)](https://quantumai.google/cirq)
@@ -14,7 +14,7 @@
 [![MindQuantum](https://img.shields.io/badge/MindQuantum-0.9+-blue.svg)](https://gitee.com/mindspore/mindquantum)
 [![QPanda3](https://img.shields.io/badge/QPanda3-3.0+-orange.svg)](https://qcloud.originqc.com.cn/)
 [![77 Algorithms](https://img.shields.io/badge/algorithms-77-blueviolet.svg)](src/quonic/algorithms/)
-[![578 Tests](https://img.shields.io/badge/tests-578%20passed-brightgreen.svg)](tests/)
+[![616 Tests](https://img.shields.io/badge/tests-616%20passed-brightgreen.svg)](tests/)
 
 **QuoNic is a tool that makes quantum programming as simple as writing Python.**
 
@@ -41,6 +41,45 @@ More copy-and-run examples (GHZ, `qif`, `QInt`, Grover, VQE, QAOA, noise, GPU ac
 
 ---
 
+##  5-minute tutorial
+
+**Step 1: Install**
+```bash
+pip install quonic
+```
+
+**Step 2: Your first quantum circuit (Bell state)**
+```python
+from quonic import qgate, qshow
+from quonic.gates import H, CX
+
+qgate(H, 0)      # Hadamard on qubit 0
+qgate(CX, 0, 1)  # CNOT: entangle qubits 0 and 1
+qshow()           # Run and display
+```
+
+**Step 3: Switch backend (same code, different simulator)**
+```python
+qshow(backend='qiskit')      # IBM Qiskit
+qshow(backend='cirq')        # Google Cirq
+qshow(backend='qulacs')      # Qulacs (fast C++)
+qshow(backend='tensorcircuit') # TensorCircuit (JAX)
+```
+
+**Step 4: Add noise**
+```python
+qshow(noise=0.05)  # 5% depolarizing noise
+```
+
+**Step 5: GPU acceleration**
+```python
+qshow(method='gpu')  # Auto-select best GPU backend
+```
+
+**That's it.** Same code, any backend, any hardware. That's the QuoNic way.
+
+---
+
 ##  Installation
 
 ```bash
@@ -56,6 +95,12 @@ pip install 'quonic[qiskit,cirq,pennylane,algorithms,all-sim]'
 To install a single backend, e.g. only Cirq: `pip install 'quonic[cirq]'`. Calling an uninstalled backend raises a clear message (English by default; set `QUONIC_LANG=zh` for Chinese).
 
 Additional simulator backends (Qulacs / TensorCircuit / CUDA-Q / MindQuantum / QPanda3 / CqLib): `pip install 'quonic[all-sim]'` or install individually, e.g. `pip install 'quonic[qulacs]'`.
+
+Hardware / cloud backends (IBM Quantum / AWS Braket / Azure Quantum / IonQ / Rigetti / Xanadu / QuEra): `pip install 'quonic[all-hw]'` or install individually.
+
+> **⚠️ Hardware backends are untested.** IBM Quantum, AWS Braket, Azure Quantum, IonQ, Rigetti, Xanadu, and QuEra backends are provided as-is without real-hardware validation. Use at your own risk. Local simulators (Qulacs / TensorCircuit / QPanda3 / CuPy / native) are fully tested.
+
+GPU acceleration: `pip install 'quonic[gpu]'` (CuPy).
 
 Visualization is a separate optional dependency: `pip install 'quonic[viz]'` (matplotlib only — no Graphviz / Seaborn / NetworkX).
 

@@ -5,20 +5,27 @@ from __future__ import annotations
 from typing import Dict, List, Optional, Tuple
 
 from .._i18n import tr
+from .azure import AzureBackend
 from .base import Backend
+from .braket import BraketBackend
 from .cirq import CirqBackend
 from .cqlib import CqlibBackend
 from .cudaq import CudaQBackend
 from .cupy_engine import CupyEngineBackend
 from .engine import EngineBackend
+from .ibm import IBMBackend
+from .ionq import IonQBackend
 from .mindquantum import MindQuantumBackend
 from .native import NativeBackend
 from .pennylane import PennyLaneBackend
 from .qi import QuantumInspireBackend
 from .qiskit import QiskitBackend
 from .qpanda import QPandaBackend
+from .quera import QuEraBackend
 from .qulacs import QulacsBackend
+from .rigetti import RigettiBackend
 from .tensorcircuit import TensorCircuitBackend
+from .xanadu import XanaduBackend
 
 # Engine registry: the backend argument only recognizes these five engine names
 # (local simulators plus the qi cloud entry point). Specific real-hardware devices
@@ -37,6 +44,13 @@ _REGISTRY: Dict[str, Backend] = {
     "qpanda": QPandaBackend(),
     "cqlib": CqlibBackend(),
     "cupy": CupyEngineBackend(),
+    "ibm": IBMBackend(),
+    "braket": BraketBackend(),
+    "azure": AzureBackend(),
+    "ionq": IonQBackend(),
+    "rigetti": RigettiBackend(),
+    "xanadu": XanaduBackend(),
+    "quera": QuEraBackend(),
 }
 
 # Backward-compatible aliases for the legacy one-shot device shortcuts: backend="tuna9" is equivalent to backend="qi", device="tuna9".
@@ -94,8 +108,13 @@ def get_backend(name: str, device: Optional[str] = None) -> Backend:
     if name == "auto":
         name = _detect_available()
     if name not in _REGISTRY:
+        # Fuzzy match
+        import difflib
+        matches = difflib.get_close_matches(name, _REGISTRY.keys(), n=1, cutoff=0.6)
+        hint = f" Did you mean '{matches[0]}'?" if matches else ""
         raise ValueError(
             tr("err.unknown_backend", name=name, engines=", ".join(sorted(_REGISTRY)))
+            + hint
         )
     if device is not None:
         # resolve_target already guarantees device is only valid for qi, so this is always qi

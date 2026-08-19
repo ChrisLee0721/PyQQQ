@@ -4,22 +4,31 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "quonic"
-version = "0.7.0"
-description = "量子编程，像写 Python 一样简单"
+version = "0.8.0"
+description = "量子编程，像写 Python 一样简单 — 12+ 后端统一抽象层，智能调度，极简语法"
 readme = "README.md"
 requires-python = ">=3.9"
 license = "Apache-2.0"
 license-files = ["LICENSE"]
 authors = [{ name = "ChrisLee", email = "Christina_Llap_Yuen@outlook.com" }]
-keywords = ["quantum", "quantum-computing", "qiskit", "cirq", "pennylane"]
+keywords = [
+    "quantum", "quantum-computing", "qiskit", "cirq", "pennylane",
+    "qulacs", "tensorcircuit", "gpu", "simulation", "backend-agnostic",
+]
 dependencies = ["numpy>=1.24"]
 classifiers = [
-    "Development Status :: 3 - Alpha",
+    "Development Status :: 4 - Beta",
     "Intended Audience :: Developers",
     "Intended Audience :: Science/Research",
     "Programming Language :: Python :: 3",
     "Topic :: Scientific/Engineering :: Physics",
 ]
+
+[project.urls]
+Homepage = "https://github.com/ChrisLee0721/QuoNic"
+Documentation = "https://chrislee0721.github.io/QuoNic/"
+Repository = "https://github.com/ChrisLee0721/QuoNic"
+Changelog = "https://github.com/ChrisLee0721/QuoNic/blob/main/CHANGELOG.md"
 
 [project.optional-dependencies]
 qiskit = ["qiskit>=1.0", "qiskit-aer>=0.14"]
@@ -35,8 +44,16 @@ mindquantum = ["mindquantum>=0.9"]
 qpanda = ["pyqpanda3>=3.0"]
 cqlib = ["cqlib>=0.1"]
 gpu = ["cupy-cuda12x>=13.0"]
+ibm = ["qiskit-ibm-runtime>=0.20"]
+braket = ["amazon-braket-sdk>=1.50"]
+azure = ["azure-quantum>=2.0"]
+ionq = ["ionq-cirq>=0.5"]
+rigetti = ["pyquil>=4.0"]
+xanadu = ["strawberryfields>=0.23"]
+quera = ["qurry>=0.1"]
 docs = ["mkdocs>=1.6", "mkdocstrings[python]>=0.26", "mkdocs-material>=9.5"]
 all-sim = ["quonic[qulacs,tensorcircuit,cudaq,mindquantum,qpanda,cqlib]"]
+all-hw = ["quonic[ibm,braket,azure,ionq,rigetti,xanadu,quera]"]
 dev = ["pytest>=7.0", "numpy>=1.24", "scipy>=1.10", "matplotlib>=3.5", "ruff>=0.9"]
 
 [tool.setuptools.packages.find]
