@@ -619,6 +619,97 @@ def optimize_peephole(circuit: Circuit) -> Circuit:
     return out
 
 
+def optimize_fuse(circuit: Circuit) -> Circuit:
+    """Fuse consecutive single-qubit gates on the same qubit into one unitary.
+
+    For a sequence of single-qubit gates G1, G2, G3 on qubit q, replaces them
+    with a single custom gate whose matrix is G3 @ G2 @ G1. This reduces the
+    number of gate applications and can improve simulation performance.
+
+    Only fuses runs of 2+ single-qubit gates; isolated gates are left unchanged.
+
+    Returns a new Circuit (the original is not modified).
+    """
+    import numpy as np
+
+    from .gates import Gate
+
+    ops = list(circuit.ops)
+    out = Circuit()
+    out.allocate(circuit.num_qubits)
+
+    i = 0
+    while i < len(ops):
+        op = ops[i]
+        # Only fuse single-qubit GateOperations with known matrices
+        if (
+            isinstance(op, GateOperation)
+            and len(op.qubits) == 1
+            and op.name in _FUSABLE_GATES
+        ):
+            # Collect consecutive single-qubit gates on the same qubit
+            qubit = op.qubits[0]
+            run = [op]
+            j = i + 1
+            while (
+                j < len(ops)
+                and isinstance(ops[j], GateOperation)
+                and len(ops[j].qubits) == 1
+                and ops[j].qubits[0] == qubit
+                and ops[j].name in _FUSABLE_GATES
+            ):
+                run.append(ops[j])
+                j += 1
+
+            if len(run) >= 2:
+                # Fuse: multiply matrices right-to-left
+                mat = np.eye(2, dtype=complex)
+                for g in run:
+                    mat = _gate_matrix_2x2(g.name, g.params) @ mat
+                fused_name = f"fused_{qubit}_{i}"
+                Gate.from_matrix(fused_name, mat)
+                out.add(GateOperation(fused_name, (qubit,)))
+            else:
+                out.add(op)
+            i = j
+        else:
+            out.add(op)
+            i += 1
+
+    return out
+
+
+# Gates that can be fused (have a known 2x2 matrix)
+_FUSABLE_GATES = frozenset({"h", "x", "y", "z", "rx", "ry", "rz", "p"})
+
+
+def _gate_matrix_2x2(name: str, params: tuple):
+    """Return the 2x2 unitary matrix for a single-qubit gate."""
+    import numpy as np
+
+    if name == "h":
+        return np.array([[1, 1], [1, -1]], dtype=complex) / np.sqrt(2)
+    if name == "x":
+        return np.array([[0, 1], [1, 0]], dtype=complex)
+    if name == "y":
+        return np.array([[0, -1j], [1j, 0]], dtype=complex)
+    if name == "z":
+        return np.array([[1, 0], [0, -1]], dtype=complex)
+    if name == "rx":
+        t = params[0]
+        return np.array([[np.cos(t/2), -1j*np.sin(t/2)], [-1j*np.sin(t/2), np.cos(t/2)]], dtype=complex)
+    if name == "ry":
+        t = params[0]
+        return np.array([[np.cos(t/2), -np.sin(t/2)], [np.sin(t/2), np.cos(t/2)]], dtype=complex)
+    if name == "rz":
+        t = params[0]
+        return np.array([[np.exp(-1j*t/2), 0], [0, np.exp(1j*t/2)]], dtype=complex)
+    if name == "p":
+        t = params[0]
+        return np.array([[1, 0], [0, np.exp(1j*t)]], dtype=complex)
+    return np.eye(2, dtype=complex)
+
+
 def optimize(
     circuit: Circuit,
     passes: Tuple = ("cancel", "commute", "cancel", "peephole"),
@@ -629,6 +720,7 @@ def optimize(
       - "cancel": remove adjacent self-inverse gate pairs
       - "commute": reorder gates to enable more cancellations
       - "peephole": replace known multi-gate patterns
+      - "fuse": merge consecutive single-qubit gates into one matrix
       - callable: any function ``f(Circuit) -> Circuit``
 
     Default sequence runs cancel twice: once before commute (to remove trivial
@@ -645,4 +737,6 @@ def optimize(
             circuit = optimize_commute(circuit)
         elif p == "peephole":
             circuit = optimize_peephole(circuit)
+        elif p == "fuse":
+            circuit = optimize_fuse(circuit)
     return circuit

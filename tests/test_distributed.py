@@ -2,7 +2,15 @@
 
 from __future__ import annotations
 
-from quonic.distributed import EntanglementPair, Node, QuantumNetwork, remote_cnot
+from quonic.distributed import (
+    EntanglementPair,
+    Node,
+    QuantumNetwork,
+    create_bell_pair,
+    distribute_entanglement,
+    remote_cnot,
+    teleport_state,
+)
 from quonic.ir import Circuit
 
 # ---------------------------------------------------------------------------
@@ -55,8 +63,41 @@ def test_entanglement_pair():
     assert pair.fidelity == 1.0
 
 
+def test_create_bell_pair():
+    """Bell pair creation should add H and CX gates."""
+    c = Circuit()
+    c.allocate(2)
+    create_bell_pair(c, 0, 1)
+    ops = [op for op in c.ops if op.name != "measure"]
+    assert len(ops) == 2
+    assert ops[0].name == "h"
+    assert ops[1].name == "cx"
+
+
+def test_distribute_entanglement():
+    """distribute_entanglement should return a valid pair."""
+    c = Circuit()
+    c.allocate(4)
+    pair = distribute_entanglement(c, 0, 3, fidelity=0.95)
+    assert pair.ancilla_a == 0
+    assert pair.ancilla_b == 3
+    assert pair.fidelity == 0.95
+
+
 def test_remote_cnot():
-    pair = EntanglementPair(node_a=0, node_b=1)
+    """Remote CNOT should produce a circuit with corrections."""
+    pair = EntanglementPair(node_a=0, node_b=1, ancilla_a=2, ancilla_b=3)
     c = remote_cnot(pair, control_qubit=0, target_qubit=1)
-    assert isinstance(c, Circuit)
-    assert len(c.ops) > 0
+    assert c.num_qubits >= 4
+    ops = [op for op in c.ops if op.name != "measure"]
+    assert len(ops) >= 2
+
+
+def test_teleport_state():
+    """Teleportation should produce a circuit with H and corrections."""
+    pair = EntanglementPair(node_a=0, node_b=1, ancilla_a=2, ancilla_b=3)
+    c = teleport_state(pair, source_qubit=0, target_qubit=1)
+    assert c.num_qubits >= 4
+    ops = [op for op in c.ops if op.name != "measure"]
+    assert any(op.name == "h" for op in ops)
+    assert any(op.name == "cx" for op in ops)

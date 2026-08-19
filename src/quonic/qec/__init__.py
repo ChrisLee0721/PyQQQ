@@ -13,6 +13,7 @@ Example::
 
 from .code import BitFlipCode, ColorCode, CSSCode, PhaseFlipCode, ShorCode, SteaneCode, SurfaceCode
 from .decoder import UnionFindDecoder, decode_lookup, decode_mwpm
+from .end_to_end import QECResult, qec_round_trip
 from .stabilizer import StabilizerCode
 
 __all__ = [
@@ -27,4 +28,6 @@ __all__ = [
     "UnionFindDecoder",
     "decode_mwpm",
     "decode_lookup",
+    "QECResult",
+    "qec_round_trip",
 ]

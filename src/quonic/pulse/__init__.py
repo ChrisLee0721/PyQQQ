@@ -11,12 +11,15 @@ Example::
 
 from .calibration import rabi_calibration, t1_calibration, t2_calibration
 from .decoupling import cpmg_sequence, xy4_sequence
+from .optimal import GRAPEResult, grape_optimize
 from .pulse import CrossResonancePulse, DragPulse, GaussianPulse
 
 __all__ = [
     "GaussianPulse",
     "DragPulse",
     "CrossResonancePulse",
+    "GRAPEResult",
+    "grape_optimize",
     "rabi_calibration",
     "t1_calibration",
     "t2_calibration",
