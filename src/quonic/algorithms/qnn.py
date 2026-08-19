@@ -40,5 +40,6 @@ def qnn_demo(
             sim.apply("cx", (q, q + 1))
 
     # Measure all qubits
-    expectations = [sim.expectation("Z")]  # simplified
+    pauli = "Z" + "I" * (n_qubits - 1)  # measure Z on first qubit
+    expectations = [sim.expectation(pauli)]
     return Result.from_value(float(expectations[0]))

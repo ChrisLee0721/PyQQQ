@@ -26,7 +26,7 @@ from .swap_test import swap_test
 def _angle_encode(circuit: Circuit, start: int, features: List[float]) -> None:
     """Encode features as rotation angles."""
     for i, f in enumerate(features):
-        circuit.add(GateOperation("ry", (start + i), (f,)))
+        circuit.add(GateOperation("ry", (start + i,), (f,)))
 
 
 def quantum_kernel(

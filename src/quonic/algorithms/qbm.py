@@ -30,8 +30,8 @@ def qbm_demo(
 
     # Compute Boltzmann weights
     states = [(0, 0), (0, 1), (1, 0), (1, 1)]
-    energies = {-J * s1 * s2: (s1, s2) for s1, s2 in states}
-    weights = [math.exp(-beta * e) for e in energies.keys()]
+    energies = [-J * s1 * s2 for s1, s2 in states]
+    weights = [math.exp(-beta * e) for e in energies]
     Z = sum(weights)
     probs = [w / Z for w in weights]
 
