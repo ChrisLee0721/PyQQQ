@@ -237,3 +237,63 @@ class MPSEngine:
             s2 = s2 / total
         s2 = s2[s2 > 1e-15]
         return float(-np.sum(s2 * np.log(s2)))
+
+    def canonicalize(self, ortho_center: int = -1) -> None:
+        """Put the MPS into canonical form.
+
+        Left-canonical: M[0]..M[ortho_center-1] are isometries (U†U = I).
+        Right-canonical: M[ortho_center+1]..M[n-1] are isometries.
+        The orthogonality center carries the singular values.
+
+        Args:
+            ortho_center: index of the orthogonality center (-1 = last site).
+        """
+        if ortho_center < 0:
+            ortho_center = self.n + ortho_center + 1
+        ortho_center = max(0, min(ortho_center, self.n - 1))
+
+        # Left-canonical sweep: QR from left to ortho_center
+        for i in range(ortho_center):
+            chi_l, d, chi_r = self.M[i].shape
+            mat = self.M[i].reshape(chi_l * d, chi_r)
+            q, r = np.linalg.qr(mat)
+            chi_new = q.shape[1]
+            self.M[i] = q.reshape(chi_l, d, chi_new)
+            if i + 1 < self.n:
+                self.M[i + 1] = np.einsum("ab,btc->atc", r, self.M[i + 1])
+
+        # Right-canonical sweep: QR from right to ortho_center
+        for i in range(self.n - 1, ortho_center, -1):
+            chi_l, d, chi_r = self.M[i].shape
+            mat = self.M[i].reshape(chi_l, d * chi_r)
+            q, r = np.linalg.qr(mat.T)
+            chi_new = q.shape[1]
+            self.M[i] = q.T.reshape(chi_new, d, chi_r)
+            if i - 1 >= 0:
+                self.M[i - 1] = np.einsum("asb,bc->asc", self.M[i - 1], r.T)
+
+    def is_left_canonical(self, site: int = 0) -> bool:
+        """Check if M[site] is left-canonical (isometry: M†M = I)."""
+        m = self.M[site]
+        chi_l, d, chi_r = m.shape
+        mat = m.reshape(chi_l * d, chi_r)
+        product = mat.conj().T @ mat
+        return np.allclose(product, np.eye(chi_r), atol=1e-10)
+
+    def is_right_canonical(self, site: int = -1) -> bool:
+        """Check if M[site] is right-canonical (isometry: MM† = I)."""
+        if site < 0:
+            site = self.n + site + 1
+        m = self.M[site]
+        chi_l, d, chi_r = m.shape
+        mat = m.reshape(chi_l, d * chi_r)
+        product = mat @ mat.conj().T
+        return np.allclose(product, np.eye(chi_l), atol=1e-10)
+
+    def norm(self) -> float:
+        """Compute the norm of the MPS state."""
+        left = np.array([[1.0 + 0j]])
+        for i in range(self.n):
+            m = self.M[i]
+            left = np.einsum("ab,asc,bsd->cd", left, m, m.conj())
+        return float(np.sqrt(np.real(left[0, 0])))

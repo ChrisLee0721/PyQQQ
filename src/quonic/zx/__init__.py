@@ -14,11 +14,12 @@ Example::
 """
 
 from .graph import ZXGraph, ZXSpider
-from .optimize import circuit_to_zx, optimize_zx
+from .optimize import circuit_to_zx, extract_circuit, optimize_zx
 
 __all__ = [
     "ZXGraph",
     "ZXSpider",
     "circuit_to_zx",
+    "extract_circuit",
     "optimize_zx",
 ]
