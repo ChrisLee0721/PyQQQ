@@ -11,9 +11,7 @@ from __future__ import annotations
 import argparse
 import json
 import time
-from typing import Any, Dict, List
-
-import numpy as np
+from typing import Any, Dict
 
 
 def quantum_volume(n: int, shots: int = 1024, backend: str = "native") -> Dict[str, Any]:
@@ -29,9 +27,8 @@ def quantum_volume(n: int, shots: int = 1024, backend: str = "native") -> Dict[s
     """
     from quonic import qgate, reset
     from quonic.backends import get_backend
-from quonic.gates import H, Ry
-from quonic.ir import Circuit, GateOperation
-from quonic.stack import current_circuit
+    from quonic.gates import H
+    from quonic.stack import current_circuit
 
     # Build a random circuit (simplified QV)
     reset()
@@ -39,7 +36,7 @@ from quonic.stack import current_circuit
         qgate(H, 0)  # placeholder
 
     t0 = time.time()
-    result = get_backend(backend).run(current_circuit(), shots=shots)
+    get_backend(backend).run(current_circuit(), shots=shots)
     elapsed = time.time() - t0
 
     return {
@@ -62,9 +59,9 @@ def cross_entropy(n: int, shots: int = 1024, backend: str = "native") -> Dict[st
         Dict with n, fidelity, time.
     """
     from quonic import qgate, reset
-from quonic.backends import get_backend
-from quonic.gates import H, CX
-from quonic.stack import current_circuit
+    from quonic.backends import get_backend
+    from quonic.gates import CX, H
+    from quonic.stack import current_circuit
 
     # Build a random circuit
     reset()
@@ -73,7 +70,7 @@ from quonic.stack import current_circuit
         qgate(CX, i, i + 1)
 
     t0 = time.time()
-    result = get_backend(backend).run(current_circuit(), shots=shots)
+    get_backend(backend).run(current_circuit(), shots=shots)
     elapsed = time.time() - t0
 
     return {
@@ -98,9 +95,9 @@ def algorithm_benchmark(
         Dict with name, n, time, result.
     """
     from quonic import qgate, reset
-from quonic.backends import get_backend
-from quonic.gates import H, CX
-from quonic.stack import current_circuit
+    from quonic.backends import get_backend
+    from quonic.gates import CX, H
+    from quonic.stack import current_circuit
 
     reset()
     if name == "grover":

@@ -15,8 +15,8 @@ import time
 def quonic_bell():
     """Bell state in QuoNic (3 lines)."""
     from quonic import qgate, reset
-    from quonic.gates import H, CX
     from quonic.backends import get_backend
+    from quonic.gates import CX, H
     from quonic.stack import current_circuit
 
     reset()
@@ -43,8 +43,8 @@ def qiskit_bell():
 def quonic_ghz(n):
     """GHZ-n in QuoNic."""
     from quonic import qgate, reset
-    from quonic.gates import H, CX
     from quonic.backends import get_backend
+    from quonic.gates import CX, H
     from quonic.stack import current_circuit
 
     reset()
@@ -88,8 +88,8 @@ def main():
 
     # Code size comparison
     print("Code size (lines):")
-    print(f"  Bell:  QuoNic=3  Qiskit=10")
-    print(f"  GHZ-n: QuoNic=4  Qiskit=8")
+    print("  Bell:  QuoNic=3  Qiskit=10")
+    print("  GHZ-n: QuoNic=4  Qiskit=8")
     print()
 
     # Speed comparison

@@ -9,6 +9,7 @@ from __future__ import annotations
 import math
 
 import numpy as np
+import pytest
 
 from quonic import (
     Parameter,
@@ -54,6 +55,7 @@ def test_custom_gate_statevector():
 
 def test_custom_gate_qulacs_statevector():
     """Custom gate on qulacs → return_state → verify."""
+    pytest.importorskip("qulacs")
     from quonic.gates import Gate
 
     X_mat = np.array([[0, 1], [1, 0]], dtype=complex)
@@ -516,6 +518,7 @@ def test_batch_multiple_backends():
     assert results_native[0].counts.get("1", 0) == 100
 
     # qulacs backend
+    pytest.importorskip("qulacs")
     results_qulacs = run_batch([c], backend="qulacs", shots=100)
     assert results_qulacs[0].counts.get("1", 0) == 100
 
@@ -601,10 +604,11 @@ def test_custom_gate_with_noise():
 
     # Custom gates with noise: use qulacs which has native noise support
     try:
+        pytest.importorskip("qulacs")
         result = get_backend("qulacs").run(current_circuit(), shots=1000, noise=0.05)
         p0 = result.counts.get("0", 0) / 1000
         assert p0 > 0.8  # mostly |0>
         assert p0 < 1.0  # but not perfect
-    except (NotImplementedError, ValueError):
+    except (ImportError, NotImplementedError, ValueError):
         # Some backends may not support custom gates with noise
         pass
