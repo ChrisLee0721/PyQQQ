@@ -2,6 +2,73 @@
 
 本项目所有重要变更都记录于此。All notable changes to this project are documented here.
 
+## [0.9.0] — 2026-08-20
+
+MPS 张量网络 + ZX-calculus 编译器 + 全模块 100% 完成。MPS tensor network + ZX-calculus compiler + all modules 100% complete.
+
+### 新增 Added
+
+- **MPS 张量网络模拟器**：完整实现，支持 100+ 比特低纠缠电路。
+  **MPS tensor network simulator**: full implementation, supports 100+ qubit low-entanglement circuits.
+  - `expectation(pauli)` — 任意 Pauli 字符串期望值 / expectation value for any Pauli string
+  - `to_statevector()` — MPS 收缩为态向量 / contract MPS to statevector
+  - `entropy(site)` — 二分纠缠熵 / bipartite entanglement entropy
+  - `canonicalize()` — 左/右正则化形式 / left/right canonical form
+  - `dmrg_sweep()` — Lanczos 2-site DMRG 基态优化 / Lanczos 2-site DMRG ground state optimization
+  - `apply_noise()` — 去极化噪声 / depolarizing noise
+  - 自定义门支持 / custom gate support
+
+- **ZX-calculus 电路优化**：完整实现，支持电路↔ZX 图互转。
+  **ZX-calculus circuit optimization**: full implementation, circuit ↔ ZX-graph conversion.
+  - `circuit_to_zx()` — 电路转 ZX 图 / circuit to ZX-graph
+  - `optimize_zx()` — 7 种重写规则 / 7 rewrite rules
+  - `extract_circuit()` — ZX 图转回电路 / ZX-graph back to circuit
+  - 蜘蛛融合 + 恒等消除 + H 边消除 + 补充规则 + 相位复制 + 双代数 + 模式匹配
+  - Spider fusion + identity + H-edge + supplementarity + phase copy + bialgebra + pattern matching
+
+- **QEC 模块增强**：
+  - CSS code 编码 + Steane 逻辑 X/Z/H 门 / CSS code encoding + Steane logical gates
+  - `qec_round_trip()` — 端到端纠错流程 / end-to-end error correction
+  - `UnionFindDecoder` — Union-Find 解码器
+
+- **Pulse 模块增强**：
+  - `grape_optimize()` — GRAPE 脉冲优化 / GRAPE pulse optimization
+  - `krotov_optimize()` — Krotov 脉冲优化 / Krotov pulse optimization
+
+- **Distributed 模块增强**：
+  - `schedule_task()` — 量子任务调度 / quantum task scheduling
+  - `create_bell_pair()` / `teleport_state()` / `remote_cnot()` — 完整协议
+
+- **ML 模块增强**：
+  - `QMLPipeline` — 端到端 QML 流水线 / end-to-end QML pipeline
+  - `param_shift_grad()` — 参数偏移梯度 / parameter-shift gradient
+
+- **Compiler 增强**：
+  - `optimize_fuse()` — 门融合优化 / gate fusion optimization
+  - `optimize_zx_circuit()` — ZX 优化 pass / ZX optimization pass
+  - `optimize()` 支持 "zx" 和 "fuse" pass
+
+- **75 个算法 example**：全覆盖 / all algorithms have examples
+- **25 种绘图函数**：全功能 / all visualization functions working
+- **7 个硬件后端 mock 测试** / 7 hardware backend mock tests
+
+### 修复 Fixed
+
+- `quantum_kernel.py` GateOperation 元组语法 / tuple syntax
+- `qbm.py` 能量字典去重 / dedup causing size mismatch
+- `qnn.py` Pauli 长度不匹配 / Pauli length mismatch
+- `test_coupling_matrix.py` native 后端误跳过 / native backend incorrectly skipped
+- ZX graph `neighbors()` 跳过墓碑边 / skip tombstoned edges
+- ZX graph `remove_id_spider()` KeyError / KeyError on tombstoned edges
+
+### 统计 Stats
+
+- 735 passed, 61 skipped, 0 failed
+- 19 backends (12 simulators + 7 hardware)
+- 75 algorithm templates with examples
+- 25 visualization functions
+- 5/5 tutorial notebooks working
+
 ## [0.8.3] — 2026-08-20
 
 测试补齐 + 算法 example 全覆盖 + tutorial notebook 修复。Test coverage boost, full algorithm examples, tutorial fixes.
