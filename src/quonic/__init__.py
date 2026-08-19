@@ -21,7 +21,7 @@ from .stepper import StepExecutor
 from .topology import CouplingMap
 from .zne import ZNEResult, fold, zne
 
-__version__ = "0.8.0"
+__version__ = "0.8.1"
 
 __all__ = [
     "qgate",
