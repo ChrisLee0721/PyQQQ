@@ -172,3 +172,68 @@ class MPSEngine:
             bs = "".join(str(b) for b in reversed(bits))
             counts[bs] = counts.get(bs, 0) + 1
         return counts
+
+    def expectation(self, pauli: str) -> float:
+        """Compute expectation value of a Pauli string (e.g. 'ZZ', 'XIZ').
+
+        Uses the MPS contraction: ⟨ψ|P|ψ⟩ = Tr(ρ · P) where ρ is the reduced
+        density matrix built from left-to-right contraction.
+
+        Args:
+            pauli: Pauli string (I, X, Y, Z) of length n_qubits.
+
+        Returns:
+            Real expectation value.
+        """
+        pauli_map = {
+            "I": np.eye(2, dtype=complex),
+            "X": np.array([[0, 1], [1, 0]], dtype=complex),
+            "Y": np.array([[0, -1j], [1j, 0]], dtype=complex),
+            "Z": np.array([[1, 0], [0, -1]], dtype=complex),
+        }
+
+        left = np.array([[1.0 + 0j]])
+        for i in range(self.n):
+            p = pauli_map[pauli[i]] if i < len(pauli) else np.eye(2, dtype=complex)
+            m = self.M[i]  # shape [chiL, 2, chiR]
+            # Contract: left[a,b] * M[a,s,g] * P[s,t] * conj(M)[b,t,d] -> new[g,d]
+            left = np.einsum("ab,asg,st,btd->gd", left, m, p, m.conj())
+        return float(np.real(left[0, 0]))
+
+    def to_statevector(self) -> np.ndarray:
+        """Contract the MPS into a full 2^n state vector.
+
+        Warning: exponential memory — only use for small n (<= 20).
+        """
+        sv = self.M[0]  # shape [1, 2, chi_1]
+        for i in range(1, self.n):
+            sv = np.einsum("...a,abc->...bc", sv, self.M[i])
+        return sv.reshape(2**self.n)
+
+    def bond_dimensions(self) -> List[int]:
+        """Return the current bond dimension between each pair of adjacent sites."""
+        return [self.M[i].shape[2] for i in range(self.n - 1)]
+
+    def entropy(self, site: int) -> float:
+        """Compute the von Neumann entropy of the bipartition at `site`.
+
+        S = -Tr(ρ_L log ρ_L) where ρ_L is the reduced density matrix of qubits 0..site.
+        """
+        # Merge left part into a single tensor
+        left = self.M[0]
+        for i in range(1, site + 1):
+            left = np.einsum("...a,abc->...bc", left, self.M[i])
+        # left has shape [chiL, 2, 2, ..., chiR]
+        # Reshape to [chiL * 2^site, chiR] for SVD
+        chi_l = left.shape[0]
+        chi_r = left.shape[-1]
+        n_phys = site + 1
+        mat = left.reshape(chi_l * (2 ** n_phys), chi_r)
+        _, s, _ = np.linalg.svd(mat, full_matrices=False)
+        # Schmidt values squared = eigenvalues of reduced density matrix
+        s2 = s**2
+        total = np.sum(s2)
+        if total > 0:
+            s2 = s2 / total
+        s2 = s2[s2 > 1e-15]
+        return float(-np.sum(s2 * np.log(s2)))

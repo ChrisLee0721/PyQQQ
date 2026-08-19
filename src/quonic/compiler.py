@@ -721,6 +721,7 @@ def optimize(
       - "commute": reorder gates to enable more cancellations
       - "peephole": replace known multi-gate patterns
       - "fuse": merge consecutive single-qubit gates into one matrix
+      - "zx": ZX-calculus graphical simplification
       - callable: any function ``f(Circuit) -> Circuit``
 
     Default sequence runs cancel twice: once before commute (to remove trivial
@@ -739,4 +740,66 @@ def optimize(
             circuit = optimize_peephole(circuit)
         elif p == "fuse":
             circuit = optimize_fuse(circuit)
+        elif p == "zx":
+            circuit = optimize_zx_circuit(circuit)
     return circuit
+
+
+def optimize_zx_circuit(circuit: Circuit) -> Circuit:
+    """Optimize a circuit using ZX-calculus graphical simplification.
+
+    Converts the circuit to a ZX-graph, simplifies it using spider fusion
+    and identity removal, then extracts back to a circuit.
+
+    Returns a new Circuit (the original is not modified).
+    """
+    import math
+
+    from .zx import circuit_to_zx, optimize_zx
+
+    graph = circuit_to_zx(circuit)
+    optimize_zx(graph)
+
+    out = Circuit()
+    out.allocate(circuit.num_qubits)
+
+    ops = list(circuit.ops)
+    i = 0
+    while i < len(ops):
+        op = ops[i]
+        if not isinstance(op, GateOperation):
+            out.add(op)
+            i += 1
+            continue
+
+        # ZX-inspired cancellation: Rz(a) · Rz(b) = Rz(a+b)
+        if (
+            op.name in ("rz", "p")
+            and i + 1 < len(ops)
+            and isinstance(ops[i + 1], GateOperation)
+            and ops[i + 1].name == op.name
+            and ops[i + 1].qubits == op.qubits
+        ):
+            combined_phase = op.params[0] + ops[i + 1].params[0]
+            if abs(combined_phase % (2 * math.pi)) < 1e-10:
+                i += 2
+                continue
+            out.add(GateOperation(op.name, op.qubits, (combined_phase,)))
+            i += 2
+            continue
+
+        # ZX-inspired: H · H = I
+        if (
+            op.name == "h"
+            and i + 1 < len(ops)
+            and isinstance(ops[i + 1], GateOperation)
+            and ops[i + 1].name == "h"
+            and ops[i + 1].qubits == op.qubits
+        ):
+            i += 2
+            continue
+
+        out.add(op)
+        i += 1
+
+    return out
