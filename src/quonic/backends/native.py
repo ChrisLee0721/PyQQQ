@@ -36,7 +36,8 @@ class NativeBackend(Backend):
         shots: int = 1024,
         noise: Optional[Union[NoiseModel, float, int]] = None,
         method: str = "statevector",
-    ) -> Result:
+        return_state: bool = False,
+    ) -> Any:
         if method == "gpu":
             raise NotImplementedError(tr("err.no_gpu", name=self.name))
         from ..simulators import (
@@ -70,6 +71,13 @@ class NativeBackend(Backend):
 
         for op in circuit.ops:
             engine.apply(op.name, list(op.qubits), op.params)
+
+        if return_state:
+            from ..statevector import MixedState, StateVector
+            if hasattr(engine, "rho"):
+                return MixedState(engine.rho.copy())
+            return StateVector(engine.state.copy())
+
         return Result.from_counts(engine.sample(shots), shots)
 
     @classmethod

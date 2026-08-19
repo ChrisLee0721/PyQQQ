@@ -31,6 +31,9 @@ from .stack import current_circuit, pop, push
 
 def _unitary(gate: Gate) -> Any:
     """Single-bit gate → 2×2 unitary matrix (numpy array)."""
+    # Check if gate has a custom matrix
+    if gate.matrix is not None:
+        return gate.matrix
     from .simulators._gates import single
 
     return single(gate.name, gate.params)

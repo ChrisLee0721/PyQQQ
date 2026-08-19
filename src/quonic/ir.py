@@ -170,3 +170,151 @@ class Circuit:
             for q in op.qubits:
                 clocks[q] = d
         return max(clocks) if clocks else 0
+
+    # ------------------------------------------------------------------ #
+    #  Introspection
+    # ------------------------------------------------------------------ #
+
+    def __iter__(self):
+        return iter(self.ops)
+
+    def __len__(self) -> int:
+        return len(self.ops)
+
+    def __getitem__(self, index):
+        return self.ops[index]
+
+    def __repr__(self) -> str:
+        preview = []
+        for op in self.ops[:5]:
+            if isinstance(op, GateOperation):
+                qargs = ",".join(str(q) for q in op.qubits)
+                preview.append(f"{op.name}({qargs})")
+            else:
+                preview.append(type(op).__name__)
+        suffix = ", ..." if len(self.ops) > 5 else ""
+        return f"Circuit(n={self.num_qubits}, ops=[{', '.join(preview)}{suffix}])"
+
+    def copy(self) -> Circuit:
+        """Return a deep copy of this circuit."""
+        import copy
+        return copy.deepcopy(self)
+
+    def filter(self, qubits=None, name=None) -> Circuit:
+        """Return a sub-circuit containing only ops matching the filter criteria.
+
+        Args:
+            qubits: keep ops whose qubits are a subset of this set
+            name: keep ops whose name matches this string
+        """
+        c = Circuit()
+        for op in self.ops:
+            if qubits is not None:
+                op_qubits = set(op.qubits) if hasattr(op, "qubits") else set()
+                if not op_qubits.issubset(set(qubits)):
+                    continue
+            if name is not None and op.name != name:
+                continue
+            c.add(op)
+        return c
+
+    def slice(self, start: int = 0, end: int = None) -> Circuit:
+        """Return a sub-circuit from ops[start:end]."""
+        c = Circuit()
+        for op in self.ops[start:end]:
+            c.add(op)
+        return c
+
+    def inverse(self) -> Circuit:
+        """Return the inverse circuit (reversed ops, each gate adjoint)."""
+        from .compiler import _adjoint
+        c = Circuit()
+        for op in reversed(self.ops):
+            if isinstance(op, GateOperation):
+                c.add(_adjoint(op))
+            else:
+                c.add(op)
+        return c
+
+    def __add__(self, other: Circuit) -> Circuit:
+        """Concatenate two circuits."""
+        c = self.copy()
+        for op in other.ops:
+            c.add(op)
+        return c
+
+    # ------------------------------------------------------------------ #
+    #  Serialization
+    # ------------------------------------------------------------------ #
+
+    def to_dict(self) -> dict:
+        """Serialize to a JSON-compatible dict."""
+        ops = []
+        for op in self.ops:
+            if isinstance(op, GateOperation):
+                ops.append({
+                    "type": "gate",
+                    "name": op.name,
+                    "qubits": list(op.qubits),
+                    "params": list(op.params),
+                })
+            elif isinstance(op, CMeasureOperation):
+                ops.append({
+                    "type": "cmeasure",
+                    "qubit": op.qubit,
+                    "creg": op.creg,
+                    "bit": op.bit,
+                })
+        return {
+            "num_qubits": self.num_qubits,
+            "requires_grad": self.requires_grad,
+            "ops": ops,
+        }
+
+    @classmethod
+    def from_dict(cls, d: dict) -> Circuit:
+        """Deserialize from a dict."""
+        c = cls()
+        c.allocate(d["num_qubits"])
+        c.requires_grad = d.get("requires_grad", False)
+        for op_d in d["ops"]:
+            if op_d["type"] == "gate":
+                c.add(GateOperation(
+                    op_d["name"],
+                    tuple(op_d["qubits"]),
+                    tuple(op_d.get("params", ())),
+                ))
+            elif op_d["type"] == "cmeasure":
+                c.add(CMeasureOperation(
+                    op_d["qubit"],
+                    op_d["creg"],
+                    op_d.get("bit", 0),
+                ))
+        return c
+
+    def to_json(self) -> str:
+        """Serialize to JSON string."""
+        import json
+        return json.dumps(self.to_dict(), indent=2)
+
+    @classmethod
+    def from_json(cls, s: str) -> Circuit:
+        """Deserialize from JSON string."""
+        import json
+        return cls.from_dict(json.loads(s))
+
+    def to_qasm3(self) -> str:
+        """Export to OpenQASM 3.0 string."""
+        lines = [f"qreg q[{self.num_qubits}];"]
+        for op in self.ops:
+            if isinstance(op, GateOperation):
+                if op.name == "measure":
+                    lines.append(f"measure q[{op.qubits[0]}];")
+                else:
+                    qargs = ", ".join(f"q[{q}]" for q in op.qubits)
+                    if op.params:
+                        pargs = ", ".join(str(p) for p in op.params)
+                        lines.append(f"{op.name}({pargs}) {qargs};")
+                    else:
+                        lines.append(f"{op.name} {qargs};")
+        return "\n".join(lines)

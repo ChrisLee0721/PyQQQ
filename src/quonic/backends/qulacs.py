@@ -31,6 +31,14 @@ class QulacsBackend(EngineBackend):
     ) -> None:
         from qulacs import gate
 
+        # Check custom gate registry first
+        from ..gates import _GATE_REGISTRY
+        if name in _GATE_REGISTRY and _GATE_REGISTRY[name].matrix is not None:
+            import numpy as np
+            mat = np.asarray(_GATE_REGISTRY[name].matrix, dtype=complex)
+            engine.add_gate(gate.DenseMatrix(qubits, mat))
+            return
+
         if name in ("identity", "i"):
             engine.add_gate(gate.Identity(qubits[0]))
         elif name == "h":
@@ -100,6 +108,18 @@ class QulacsBackend(EngineBackend):
             counts[bs] = counts.get(bs, 0) + 1
         return counts
 
+    def _get_statevector(self, engine: Any, n: int) -> Any:
+        from qulacs import QuantumState
+        state = QuantumState(n)
+        engine.update_quantum_state(state)
+        return state.get_vector()
+
+    def _get_density_matrix(self, engine: Any, n: int) -> Any:
+        from qulacs import DensityMatrix
+        dm = DensityMatrix(n)
+        engine.update_quantum_state(dm)
+        return dm.get_matrix()
+
     # ------------------------------------------------------------------ #
     #  GPU path — try QuantumStateGpu, fallback to CuPy
     # ------------------------------------------------------------------ #
@@ -140,7 +160,7 @@ class QulacsBackend(EngineBackend):
     #  Dynamic path (v2) — stateful engine for mid-circuit measurement
     # ------------------------------------------------------------------ #
 
-    def _run_dynamic(self, circuit, shots, nm, method):
+    def _run_dynamic(self, circuit, shots, nm, method, return_state=False):
         """Override: use stateful engine that collapses on measurement."""
         from qulacs import QuantumState
 

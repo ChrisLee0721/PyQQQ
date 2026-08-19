@@ -79,6 +79,13 @@ class CupyEngineBackend(EngineBackend):
     def _sample(self, engine: Any, shots: int, n: int) -> Dict[str, int]:
         return _sv_sample(engine.sv, shots, engine.n, _xp())
 
+    def _get_statevector(self, engine: Any, n: int) -> Any:
+        import numpy as np
+        sv = engine.sv
+        if hasattr(sv, "get"):
+            return sv.get()
+        return np.asarray(sv)
+
     def _run_gpu(self, circuit: Circuit, shots: int, nm: NoiseModel) -> Result:
         """GPU execution: build statevector, apply gates, sample."""
         xp = _xp()
@@ -103,7 +110,7 @@ class CupyEngineBackend(EngineBackend):
             counts = self._apply_readout_noise(counts, n, nm.readout)
         return Result.from_counts(counts, shots)
 
-    def _run_dynamic(self, circuit, shots, nm, method):
+    def _run_dynamic(self, circuit, shots, nm, method, return_state=False):
         """Override: use CuPy statevector for classical control flow."""
         xp = _xp()
         _check_gpu_memory(circuit.num_qubits, xp)

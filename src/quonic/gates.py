@@ -8,14 +8,22 @@ qgate() accepts either a gate object or a gate name string (e.g. qgate("h", 0)).
 Parameterized gates (Rx/Ry/Rz) are factory functions that return gate objects with parameters:
     from quonic.gates import Rx
     qgate(Rx(0.5), 0)
+
+Custom gates with arbitrary unitary matrices:
+    import numpy as np
+    u3 = Gate("u3", matrix=np.array([[a, b], [c, d]]))
+    qgate(u3, 0)
 """
 
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Literal, Tuple, Union
+from typing import Any, Dict, Literal, Optional, Tuple, Union
 
 from ._i18n import tr
+
+# Global registry for custom gates (name -> Gate with matrix)
+_GATE_REGISTRY: Dict[str, "Gate"] = {}
 
 
 @dataclass(frozen=True)
@@ -23,6 +31,29 @@ class Gate:
     name: str
     num_qubits: int
     params: Tuple[float, ...] = field(default_factory=tuple)
+    matrix: Optional[Any] = None  # 2^n × 2^n unitary matrix (numpy array)
+
+    @classmethod
+    def from_matrix(cls, name: str, matrix: Any, **kwargs) -> "Gate":
+        """Create a custom gate from a unitary matrix.
+
+        The matrix must be 2^n × 2^n for some n. The number of qubits is
+        inferred from the matrix dimension.
+
+        Example:
+            import numpy as np
+            my_gate = Gate.from_matrix("u3", np.array([[a, b], [c, d]]))
+            qgate(my_gate, 0)
+        """
+        import math
+
+        dim = matrix.shape[0]
+        n_qubits = int(math.log2(dim))
+        if 2**n_qubits != dim:
+            raise ValueError(f"Matrix dimension {dim} is not a power of 2")
+        gate = cls(name=name, num_qubits=n_qubits, matrix=matrix, **kwargs)
+        _GATE_REGISTRY[name] = gate
+        return gate
 
 
 H = Gate("h", 1)
@@ -86,4 +117,10 @@ __all__ = [
     "MEASURE",
     "Rx", "Ry", "Rz",
     "resolve",
+    "get_gate_registry",
 ]
+
+
+def get_gate_registry() -> Dict[str, Gate]:
+    """Return the global custom gate registry."""
+    return dict(_GATE_REGISTRY)

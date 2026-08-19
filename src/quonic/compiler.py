@@ -621,7 +621,7 @@ def optimize_peephole(circuit: Circuit) -> Circuit:
 
 def optimize(
     circuit: Circuit,
-    passes: Tuple[str, ...] = ("cancel", "commute", "cancel", "peephole"),
+    passes: Tuple = ("cancel", "commute", "cancel", "peephole"),
 ) -> Circuit:
     """Apply optimization passes in order.
 
@@ -629,6 +629,7 @@ def optimize(
       - "cancel": remove adjacent self-inverse gate pairs
       - "commute": reorder gates to enable more cancellations
       - "peephole": replace known multi-gate patterns
+      - callable: any function ``f(Circuit) -> Circuit``
 
     Default sequence runs cancel twice: once before commute (to remove trivial
     pairs) and once after (to cancel pairs brought together by reordering).
@@ -636,7 +637,9 @@ def optimize(
     Returns a new Circuit (the original is not modified).
     """
     for p in passes:
-        if p == "cancel":
+        if callable(p):
+            circuit = p(circuit)
+        elif p == "cancel":
             circuit = optimize_cancel(circuit)
         elif p == "commute":
             circuit = optimize_commute(circuit)

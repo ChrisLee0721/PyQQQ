@@ -156,8 +156,9 @@ class CudaQBackend(EngineBackend):
     # ------------------------------------------------------------------ #
 
     def _run_dynamic(
-        self, circuit: Any, shots: int, nm: NoiseModel, method: str
-    ) -> Result:
+        self, circuit: Any, shots: int, nm: NoiseModel, method: str,
+        return_state: bool = False,
+    ) -> Any:
         """CUDA-Q dynamic circuits: per-shot kernel creation (high overhead)."""
         import cudaq
 

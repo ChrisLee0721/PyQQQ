@@ -45,6 +45,21 @@ def _set_shots(qml: Any, qnode: Any, shots: int) -> Any:
         return qml.set_shots(shots=shots)(qnode)
 
 
+def _translate_custom_gate_pennylane(qml: Any, op: Any) -> None:
+    """Translate a custom gate to PennyLane QubitUnitary."""
+    from ..gates import _GATE_REGISTRY
+
+    if op.name in _GATE_REGISTRY and _GATE_REGISTRY[op.name].matrix is not None:
+        import numpy as np
+
+        matrix = np.asarray(_GATE_REGISTRY[op.name].matrix, dtype=complex)
+        qml.QubitUnitary(matrix, wires=list(op.qubits))
+    else:
+        raise ValueError(
+            tr("err.pennylane_gate", name=op.name)
+        )
+
+
 class PennyLaneBackend(Backend):
     name = "pennylane"
     methods = frozenset({"statevector"})
@@ -76,7 +91,10 @@ class PennyLaneBackend(Backend):
         def qnode() -> Any:
             cregs = {}
             for op in circuit.ops:
-                TRANSLATORS[op.name].to_pennylane(qml, op, cregs)
+                if op.name in TRANSLATORS:
+                    TRANSLATORS[op.name].to_pennylane(qml, op, cregs)
+                else:
+                    _translate_custom_gate_pennylane(qml, op)
                 if nm.enabled and op.name != "measure":
                     if len(op.qubits) == 1 and nm.single > 0.0:
                         qml.DepolarizingChannel(nm.single, wires=op.qubits[0])

@@ -345,6 +345,10 @@ _MESSAGES: Dict[str, Dict[str, str]] = {
         "en": "{name} backend does not support mid-circuit measurement",
         "zh": "{name} 后端不支持中段测量",
     },
+    "err.engine_no_sv": {
+        "en": "{name} backend does not support statevector extraction",
+        "zh": "{name} 后端不支持态矢量提取",
+    },
     "err.no_gpu": {
         "en": "{name} backend does not support GPU acceleration; "
               "use qulacs, tensorcircuit, or cupy backend",

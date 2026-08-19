@@ -27,6 +27,28 @@ class StatevectorEngine:
         s = self.state.reshape(hi, 2, lo)
         self.state = np.einsum("ij,ajk->aik", u, s).reshape(-1)
 
+    def _apply_custom(self, matrix: np.ndarray, qubits: Sequence[int]) -> None:
+        """Apply an arbitrary unitary matrix to the specified qubits."""
+        dim = matrix.shape[0]
+        n_qubits = int(np.log2(dim))
+        other_qubits = [q for q in range(self.n) if q not in qubits]
+
+        if not other_qubits:
+            # All qubits are target qubits — simple matrix-vector multiply
+            self.state = matrix @ self.state
+            return
+
+        perm = list(qubits) + other_qubits
+        state_t = self.state.reshape([2] * self.n).transpose(perm)
+        state_flat = state_t.reshape(dim, -1)
+        result = matrix @ state_flat
+        result = result.reshape([2] * n_qubits + [2 ** len(other_qubits)])
+        inv_perm = [0] * self.n
+        for i, q in enumerate(perm):
+            inv_perm[q] = i
+        result = result.transpose(inv_perm)
+        self.state = result.reshape(-1)
+
     def _apply_phase(self, qubits: Sequence[int], angle: float) -> None:
         """Apply an e^{i·angle} phase (diagonal gate) to the basis states where all these qubits are |1>."""
         idx = np.arange(2 ** self.n)
@@ -63,8 +85,14 @@ class StatevectorEngine:
     def apply(
         self, name: str, qubits: Sequence[int], params: Tuple[float, ...] = ()
     ) -> None:
+        from ..gates import _GATE_REGISTRY
+
         name = name.lower()
         if name == "measure":
+            return
+        # Check custom gate registry first
+        if name in _GATE_REGISTRY and _GATE_REGISTRY[name].matrix is not None:
+            self._apply_custom(_GATE_REGISTRY[name].matrix, qubits)
             return
         if name in ("i", "h", "x", "y", "z", "rx", "ry", "rz", "p"):
             self._apply_single(single(name, params), qubits[0])

@@ -12,6 +12,21 @@ from .base import Backend
 from .translators import TRANSLATORS
 
 
+def _translate_custom_gate_qiskit(qc, op) -> None:
+    """Translate a custom gate (from _GATE_REGISTRY) to a Qiskit unitary gate."""
+    from ..gates import _GATE_REGISTRY
+
+    if op.name in _GATE_REGISTRY and _GATE_REGISTRY[op.name].matrix is not None:
+        import numpy as np
+
+        matrix = np.asarray(_GATE_REGISTRY[op.name].matrix, dtype=complex)
+        qc.unitary(matrix, list(op.qubits))
+    else:
+        raise ValueError(
+            tr("err.qiskit_gate", name=op.name)
+        )
+
+
 class QiskitBackend(Backend):
     name = "qiskit"
     methods = frozenset(
@@ -59,7 +74,10 @@ class QiskitBackend(Backend):
             cregs[name] = cr
 
         for op in circuit.ops:
-            TRANSLATORS[op.name].to_qiskit(qc, op, cregs)
+            if op.name in TRANSLATORS:
+                TRANSLATORS[op.name].to_qiskit(qc, op, cregs)
+            else:
+                _translate_custom_gate_qiskit(qc, op)
 
         # Auto-complete: any qubit without an explicit measure is measured at the end
         for q in circuit.unmeasured_qubits():
