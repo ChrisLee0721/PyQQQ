@@ -3,36 +3,100 @@
     {
       "title": "Getting Started",
       "items": [
-        {"title": "Quick Start", "file": "docs/quickstart.md"}
+        {
+          "title": "Qgate",
+          "file": "docs/qgate.md"
+        },
+        {
+          "title": "Quickstart",
+          "file": "docs/quickstart.md"
+        }
       ]
     },
     {
-      "title": "API Reference",
+      "title": "Api",
       "items": [
-        {"title": "Core IR", "file": "docs/api/ir.md"},
-        {"title": "Gates", "file": "docs/api/gates.md"},
-        {"title": "Backends", "file": "docs/api/backends.md"},
-        {"title": "Compiler", "file": "docs/api/compiler.md"},
-        {"title": "Scheduler", "file": "docs/api/scheduler.md"},
-        {"title": "Noise", "file": "docs/api/noise.md"},
-        {"title": "ZNE", "file": "docs/api/zne.md"},
-        {"title": "Readout", "file": "docs/api/readout.md"},
-        {"title": "Visualization", "file": "docs/api/viz.md"},
-        {"title": "Machine Learning", "file": "docs/api/ml.md"},
-        {"title": "Error Correction", "file": "docs/api/qec.md"},
-        {"title": "Pulse Control", "file": "docs/api/pulse.md"},
-        {"title": "Distributed", "file": "docs/api/distributed.md"},
-        {"title": "ZX-Calculus", "file": "docs/api/zx.md"}
+        {
+          "title": "Backends",
+          "file": "docs/api/backends.md"
+        },
+        {
+          "title": "Compiler",
+          "file": "docs/api/compiler.md"
+        },
+        {
+          "title": "Distributed",
+          "file": "docs/api/distributed.md"
+        },
+        {
+          "title": "Gates",
+          "file": "docs/api/gates.md"
+        },
+        {
+          "title": "Ir",
+          "file": "docs/api/ir.md"
+        },
+        {
+          "title": "Ml",
+          "file": "docs/api/ml.md"
+        },
+        {
+          "title": "Noise",
+          "file": "docs/api/noise.md"
+        },
+        {
+          "title": "Pulse",
+          "file": "docs/api/pulse.md"
+        },
+        {
+          "title": "Qec",
+          "file": "docs/api/qec.md"
+        },
+        {
+          "title": "Readout",
+          "file": "docs/api/readout.md"
+        },
+        {
+          "title": "Scheduler",
+          "file": "docs/api/scheduler.md"
+        },
+        {
+          "title": "Viz",
+          "file": "docs/api/viz.md"
+        },
+        {
+          "title": "Zne",
+          "file": "docs/api/zne.md"
+        },
+        {
+          "title": "Zx",
+          "file": "docs/api/zx.md"
+        }
       ]
     },
     {
       "title": "Tutorials",
       "items": [
-        {"title": "01 Basics", "file": "docs/tutorials/01_basics.md"},
-        {"title": "02 Algorithms", "file": "docs/tutorials/02_algorithms.md"},
-        {"title": "03 Noise Mitigation", "file": "docs/tutorials/03_noise_mitigation.md"},
-        {"title": "04 GPU Acceleration", "file": "docs/tutorials/04_gpu_acceleration.md"},
-        {"title": "05 Advanced", "file": "docs/tutorials/05_advanced.md"}
+        {
+          "title": "01 Basics",
+          "file": "docs/tutorials/01_basics.md"
+        },
+        {
+          "title": "02 Algorithms",
+          "file": "docs/tutorials/02_algorithms.md"
+        },
+        {
+          "title": "03 Noise Mitigation",
+          "file": "docs/tutorials/03_noise_mitigation.md"
+        },
+        {
+          "title": "04 Gpu Acceleration",
+          "file": "docs/tutorials/04_gpu_acceleration.md"
+        },
+        {
+          "title": "05 Advanced",
+          "file": "docs/tutorials/05_advanced.md"
+        }
       ]
     }
   ]
