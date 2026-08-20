@@ -110,7 +110,7 @@
 
         <!-- Right TOC -->
         <aside class="w-48 shrink-0 hidden xl:block sticky top-14 h-[calc(100vh-3.5rem)] overflow-y-auto p-4">
-            <div class="text-xs font-semibold text-doc-dim uppercase tracking-wider mb-3">On this page</div>
+            <div class="text-xs font-semibold text-white uppercase tracking-wider mb-3">On this page</div>
             <nav id="toc" class="space-y-1 text-xs"></nav>
         </aside>
     </div>
@@ -158,8 +158,8 @@
                         link.href = '#' + id;
                         link.textContent = h.textContent;
                         link.className = h.tagName === 'H3'
-                            ? 'block text-doc-dim hover:text-doc-accent transition-colors py-1 pl-3'
-                            : 'block text-doc-dim hover:text-doc-accent transition-colors py-1';
+                            ? 'block text-slate-400 hover:text-doc-accent transition-colors py-1 pl-3'
+                            : 'block text-slate-300 hover:text-doc-accent transition-colors py-1';
                         link.onclick = (e) => {
                             e.preventDefault();
                             h.scrollIntoView({ behavior: 'smooth', block: 'start' });
