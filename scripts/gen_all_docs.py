@@ -1,4 +1,4 @@
-"""Generate documentation for all examples automatically.
+"""Generate complete documentation for all examples using metadata.
 
 Usage:
     python scripts/gen_all_docs.py
@@ -8,8 +8,11 @@ import re
 import sys
 from pathlib import Path
 
-# Import the SVG generator
+# Import metadata
 sys.path.insert(0, str(Path(__file__).parent))
+from example_metadata import EXAMPLES
+
+# Import SVG generator
 from gen_circuit_svg import generate_svg, EXAMPLE_CIRCUITS
 
 
@@ -91,29 +94,13 @@ def generate_svg_for_example(name, code):
     )
 
 
-def generate_doc(name, code, sections):
-    """Generate documentation for an example."""
+def generate_doc(name, info, code):
+    """Generate documentation for an example using metadata."""
     code_body = extract_code_body(code)
 
-    # Parse sections
-    intro = sections.get("intro", "")
-    intro_lines = [l.strip() for l in intro.split('\n') if l.strip()]
-    desc_en = intro_lines[0] if len(intro_lines) > 0 else ""
-    desc_zh = intro_lines[1] if len(intro_lines) > 1 else ""
+    doc = f"""# {info['title']} / {info['title_zh']}
 
-    app = sections.get('Application / 应用场景', sections.get('Application', ''))
-    app_lines = [l.strip() for l in app.split('\n') if l.strip()]
-
-    how = sections.get('How it works / 原理', sections.get('How it works', ''))
-    how_lines = [l.strip() for l in how.split('\n') if l.strip()]
-
-    output = sections.get('Output / 输出说明', sections.get('Output', ''))
-    output_lines = [l.strip() for l in output.split('\n') if l.strip()]
-
-    # Build documentation
-    doc = f"""# {name.replace('_', ' ').title()} / {desc_zh if desc_zh else name.replace('_', ' ').title()}
-
-> **Example** / 示例
+> **{info['category']}** / {info['category_zh']} | 难度：{info['difficulty']} | 预计时间：{info['time']}
 
 ---
 
@@ -133,22 +120,20 @@ def generate_doc(name, code, sections):
 
 ## 为什么需要？
 
-{desc_en if desc_en else f"This example demonstrates {name.replace('_', ' ')}."}
-
-{desc_zh if desc_zh else ""}
+{info['why_detailed']}
 
 ---
 
 ## 快速上手
 
 ```python
-{code_body}
+{info['quick_code']}
 ```
 
 **预期输出**：
 
 ```
-{chr(10).join(output_lines) if output_lines else "See code comments for output explanation."}
+{info['exact_output']}
 ```
 
 ---
@@ -157,47 +142,91 @@ def generate_doc(name, code, sections):
 
 ### 电路图
 
-![{name.replace('_', ' ').title()} circuit](/images/{name}_circuit.svg)
+![{info['title']} circuit](/images/{info['svg_name']})
 
-{chr(10).join(how_lines) if how_lines else "See code comments for explanation."}
+### 数学推导
+
+{info['math_derivation']}
+
+### 几何解释
+
+{info['geometric_explanation']}
 
 ---
 
 ## 代码详解
 
 ```python
-{code_body}
+{info['annotated_code']}
 ```
+
+### API 说明
+
+| API | 参数 | 说明 |
+|-----|------|------|
+{info['api_table']}
 
 ---
 
 ## 进阶用法
 
-See the full example code below for more advanced usage.
+### 场景 1：{info['scenario_1']}
+
+```python
+{info['code_1']}
+```
+
+### 场景 2：{info['scenario_2']}
+
+```python
+{info['code_2']}
+```
+
+### 场景 3：{info['scenario_3']}
+
+```python
+{info['code_3']}
+```
 
 ---
 
 ## 适用场景
 
-{chr(10).join(f"- {l}" for l in app_lines) if app_lines else "- Quantum computing demonstrations\n- Algorithm examples\n- Educational purposes"}
+### 场景 1：{info['use_case_1']}
+
+{info['use_case_1_detail']}
+
+### 场景 2：{info['use_case_2']}
+
+{info['use_case_2_detail']}
+
+### 场景 3：{info['use_case_3']}
+
+{info['use_case_3_detail']}
 
 ---
 
 ## 常见问题
 
-### Q1: How to run this example?
+### Q1: {info['question_1']}
 
-```bash
-python examples/{name}/{name}.py
-```
+{info['answer_1']}
 
-### Q2: What backend is used?
+### Q2: {info['question_2']}
 
-The example uses the default backend. You can specify a different one:
+{info['answer_2']}
 
-```python
-qshow(backend='qiskit')
-```
+### Q3: {info['question_3']}
+
+{info['answer_3']}
+
+### Q4: {info['question_4']}
+
+{info['answer_4']}
+
+### Q5: {info['question_5']}
+
+{info['answer_5']}
 
 ---
 
@@ -205,20 +234,35 @@ qshow(backend='qiskit')
 
 ### 前置知识
 
-- Basic quantum computing concepts
-- QuoNic API basics
+- {info['prerequisite_1']}
+- {info['prerequisite_2']}
+- {info['prerequisite_3']}
 
 ### 继续学习
 
-- Other examples in this documentation
-- QuoNic API reference
+- {info['next_1']}
+- {info['next_2']}
+- {info['next_3']}
+
+### 难度等级
+
+- 当前：{info['current_level']}
+- 下一步：{info['next_level']}
 
 ---
 
 ## 完整示例代码
 
+### 示例 1：{info['example_1_title']}
+
 ```python
-{code}
+{info['example_1_code']}
+```
+
+### 示例 2：{info['example_2_title']}
+
+```python
+{info['example_2_code']}
 ```
 
 ### 运行方式
@@ -242,33 +286,34 @@ def main():
     output_dir = Path(__file__).resolve().parent.parent / "public" / "docs" / "examples"
     output_dir.mkdir(parents=True, exist_ok=True)
 
-    # Get all example directories
-    example_dirs = [d for d in examples_root.iterdir() if d.is_dir() and not d.name.startswith('.')]
-
     count = 0
-    for example_dir in sorted(example_dirs):
-        name = example_dir.name
-        example_file = example_dir / f"{name}.py"
+    for name, info in EXAMPLES.items():
+        # Find example file
+        example_path = None
+        for pattern in [
+            examples_root / name / f"{name}.py",
+            examples_root / f"{name}.py",
+        ]:
+            if pattern.exists():
+                example_path = pattern
+                break
 
-        if not example_file.exists():
-            print(f"  SKIP {name}: no {name}.py found")
+        if example_path is None:
+            print(f"  SKIP {name}: no example file found")
             continue
 
         # Read example code
-        code = example_file.read_text(encoding="utf-8")
-
-        # Extract docstring sections
-        sections = extract_docstring(code)
+        code = example_path.read_text(encoding="utf-8")
 
         # Generate SVG if not exists
-        svg_path = Path(__file__).resolve().parent.parent / "public" / "images" / f"{name}_circuit.svg"
+        svg_path = Path(__file__).resolve().parent.parent / "public" / "images" / f"{info['svg_name']}"
         if not svg_path.exists():
             svg = generate_svg_for_example(name, code)
             svg_path.write_text(svg, encoding="utf-8")
-            print(f"  Generated {name}_circuit.svg")
+            print(f"  Generated {info['svg_name']}")
 
         # Generate documentation
-        doc = generate_doc(name, code, sections)
+        doc = generate_doc(name, info, code)
 
         # Write documentation
         output_path = output_dir / f"example_{name}.md"

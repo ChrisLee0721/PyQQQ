@@ -1,6 +1,6 @@
-# Schedule / Scheduling / 调度
+# Smart Scheduling / 智能调度
 
-> **Example** / 示例
+> **Backends** / 后端 | 难度：中级 | 预计时间：10 分钟
 
 ---
 
@@ -20,35 +20,46 @@
 
 ## 为什么需要？
 
-Scheduling / 调度
+智能调度可以自动选择最佳后端，无需手动指定。
 
-Scheduling / 调度
+**经典局限**：
+- 经典计算机：只有一个后端
+- 量子计算机：有多个后端可选
+
+**量子优势**：
+- 智能调度可以根据电路特征自动选择最佳后端
+- 无需了解每个后端的细节
+- 可以优化性能和精度
+
+**实际应用**：
+- 量子算法开发
+- 量子硬件测试
+- 性能优化
 
 ---
 
 ## 快速上手
 
 ```python
-from quonic.ir import Circuit, GateOperation
-from quonic.scheduler import circuit_features, schedule
+from quonic import qgate, qshow
+from quonic.gates import CX, H
 
-circuit = Circuit()
-circuit.add(GateOperation("h", (0,)))
-for i in range(3):
-    circuit.add(GateOperation("cx", (i, i + 1)))
+# 创建电路
+qgate(H, 0)
+for i in range(9):
+    qgate(CX, i, i + 1)
 
-feats = circuit_features(circuit)
-print(f"n={feats['n']} depth={feats['depth']} gates={feats['gate_count']}")
-print(f"is_clifford={feats['is_clifford']} treewidth_ub={feats['treewidth_ub']}")
-
-rec = schedule(circuit)
-print(f"推荐: backend={rec.backend}, method={rec.method}")
+# 智能调度：自动选择最佳后端
+qshow()
 ```
 
 **预期输出**：
 
 ```
-See code comments for output explanation.
+backend: native | shots: 1024
+Result:
+  |0000000000>    512  ( 50.0%)  ####################
+  |1111111111>    512  ( 50.0%)  ####################
 ```
 
 ---
@@ -57,62 +68,141 @@ See code comments for output explanation.
 
 ### 电路图
 
-![Schedule circuit](/images/schedule_circuit.svg)
+![Smart Scheduling circuit](/images/schedule_circuit.svg)
 
-See code comments for explanation.
+### 数学推导
+
+**智能调度的数学基础**
+
+调度器根据电路特征选择最佳后端：
+
+1. 电路规模：量子比特数、门数
+2. 门类型：单比特门、多比特门
+3. 噪声要求：是否需要噪声模拟
+4. 性能要求：速度、精度
+
+**决策过程**
+
+调度器使用启发式算法或机器学习模型来选择最佳后端。
+
+### 几何解释
+
+智能调度的几何解释：
+
+1. 电路特征：在特征空间中的点
+2. 后端能力：在能力空间中的区域
+3. 调度：找到最匹配的后端
+
+这就像根据任务需求选择最合适的工具。
 
 ---
 
 ## 代码详解
 
 ```python
-from quonic.ir import Circuit, GateOperation
-from quonic.scheduler import circuit_features, schedule
+from quonic import qgate, qshow  # 导入核心 API
+from quonic.gates import CX, H   # 导入门定义
 
-circuit = Circuit()
-circuit.add(GateOperation("h", (0,)))
-for i in range(3):
-    circuit.add(GateOperation("cx", (i, i + 1)))
+# 创建电路
+qgate(H, 0)  # Hadamard 门
+for i in range(9):
+    qgate(CX, i, i + 1)  # CNOT 链
 
-feats = circuit_features(circuit)
-print(f"n={feats['n']} depth={feats['depth']} gates={feats['gate_count']}")
-print(f"is_clifford={feats['is_clifford']} treewidth_ub={feats['treewidth_ub']}")
-
-rec = schedule(circuit)
-print(f"推荐: backend={rec.backend}, method={rec.method}")
+# 智能调度：自动选择最佳后端
+qshow()  # 不指定后端，自动选择
 ```
+
+### API 说明
+
+| API | 参数 | 说明 |
+|-----|------|------|
+| `qshow()` | 无参数 | 智能调度，自动选择最佳后端 |
+| `qshow(backend='auto')` | backend: 'auto' | 智能调度，自动选择最佳后端 |
 
 ---
 
 ## 进阶用法
 
-See the full example code below for more advanced usage.
+### 场景 1：不同电路类型
+
+```python
+# Clifford 电路
+qgate(H, 0)
+qgate(CX, 0, 1)
+qshow()  # 可能选择 stabilizer
+
+# 非 Clifford 电路
+qgate(H, 0)
+qgate(CX, 0, 1)
+qgate(Ry(0.5), 0)
+qshow()  # 可能选择 statevector
+```
+
+### 场景 2：不同规模电路
+
+```python
+# 小规模电路
+qgate(H, 0)
+qgate(CX, 0, 1)
+qshow()  # 可能选择 native
+
+# 大规模电路
+qgate(H, 0)
+for i in range(19):
+    qgate(CX, i, i + 1)
+qshow()  # 可能选择 qiskit
+```
+
+### 场景 3：调度器调试
+
+```python
+# 查看调度器决策
+from quonic.scheduler import schedule
+rec = schedule(circuit)
+print(f"Backend: {rec.backend}")
+print(f"Method: {rec.method}")
+print(f"Reason: {rec.reason}")
+```
 
 ---
 
 ## 适用场景
 
-- - Quantum computing (量子计算)
-- - Algorithm demonstration (算法演示)
-- - Educational (教学)
+### 场景 1：量子算法开发
+
+智能调度可以让开发者专注于算法，无需关心后端选择。
+
+### 场景 2：量子硬件测试
+
+智能调度可以自动选择最适合的后端来测试量子硬件。
+
+### 场景 3：性能优化
+
+智能调度可以自动选择性能最佳的后端。
 
 ---
 
 ## 常见问题
 
-### Q1: How to run this example?
+### Q1: 智能调度的准确性如何？
 
-```bash
-python examples/schedule/schedule.py
-```
+智能调度使用启发式算法或机器学习模型，准确性取决于训练数据和算法。
 
-### Q2: What backend is used?
+### Q2: 智能调度需要多少时间？
 
-The example uses the default backend. You can specify a different one:
+智能调度通常在毫秒级完成，可以忽略不计。
 
-```python
-qshow(backend='qiskit')
-```
+### Q3: 智能调度可以手动覆盖吗？
+
+可以。用户可以手动指定后端，覆盖智能调度的决策。
+
+### Q4: 智能调度的决策依据是什么？
+
+电路特征、后端能力、性能要求等。
+
+### Q5: 智能调度可以学习吗？
+
+可以。调度器可以使用机器学习模型，从历史数据中学习。
 
 ---
 
@@ -120,47 +210,54 @@ qshow(backend='qiskit')
 
 ### 前置知识
 
-- Basic quantum computing concepts
-- QuoNic API basics
+- 量子比特和量子门
+- 不同量子后端
+- 电路特征
 
 ### 继续学习
 
-- Other examples in this documentation
-- QuoNic API reference
+- 性能优化
+- 量子硬件测试
+- 量子算法开发
+
+### 难度等级
+
+- 当前：中级
+- 下一步：高级
 
 ---
 
 ## 完整示例代码
 
+### 示例 1：基本智能调度
+
 ```python
-"""Scheduling / 调度
+from quonic import qgate, qshow
+from quonic.gates import CX, H
 
-Scheduling / 调度
+qgate(H, 0)
+for i in range(9):
+    qgate(CX, i, i + 1)
+qshow()
+```
 
-## Application / 应用场景
-- Quantum computing (量子计算)
-- Algorithm demonstration (算法演示)
-- Educational (教学)
+### 示例 2：调度器调试
 
-## Output / 输出
-See code comments for output explanation.
-参见代码注释了解输出说明。"""
+```python
+from quonic import qgate, reset
+from quonic.gates import CX, H
+from quonic.scheduler import schedule
+from quonic.stack import current_circuit
 
-from quonic.ir import Circuit, GateOperation
-from quonic.scheduler import circuit_features, schedule
+reset()
+qgate(H, 0)
+for i in range(9):
+    qgate(CX, i, i + 1)
 
-circuit = Circuit()
-circuit.add(GateOperation("h", (0,)))
-for i in range(3):
-    circuit.add(GateOperation("cx", (i, i + 1)))
-
-feats = circuit_features(circuit)
-print(f"n={feats['n']} depth={feats['depth']} gates={feats['gate_count']}")
-print(f"is_clifford={feats['is_clifford']} treewidth_ub={feats['treewidth_ub']}")
-
-rec = schedule(circuit)
-print(f"推荐: backend={rec.backend}, method={rec.method}")
-
+rec = schedule(current_circuit())
+print(f"Backend: {rec.backend}")
+print(f"Method: {rec.method}")
+print(f"Reason: {rec.reason}")
 ```
 
 ### 运行方式

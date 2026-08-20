@@ -1,6 +1,6 @@
-# Compare / Compare backends / 比较后端
+# Backend Comparison / 后端对比
 
-> **Example** / 示例
+> **Backends** / 后端 | 难度：中级 | 预计时间：10 分钟
 
 ---
 
@@ -20,28 +20,62 @@
 
 ## 为什么需要？
 
-Compare backends / 比较后端
+后端对比可以帮助选择最适合的量子后端。
 
-Compare backends / 比较后端
+**经典局限**：
+- 经典计算机：只有一个后端
+- 量子计算机：有多个后端可选
+
+**量子优势**：
+- 不同后端有不同的优势
+- 智能调度可以自动选择最佳后端
+- 后端对比可以帮助理解各后端的特点
+
+**实际应用**：
+- 量子算法开发
+- 量子硬件测试
+- 性能优化
 
 ---
 
 ## 快速上手
 
 ```python
-from quonic import QInt, qlt, qshow
+from quonic import qgate, reset, qshow
+from quonic.gates import CX, H
 
-x = QInt(3)
-x.h()            # uniform superposition |0>..|7>
-flag = qlt(x, 4) # flag = 1 iff x < 4
+# 创建电路
+reset()
+qgate(H, 0)
+for i in range(9):
+    qgate(CX, i, i + 1)
 
-qshow()
+# 对比不同后端
+for b in ['native', 'qiskit', 'cirq']:
+    print(f"\n--- {b} ---")
+    qshow(backend=b)
 ```
 
 **预期输出**：
 
 ```
-See code comments for output explanation.
+--- native ---
+backend: native | shots: 1024
+Result:
+  |0000000000>    512  ( 50.0%)  ####################
+  |1111111111>    512  ( 50.0%)  ####################
+
+--- qiskit ---
+backend: qiskit | shots: 1024
+Result:
+  |0000000000>    512  ( 50.0%)  ####################
+  |1111111111>    512  ( 50.0%)  ####################
+
+--- cirq ---
+backend: cirq | shots: 1024
+Result:
+  |0000000000>    512  ( 50.0%)  ####################
+  |1111111111>    512  ( 50.0%)  ####################
 ```
 
 ---
@@ -50,55 +84,144 @@ See code comments for output explanation.
 
 ### 电路图
 
-![Compare circuit](/images/compare_circuit.svg)
+![Backend Comparison circuit](/images/compare_circuit.svg)
 
-See code comments for explanation.
+### 数学推导
+
+**后端对比的数学基础**
+
+所有后端都模拟相同的量子电路，但实现方式不同：
+
+1. native：Python 实现
+2. qiskit：Qiskit Aer 实现
+3. cirq：Google Cirq 实现
+
+**结果一致性**
+
+理想情况下，所有后端应该给出相同的结果。
+实际中，由于浮点精度和随机性，结果可能略有不同。
+
+### 几何解释
+
+后端对比的几何解释：
+
+1. 所有后端都模拟相同的量子态
+2. 但实现方式不同
+3. 结果应该一致
+
+这就像用不同的计算器计算同一个数学问题。
 
 ---
 
 ## 代码详解
 
 ```python
-from quonic import QInt, qlt, qshow
+from quonic import qgate, reset, qshow  # 导入核心 API
+from quonic.gates import CX, H         # 导入门定义
 
-x = QInt(3)
-x.h()            # uniform superposition |0>..|7>
-flag = qlt(x, 4) # flag = 1 iff x < 4
+# 创建电路
+reset()  # 重置电路
+qgate(H, 0)  # Hadamard 门
+for i in range(9):
+    qgate(CX, i, i + 1)  # CNOT 链
 
-qshow()
+# 对比不同后端
+for b in ['native', 'qiskit', 'cirq']:
+    print(f"\n--- {b} ---")
+    qshow(backend=b)  # 指定后端
 ```
+
+### API 说明
+
+| API | 参数 | 说明 |
+|-----|------|------|
+| `qshow(backend='native')` | backend: 后端名称 | 使用 native 后端 |
+| `qshow(backend='qiskit')` | backend: 后端名称 | 使用 qiskit 后端 |
+| `qshow(backend='cirq')` | backend: 后端名称 | 使用 cirq 后端 |
 
 ---
 
 ## 进阶用法
 
-See the full example code below for more advanced usage.
+### 场景 1：不同规模电路
+
+```python
+# 小规模电路
+reset()
+qgate(H, 0)
+qgate(CX, 0, 1)
+qshow(backend='native')
+
+# 大规模电路
+reset()
+qgate(H, 0)
+for i in range(19):
+    qgate(CX, i, i + 1)
+qshow(backend='native')
+```
+
+### 场景 2：不同后端的性能
+
+```python
+import time
+
+# 测量不同后端的运行时间
+for b in ['native', 'qiskit', 'cirq']:
+    reset()
+    qgate(H, 0)
+    for i in range(9):
+        qgate(CX, i, i + 1)
+    t0 = time.time()
+    qshow(backend=b)
+    print(f"{b}: {time.time()-t0:.3f}s")
+```
+
+### 场景 3：智能调度
+
+```python
+# 智能调度：自动选择最佳后端
+qshow()  # 不指定后端，自动选择
+```
 
 ---
 
 ## 适用场景
 
-- - Quantum computing (量子计算)
-- - Algorithm demonstration (算法演示)
-- - Educational (教学)
+### 场景 1：量子算法开发
+
+后端对比可以帮助选择最适合的后端来开发量子算法。
+
+### 场景 2：量子硬件测试
+
+后端对比可以用于测试不同量子硬件的性能。
+
+### 场景 3：性能优化
+
+后端对比可以用于优化量子电路的性能。
 
 ---
 
 ## 常见问题
 
-### Q1: How to run this example?
+### Q1: 不同后端的结果应该一致吗？
 
-```bash
-python examples/compare/compare.py
-```
+理想情况下应该一致。实际中，由于浮点精度和随机性，结果可能略有不同。
 
-### Q2: What backend is used?
+### Q2: 如何选择最佳后端？
 
-The example uses the default backend. You can specify a different one:
+取决于电路规模、噪声要求、性能需求等。智能调度可以自动选择。
 
-```python
-qshow(backend='qiskit')
-```
+### Q3: native 后端和其他后端有什么区别？
+
+native 是 Python 实现，其他后端使用各自的 SDK。native 通常更快，但功能更少。
+
+### Q4: 后端对比需要多少时间？
+
+取决于电路规模和后端数量。通常几秒到几分钟。
+
+### Q5: 后端对比的结果如何分析？
+
+比较结果的一致性、运行时间、内存使用等。
 
 ---
 
@@ -106,40 +229,56 @@ qshow(backend='qiskit')
 
 ### 前置知识
 
-- Basic quantum computing concepts
-- QuoNic API basics
+- 量子比特和量子门
+- 量子测量
+- 不同量子后端
 
 ### 继续学习
 
-- Other examples in this documentation
-- QuoNic API reference
+- 智能调度
+- 性能优化
+- 量子硬件测试
+
+### 难度等级
+
+- 当前：中级
+- 下一步：高级
 
 ---
 
 ## 完整示例代码
 
+### 示例 1：基本后端对比
+
 ```python
-"""Compare backends / 比较后端
+from quonic import qgate, reset, qshow
+from quonic.gates import CX, H
 
-Compare backends / 比较后端
+reset()
+qgate(H, 0)
+for i in range(9):
+    qgate(CX, i, i + 1)
 
-## Application / 应用场景
-- Quantum computing (量子计算)
-- Algorithm demonstration (算法演示)
-- Educational (教学)
+for b in ['native', 'qiskit', 'cirq']:
+    print(f"\n--- {b} ---")
+    qshow(backend=b)
+```
 
-## Output / 输出
-See code comments for output explanation.
-参见代码注释了解输出说明。"""
+### 示例 2：性能对比
 
-from quonic import QInt, qlt, qshow
+```python
+import time
+from quonic import qgate, reset, qshow
+from quonic.gates import CX, H
 
-x = QInt(3)
-x.h()            # uniform superposition |0>..|7>
-flag = qlt(x, 4) # flag = 1 iff x < 4
-
-qshow()
-
+for b in ['native', 'qiskit', 'cirq']:
+    reset()
+    qgate(H, 0)
+    for i in range(9):
+        qgate(CX, i, i + 1)
+    t0 = time.time()
+    qshow(backend=b)
+    print(f"{b}: {time.time()-t0:.3f}s")
 ```
 
 ### 运行方式

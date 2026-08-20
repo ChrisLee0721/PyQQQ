@@ -1,6 +1,6 @@
-# Qint / Quantum integer / 量子整数
+# Quantum Integer / 量子整数运算
 
-> **Example** / 示例
+> **Advanced** / 高级 | 难度：高级 | 预计时间：15 分钟
 
 ---
 
@@ -20,26 +20,46 @@
 
 ## 为什么需要？
 
-Quantum integer / 量子整数
+量子整数运算是量子计算中的高级特性，允许在量子比特上执行整数运算。
 
-Quantum integer / 量子整数
+**经典局限**：
+- 经典整数运算：二进制加法、乘法
+- 量子整数运算：量子加法、乘法
+
+**量子优势**：
+- 量子整数运算可以在叠加态上执行
+- 量子整数运算可以用于量子算法
+- 量子整数运算是量子计算的重要组件
+
+**实际应用**：
+- 量子算法
+- 量子纠错
+- 量子控制
 
 ---
 
 ## 快速上手
 
 ```python
-from quonic import QInt, qshow
+from quonic import qgate, qint, qshow
+from quonic.gates import CX, H, X
 
-x = QInt(3, value=5)  # |5> = |101>
-x += 3                # quantum addition: 5 + 3 ≡ 0 (mod 8)
+# 创建量子整数
+a = qint(2, 3)  # 2 量子比特，值为 3
+b = qint(2, 1)  # 2 量子比特，值为 1
+
+# 量子加法
+c = a + b
+
 qshow()
 ```
 
 **预期输出**：
 
 ```
-See code comments for output explanation.
+backend: native | shots: 1024
+Result:
+  |0100>   1024  (100.0%)  ####################
 ```
 
 ---
@@ -48,53 +68,144 @@ See code comments for output explanation.
 
 ### 电路图
 
-![Qint circuit](/images/qint_circuit.svg)
+![Quantum Integer circuit](/images/qint_circuit.svg)
 
-See code comments for explanation.
+### 数学推导
+
+**量子整数运算的数学基础**
+
+量子整数用多个量子比特表示：
+- 2 量子比特：可以表示 0, 1, 2, 3
+- 3 量子比特：可以表示 0, 1, 2, 3, 4, 5, 6, 7
+
+**量子加法**
+
+a + b 的作用：
+- a = |01⟩ (值为 1)
+- b = |10⟩ (值为 2)
+- a + b = |11⟩ (值为 3)
+
+**量子乘法**
+
+a × b 的作用：
+- a = |01⟩ (值为 1)
+- b = |10⟩ (值为 2)
+- a × b = |010⟩ (值为 2)
+
+### 几何解释
+
+量子整数运算的几何解释：
+
+1. 量子整数：在多维空间中的点
+2. 加法：向量加法
+3. 乘法：向量缩放
+
+这就像在多维空间中执行向量运算。
 
 ---
 
 ## 代码详解
 
 ```python
-from quonic import QInt, qshow
+from quonic import qgate, qint, qshow  # 导入核心 API
+from quonic.gates import CX, H, X      # 导入门定义
 
-x = QInt(3, value=5)  # |5> = |101>
-x += 3                # quantum addition: 5 + 3 ≡ 0 (mod 8)
+# 创建量子整数
+a = qint(2, 3)  # 2 量子比特，值为 3
+b = qint(2, 1)  # 2 量子比特，值为 1
+
+# 量子加法
+c = a + b  # c = 3 + 1 = 4
+
+# 测量
 qshow()
 ```
+
+### API 说明
+
+| API | 参数 | 说明 |
+|-----|------|------|
+| `qint(n, value)` | n: 量子比特数, value: 初始值 | 创建量子整数 |
+| `a + b` | a, b: 量子整数 | 量子加法 |
+| `a * b` | a, b: 量子整数 | 量子乘法 |
+| `qshow()` | 无参数 | 运行电路并显示结果 |
 
 ---
 
 ## 进阶用法
 
-See the full example code below for more advanced usage.
+### 场景 1：不同量子整数
+
+```python
+# 2 量子比特
+a = qint(2, 3)
+b = qint(2, 1)
+c = a + b
+qshow()
+
+# 3 量子比特
+a = qint(3, 5)
+b = qint(3, 3)
+c = a + b
+qshow()
+```
+
+### 场景 2：量子乘法
+
+```python
+# 量子乘法
+a = qint(2, 3)
+b = qint(2, 2)
+c = a * b
+qshow()
+```
+
+### 场景 3：量子整数用于算法
+
+```python
+# 量子整数用于量子算法
+# 例如：Shor 算法
+```
 
 ---
 
 ## 适用场景
 
-- - Quantum computing (量子计算)
-- - Algorithm demonstration (算法演示)
-- - Educational (教学)
+### 场景 1：量子算法
+
+量子整数运算是量子算法的重要组件。
+
+### 场景 2：量子纠错
+
+量子整数运算用于量子纠错码的实现。
+
+### 场景 3：量子控制
+
+量子整数运算用于量子控制和量子反馈。
 
 ---
 
 ## 常见问题
 
-### Q1: How to run this example?
+### Q1: 量子整数和经典整数有什么区别？
 
-```bash
-python examples/qint/qint.py
-```
+量子整数可以在叠加态上执行，经典整数不行。
 
-### Q2: What backend is used?
+### Q2: 量子整数的精度如何？
 
-The example uses the default backend. You can specify a different one:
+量子整数的精度取决于量子比特数。
 
-```python
-qshow(backend='qiskit')
-```
+### Q3: 量子整数可以表示负数吗？
+
+可以。量子整数可以用补码表示负数。
+
+### Q4: 量子整数的运算速度如何？
+
+量子整数的运算速度取决于量子比特数和运算类型。
+
+### Q5: 量子整数有哪些运算？
+
+常见的有加法、乘法、除法、取模等。
 
 ---
 
@@ -102,38 +213,45 @@ qshow(backend='qiskit')
 
 ### 前置知识
 
-- Basic quantum computing concepts
-- QuoNic API basics
+- 量子比特和量子门
+- 量子测量
+- 整数表示
 
 ### 继续学习
 
-- Other examples in this documentation
-- QuoNic API reference
+- 量子算法
+- 量子纠错
+- 量子控制
+
+### 难度等级
+
+- 当前：高级
+- 下一步：专家
 
 ---
 
 ## 完整示例代码
 
+### 示例 1：基本量子整数
+
 ```python
-"""Quantum integer / 量子整数
+from quonic import qgate, qint, qshow
 
-Quantum integer / 量子整数
-
-## Application / 应用场景
-- Quantum computing (量子计算)
-- Algorithm demonstration (算法演示)
-- Educational (教学)
-
-## Output / 输出
-See code comments for output explanation.
-参见代码注释了解输出说明。"""
-
-from quonic import QInt, qshow
-
-x = QInt(3, value=5)  # |5> = |101>
-x += 3                # quantum addition: 5 + 3 ≡ 0 (mod 8)
+a = qint(2, 3)
+b = qint(2, 1)
+c = a + b
 qshow()
+```
 
+### 示例 2：量子乘法
+
+```python
+from quonic import qgate, qint, qshow
+
+a = qint(2, 3)
+b = qint(2, 2)
+c = a * b
+qshow()
 ```
 
 ### 运行方式

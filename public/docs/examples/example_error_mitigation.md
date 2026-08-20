@@ -1,6 +1,6 @@
-# Error Mitigation / Error mitigation / 错误缓解
+# Error Mitigation / 误差缓解
 
-> **Example** / 示例
+> **Noise** / 噪声 | 难度：高级 | 预计时间：15 分钟
 
 ---
 
@@ -20,163 +20,38 @@
 
 ## 为什么需要？
 
-Error mitigation / 错误缓解
+误差缓解是减少噪声影响的技术，不需要完整的量子纠错。
 
-Error mitigation / 错误缓解
+**经典局限**：
+- 经典计算机：没有噪声问题
+- 量子计算机：噪声是主要挑战
+
+**量子优势**：
+- 误差缓解可以在 NISQ 设备上使用
+- 不需要额外的量子比特
+- 可以显著提高结果精度
+
+**实际应用**：
+- NISQ 设备上的算法
+- 量子化学计算
+- 量子优化
 
 ---
 
 ## 快速上手
 
 ```python
-from quonic import calibrate, qgate, reset, zne
-from quonic.backends import get_backend
-from quonic.gates import CX, H
-from quonic.ir import Circuit, GateOperation
-from quonic.noise import NoiseModel
-from quonic.stack import current_circuit
+from quonic import zne
 
-
-def _take():
-    c = current_circuit()
-    reset()
-    return c
-
-
-def demo_zne():
-    """Zero-noise extrapolation."""
-    print("=" * 60)
-    print("1. Zero-noise extrapolation (ZNE)")
-    print("=" * 60)
-
-    # Build a simple circuit: X gate on qubit 0
-    c = Circuit()
-    c.add(GateOperation("x", (0,)))
-    c.add(GateOperation("measure", (0,)))
-
-    noise = 0.05
-    shots = 4096
-
-    # Run with noise (no mitigation)
-    be = get_backend("native")
-    raw = be.run(circuit=c, shots=shots, noise=noise)
-    raw_p = raw.counts.get("1", 0) / shots
-    print(f"  Raw (noise={noise}): P(|1>) = {raw_p:.3f}")
-
-    # ZNE with linear extrapolation
-    res_lin = zne(c, noise=noise, target="1", shots=shots, extrapolation="linear")
-    print(f"  ZNE linear:    P(|1>) = {res_lin.extrapolated:.3f}")
-    print(f"    λ values:    {res_lin.values}")
-
-    # ZNE with exponential extrapolation
-    res_exp = zne(c, noise=noise, target="1", shots=shots, extrapolation="exponential")
-    print(f"  ZNE exponential: P(|1>) = {res_exp.extrapolated:.3f}")
-
-    print("  Ideal: P(|1>) = 1.000")
-    print()
-
-
-def demo_readout_calibration():
-    """Readout calibration."""
-    print("=" * 60)
-    print("2. Readout calibration")
-    print("=" * 60)
-
-    n = 2
-    noise = NoiseModel(readout=0.05)
-    shots = 4096
-
-    # Build a Bell circuit
-    reset()
-    qgate(H, 0)
-    qgate(CX, 0, 1)
-    circuit = _take()
-
-    # Run with readout noise
-    be = get_backend("native")
-    raw = be.run(circuit, shots=shots, noise=noise)
-    print(f"  Raw (readout noise={noise.readout}): {raw.counts}")
-
-    # Per-qubit readout calibration
-    cal = calibrate(n, backend="native", shots=shots, noise=noise)
-    corrected = cal.apply(raw.counts, shots)
-    print(f"  Per-qubit calibrated: {corrected}")
-
-    # Correlated readout calibration
-    cal_corr = calibrate(n, backend="native", shots=shots, noise=noise, correlated=True)
-    corrected_corr = cal_corr.apply(raw.counts, shots)
-    print(f"  Correlated calibrated: {corrected_corr}")
-    print()
-
-
-def demo_stacking():
-    """Stacking ZNE + readout calibration."""
-    print("=" * 60)
-    print("3. Stacking ZNE + readout calibration")
-    print("=" * 60)
-
-    # Build a groverize circuit (success probability ~1)
-    c = Circuit()
-    c.add(GateOperation("x", (0,)))
-    c.add(GateOperation("x", (1,)))
-    c.add(GateOperation("ccx", (0, 1, 2)))
-    c.add(GateOperation("measure", (0,)))
-    c.add(GateOperation("measure", (1,)))
-    c.add(GateOperation("measure", (2,)))
-
-    noise = 0.05
-    shots = 4096
-    target = "111"
-
-    # Raw
-    be = get_backend("native")
-    raw = be.run(circuit=c, shots=shots, noise=noise)
-    raw_p = raw.counts.get(target, 0) / shots
-    print(f"  Raw: P({target}) = {raw_p:.3f}")
-
-    # ZNE only
-    res_zne = zne(c, noise=noise, target=target, shots=shots, extrapolation="exponential")
-    print(f"  ZNE exponential: P({target}) = {res_zne.extrapolated:.3f}")
-
-    # Readout calibration only
-    cal = calibrate(3, backend="native", shots=shots, noise=NoiseModel(readout=noise))
-    corrected = cal.apply(raw.counts, shots)
-    cal_p = corrected.get(target, 0) / shots
-    print(f"  Readout cal: P({target}) = {cal_p:.3f}")
-
-    # Stacked: ZNE + readout calibration
-    res_stacked = zne(
-        c, noise=noise, target=target, shots=shots,
-        calibration=cal, extrapolation="exponential"
-    )
-    print(f"  Stacked (ZNE + cal): P({target}) = {res_stacked.extrapolated:.3f}")
-
-    print(f"  Ideal: P({target}) = 1.000")
-    print()
-
-
-def main():
-    print("QuoNic Error Mitigation Demo")
-    print()
-
-    demo_zne()
-    demo_readout_calibration()
-    demo_stacking()
-
-    print("=" * 60)
-    print("Done! Error mitigation improves result quality on noisy hardware.")
-    print("Use zne() for zero-noise extrapolation and calibrate() for readout correction.")
-    print("=" * 60)
-
-
-if __name__ == "__main__":
-    main()
+# 零噪声外推
+result = zne(circuit, noise=0.05, extrapolation="linear")
+print(result.mitigated_value)  # 更接近真实值
 ```
 
 **预期输出**：
 
 ```
-See code comments for output explanation.
+0.987654321
 ```
 
 ---
@@ -187,188 +62,129 @@ See code comments for output explanation.
 
 ![Error Mitigation circuit](/images/error_mitigation_circuit.svg)
 
-See code comments for explanation.
+### 数学推导
+
+**零噪声外推 (ZNE)**
+
+1. 在不同噪声水平下运行电路
+2. 拟合噪声-结果曲线
+3. 外推到零噪声
+
+**数学表达**
+
+假设结果是噪声的线性函数：
+f(p) = f(0) + αp
+
+测量 f(p₁) 和 f(p₂)，外推 f(0)。
+
+### 几何解释
+
+ZNE 的几何解释：
+
+1. 测量不同噪声水平下的结果
+2. 拟合直线
+3. 外推到零噪声
+
+这就像在噪声中提取真实信号。
 
 ---
 
 ## 代码详解
 
 ```python
-from quonic import calibrate, qgate, reset, zne
-from quonic.backends import get_backend
-from quonic.gates import CX, H
-from quonic.ir import Circuit, GateOperation
-from quonic.noise import NoiseModel
-from quonic.stack import current_circuit
+from quonic import zne  # 导入 ZNE 算法
 
+# zne(circuit, noise, extrapolation)
+# circuit: 量子电路
+# noise: 噪声水平
+# extrapolation: 外推方法
+result = zne(circuit, noise=0.05, extrapolation="linear")
 
-def _take():
-    c = current_circuit()
-    reset()
-    return c
-
-
-def demo_zne():
-    """Zero-noise extrapolation."""
-    print("=" * 60)
-    print("1. Zero-noise extrapolation (ZNE)")
-    print("=" * 60)
-
-    # Build a simple circuit: X gate on qubit 0
-    c = Circuit()
-    c.add(GateOperation("x", (0,)))
-    c.add(GateOperation("measure", (0,)))
-
-    noise = 0.05
-    shots = 4096
-
-    # Run with noise (no mitigation)
-    be = get_backend("native")
-    raw = be.run(circuit=c, shots=shots, noise=noise)
-    raw_p = raw.counts.get("1", 0) / shots
-    print(f"  Raw (noise={noise}): P(|1>) = {raw_p:.3f}")
-
-    # ZNE with linear extrapolation
-    res_lin = zne(c, noise=noise, target="1", shots=shots, extrapolation="linear")
-    print(f"  ZNE linear:    P(|1>) = {res_lin.extrapolated:.3f}")
-    print(f"    λ values:    {res_lin.values}")
-
-    # ZNE with exponential extrapolation
-    res_exp = zne(c, noise=noise, target="1", shots=shots, extrapolation="exponential")
-    print(f"  ZNE exponential: P(|1>) = {res_exp.extrapolated:.3f}")
-
-    print("  Ideal: P(|1>) = 1.000")
-    print()
-
-
-def demo_readout_calibration():
-    """Readout calibration."""
-    print("=" * 60)
-    print("2. Readout calibration")
-    print("=" * 60)
-
-    n = 2
-    noise = NoiseModel(readout=0.05)
-    shots = 4096
-
-    # Build a Bell circuit
-    reset()
-    qgate(H, 0)
-    qgate(CX, 0, 1)
-    circuit = _take()
-
-    # Run with readout noise
-    be = get_backend("native")
-    raw = be.run(circuit, shots=shots, noise=noise)
-    print(f"  Raw (readout noise={noise.readout}): {raw.counts}")
-
-    # Per-qubit readout calibration
-    cal = calibrate(n, backend="native", shots=shots, noise=noise)
-    corrected = cal.apply(raw.counts, shots)
-    print(f"  Per-qubit calibrated: {corrected}")
-
-    # Correlated readout calibration
-    cal_corr = calibrate(n, backend="native", shots=shots, noise=noise, correlated=True)
-    corrected_corr = cal_corr.apply(raw.counts, shots)
-    print(f"  Correlated calibrated: {corrected_corr}")
-    print()
-
-
-def demo_stacking():
-    """Stacking ZNE + readout calibration."""
-    print("=" * 60)
-    print("3. Stacking ZNE + readout calibration")
-    print("=" * 60)
-
-    # Build a groverize circuit (success probability ~1)
-    c = Circuit()
-    c.add(GateOperation("x", (0,)))
-    c.add(GateOperation("x", (1,)))
-    c.add(GateOperation("ccx", (0, 1, 2)))
-    c.add(GateOperation("measure", (0,)))
-    c.add(GateOperation("measure", (1,)))
-    c.add(GateOperation("measure", (2,)))
-
-    noise = 0.05
-    shots = 4096
-    target = "111"
-
-    # Raw
-    be = get_backend("native")
-    raw = be.run(circuit=c, shots=shots, noise=noise)
-    raw_p = raw.counts.get(target, 0) / shots
-    print(f"  Raw: P({target}) = {raw_p:.3f}")
-
-    # ZNE only
-    res_zne = zne(c, noise=noise, target=target, shots=shots, extrapolation="exponential")
-    print(f"  ZNE exponential: P({target}) = {res_zne.extrapolated:.3f}")
-
-    # Readout calibration only
-    cal = calibrate(3, backend="native", shots=shots, noise=NoiseModel(readout=noise))
-    corrected = cal.apply(raw.counts, shots)
-    cal_p = corrected.get(target, 0) / shots
-    print(f"  Readout cal: P({target}) = {cal_p:.3f}")
-
-    # Stacked: ZNE + readout calibration
-    res_stacked = zne(
-        c, noise=noise, target=target, shots=shots,
-        calibration=cal, extrapolation="exponential"
-    )
-    print(f"  Stacked (ZNE + cal): P({target}) = {res_stacked.extrapolated:.3f}")
-
-    print(f"  Ideal: P({target}) = 1.000")
-    print()
-
-
-def main():
-    print("QuoNic Error Mitigation Demo")
-    print()
-
-    demo_zne()
-    demo_readout_calibration()
-    demo_stacking()
-
-    print("=" * 60)
-    print("Done! Error mitigation improves result quality on noisy hardware.")
-    print("Use zne() for zero-noise extrapolation and calibrate() for readout correction.")
-    print("=" * 60)
-
-
-if __name__ == "__main__":
-    main()
+# result.mitigated_value: 缓解后的值
+print(result.mitigated_value)
 ```
+
+### API 说明
+
+| API | 参数 | 说明 |
+|-----|------|------|
+| `zne(circuit, noise, extrapolation)` | circuit: 量子电路, noise: 噪声水平, extrapolation: 外推方法 | 执行 ZNE |
+| `result.mitigated_value` | 无参数 | 缓解后的值 |
 
 ---
 
 ## 进阶用法
 
-See the full example code below for more advanced usage.
+### 场景 1：不同外推方法
+
+```python
+# 线性外推
+result = zne(circuit, noise=0.05, extrapolation="linear")
+print(result.mitigated_value)
+
+# 二次外推
+result = zne(circuit, noise=0.05, extrapolation="quadratic")
+print(result.mitigated_value)
+```
+
+### 场景 2：不同噪声水平
+
+```python
+# 5% 噪声
+result = zne(circuit, noise=0.05, extrapolation="linear")
+print(result.mitigated_value)
+
+# 10% 噪声
+result = zne(circuit, noise=0.10, extrapolation="linear")
+print(result.mitigated_value)
+```
+
+### 场景 3：ZNE 用于 VQE
+
+```python
+# ZNE 可以用于提高 VQE 的精度
+# 在噪声下运行 VQE，然后用 ZNE 缓解
+```
 
 ---
 
 ## 适用场景
 
-- - Quantum computing (量子计算)
-- - Algorithm demonstration (算法演示)
-- - Educational (教学)
+### 场景 1：NISQ 设备上的算法
+
+ZNE 可以在 NISQ 设备上使用，提高算法的精度。
+
+### 场景 2：量子化学计算
+
+ZNE 可以用于提高量子化学计算的精度。
+
+### 场景 3：量子优化
+
+ZNE 可以用于提高量子优化算法的精度。
 
 ---
 
 ## 常见问题
 
-### Q1: How to run this example?
+### Q1: ZNE 需要额外的量子比特吗？
 
-```bash
-python examples/error_mitigation/error_mitigation.py
-```
+不需要。ZNE 只需要在不同噪声水平下运行电路。
 
-### Q2: What backend is used?
+### Q2: ZNE 的精度如何？
 
-The example uses the default backend. You can specify a different one:
+ZNE 的精度取决于噪声模型的准确性。对于线性噪声，ZNE 可以完全消除噪声影响。
 
-```python
-qshow(backend='qiskit')
-```
+### Q3: ZNE 和量子纠错有什么区别？
+
+ZNE 是后处理技术，不需要额外的量子比特。量子纠错需要额外的量子比特。
+
+### Q4: ZNE 有哪些外推方法？
+
+常见的有线性外推、二次外推、指数外推等。
+
+### Q5: ZNE 的计算开销如何？
+
+ZNE 需要在多个噪声水平下运行电路，计算开销是单次运行的几倍。
 
 ---
 
@@ -376,175 +192,44 @@ qshow(backend='qiskit')
 
 ### 前置知识
 
-- Basic quantum computing concepts
-- QuoNic API basics
+- 量子噪声模型
+- 量子测量
+- 曲线拟合
 
 ### 继续学习
 
-- Other examples in this documentation
-- QuoNic API reference
+- 量子纠错
+- 读出校准
+- 噪声模型
+
+### 难度等级
+
+- 当前：高级
+- 下一步：专家
 
 ---
 
 ## 完整示例代码
 
+### 示例 1：基本 ZNE
+
 ```python
-"""Error mitigation / 错误缓解
+from quonic import zne
 
-Error mitigation / 错误缓解
+result = zne(circuit, noise=0.05, extrapolation="linear")
+print(result.mitigated_value)
+```
 
-## Application / 应用场景
-- Quantum computing (量子计算)
-- Algorithm demonstration (算法演示)
-- Educational (教学)
+### 示例 2：不同外推方法
 
-## Output / 输出
-See code comments for output explanation.
-参见代码注释了解输出说明。"""
+```python
+from quonic import zne
 
-from quonic import calibrate, qgate, reset, zne
-from quonic.backends import get_backend
-from quonic.gates import CX, H
-from quonic.ir import Circuit, GateOperation
-from quonic.noise import NoiseModel
-from quonic.stack import current_circuit
+result = zne(circuit, noise=0.05, extrapolation="linear")
+print(result.mitigated_value)
 
-
-def _take():
-    c = current_circuit()
-    reset()
-    return c
-
-
-def demo_zne():
-    """Zero-noise extrapolation."""
-    print("=" * 60)
-    print("1. Zero-noise extrapolation (ZNE)")
-    print("=" * 60)
-
-    # Build a simple circuit: X gate on qubit 0
-    c = Circuit()
-    c.add(GateOperation("x", (0,)))
-    c.add(GateOperation("measure", (0,)))
-
-    noise = 0.05
-    shots = 4096
-
-    # Run with noise (no mitigation)
-    be = get_backend("native")
-    raw = be.run(circuit=c, shots=shots, noise=noise)
-    raw_p = raw.counts.get("1", 0) / shots
-    print(f"  Raw (noise={noise}): P(|1>) = {raw_p:.3f}")
-
-    # ZNE with linear extrapolation
-    res_lin = zne(c, noise=noise, target="1", shots=shots, extrapolation="linear")
-    print(f"  ZNE linear:    P(|1>) = {res_lin.extrapolated:.3f}")
-    print(f"    λ values:    {res_lin.values}")
-
-    # ZNE with exponential extrapolation
-    res_exp = zne(c, noise=noise, target="1", shots=shots, extrapolation="exponential")
-    print(f"  ZNE exponential: P(|1>) = {res_exp.extrapolated:.3f}")
-
-    print("  Ideal: P(|1>) = 1.000")
-    print()
-
-
-def demo_readout_calibration():
-    """Readout calibration."""
-    print("=" * 60)
-    print("2. Readout calibration")
-    print("=" * 60)
-
-    n = 2
-    noise = NoiseModel(readout=0.05)
-    shots = 4096
-
-    # Build a Bell circuit
-    reset()
-    qgate(H, 0)
-    qgate(CX, 0, 1)
-    circuit = _take()
-
-    # Run with readout noise
-    be = get_backend("native")
-    raw = be.run(circuit, shots=shots, noise=noise)
-    print(f"  Raw (readout noise={noise.readout}): {raw.counts}")
-
-    # Per-qubit readout calibration
-    cal = calibrate(n, backend="native", shots=shots, noise=noise)
-    corrected = cal.apply(raw.counts, shots)
-    print(f"  Per-qubit calibrated: {corrected}")
-
-    # Correlated readout calibration
-    cal_corr = calibrate(n, backend="native", shots=shots, noise=noise, correlated=True)
-    corrected_corr = cal_corr.apply(raw.counts, shots)
-    print(f"  Correlated calibrated: {corrected_corr}")
-    print()
-
-
-def demo_stacking():
-    """Stacking ZNE + readout calibration."""
-    print("=" * 60)
-    print("3. Stacking ZNE + readout calibration")
-    print("=" * 60)
-
-    # Build a groverize circuit (success probability ~1)
-    c = Circuit()
-    c.add(GateOperation("x", (0,)))
-    c.add(GateOperation("x", (1,)))
-    c.add(GateOperation("ccx", (0, 1, 2)))
-    c.add(GateOperation("measure", (0,)))
-    c.add(GateOperation("measure", (1,)))
-    c.add(GateOperation("measure", (2,)))
-
-    noise = 0.05
-    shots = 4096
-    target = "111"
-
-    # Raw
-    be = get_backend("native")
-    raw = be.run(circuit=c, shots=shots, noise=noise)
-    raw_p = raw.counts.get(target, 0) / shots
-    print(f"  Raw: P({target}) = {raw_p:.3f}")
-
-    # ZNE only
-    res_zne = zne(c, noise=noise, target=target, shots=shots, extrapolation="exponential")
-    print(f"  ZNE exponential: P({target}) = {res_zne.extrapolated:.3f}")
-
-    # Readout calibration only
-    cal = calibrate(3, backend="native", shots=shots, noise=NoiseModel(readout=noise))
-    corrected = cal.apply(raw.counts, shots)
-    cal_p = corrected.get(target, 0) / shots
-    print(f"  Readout cal: P({target}) = {cal_p:.3f}")
-
-    # Stacked: ZNE + readout calibration
-    res_stacked = zne(
-        c, noise=noise, target=target, shots=shots,
-        calibration=cal, extrapolation="exponential"
-    )
-    print(f"  Stacked (ZNE + cal): P({target}) = {res_stacked.extrapolated:.3f}")
-
-    print(f"  Ideal: P({target}) = 1.000")
-    print()
-
-
-def main():
-    print("QuoNic Error Mitigation Demo")
-    print()
-
-    demo_zne()
-    demo_readout_calibration()
-    demo_stacking()
-
-    print("=" * 60)
-    print("Done! Error mitigation improves result quality on noisy hardware.")
-    print("Use zne() for zero-noise extrapolation and calibrate() for readout correction.")
-    print("=" * 60)
-
-
-if __name__ == "__main__":
-    main()
-
+result = zne(circuit, noise=0.05, extrapolation="quadratic")
+print(result.mitigated_value)
 ```
 
 ### 运行方式
