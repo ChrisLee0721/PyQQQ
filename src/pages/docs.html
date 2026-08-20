@@ -4,269 +4,329 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>QuoNic Documentation — API Reference</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        quantum: { 50: '#f0f4ff', 100: '#e0e9fe', 400: '#60a5fa', 500: '#3b82f6', 600: '#2563eb', 800: '#1e3a8a', 900: '#0f172a', cyan: '#06b6d4', purple: '#a855f7', emerald: '#10b981' }
+                    },
+                    fontFamily: { sans: ['Inter', 'system-ui', 'sans-serif'], mono: ['JetBrains Mono', 'Fira Code', 'monospace'] }
+                }
+            }
+        }
+    </script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        :root {
-            --bg: #090d16;
-            --bg-card: #13101f;
-            --bg-code: #1a1530;
-            --text: #e0d8f0;
-            --text-dim: #9890a8;
-            --purple: #7c3aed;
-            --purple-light: #a78bfa;
-            --cyan: #06b6d4;
-            --green: #10b981;
-            --blue: #60a5fa;
-        }
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        html { scroll-behavior: smooth; }
-        body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); line-height: 1.6; }
-        code, pre { font-family: 'JetBrains Mono', monospace; }
-
-        /* Layout */
-        .docs-layout { display: flex; min-height: 100vh; }
-        .sidebar { width: 280px; background: var(--bg-card); border-right: 1px solid rgba(255,255,255,0.05); padding: 20px; position: fixed; height: 100vh; overflow-y: auto; }
-        .content { flex: 1; margin-left: 280px; padding: 40px 60px; max-width: 900px; }
-
-        /* Sidebar */
-        .sidebar .logo { font-size: 1.4rem; font-weight: 800; color: var(--purple-light); margin-bottom: 30px; }
-        .sidebar .section-title { font-size: 0.75rem; font-weight: 600; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.1em; margin: 20px 0 10px; }
-        .sidebar a { display: block; padding: 8px 12px; color: var(--text-dim); text-decoration: none; border-radius: 6px; font-size: 0.9rem; transition: all 0.2s; }
-        .sidebar a:hover, .sidebar a.active { background: rgba(124,58,237,0.1); color: var(--purple-light); }
-        .sidebar a.active { border-left: 3px solid var(--purple); }
-
-        /* Content */
-        .content h1 { font-size: 2.5rem; font-weight: 800; margin-bottom: 0.5rem; background: linear-gradient(135deg, #fff, var(--purple-light)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-        .content h2 { font-size: 1.5rem; font-weight: 700; color: var(--purple-light); margin: 40px 0 15px; padding-bottom: 10px; border-bottom: 1px solid rgba(255,255,255,0.05); }
-        .content h3 { font-size: 1.1rem; font-weight: 600; color: var(--cyan); margin: 25px 0 10px; }
-        .content p { margin-bottom: 15px; color: var(--text-dim); }
-
-        /* Code blocks */
-        .code-block { background: var(--bg-code); border-radius: 10px; overflow: hidden; margin: 15px 0; border: 1px solid rgba(255,255,255,0.05); }
-        .code-block .header { padding: 8px 16px; background: rgba(255,255,255,0.03); border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 0.8rem; color: var(--text-dim); display: flex; justify-content: space-between; }
-        .code-block pre { padding: 16px; font-size: 0.85rem; line-height: 1.7; overflow-x: auto; }
-        .kw { color: var(--purple-light); }
-        .fn { color: var(--cyan); }
-        .str { color: var(--green); }
-        .cm { color: var(--text-dim); }
-        .num { color: #f59e0b; }
-
-        /* API cards */
-        .api-card { background: var(--bg-card); border-radius: 12px; padding: 20px; margin: 15px 0; border: 1px solid rgba(255,255,255,0.05); transition: border-color 0.2s; }
-        .api-card:hover { border-color: var(--purple); }
-        .api-card .name { font-family: 'JetBrains Mono', monospace; font-size: 1.1rem; font-weight: 600; color: var(--cyan); }
-        .api-card .desc { color: var(--text-dim); font-size: 0.9rem; margin: 8px 0; }
-        .api-card .params { margin-top: 10px; }
-        .api-card .param { display: flex; gap: 10px; padding: 4px 0; font-size: 0.85rem; }
-        .api-card .param-name { font-family: 'JetBrains Mono', monospace; color: var(--purple-light); min-width: 120px; }
-        .api-card .param-type { color: var(--green); font-family: 'JetBrains Mono', monospace; min-width: 80px; }
-        .api-card .param-desc { color: var(--text-dim); }
-
-        /* Stats */
-        .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin: 20px 0; }
-        .stat { background: var(--bg-card); padding: 15px; border-radius: 10px; text-align: center; border: 1px solid rgba(255,255,255,0.05); }
-        .stat .num { font-size: 1.5rem; font-weight: 800; color: var(--purple-light); }
-        .stat .label { font-size: 0.8rem; color: var(--text-dim); }
-
-        /* Table */
-        table { width: 100%; border-collapse: collapse; margin: 15px 0; }
-        th, td { padding: 10px 15px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 0.9rem; }
-        th { background: var(--bg-card); color: var(--purple-light); font-weight: 600; }
-        td { color: var(--text-dim); }
-        td code { background: var(--bg-code); padding: 2px 6px; border-radius: 4px; font-size: 0.85em; color: var(--cyan); }
-
-        /* Responsive */
-        @media (max-width: 768px) {
-            .sidebar { display: none; }
-            .content { margin-left: 0; padding: 20px; }
-            .stats { grid-template-columns: repeat(2, 1fr); }
-        }
+        body { font-family: 'Inter', sans-serif; background-color: #090d16; color: #f3f4f6; }
+        .code-font { font-family: 'JetBrains Mono', monospace; }
+        .quantum-gradient-text { background: linear-gradient(135deg, #38bdf8 0%, #818cf8 50%, #c084fc 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .glass-panel { background: rgba(15, 23, 42, 0.65); backdrop-filter: blur(16px); border: 1px solid rgba(255, 255, 255, 0.08); }
+        .glass-card { background: rgba(30, 41, 59, 0.4); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.06); transition: all 0.3s; }
+        .glass-card:hover { border-color: rgba(56, 189, 248, 0.4); transform: translateY(-2px); box-shadow: 0 8px 20px -8px rgba(56, 189, 248, 0.2); }
+        .bg-grid-pattern { background-size: 40px 40px; background-image: linear-gradient(to right, rgba(255,255,255,0.03) 1px, transparent 1px), linear-gradient(to bottom, rgba(255,255,255,0.03) 1px, transparent 1px); }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #090d16; }
+        ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 3px; }
     </style>
 </head>
-<body>
-    <div class="docs-layout">
+<body class="bg-grid-pattern antialiased">
+
+    <!-- Nav -->
+    <header class="sticky top-0 z-50 glass-panel border-b border-slate-800/80">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-cyan-500 via-indigo-500 to-purple-600 p-0.5 flex items-center justify-center shadow-lg shadow-cyan-500/20">
+                        <div class="w-full h-full bg-slate-950 rounded-[10px] flex items-center justify-center">
+                            <i class="fa-solid fa-atom text-cyan-400 text-lg"></i>
+                        </div>
+                    </div>
+                    <span class="text-xl font-bold tracking-wider text-white">Quo<span class="quantum-gradient-text">Nic</span></span>
+                    <span class="text-xs bg-cyan-950 text-cyan-400 px-2 py-0.5 rounded-full border border-cyan-800/50 font-mono">Docs</span>
+                </div>
+                <nav class="hidden md:flex items-center space-x-6 text-sm font-medium text-slate-300">
+                    <a href="index.html" class="hover:text-cyan-400 transition-colors">Home</a>
+                    <a href="docs.html" class="text-cyan-400 font-semibold">API Reference</a>
+                    <a href="https://github.com/ChrisLee0721/QuoNic" class="hover:text-cyan-400 transition-colors">GitHub</a>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <div class="flex min-h-screen">
         <!-- Sidebar -->
-        <aside class="sidebar">
-            <div class="logo">QuoNic Docs</div>
-
-            <div class="section-title">Getting Started</div>
-            <a href="#quickstart" class="active">Quick Start</a>
-            <a href="#installation">Installation</a>
-
-            <div class="section-title">Core API</div>
-            <a href="#qgate">qgate()</a>
-            <a href="#qshow">qshow()</a>
-            <a href="#circuit">Circuit</a>
-            <a href="#gates">Gates</a>
-
-            <div class="section-title">Algorithms</div>
-            <a href="#grover">Grover</a>
-            <a href="#vqe">VQE</a>
-            <a href="#qft">QFT</a>
-            <a href="#qaoa">QAOA</a>
-
-            <div class="section-title">Advanced</div>
-            <a href="#scheduler">Smart Scheduler</a>
-            <a href="#noise">Noise Mitigation</a>
-            <a href="#qec">Error Correction</a>
-            <a href="#ml">Machine Learning</a>
-            <a href="#zx">ZX-Calculus</a>
+        <aside class="w-64 fixed h-[calc(100vh-4rem)] overflow-y-auto border-r border-slate-800/80 bg-slate-950/50 p-4 hidden lg:block">
+            <div class="space-y-6">
+                <div>
+                    <div class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider mb-2 font-mono">Getting Started</div>
+                    <a href="#quickstart" class="block px-3 py-2 rounded-xl text-xs font-medium text-cyan-400 bg-cyan-950/50 border border-cyan-800/30">Quick Start</a>
+                </div>
+                <div>
+                    <div class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider mb-2 font-mono">Core API</div>
+                    <div class="space-y-1">
+                        <a href="#qgate" class="block px-3 py-2 rounded-xl text-xs font-medium text-slate-400 hover:text-cyan-400 hover:bg-slate-800/50 transition-colors">qgate()</a>
+                        <a href="#qshow" class="block px-3 py-2 rounded-xl text-xs font-medium text-slate-400 hover:text-cyan-400 hover:bg-slate-800/50 transition-colors">qshow()</a>
+                        <a href="#gates" class="block px-3 py-2 rounded-xl text-xs font-medium text-slate-400 hover:text-cyan-400 hover:bg-slate-800/50 transition-colors">Gates</a>
+                    </div>
+                </div>
+                <div>
+                    <div class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider mb-2 font-mono">Algorithms</div>
+                    <div class="space-y-1">
+                        <a href="#grover" class="block px-3 py-2 rounded-xl text-xs font-medium text-slate-400 hover:text-cyan-400 hover:bg-slate-800/50 transition-colors">Grover</a>
+                        <a href="#vqe" class="block px-3 py-2 rounded-xl text-xs font-medium text-slate-400 hover:text-cyan-400 hover:bg-slate-800/50 transition-colors">VQE</a>
+                        <a href="#qft" class="block px-3 py-2 rounded-xl text-xs font-medium text-slate-400 hover:text-cyan-400 hover:bg-slate-800/50 transition-colors">QFT</a>
+                    </div>
+                </div>
+                <div>
+                    <div class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider mb-2 font-mono">Advanced</div>
+                    <div class="space-y-1">
+                        <a href="#scheduler" class="block px-3 py-2 rounded-xl text-xs font-medium text-slate-400 hover:text-cyan-400 hover:bg-slate-800/50 transition-colors">Smart Scheduler</a>
+                        <a href="#noise" class="block px-3 py-2 rounded-xl text-xs font-medium text-slate-400 hover:text-cyan-400 hover:bg-slate-800/50 transition-colors">Noise Mitigation</a>
+                        <a href="#qec" class="block px-3 py-2 rounded-xl text-xs font-medium text-slate-400 hover:text-cyan-400 hover:bg-slate-800/50 transition-colors">Error Correction</a>
+                        <a href="#ml" class="block px-3 py-2 rounded-xl text-xs font-medium text-slate-400 hover:text-cyan-400 hover:bg-slate-800/50 transition-colors">Machine Learning</a>
+                        <a href="#zx" class="block px-3 py-2 rounded-xl text-xs font-medium text-slate-400 hover:text-cyan-400 hover:bg-slate-800/50 transition-colors">ZX-Calculus</a>
+                    </div>
+                </div>
+            </div>
         </aside>
 
         <!-- Content -->
-        <main class="content">
-            <h1>QuoNic API Reference</h1>
-            <p>Complete API documentation for QuoNic quantum programming framework.</p>
+        <main class="flex-1 lg:ml-64 p-6 sm:p-10 max-w-4xl">
+            <h1 class="text-3xl sm:text-4xl font-extrabold mb-2">
+                <span class="quantum-gradient-text">API Reference</span>
+            </h1>
+            <p class="text-slate-400 mb-8">Complete API documentation for QuoNic quantum programming framework.</p>
 
-            <div class="stats">
-                <div class="stat"><div class="num">19</div><div class="label">Backends</div></div>
-                <div class="stat"><div class="num">75</div><div class="label">Algorithms</div></div>
-                <div class="stat"><div class="num">771</div><div class="label">Tests</div></div>
-                <div class="stat"><div class="num">3</div><div class="label">Real Hardware</div></div>
+            <!-- Stats -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10">
+                <div class="glass-card p-4 rounded-xl text-center">
+                    <div class="text-2xl font-extrabold text-cyan-400 font-mono">19</div>
+                    <div class="text-xs text-slate-400">Backends</div>
+                </div>
+                <div class="glass-card p-4 rounded-xl text-center">
+                    <div class="text-2xl font-extrabold text-indigo-400 font-mono">75</div>
+                    <div class="text-xs text-slate-400">Algorithms</div>
+                </div>
+                <div class="glass-card p-4 rounded-xl text-center">
+                    <div class="text-2xl font-extrabold text-purple-400 font-mono">771</div>
+                    <div class="text-xs text-slate-400">Tests</div>
+                </div>
+                <div class="glass-card p-4 rounded-xl text-center">
+                    <div class="text-2xl font-extrabold text-emerald-400 font-mono">3</div>
+                    <div class="text-xs text-slate-400">Real Hardware</div>
+                </div>
             </div>
 
             <!-- Quick Start -->
-            <h2 id="quickstart">Quick Start</h2>
-            <div class="code-block">
-                <div class="header"><span>Python</span><span>Copy</span></div>
-                <pre><span class="kw">from</span> quonic <span class="kw">import</span> qgate, qshow
-<span class="kw">from</span> quonic.gates <span class="kw">import</span> H, CX
+            <section id="quickstart" class="mb-12">
+                <h2 class="text-2xl font-bold text-white mb-4 flex items-center gap-2">
+                    <i class="fa-solid fa-rocket text-cyan-400"></i> Quick Start
+                </h2>
+                <div class="glass-panel rounded-2xl p-6 border border-slate-800">
+                    <pre class="code-font text-sm text-cyan-300"><span class="text-purple-400">from</span> quonic <span class="text-purple-400">import</span> qgate, qshow
+<span class="text-purple-400">from</span> quonic.gates <span class="text-purple-400">import</span> H, CX
 
-<span class="cm"># Bell state</span>
-qgate(H, 0)
-qgate(CX, 0, 1)
-qshow()</pre>
-            </div>
+qgate(H, 0)      <span class="text-slate-500"># Hadamard on qubit 0</span>
+qgate(CX, 0, 1)  <span class="text-slate-500"># CNOT: entangle qubits</span>
+qshow()           <span class="text-slate-500"># Run and display</span></pre>
+                </div>
+            </section>
 
             <!-- qgate -->
-            <h2 id="qgate">qgate()</h2>
-            <div class="api-card">
-                <div class="name">qgate(gate, *qubits, **params)</div>
-                <div class="desc">Apply a quantum gate to specified qubits.</div>
-                <div class="params">
-                    <div class="param"><span class="param-name">gate</span><span class="param-type">Gate|str</span><span class="param-desc">Gate object or name string</span></div>
-                    <div class="param"><span class="param-name">*qubits</span><span class="param-type">int</span><span class="param-desc">Qubit indices</span></div>
-                    <div class="param"><span class="param-name">**params</span><span class="param-type">float</span><span class="param-desc">Gate parameters (for parametric gates)</span></div>
+            <section id="qgate" class="mb-12">
+                <h2 class="text-2xl font-bold text-white mb-4 flex items-center gap-2">
+                    <i class="fa-solid fa-atom text-cyan-400"></i> qgate()
+                </h2>
+                <div class="glass-card p-6 rounded-2xl mb-4">
+                    <div class="code-font text-lg text-cyan-400 font-semibold mb-2">qgate(gate, *qubits, **params)</div>
+                    <p class="text-slate-400 text-sm mb-4">Apply a quantum gate to specified qubits.</p>
+                    <div class="space-y-2">
+                        <div class="flex items-start gap-3 text-sm">
+                            <code class="text-purple-400 code-font min-w-[100px]">gate</code>
+                            <code class="text-emerald-400 code-font min-w-[80px]">Gate|str</code>
+                            <span class="text-slate-400">Gate object or name string</span>
+                        </div>
+                        <div class="flex items-start gap-3 text-sm">
+                            <code class="text-purple-400 code-font min-w-[100px]">*qubits</code>
+                            <code class="text-emerald-400 code-font min-w-[80px]">int</code>
+                            <span class="text-slate-400">Qubit indices</span>
+                        </div>
+                        <div class="flex items-start gap-3 text-sm">
+                            <code class="text-purple-400 code-font min-w-[100px]">**params</code>
+                            <code class="text-emerald-400 code-font min-w-[80px]">float</code>
+                            <span class="text-slate-400">Gate parameters (for parametric gates)</span>
+                        </div>
+                    </div>
                 </div>
-            </div>
-            <div class="code-block">
-                <div class="header"><span>Examples</span></div>
-                <pre>qgate(H, 0)           <span class="cm"># Hadamard on qubit 0</span>
-qgate(CX, 0, 1)       <span class="cm"># CNOT: control=0, target=1</span>
-qgate(Ry, 0, 0.5)     <span class="cm"># Ry(0.5) on qubit 0</span>
-qgate(<span class="str">"h"</span>, 0)          <span class="cm"># Gate by name</span></pre>
-            </div>
+                <div class="glass-panel rounded-xl p-4 border border-slate-800">
+                    <pre class="code-font text-xs text-slate-300">qgate(H, 0)           <span class="text-slate-500"># Hadamard on qubit 0</span>
+qgate(CX, 0, 1)       <span class="text-slate-500"># CNOT: control=0, target=1</span>
+qgate(Ry, 0, 0.5)     <span class="text-slate-500"># Ry(0.5) on qubit 0</span>
+qgate(<span class="text-emerald-400">"h"</span>, 0)          <span class="text-slate-500"># Gate by name</span></pre>
+                </div>
+            </section>
 
             <!-- qshow -->
-            <h2 id="qshow">qshow()</h2>
-            <div class="api-card">
-                <div class="name">qshow(backend='auto', shots=1024, noise=None)</div>
-                <div class="desc">Run the current circuit and display results.</div>
-                <div class="params">
-                    <div class="param"><span class="param-name">backend</span><span class="param-type">str</span><span class="param-desc">Backend name ('auto', 'qiskit', 'cirq', 'native', etc.)</span></div>
-                    <div class="param"><span class="param-name">shots</span><span class="param-type">int</span><span class="param-desc">Number of measurement shots</span></div>
-                    <div class="param"><span class="param-name">noise</span><span class="param-type">float|NoiseModel</span><span class="param-desc">Noise level or model</span></div>
+            <section id="qshow" class="mb-12">
+                <h2 class="text-2xl font-bold text-white mb-4 flex items-center gap-2">
+                    <i class="fa-solid fa-play text-cyan-400"></i> qshow()
+                </h2>
+                <div class="glass-card p-6 rounded-2xl">
+                    <div class="code-font text-lg text-cyan-400 font-semibold mb-2">qshow(backend='auto', shots=1024, noise=None)</div>
+                    <p class="text-slate-400 text-sm mb-4">Run the current circuit and display results.</p>
+                    <div class="space-y-2">
+                        <div class="flex items-start gap-3 text-sm">
+                            <code class="text-purple-400 code-font min-w-[100px]">backend</code>
+                            <code class="text-emerald-400 code-font min-w-[80px]">str</code>
+                            <span class="text-slate-400">Backend name ('auto', 'qiskit', 'cirq', 'native', etc.)</span>
+                        </div>
+                        <div class="flex items-start gap-3 text-sm">
+                            <code class="text-purple-400 code-font min-w-[100px]">shots</code>
+                            <code class="text-emerald-400 code-font min-w-[80px]">int</code>
+                            <span class="text-slate-400">Number of measurement shots</span>
+                        </div>
+                        <div class="flex items-start gap-3 text-sm">
+                            <code class="text-purple-400 code-font min-w-[100px]">noise</code>
+                            <code class="text-emerald-400 code-font min-w-[80px]">float</code>
+                            <span class="text-slate-400">Noise level (0.0-1.0) or NoiseModel</span>
+                        </div>
+                    </div>
                 </div>
-            </div>
+            </section>
 
             <!-- Gates -->
-            <h2 id="gates">Gates</h2>
-            <table>
-                <thead>
-                    <tr><th>Gate</th><th>Qubits</th><th>Matrix</th></tr>
-                </thead>
-                <tbody>
-                    <tr><td><code>H</code></td><td>1</td><td>Hadamard</td></tr>
-                    <tr><td><code>X</code></td><td>1</td><td>Pauli-X (NOT)</td></tr>
-                    <tr><td><code>Y</code></td><td>1</td><td>Pauli-Y</td></tr>
-                    <tr><td><code>Z</code></td><td>1</td><td>Pauli-Z</td></tr>
-                    <tr><td><code>CX</code></td><td>2</td><td>Controlled-NOT</td></tr>
-                    <tr><td><code>CZ</code></td><td>2</td><td>Controlled-Z</td></tr>
-                    <tr><td><code>CCX</code></td><td>3</td><td>Toffoli</td></tr>
-                    <tr><td><code>SWAP</code></td><td>2</td><td>Swap</td></tr>
-                    <tr><td><code>Rx(θ)</code></td><td>1</td><td>X-rotation</td></tr>
-                    <tr><td><code>Ry(θ)</code></td><td>1</td><td>Y-rotation</td></tr>
-                    <tr><td><code>Rz(θ)</code></td><td>1</td><td>Z-rotation</td></tr>
-                    <tr><td><code>CP(θ)</code></td><td>2</td><td>Controlled-phase</td></tr>
-                </tbody>
-            </table>
+            <section id="gates" class="mb-12">
+                <h2 class="text-2xl font-bold text-white mb-4 flex items-center gap-2">
+                    <i class="fa-solid fa-th text-cyan-400"></i> Gates
+                </h2>
+                <div class="glass-panel rounded-2xl overflow-hidden border border-slate-800">
+                    <table class="w-full text-left text-sm">
+                        <thead class="bg-slate-900/80 text-cyan-400 border-b border-slate-800">
+                            <tr><th class="p-3 code-font">Gate</th><th class="p-3 code-font">Qubits</th><th class="p-3">Description</th></tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-800/60">
+                            <tr><td class="p-3 code-font text-emerald-400">H</td><td class="p-3">1</td><td class="p-3 text-slate-400">Hadamard</td></tr>
+                            <tr><td class="p-3 code-font text-emerald-400">X</td><td class="p-3">1</td><td class="p-3 text-slate-400">Pauli-X (NOT)</td></tr>
+                            <tr><td class="p-3 code-font text-emerald-400">Y</td><td class="p-3">1</td><td class="p-3 text-slate-400">Pauli-Y</td></tr>
+                            <tr><td class="p-3 code-font text-emerald-400">Z</td><td class="p-3">1</td><td class="p-3 text-slate-400">Pauli-Z</td></tr>
+                            <tr><td class="p-3 code-font text-emerald-400">CX</td><td class="p-3">2</td><td class="p-3 text-slate-400">Controlled-NOT</td></tr>
+                            <tr><td class="p-3 code-font text-emerald-400">CZ</td><td class="p-3">2</td><td class="p-3 text-slate-400">Controlled-Z</td></tr>
+                            <tr><td class="p-3 code-font text-emerald-400">CCX</td><td class="p-3">3</td><td class="p-3 text-slate-400">Toffoli</td></tr>
+                            <tr><td class="p-3 code-font text-emerald-400">SWAP</td><td class="p-3">2</td><td class="p-3 text-slate-400">Swap</td></tr>
+                            <tr><td class="p-3 code-font text-emerald-400">Rx(θ)</td><td class="p-3">1</td><td class="p-3 text-slate-400">X-rotation</td></tr>
+                            <tr><td class="p-3 code-font text-emerald-400">Ry(θ)</td><td class="p-3">1</td><td class="p-3 text-slate-400">Y-rotation</td></tr>
+                            <tr><td class="p-3 code-font text-emerald-400">Rz(θ)</td><td class="p-3">1</td><td class="p-3 text-slate-400">Z-rotation</td></tr>
+                            <tr><td class="p-3 code-font text-emerald-400">CP(θ)</td><td class="p-3">2</td><td class="p-3 text-slate-400">Controlled-phase</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
 
             <!-- Grover -->
-            <h2 id="grover">Grover Search</h2>
-            <div class="code-block">
-                <div class="header"><span>Grover's Algorithm</span></div>
-                <pre><span class="kw">from</span> quonic.algorithms <span class="kw">import</span> grover
+            <section id="grover" class="mb-12">
+                <h2 class="text-2xl font-bold text-white mb-4 flex items-center gap-2">
+                    <i class="fa-solid fa-search text-cyan-400"></i> Grover Search
+                </h2>
+                <div class="glass-panel rounded-xl p-4 border border-slate-800">
+                    <pre class="code-font text-xs text-slate-300"><span class="text-purple-400">from</span> quonic.algorithms <span class="text-purple-400">import</span> grover
 
-<span class="cm"># Search for |11> in 2-qubit space</span>
-result = grover(<span class="str">"11"</span>, 2, shots=1024)
-print(result.counts)  <span class="cm"># {'11': ~1000}</span></pre>
-            </div>
+<span class="text-slate-500"># Search for |11> in 2-qubit space</span>
+result = grover(<span class="text-emerald-400">"11"</span>, 2, shots=1024)
+print(result.counts)  <span class="text-slate-500"># {'11': ~1000}</span></pre>
+                </div>
+            </section>
 
             <!-- VQE -->
-            <h2 id="vqe">VQE</h2>
-            <div class="code-block">
-                <div class="header"><span>Variational Quantum Eigensolver</span></div>
-                <pre><span class="kw">from</span> quonic.algorithms <span class="kw">import</span> vqe
+            <section id="vqe" class="mb-12">
+                <h2 class="text-2xl font-bold text-white mb-4 flex items-center gap-2">
+                    <i class="fa-solid fa-atom text-cyan-400"></i> VQE
+                </h2>
+                <div class="glass-panel rounded-xl p-4 border border-slate-800">
+                    <pre class="code-font text-xs text-slate-300"><span class="text-purple-400">from</span> quonic.algorithms <span class="text-purple-400">import</span> vqe
 
-hamiltonian = [(1.0, <span class="str">"ZZ"</span>), (0.5, <span class="str">"XI"</span>), (0.5, <span class="str">"IX"</span>)]
+hamiltonian = [(1.0, <span class="text-emerald-400">"ZZ"</span>), (0.5, <span class="text-emerald-400">"XI"</span>), (0.5, <span class="text-emerald-400">"IX"</span>)]
 result = vqe(hamiltonian, n_qubits=2, maxiter=200)
-print(f<span class="str">"Energy: {result.value}"</span>)</pre>
-            </div>
+print(f<span class="text-emerald-400">"Energy: {result.value}"</span>)</pre>
+                </div>
+            </section>
 
             <!-- Smart Scheduler -->
-            <h2 id="scheduler">Smart Scheduler</h2>
-            <div class="code-block">
-                <div class="header"><span>Auto-select best backend</span></div>
-                <pre><span class="kw">from</span> quonic <span class="kw">import</span> qshow
+            <section id="scheduler" class="mb-12">
+                <h2 class="text-2xl font-bold text-white mb-4 flex items-center gap-2">
+                    <i class="fa-solid fa-brain text-cyan-400"></i> Smart Scheduler
+                </h2>
+                <div class="glass-panel rounded-xl p-4 border border-slate-800">
+                    <pre class="code-font text-xs text-slate-300"><span class="text-purple-400">from</span> quonic <span class="text-purple-400">import</span> qshow
 
-<span class="cm"># Automatically picks the best backend</span>
-qshow()  <span class="cm"># native/qulacs/qiskit based on circuit</span></pre>
-            </div>
+<span class="text-slate-500"># Automatically picks the best backend</span>
+qshow()  <span class="text-slate-500"># native/qulacs/qiskit based on circuit</span></pre>
+                </div>
+            </section>
 
             <!-- Noise Mitigation -->
-            <h2 id="noise">Noise Mitigation</h2>
-            <div class="code-block">
-                <div class="header"><span>ZNE Error Mitigation</span></div>
-                <pre><span class="kw">from</span> quonic <span class="kw">import</span> zne
+            <section id="noise" class="mb-12">
+                <h2 class="text-2xl font-bold text-white mb-4 flex items-center gap-2">
+                    <i class="fa-solid fa-shield-halved text-cyan-400"></i> Noise Mitigation
+                </h2>
+                <div class="glass-panel rounded-xl p-4 border border-slate-800">
+                    <pre class="code-font text-xs text-slate-300"><span class="text-purple-400">from</span> quonic <span class="text-purple-400">import</span> zne
 
-result = zne(circuit, noise=0.05, extrapolation=<span class="str">"linear"</span>)
-print(f<span class="str">"Raw: {result.values[0]:.3f}"</span>)
-print(f<span class="str">"ZNE: {result.extrapolated:.3f}"</span>)</pre>
-            </div>
+result = zne(circuit, noise=0.05, extrapolation=<span class="text-emerald-400">"linear"</span>)
+print(f<span class="text-emerald-400">"Raw: {result.values[0]:.3f}"</span>)
+print(f<span class="text-emerald-400">"ZNE: {result.extrapolated:.3f}"</span>)</pre>
+                </div>
+            </section>
 
             <!-- QEC -->
-            <h2 id="qec">Error Correction</h2>
-            <div class="code-block">
-                <div class="header"><span>Quantum Error Correction</span></div>
-                <pre><span class="kw">from</span> quonic.qec <span class="kw">import</span> BitFlipCode, qec_round_trip
+            <section id="qec" class="mb-12">
+                <h2 class="text-2xl font-bold text-white mb-4 flex items-center gap-2">
+                    <i class="fa-solid fa-shield text-cyan-400"></i> Error Correction
+                </h2>
+                <div class="glass-panel rounded-xl p-4 border border-slate-800">
+                    <pre class="code-font text-xs text-slate-300"><span class="text-purple-400">from</span> quonic.qec <span class="text-purple-400">import</span> BitFlipCode, qec_round_trip
 
-result = qec_round_trip(code=<span class="str">"bit_flip"</span>, error_rate=0.01)
-print(f<span class="str">"Logical error: {result.logical_error_rate:.4f}"</span>)</pre>
-            </div>
+result = qec_round_trip(code=<span class="text-emerald-400">"bit_flip"</span>, error_rate=0.01)
+print(f<span class="text-emerald-400">"Logical error: {result.logical_error_rate:.4f}"</span>)</pre>
+                </div>
+            </section>
 
             <!-- ML -->
-            <h2 id="ml">Machine Learning</h2>
-            <div class="code-block">
-                <div class="header"><span>QML Pipeline</span></div>
-                <pre><span class="kw">from</span> quonic.ml <span class="kw">import</span> QMLPipeline
+            <section id="ml" class="mb-12">
+                <h2 class="text-2xl font-bold text-white mb-4 flex items-center gap-2">
+                    <i class="fa-solid fa-network-wired text-cyan-400"></i> Machine Learning
+                </h2>
+                <div class="glass-panel rounded-xl p-4 border border-slate-800">
+                    <pre class="code-font text-xs text-slate-300"><span class="text-purple-400">from</span> quonic.ml <span class="text-purple-400">import</span> QMLPipeline
 
 pipeline = QMLPipeline(n_qubits=4, layers=3)
 pipeline.fit(X_train, y_train, maxiter=100)
 predictions = pipeline.predict(X_test)</pre>
-            </div>
+                </div>
+            </section>
 
-            <!-- ZX-Calculus -->
-            <h2 id="zx">ZX-Calculus</h2>
-            <div class="code-block">
-                <div class="header"><span>Circuit Optimization</span></div>
-                <pre><span class="kw">from</span> quonic.zx <span class="kw">import</span> circuit_to_zx, optimize_zx, extract_circuit
+            <!-- ZX -->
+            <section id="zx" class="mb-12">
+                <h2 class="text-2xl font-bold text-white mb-4 flex items-center gap-2">
+                    <i class="fa-solid fa-project-diagram text-cyan-400"></i> ZX-Calculus
+                </h2>
+                <div class="glass-panel rounded-xl p-4 border border-slate-800">
+                    <pre class="code-font text-xs text-slate-300"><span class="text-purple-400">from</span> quonic.zx <span class="text-purple-400">import</span> circuit_to_zx, optimize_zx, extract_circuit
 
 graph = circuit_to_zx(circuit)
 simplified = optimize_zx(graph)
 optimized = extract_circuit(simplified)</pre>
-            </div>
+                </div>
+            </section>
+
+            <!-- Footer -->
+            <footer class="border-t border-slate-800/80 pt-8 mt-16 text-xs text-slate-500">
+                <p>Built by <a href="https://github.com/ChrisLee0721" class="text-cyan-400 hover:underline">ChrisLee</a> · Apache 2.0 License</p>
+            </footer>
         </main>
     </div>
 </body>
