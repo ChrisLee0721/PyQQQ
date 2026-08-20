@@ -3,7 +3,7 @@
 [![CI](https://github.com/ChrisLee0721/QuoNic/actions/workflows/ci.yml/badge.svg)](https://github.com/ChrisLee0721/QuoNic/actions/workflows/ci.yml)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
 [![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/)
-[![Version](https://img.shields.io/badge/version-0.10.0-purple.svg)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-0.11.0-purple.svg)](CHANGELOG.md)
 
 [![Qiskit](https://img.shields.io/badge/Qiskit-1.0+-green.svg)](https://qiskit.org/)
 [![Cirq](https://img.shields.io/badge/Cirq-1.0+-orange.svg)](https://quantumai.google/cirq)
@@ -14,7 +14,8 @@
 [![MindQuantum](https://img.shields.io/badge/MindQuantum-0.9+-blue.svg)](https://gitee.com/mindspore/mindquantum)
 [![QPanda3](https://img.shields.io/badge/QPanda3-3.0+-orange.svg)](https://qcloud.originqc.com.cn/)
 [![77 Algorithms](https://img.shields.io/badge/algorithms-77-blueviolet.svg)](src/quonic/algorithms/)
-[![616 Tests](https://img.shields.io/badge/tests-616%20passed-brightgreen.svg)](tests/)
+[![771 Tests](https://img.shields.io/badge/tests-771%20passed-brightgreen.svg)](tests/)
+[![3 Hardware](https://img.shields.io/badge/hardware-3%20verified-orange.svg)](#real-hardware)
 
 **QuoNic is a tool that makes quantum programming as simple as writing Python.**
 
@@ -78,6 +79,29 @@ optimized = extract_circuit(simplified)
 ```
 
 More copy-and-run examples (106 total, all bilingual) live in [`examples/`](examples/).
+
+---
+
+##  Real Hardware / 真机验证
+
+QuoNic has been tested on **3 real quantum hardware platforms**:
+
+| Platform | Device | Status |
+|----------|--------|--------|
+| **Origin Quantum** | WK_C180 | ✅ Verified |
+| **AWS Braket** | Rigetti Cepheus-1-108Q | ✅ Verified |
+| **Quantum Inspire** | Tuna-9 / Tuna-17 | ✅ Verified |
+
+```python
+# Origin Quantum
+qshow(backend='qpanda', device='WK_C180')
+
+# AWS Braket
+qshow(backend='braket', device='arn:aws:braket:us-west-1::device/qpu/rigetti/Cepheus-1-108Q')
+
+# Quantum Inspire
+qshow(backend='qi', device='Tuna-9')
+```
 
 ---
 
