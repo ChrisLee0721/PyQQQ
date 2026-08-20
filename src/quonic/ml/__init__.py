@@ -20,9 +20,14 @@ from .hybrid import ClassicalLayer, HybridModel, HybridResult, QNNLayer
 from .loss import cross_entropy_loss, expectation_loss, fidelity_loss
 from .optimizer import AdamOptimizer, QNGOptimizer, SPSAOptimizer
 from .pipeline import QMLPipeline, QMLResult
-from .pulse_grad import pulse_gradient, pulse_fisher_information
+from .pulse_grad import pulse_fisher_information, pulse_gradient
 from .trainer import param_shift_grad, train, train_batch
-from .viz import plot_circuit_analysis, plot_gradient_flow, plot_parameter_distribution, plot_training_convergence
+from .viz import (
+    plot_circuit_analysis,
+    plot_gradient_flow,
+    plot_parameter_distribution,
+    plot_training_convergence,
+)
 
 __all__ = [
     "Ansatz",

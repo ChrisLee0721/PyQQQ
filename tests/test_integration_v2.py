@@ -5,11 +5,10 @@ Tests combining multiple QuoNic features together.
 
 from __future__ import annotations
 
-import pytest
 import numpy as np
 
-from quonic.ir import Circuit, GateOperation
 from quonic.backends.native import NativeBackend
+from quonic.ir import Circuit, GateOperation
 
 
 def test_qec_with_noise():
@@ -28,7 +27,7 @@ def test_qec_with_noise():
 
 def test_ml_with_different_backends():
     """ML training should work with different backends."""
-    from quonic.ml import Ansatz, SPSAOptimizer, train, expectation_loss
+    from quonic.ml import Ansatz, SPSAOptimizer, expectation_loss, train
 
     ansatz = Ansatz.hardware_efficient(n_qubits=2, layers=1)
     opt = SPSAOptimizer(maxiter=5, lr=0.1)
@@ -64,9 +63,9 @@ def test_optimize_then_run():
 
 def test_groverize_then_run():
     """Groverized circuit should run correctly."""
-    from quonic import cwhile, creg, qgate, reset
-    from quonic.gates import H
+    from quonic import creg, cwhile, qgate, reset
     from quonic.compiler import groverize
+    from quonic.gates import H
     from quonic.stack import current_circuit
 
     reset()
@@ -101,7 +100,7 @@ def test_zne_improves_result():
 
 def test_scheduler_with_different_circuits():
     """Scheduler should recommend different backends for different circuits."""
-    from quonic.scheduler import schedule, circuit_features
+    from quonic.scheduler import schedule
 
     # Clifford circuit -> should recommend stabilizer
     c_clifford = Circuit()
@@ -141,7 +140,7 @@ def test_mps_expectation():
 
 def test_zx_optimize_reduces_gates():
     """ZX optimization should reduce gate count."""
-    from quonic.zx import circuit_to_zx, optimize_zx, extract_circuit
+    from quonic.zx import circuit_to_zx, extract_circuit, optimize_zx
 
     c = Circuit()
     c.allocate(1)

@@ -13,6 +13,8 @@ from __future__ import annotations
 
 from typing import List
 
+import numpy as np
+
 from ..ir import Circuit, GateOperation
 
 

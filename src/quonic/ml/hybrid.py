@@ -20,7 +20,7 @@ Example::
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Any, Callable, List, Optional, Tuple
+from typing import Any, List, Optional, Tuple
 
 import numpy as np
 
@@ -251,5 +251,5 @@ class HybridModel:
         return np.array(params)
 
     def __repr__(self) -> str:
-        layer_types = [type(l).__name__ for l in self.layers]
+        layer_types = [type(layer).__name__ for layer in self.layers]
         return f"HybridModel(layers=[{', '.join(layer_types)}])"

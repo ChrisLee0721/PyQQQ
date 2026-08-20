@@ -12,7 +12,7 @@ Example::
 
 from __future__ import annotations
 
-from typing import Any, List
+from typing import Any
 
 import numpy as np
 
@@ -97,7 +97,7 @@ def adjoint_grad_gpu(
 
 def _apply_gate_gpu(xp, state, name, qubits, params, n_qubits):
     """Apply a gate to the state using GPU."""
-    dim = 2 ** n_qubits
+    2 ** n_qubits
     gate = _gate_matrix_gpu(xp, name, params)
     if gate is None:
         return state
@@ -132,8 +132,8 @@ def _apply_two_qubit_gpu(xp, state, gate, qubit1, qubit2, n_qubits):
     new_state = xp.zeros_like(state)
 
     for i in range(dim):
-        b1 = (i >> qubit1) & 1
-        b2 = (i >> qubit2) & 1
+        (i >> qubit1) & 1
+        (i >> qubit2) & 1
         # Find all 4 basis states for these 2 qubits
         idx = [
             i,
@@ -143,8 +143,8 @@ def _apply_two_qubit_gpu(xp, state, gate, qubit1, qubit2, n_qubits):
         ]
         # Apply 4x4 gate matrix
         for k, ik in enumerate(idx):
-            for l, il in enumerate(idx):
-                new_state[ik] += gate[k, l] * state[il]
+            for m, im in enumerate(idx):
+                new_state[ik] += gate[k, m] * state[im]
 
     return new_state
 

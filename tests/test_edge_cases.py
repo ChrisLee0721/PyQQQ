@@ -5,11 +5,8 @@ Tests boundary conditions: empty circuits, single qubit, max qubits, invalid inp
 
 from __future__ import annotations
 
-import pytest
-import numpy as np
-
-from quonic.ir import Circuit, GateOperation
 from quonic.backends.native import NativeBackend
+from quonic.ir import Circuit, GateOperation
 
 
 def test_empty_circuit():

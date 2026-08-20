@@ -7,8 +7,6 @@ from __future__ import annotations
 
 import pytest
 
-from quonic import qgate, qshow, reset
-from quonic.gates import CX, H, X
 from quonic.ir import Circuit, GateOperation
 
 

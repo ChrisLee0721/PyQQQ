@@ -12,8 +12,6 @@ Example::
 
 from __future__ import annotations
 
-from typing import List, Tuple
-
 import numpy as np
 
 
@@ -39,7 +37,7 @@ def pulse_gradient(
     Returns:
         Gradient vector of shape (n_steps * 2,).
     """
-    n_steps = len(pulse_params) // 2 if len(pulse_params.shape) == 1 else pulse_params.shape[0]
+    len(pulse_params) // 2 if len(pulse_params.shape) == 1 else pulse_params.shape[0]
     params_flat = pulse_params.flatten()
     grad = np.zeros_like(params_flat)
 
@@ -120,8 +118,8 @@ def pulse_fisher_information(
 
     for _ in range(n_samples):
         delta = rng.choice([-1, 1], size=n_params)
-        params_plus = pulse_params.flatten() + sigma * delta
-        params_minus = pulse_params.flatten() - sigma * delta
+        pulse_params.flatten() + sigma * delta
+        pulse_params.flatten() - sigma * delta
 
         # Compute state derivatives
         for i in range(n_params):

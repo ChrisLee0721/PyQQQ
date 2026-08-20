@@ -94,8 +94,8 @@ def natural_gradient(
     fisher = np.zeros((n_params, n_params))
     for _ in range(n_samples):
         delta = rng.choice([-1, 1], size=n_params)
-        params_plus = params + sigma * delta
-        params_minus = params - sigma * delta
+        params + sigma * delta
+        params - sigma * delta
 
         # Fisher information: F_ij = Re(⟨∂_iψ|∂_jψ⟩)
         # Approximate using finite differences
