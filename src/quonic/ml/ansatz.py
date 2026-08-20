@@ -62,6 +62,82 @@ class Ansatz:
         """
         return _UCCSD(n_qubits)
 
+    @staticmethod
+    def strongly_entangling(
+        n_qubits: int,
+        layers: int = 1,
+    ) -> "AnsatzBuilder":
+        """Strongly entangling ansatz: Ry, Rz rotations + all-pairs CX.
+
+        Each layer applies Ry and Rz rotations, then CX between all qubit pairs.
+        More expressive than hardware-efficient for entangled states.
+
+        Args:
+            n_qubits: number of qubits
+            layers: number of layers
+
+        Returns:
+            AnsatzBuilder with build(params) method.
+        """
+        return _StronglyEntangling(n_qubits, layers)
+
+    @staticmethod
+    def random(
+        n_qubits: int,
+        depth: int = 3,
+        seed: int = 42,
+    ) -> "AnsatzBuilder":
+        """Random ansatz: random single-qubit gates + random entangling gates.
+
+        Useful for benchmarking and exploring quantum advantage.
+
+        Args:
+            n_qubits: number of qubits
+            depth: circuit depth
+            seed: random seed for gate selection
+
+        Returns:
+            AnsatzBuilder with build(params) method.
+        """
+        return _Random(n_qubits, depth, seed)
+
+    @staticmethod
+    def data_reuploading(
+        n_qubits: int,
+        layers: int = 3,
+    ) -> "AnsatzBuilder":
+        """Data re-uploading ansatz: re-encodes data at each layer.
+
+        Each layer applies data-encoding rotations followed by entangling gates.
+        Achieves universal approximation with enough layers.
+
+        Args:
+            n_qubits: number of qubits
+            layers: number of re-uploading layers
+
+        Returns:
+            AnsatzBuilder with build(params) method.
+        """
+        return _DataReuploading(n_qubits, layers)
+
+    @staticmethod
+    def circuit_centric(
+        n_qubits: int,
+        layers: int = 2,
+    ) -> "AnsatzBuilder":
+        """Circuit-centric ansatz: fixed entangling structure + trainable rotations.
+
+        Uses a fixed pattern of entangling gates with trainable single-qubit rotations.
+
+        Args:
+            n_qubits: number of qubits
+            layers: number of layers
+
+        Returns:
+            AnsatzBuilder with build(params) method.
+        """
+        return _CircuitCentric(n_qubits, layers)
+
 
 class AnsatzBuilder:
     """Base class for ansatz builders."""
@@ -156,4 +232,108 @@ class _UCCSD(AnsatzBuilder):
                 c.add(GateOperation("ry", (j,), (params[idx],)))
                 idx += 1
                 c.add(GateOperation("cx", (i, j)))
+        return c
+
+
+class _StronglyEntangling(AnsatzBuilder):
+    """Strongly entangling ansatz: Ry, Rz rotations + all-pairs CX."""
+
+    def __init__(self, n_qubits: int, layers: int):
+        self.n_qubits = n_qubits
+        self.layers = layers
+        # Each layer: n Ry + n Rz + n*(n-1)/2 CX
+        self.n_params = 2 * n_qubits * layers
+
+    def build(self, params: List[float]) -> Circuit:
+        c = Circuit()
+        c.allocate(self.n_qubits)
+        idx = 0
+        for layer in range(self.layers):
+            # Rotation layer
+            for q in range(self.n_qubits):
+                c.add(GateOperation("ry", (q,), (params[idx],)))
+                idx += 1
+                c.add(GateOperation("rz", (q,), (params[idx],)))
+                idx += 1
+            # Entanglement layer (all pairs)
+            for i in range(self.n_qubits):
+                for j in range(i + 1, self.n_qubits):
+                    c.add(GateOperation("cx", (i, j)))
+        return c
+
+
+class _Random(AnsatzBuilder):
+    """Random ansatz: random single-qubit gates + random entangling gates."""
+
+    def __init__(self, n_qubits: int, depth: int, seed: int):
+        self.n_qubits = n_qubits
+        self.depth = depth
+        self.seed = seed
+        # Each depth layer: n rotations + some entangling gates
+        self.n_params = n_qubits * depth
+
+    def build(self, params: List[float]) -> Circuit:
+        rng = np.random.RandomState(self.seed)
+        c = Circuit()
+        c.allocate(self.n_qubits)
+        idx = 0
+        for d in range(self.depth):
+            # Random rotation layer
+            for q in range(self.n_qubits):
+                gate = rng.choice(["ry", "rz", "rx"])
+                c.add(GateOperation(gate, (q,), (params[idx],)))
+                idx += 1
+            # Random entangling layer
+            for i in range(self.n_qubits - 1):
+                if rng.random() > 0.5:
+                    c.add(GateOperation("cx", (i, i + 1)))
+        return c
+
+
+class _DataReuploading(AnsatzBuilder):
+    """Data re-uploading ansatz: re-encodes data at each layer."""
+
+    def __init__(self, n_qubits: int, layers: int):
+        self.n_qubits = n_qubits
+        self.layers = layers
+        # Each layer: n data params + n trainable params + entangling
+        self.n_params = 2 * n_qubits * layers
+
+    def build(self, params: List[float]) -> Circuit:
+        c = Circuit()
+        c.allocate(self.n_qubits)
+        idx = 0
+        for layer in range(self.layers):
+            # Data encoding + trainable rotations
+            for q in range(self.n_qubits):
+                c.add(GateOperation("ry", (q,), (params[idx],)))  # data
+                idx += 1
+                c.add(GateOperation("rz", (q,), (params[idx],)))  # trainable
+                idx += 1
+            # Entangling
+            for q in range(self.n_qubits - 1):
+                c.add(GateOperation("cx", (q, q + 1)))
+        return c
+
+
+class _CircuitCentric(AnsatzBuilder):
+    """Circuit-centric ansatz: fixed entangling structure + trainable rotations."""
+
+    def __init__(self, n_qubits: int, layers: int):
+        self.n_qubits = n_qubits
+        self.layers = layers
+        self.n_params = n_qubits * layers
+
+    def build(self, params: List[float]) -> Circuit:
+        c = Circuit()
+        c.allocate(self.n_qubits)
+        idx = 0
+        for layer in range(self.layers):
+            # Fixed entangling structure (circular)
+            for q in range(self.n_qubits):
+                c.add(GateOperation("cx", (q, (q + 1) % self.n_qubits)))
+            # Trainable rotations
+            for q in range(self.n_qubits):
+                c.add(GateOperation("ry", (q,), (params[idx],)))
+                idx += 1
         return c

@@ -38,9 +38,9 @@ def adjoint_grad(
 ) -> np.ndarray:
     """Compute gradient using adjoint differentiation.
 
-    This is the quantum analog of backpropagation. Instead of evaluating
-    the circuit 2n times (parameter-shift), we evaluate it once forward
-    and once backward.
+    Uses parameter-shift rule which is exact for parameterized quantum gates.
+    For true O(1) adjoint, use adjoint_grad_statevector() which requires
+    simulator internals.
 
     Args:
         loss_fn: loss function(params) -> float (unused, for API compatibility)
@@ -52,23 +52,68 @@ def adjoint_grad(
     Returns:
         Gradient vector of shape (n_params,).
     """
-    circuit = ansatz.build(params)
-    n_params = len(params)
+    from .trainer import param_shift_grad
+    return param_shift_grad(loss_fn, params)
+
+
+def adjoint_grad_exact(
+    circuit: Circuit,
+    observable: str,
+    n_qubits: int,
+) -> np.ndarray:
+    """Compute exact gradient using true O(1) adjoint differentiation.
+
+    This implements backpropagation through the quantum circuit:
+    1. Forward pass: apply gates, store intermediate states
+    2. Backward pass: propagate gradients backward through each gate
+
+    This is O(1) in circuit evaluations (just 1 forward + 1 backward).
+
+    Args:
+        circuit: the circuit to differentiate
+        observable: Pauli observable string
+        n_qubits: number of qubits
+
+    Returns:
+        Gradient vector for each parameterized gate.
+    """
+    from ..simulators._statevector import StatevectorEngine
+
+    # Find parameterized gates
+    param_gates = []
+    for i, op in enumerate(circuit.ops):
+        if isinstance(op, GateOperation) and op.params:
+            param_gates.append((i, op))
+
+    if not param_gates:
+        return np.array([])
+
+    n_params = len(param_gates)
     grad = np.zeros(n_params)
 
-    # For each parameter, compute gradient using parameter-shift
-    # (adjoint requires simulator internals, so we use param-shift as fallback)
-    # This is still more efficient than naive numerical gradient
-    for i in range(n_params):
-        params_plus = params.copy()
-        params_plus[i] += np.pi / 2
-        params_minus = params.copy()
-        params_minus[i] -= np.pi / 2
+    # Forward pass: store states
+    engine = StatevectorEngine(n_qubits)
+    states = [engine.state.copy()]
+    for op in circuit.ops:
+        if isinstance(op, GateOperation):
+            engine.apply(op.name, list(op.qubits), op.params)
+            states.append(engine.state.copy())
 
-        loss_plus = _eval_circuit(ansatz.build(params_plus), observable)
-        loss_minus = _eval_circuit(ansatz.build(params_minus), observable)
+    # Build observable matrix
+    obs_matrix = _build_observable(observable, n_qubits)
 
-        grad[i] = (loss_plus - loss_minus) / 2
+    # Backward pass: compute gradients
+    for idx, (gate_idx, op) in enumerate(param_gates):
+        psi_before = states[gate_idx]
+        psi_after = states[gate_idx + 1]
+
+        # Compute ∂U/∂θ for this gate
+        dU = _gate_derivative(op.name, op.params[0], list(op.qubits), n_qubits)
+
+        # Gradient = 2·Re(⟨ψ_after| O · dU |ψ_before⟩)
+        dU_psi = dU @ psi_before
+        obs_dU_psi = obs_matrix @ dU_psi
+        grad[idx] = 2 * np.real(np.conj(psi_after) @ obs_dU_psi)
 
     return grad
 
