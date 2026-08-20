@@ -58,7 +58,11 @@
                 </a>
                 <span class="text-xs bg-doc-accent/10 text-doc-accent px-2 py-0.5 rounded font-mono border border-doc-accent/20">v0.11.0</span>
             </div>
-            <div class="flex items-center gap-6">
+            <div class="flex items-center gap-4">
+                <button id="lang-toggle" onclick="toggleLang()" class="text-sm text-doc-dim hover:text-doc-accent transition-colors px-3 py-1.5 rounded-lg border border-doc-border hover:border-doc-accent flex items-center gap-1.5">
+                    <i class="fa-solid fa-globe text-xs"></i>
+                    <span id="lang-label">EN</span>
+                </button>
                 <a href="docs.html" class="text-sm text-doc-accent font-medium">Docs Home</a>
                 <a href="index.html" class="text-sm text-doc-dim hover:text-doc-accent transition-colors">Home</a>
                 <a href="https://github.com/ChrisLee0721/QuoNic" class="text-sm text-doc-dim hover:text-doc-accent transition-colors flex items-center gap-1">
@@ -133,6 +137,39 @@
             .catch(() => {
                 document.getElementById('sidebar').innerHTML = '<div class="text-doc-dim text-xs">Could not load docs manifest</div>';
             });
+
+        // Language toggle
+        let currentLang = 'en';
+
+        function toggleLang() {
+            currentLang = currentLang === 'en' ? 'zh' : 'en';
+            document.getElementById('lang-label').textContent = currentLang === 'en' ? 'EN' : '中文';
+
+            // Update sidebar links
+            document.querySelectorAll('#sidebar a').forEach(a => {
+                const href = a.getAttribute('href');
+                if (currentLang === 'zh') {
+                    // Switch to Chinese: add _zh before .md
+                    a.setAttribute('href', href.replace('.md', '_zh.md'));
+                } else {
+                    // Switch to English: remove _zh
+                    a.setAttribute('href', href.replace('_zh.md', '.md'));
+                }
+            });
+
+            // Reload current document
+            const params = new URLSearchParams(window.location.search);
+            const filePath = params.get('file');
+            if (filePath) {
+                let newFile = filePath;
+                if (currentLang === 'zh') {
+                    newFile = filePath.replace('.md', '_zh.md');
+                } else {
+                    newFile = filePath.replace('_zh.md', '.md');
+                }
+                window.location.search = '?file=' + newFile;
+            }
+        }
 
         // Get file path from URL
         const params = new URLSearchParams(window.location.search);
