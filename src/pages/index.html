@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QuoNic — Quantum Programming, as Simple as Writing Python</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #0f0a1a; color: #e0d8f0; }
+        .hero { text-align: center; padding: 80px 20px; background: linear-gradient(135deg, #1e1b4b, #312e81, #4c1d95); }
+        .hero h1 { font-size: 3.5rem; margin-bottom: 0.5rem; }
+        .hero p { font-size: 1.2rem; opacity: 0.9; margin-bottom: 2rem; }
+        .badges { display: flex; gap: 0.5rem; justify-content: center; flex-wrap: wrap; margin-bottom: 2rem; }
+        .badges span { background: rgba(255,255,255,0.15); padding: 4px 12px; border-radius: 20px; font-size: 0.85rem; }
+        .actions { display: flex; gap: 1rem; justify-content: center; }
+        .actions a { padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: 600; }
+        .primary { background: #7c3aed; color: white; }
+        .secondary { background: rgba(255,255,255,0.1); color: white; }
+        .section { max-width: 900px; margin: 0 auto; padding: 60px 20px; }
+        h2 { font-size: 1.8rem; margin-bottom: 1.5rem; color: #a78bfa; }
+        .code-compare { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+        pre { background: #1a1530; padding: 1rem; border-radius: 8px; overflow-x: auto; font-size: 0.85rem; }
+        h3 { font-size: 1rem; margin-bottom: 0.5rem; color: #c4b5fd; }
+        .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin: 2rem 0; }
+        .stat { background: #1a1530; padding: 1.5rem; border-radius: 8px; text-align: center; }
+        .num { font-size: 2rem; font-weight: bold; color: #7c3aed; }
+        .label { font-size: 0.85rem; opacity: 0.8; }
+        .hardware { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin: 2rem 0; }
+        .hw-card { background: #1a1530; padding: 1.5rem; border-radius: 8px; border-left: 4px solid #7c3aed; }
+        .hw-card h4 { margin-bottom: 0.5rem; }
+        .status { color: #4ade80; }
+        .install { background: #1a1530; padding: 1rem; border-radius: 8px; font-family: monospace; font-size: 1.1rem; text-align: center; margin: 2rem 0; }
+    </style>
+</head>
+<body>
+    <div class="hero">
+        <h1>QuoNic</h1>
+        <p>Quantum Programming, as Simple as Writing Python</p>
+        <div class="badges">
+            <span>19 Backends</span>
+            <span>75 Algorithms</span>
+            <span>771 Tests</span>
+            <span>3 Real Hardware</span>
+        </div>
+        <div class="actions">
+            <a href="https://github.com/ChrisLee0721/QuoNic" class="primary">GitHub</a>
+            <a href="https://github.com/ChrisLee0721/QuoNic/tree/main/examples" class="secondary">Examples</a>
+        </div>
+    </div>
+    <div class="section">
+        <h2>Why QuoNic?</h2>
+        <div class="code-compare">
+            <div>
+                <h3>QuoNic (3 lines)</h3>
+                <pre>from quonic import qgate, qshow
+from quonic.gates import H, CX
+
+qgate(H, 0)
+qgate(CX, 0, 1)
+qshow()</pre>
+            </div>
+            <div>
+                <h3>Qiskit (10 lines)</h3>
+                <pre>from qiskit import QuantumCircuit
+from qiskit_aer import AerSimulator
+
+qc = QuantumCircuit(2, 2)
+qc.h(0)
+qc.cx(0, 1)
+qc.measure([0, 1], [0, 1])
+
+simulator = AerSimulator()
+result = simulator.run(qc, shots=1024).result()
+print(result.get_counts())</pre>
+            </div>
+        </div>
+    </div>
+    <div class="section">
+        <h2>Key Features</h2>
+        <div class="stats">
+            <div class="stat"><div class="num">19</div><div class="label">Backends</div></div>
+            <div class="stat"><div class="num">75</div><div class="label">Algorithms</div></div>
+            <div class="stat"><div class="num">771</div><div class="label">Tests</div></div>
+            <div class="stat"><div class="num">3</div><div class="label">Real Hardware</div></div>
+        </div>
+    </div>
+    <div class="section">
+        <h2>Real Hardware Verified</h2>
+        <div class="hardware">
+            <div class="hw-card"><h4>Origin Quantum</h4><div>WK_C180</div><div class="status">✅ Verified</div></div>
+            <div class="hw-card"><h4>AWS Braket</h4><div>Rigetti Cepheus-1-108Q</div><div class="status">✅ Verified</div></div>
+            <div class="hw-card"><h4>Quantum Inspire</h4><div>Tuna-9 / Tuna-17</div><div class="status">✅ Verified</div></div>
+        </div>
+    </div>
+    <div class="section">
+        <h2>Install</h2>
+        <div class="install">pip install quonic</div>
+    </div>
+</body>
+</html>
