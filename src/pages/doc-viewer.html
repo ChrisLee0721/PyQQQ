@@ -44,6 +44,9 @@
         .markdown-body a { color: #7aa2f7; text-decoration: none; }
         .markdown-body a:hover { text-decoration: underline; }
         .markdown-body img { max-width: 100%; border-radius: 8px; }
+        .lang-badge { font-size: 0.65rem; padding: 1px 5px; border-radius: 4px; vertical-align: middle; margin-left: 4px; }
+        .lang-badge.zh { background: rgba(158,206,106,0.15); color: #9ece6a; }
+        .lang-badge.en { background: rgba(122,162,247,0.15); color: #7aa2f7; }
     </style>
 </head>
 <body class="antialiased">
@@ -83,6 +86,10 @@
         <!-- Content -->
         <main class="flex-1 min-w-0 p-8 lg:p-12 max-w-4xl">
             <div id="loading" class="text-doc-dim text-sm">Loading...</div>
+            <div id="lang-notice" class="hidden mb-4 px-4 py-3 rounded-lg bg-yellow-500/10 border border-yellow-500/20 text-yellow-300 text-sm">
+                <i class="fa-solid fa-circle-info mr-2"></i>
+                <span id="lang-notice-text"></span>
+            </div>
             <div id="content" class="markdown-body" style="display:none"></div>
         </main>
 
@@ -96,87 +103,157 @@
     <script>
         // Configure marked
         marked.setOptions({
-            highlight: function(code, lang) {
-                return code;
-            },
+            highlight: function(code, lang) { return code; },
             breaks: true,
             gfm: true
         });
 
-        // Load sidebar from manifest
-        fetch('docs/manifest.json')
-            .then(r => r.json())
-            .then(manifest => {
-                const sidebar = document.getElementById('sidebar');
-                sidebar.innerHTML = '';
-                manifest.sections.forEach(section => {
-                    const div = document.createElement('div');
-                    div.innerHTML = `<div class="text-xs font-semibold text-doc-dim uppercase tracking-wider mb-2">${section.title}</div>`;
-                    section.items.forEach(item => {
-                        const a = document.createElement('a');
-                        a.href = `doc-viewer.html?file=${item.file}`;
-                        a.textContent = item.title;
-                        a.className = 'block px-3 py-1.5 rounded-lg text-doc-dim hover:text-doc-text hover:bg-doc-surface transition-colors';
-                        div.appendChild(a);
-                    });
-                    sidebar.appendChild(div);
-                });
+        // --- Language system ---
+        // Files that have _zh counterparts
+        const ZH_FILES = new Set();
+        let currentLang = localStorage.getItem('quonic-docs-lang') || 'en';
 
-                // Highlight active link
-                const params = new URLSearchParams(window.location.search);
-                const filePath = params.get('file');
-                if (filePath) {
-                    sidebar.querySelectorAll('a').forEach(a => {
-                        if (a.href.includes(filePath)) {
-                            a.classList.add('text-doc-accent', 'bg-doc-accent/10', 'font-medium');
-                            a.classList.remove('text-doc-dim');
-                        }
-                    });
+        function toZhPath(file) {
+            if (file.endsWith('.md') && !file.endsWith('_zh.md')) {
+                return file.replace('.md', '_zh.md');
+            }
+            return file;
+        }
+        function toEnPath(file) {
+            return file.replace('_zh.md', '.md');
+        }
+        function hasZh(file) {
+            return ZH_FILES.has(toZhPath(file));
+        }
+
+        function applyLang() {
+            document.getElementById('lang-label').textContent = currentLang === 'en' ? 'EN' : '中文';
+            // Update sidebar links
+            document.querySelectorAll('#sidebar a[data-file]').forEach(a => {
+                const baseFile = a.dataset.file; // always the EN path
+                const badge = a.querySelector('.lang-badge');
+                if (currentLang === 'zh' && hasZh(baseFile)) {
+                    a.href = `doc-viewer.html?file=${toZhPath(baseFile)}`;
+                    if (badge) { badge.textContent = '中'; badge.className = 'lang-badge zh'; }
+                } else {
+                    a.href = `doc-viewer.html?file=${baseFile}`;
+                    if (badge) { badge.textContent = 'EN'; badge.className = 'lang-badge en'; }
                 }
-            })
-            .catch(() => {
-                document.getElementById('sidebar').innerHTML = '<div class="text-doc-dim text-xs">Could not load docs manifest</div>';
             });
-
-        // Language toggle
-        let currentLang = 'en';
+        }
 
         function toggleLang() {
             currentLang = currentLang === 'en' ? 'zh' : 'en';
-            document.getElementById('lang-label').textContent = currentLang === 'en' ? 'EN' : '中文';
+            localStorage.setItem('quonic-docs-lang', currentLang);
+            applyLang();
 
-            // Update sidebar links
-            document.querySelectorAll('#sidebar a').forEach(a => {
-                const href = a.getAttribute('href');
-                if (currentLang === 'zh') {
-                    // Switch to Chinese: add _zh before .md
-                    a.setAttribute('href', href.replace('.md', '_zh.md'));
-                } else {
-                    // Switch to English: remove _zh
-                    a.setAttribute('href', href.replace('_zh.md', '.md'));
-                }
-            });
-
-            // Reload current document
+            // Reload current document in new language
             const params = new URLSearchParams(window.location.search);
             const filePath = params.get('file');
             if (filePath) {
-                let newFile = filePath;
-                if (currentLang === 'zh') {
-                    newFile = filePath.replace('.md', '_zh.md');
+                let newFile;
+                if (currentLang === 'zh' && hasZh(filePath)) {
+                    newFile = toZhPath(filePath);
+                } else if (currentLang === 'zh' && !hasZh(filePath)) {
+                    // Stay on current file, show notice
+                    showLangNotice(filePath);
+                    return;
                 } else {
-                    newFile = filePath.replace('_zh.md', '.md');
+                    newFile = toEnPath(filePath);
                 }
                 window.location.search = '?file=' + newFile;
             }
         }
 
-        // Get file path from URL
+        function showLangNotice(filePath) {
+            const notice = document.getElementById('lang-notice');
+            const text = document.getElementById('lang-notice-text');
+            text.textContent = 'This page is bilingual — Chinese content is included inline. / 本页为双语页面，中文内容已包含在内。';
+            notice.classList.remove('hidden');
+        }
+
+        // --- Build sidebar from manifest ---
+        fetch('docs/manifest.json')
+            .then(r => r.json())
+            .then(manifest => {
+                // Collect all files that have _zh versions by scanning manifest
+                // We'll also do a HEAD check for known _zh files
+                const zhChecks = [];
+                manifest.sections.forEach(section => {
+                    section.items.forEach(item => {
+                        if (item.file.endsWith('.md') && !item.file.endsWith('_zh.md')) {
+                            const zhPath = toZhPath(item.file);
+                            zhChecks.push(
+                                fetch(zhPath, { method: 'HEAD' })
+                                    .then(r => { if (r.ok) ZH_FILES.add(zhPath); })
+                                    .catch(() => {})
+                            );
+                        }
+                    });
+                });
+
+                // Build sidebar
+                const sidebar = document.getElementById('sidebar');
+                sidebar.innerHTML = '';
+                manifest.sections.forEach(section => {
+                    const div = document.createElement('div');
+                    const header = document.createElement('div');
+                    header.className = 'text-xs font-semibold text-doc-dim uppercase tracking-wider mb-2';
+                    header.textContent = section.title;
+                    div.appendChild(header);
+
+                    section.items.forEach(item => {
+                        const a = document.createElement('a');
+                        a.dataset.file = item.file; // store base EN path
+                        a.href = `doc-viewer.html?file=${item.file}`;
+                        a.textContent = item.title;
+                        a.className = 'block px-3 py-1.5 rounded-lg text-doc-dim hover:text-doc-text hover:bg-doc-surface transition-colors';
+
+                        // Add language badge for .md files
+                        if (item.file.endsWith('.md') && !item.file.endsWith('_zh.md')) {
+                            const badge = document.createElement('span');
+                            badge.className = 'lang-badge en';
+                            badge.textContent = 'EN';
+                            a.appendChild(badge);
+                        }
+
+                        div.appendChild(a);
+                    });
+                    sidebar.appendChild(div);
+                });
+
+                // After collecting zh file info, apply language
+                Promise.all(zhChecks).then(() => {
+                    applyLang();
+
+                    // Highlight active link
+                    const params = new URLSearchParams(window.location.search);
+                    const filePath = params.get('file');
+                    if (filePath) {
+                        const normPath = toEnPath(filePath); // normalize to EN for matching
+                        sidebar.querySelectorAll('a[data-file]').forEach(a => {
+                            if (a.dataset.file === normPath) {
+                                a.classList.add('text-doc-accent', 'bg-doc-accent/10', 'font-medium');
+                                a.classList.remove('text-doc-dim');
+                            }
+                        });
+
+                        // Show notice if viewing in zh but file has no zh version
+                        if (currentLang === 'zh' && !hasZh(filePath) && filePath.endsWith('.md')) {
+                            showLangNotice(filePath);
+                        }
+                    }
+                });
+            })
+            .catch(() => {
+                document.getElementById('sidebar').innerHTML = '<div class="text-doc-dim text-xs">Could not load docs manifest</div>';
+            });
+
+        // --- Load and render document ---
         const params = new URLSearchParams(window.location.search);
         const filePath = params.get('file');
 
         if (filePath) {
-            // Fetch and render Markdown
             fetch(filePath)
                 .then(response => {
                     if (!response.ok) throw new Error('File not found');
@@ -212,7 +289,6 @@
                         };
                         toc.appendChild(link);
                     });
-
                 })
                 .catch(err => {
                     document.getElementById('loading').textContent = 'Error loading document: ' + err.message;
