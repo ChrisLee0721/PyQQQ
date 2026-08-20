@@ -1,9 +1,6 @@
-"""Comparator: qlt / qeq / qgt compare a register against a constant.
+"""Compare backends / 比较后端
 
-Each returns a flag qubit (1 = condition holds) entangled with the register,
-leaving x unchanged. Here x is a uniform superposition |0..7>; measuring
-everything shows the flag is exactly 1 on the x < 4 branch.
-"""
+Compare backends / 比较后端"""
 
 from quonic import QInt, qlt, qshow
 

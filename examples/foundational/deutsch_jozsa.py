@@ -1,7 +1,16 @@
-"""Deutsch-Jozsa algorithm example.
+"""Constant or balanced function? / 常数还是平衡函数？
 
-Determines whether a Boolean function is constant or balanced in a single query.
-"""
+Determine if f is constant or balanced in one query.
+一次查询确定 f 是常数还是平衡函数。
+
+## Application / 应用场景
+- Oracle complexity (预言机复杂度)
+- Quantum advantage (量子优势)
+- Function analysis (函数分析)
+
+## Output / 输出
+All zeros = constant, anything else = balanced.
+全零 = 常数，其他 = 平衡。"""
 
 from quonic.algorithms import deutsch_jozsa
 from quonic.ir import GateOperation

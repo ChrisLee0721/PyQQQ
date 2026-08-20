@@ -1,8 +1,16 @@
-"""Amplitude amplification: boost probability of a target state.
+"""Amplify probability of target state / 放大目标态概率
 
-Like Grover but with a custom state preparation oracle.
-Output: amplified probability of the marked state.
-"""
+Like Grover but with custom state preparation. Boosts success probability.
+类似 Grover 但支持自定义态制备。提升成功概率。
+
+## Application / 应用场景
+- Quantum algorithms (量子算法)
+- State preparation (态制备)
+- Error mitigation (错误缓解)
+
+## Output / 输出
+Target state probability amplified from p to ~1.
+目标态概率从 p 放大到 ~1。"""
 
 from quonic.algorithms import amplitude_amplification, mark_state
 

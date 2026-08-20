@@ -1,9 +1,6 @@
-"""creg + cwhile: repeat-until-success (RUS) prepares |0> deterministically.
+"""Classical while loop / 经典 while 循环
 
-A single qubit is measured repeatedly: each H + measure has a 50% chance of
-yielding 0. The loop retries until it sees 0, so the final state is |0> with
-certainty — the iteration count is random, the outcome is not.
-"""
+Classical while loop / 经典 while 循环"""
 
 from quonic import creg, cwhile, qgate, qshow
 from quonic.gates import H

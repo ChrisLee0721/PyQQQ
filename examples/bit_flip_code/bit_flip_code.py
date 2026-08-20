@@ -1,14 +1,16 @@
-"""Bit Flip Error Correction Code — simplest quantum error correction.
+"""Correct bit-flip errors / 纠正比特翻转错误
 
-Demonstrates the 3-qubit bit flip code:
-1. Encode: |ψ> = α|0> + β|1> → α|000> + β|111>
-2. Error: flip one qubit (simulated noise)
-3. Syndrome: detect which qubit was flipped
-4. Correct: flip the detected qubit back
+3-qubit code corrects single bit-flip errors.
+3 比特码纠正单个比特翻转错误。
 
-Usage:
-    python examples/bit_flip_code/bit_flip_code.py
-"""
+## Application / 应用场景
+- Quantum error correction (量子纠错)
+- Fault-tolerant computing (容错计算)
+- NISQ algorithms (NISQ 算法)
+
+## Output / 输出
+Corrected logical state despite physical errors.
+尽管有物理错误，纠正后的逻辑态。"""
 
 from quonic import qgate, reset
 from quonic.backends import get_backend

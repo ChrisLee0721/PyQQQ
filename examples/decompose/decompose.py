@@ -1,8 +1,6 @@
-"""decompose: expand a Toffoli (CCX) into basic gates.
+"""Gate decomposition / 门分解
 
-CCX is a 3-qubit gate; decompose() rewrites it using only single-qubit
-gates and CX (no ancilla needed for a single Toffoli).
-"""
+Gate decomposition / 门分解"""
 
 from quonic.compiler import decompose
 from quonic.ir import Circuit, GateOperation

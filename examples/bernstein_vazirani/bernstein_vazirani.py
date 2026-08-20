@@ -1,8 +1,16 @@
-"""Bernstein-Vazirani: find the hidden bitstring s in f(x) = s·x mod 2.
+"""Find hidden bitstring / 找到隐藏比特串
 
-One query suffices — the algorithm reads s directly from the output.
-Output: all shots give the hidden string.
-"""
+Find secret s in f(x) = s·x mod 2. One query suffices.
+在 f(x) = s·x mod 2 中找到秘密 s。一次查询即可。
+
+## Application / 应用场景
+- Oracle problems (预言机问题)
+- Cryptography (密码学)
+- Learning parity (学习奇偶性)
+
+## Output / 输出
+All shots give the hidden string s.
+所有测量结果给出隐藏串 s。"""
 
 from quonic import qgate
 from quonic.algorithms import bernstein_vazirani

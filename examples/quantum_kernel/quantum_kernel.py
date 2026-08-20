@@ -1,8 +1,16 @@
-"""Quantum kernel estimation.
+"""Quantum Kernel Estimation / 量子核估计
 
-Computes quantum kernel matrix for machine learning.
-Output: kernel matrix entries.
-"""
+Compute quantum kernel matrix for ML.
+计算用于机器学习的量子核矩阵。
+
+## Application / 应用场景
+- Kernel methods (核方法)
+- SVM (支持向量机)
+- Quantum ML (量子机器学习)
+
+## Output / 输出
+Kernel matrix entries.
+核矩阵元素。"""
 
 from quonic.algorithms import quantum_kernel
 

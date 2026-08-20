@@ -1,8 +1,16 @@
-"""Steane code: [[7,1,3]] CSS code.
+"""Steane Code / Steane 码
 
-Corrects any single-qubit error using 7 physical qubits.
-Output: corrected logical state.
-"""
+[[7,1,3]] CSS code, corrects arbitrary single-qubit errors.
+[[7,1,3]] CSS 码，纠正任意单比特错误。
+
+## Application / 应用场景
+- Quantum error correction (量子纠错)
+- Fault tolerance (容错)
+- Logical gates (逻辑门)
+
+## Output / 输出
+Corrected logical qubit.
+纠正后的逻辑比特。"""
 
 from quonic.algorithms import steane_code
 

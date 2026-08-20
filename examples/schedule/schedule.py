@@ -1,8 +1,6 @@
-"""schedule: let the scheduler pick the best backend + method.
+"""Scheduling / 调度
 
-circuit_features() summarizes a circuit (size, depth, Clifford-ness,
-treewidth); schedule() turns that into a Recommendation.
-"""
+Scheduling / 调度"""
 
 from quonic.ir import Circuit, GateOperation
 from quonic.scheduler import circuit_features, schedule

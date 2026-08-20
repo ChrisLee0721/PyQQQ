@@ -1,11 +1,6 @@
-"""Shor's algorithm: factor 15 using quantum period finding.
+"""Shor's algorithm / Shor 算法
 
-15 = 3 x 5. With base a=7 (whose order is 4), one small-precision run
-(t=6, shots=256) returns 3 or 5 in a few seconds.
-
-Requires a sampling backend; use `pip install 'quonic[qiskit]'` for speed
-(an auto-detected backend or the numpy-only native engine also works).
-"""
+Shor's algorithm / Shor 算法"""
 
 from quonic.algorithms import shor
 

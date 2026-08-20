@@ -1,8 +1,16 @@
-"""QAOA for the knapsack problem.
+"""Knapsack problem / 背包问题
 
-Finds the optimal subset of items maximizing value within weight capacity.
-Output: approximate optimal value.
-"""
+QAOA for knapsack: maximize value within weight limit.
+QAOA 求解背包问题：在重量限制内最大化价值。
+
+## Application / 应用场景
+- Combinatorial optimization (组合优化)
+- Resource allocation (资源分配)
+- Logistics (物流)
+
+## Output / 输出
+Optimal subset of items.
+最优物品子集。"""
 
 from quonic.algorithms import qaoa_knapsack
 

@@ -1,8 +1,16 @@
-"""Deutsch-Jozsa: determine if f is constant or balanced in one query.
+"""Constant or balanced function? / 常数还是平衡函数？
 
-Classical requires 2^(n-1)+1 queries; quantum needs 1.
-Output: all zeros = constant, anything else = balanced.
-"""
+Determine if f is constant or balanced in one query.
+一次查询确定 f 是常数还是平衡函数。
+
+## Application / 应用场景
+- Oracle complexity (预言机复杂度)
+- Quantum advantage (量子优势)
+- Function analysis (函数分析)
+
+## Output / 输出
+All zeros = constant, anything else = balanced.
+全零 = 常数，其他 = 平衡。"""
 
 from quonic import qgate
 from quonic.algorithms import deutsch_jozsa

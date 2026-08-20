@@ -1,7 +1,6 @@
-"""GHZ state: H(0) then CNOT(0,1), CNOT(1,2) gives (|000>+|111>)/√2.
+"""GHZ state / GHZ 态
 
-Output: roughly 50% |000> and 50% |111>.
-"""
+GHZ state / GHZ 态"""
 
 from quonic import qgate, qshow
 from quonic.gates import CX, H

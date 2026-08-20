@@ -1,10 +1,6 @@
-"""cwhile → groverize: compile a repeat-until-success loop into a static circuit.
+"""Groverize cwhile / Grover 化 cwhile
 
-Ry(2π/3) then measure q0 succeeds (q0 == 0) with probability p = 1/4.
-groverize turns the "retry until success" loop into a fixed-depth static circuit
-(deferred measurement + amplitude amplification), so it runs on any backend —
-including real hardware, which has no mid-circuit measurement feedback.
-"""
+Groverize cwhile / Grover 化 cwhile"""
 
 import math
 

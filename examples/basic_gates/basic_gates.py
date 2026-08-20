@@ -1,11 +1,6 @@
-"""Basic gates: X, Y, Z, CZ, CCX (Toffoli), and explicit MEASURE.
+"""Basic quantum gates demonstration / 基本量子门演示
 
-X flips |0> to |1>; Y and Z add phases (invisible in this basis here);
-CCX flips a target only when both controls are |1>; CZ is a controlled
-phase. qshow() auto-measures any qubit without an explicit MEASURE.
-
-Final state: |110> (qubit 0 = 0, qubits 1 and 2 = 1).
-"""
+Basic quantum gates demonstration / 基本量子门演示"""
 
 from quonic import qgate, qshow
 from quonic.gates import CCX, CZ, MEASURE, X, Y, Z

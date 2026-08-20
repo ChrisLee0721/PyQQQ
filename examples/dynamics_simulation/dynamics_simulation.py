@@ -1,8 +1,16 @@
-"""Quantum dynamics simulation: simulate time evolution of a quantum system.
+"""Quantum dynamics simulation / 量子动力学模拟
 
-Uses Trotterization to approximate e^{-iHt}.
-Output: evolved state measurements.
-"""
+Simulate time evolution of quantum systems.
+模拟量子系统的时间演化。
+
+## Application / 应用场景
+- Quantum chemistry (量子化学)
+- Material science (材料科学)
+- Condensed matter (凝聚态)
+
+## Output / 输出
+Evolved state after time t.
+时间 t 后的演化态。"""
 
 from quonic.algorithms import dynamics_simulation_demo
 

@@ -1,7 +1,6 @@
-"""mark_state: build an oracle callback that marks one basis state.
+"""Mark state / 标记态
 
-Search for |10> (qubit 0 = 0, qubit 1 = 1) among 2 qubits.
-"""
+Mark state / 标记态"""
 
 from quonic.algorithms import grover, mark_state
 

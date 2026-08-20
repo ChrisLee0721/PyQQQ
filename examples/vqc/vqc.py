@@ -1,15 +1,6 @@
-"""Variational Quantum Classifier (VQC) — simple demo.
+"""Variational Quantum Classifier / 变分量子分类器
 
-Demonstrates a variational quantum circuit for binary classification:
-1. Encode data into quantum state
-2. Apply parameterized circuit
-3. Measure to get classification result
-4. Optimize parameters using classical optimizer
-
-Usage:
-    python examples/vqc/vqc.py
-"""
-
+Variational Quantum Classifier / 变分量子分类器"""
 
 import numpy as np
 from scipy.optimize import minimize

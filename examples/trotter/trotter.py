@@ -1,15 +1,6 @@
-"""Trotter-Suzuki Decomposition — Hamiltonian simulation demo.
+"""Trotterization / Trotter 分解
 
-Demonstrates time evolution under a transverse-field Ising model:
-H = -J Σ Z_i Z_{i+1} - h Σ X_i
-
-Using first-order Trotter decomposition:
-U(t) ≈ (U_ZZ · U_X)^{t/dt}
-
-Usage:
-    python examples/trotter/trotter.py
-"""
-
+Trotterization / Trotter 分解"""
 
 from quonic import qgate, reset
 from quonic.backends import get_backend

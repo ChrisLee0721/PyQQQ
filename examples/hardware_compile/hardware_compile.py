@@ -1,17 +1,6 @@
-"""Hardware compile + ZNE: route a GHZ circuit onto a line topology, then use
-zero-noise extrapolation to recover the noiseless result.
+"""Hardware compilation / 硬件编译
 
-Pipeline: build GHZ-3 with a Toffoli (CCX) → decompose the high-level gate →
-compile(route=True) onto a 3-qubit line (inserting SWAPs for the non-adjacent
-CX gates). Separately, simulate the logical circuit under 5% depolarizing noise
-and zne() extrapolates back to the noiseless value, using two metrics (success
-probability + expectation). ZNE runs on the logical circuit because routing's
-extra SWAPs push the noise out of ZNE's linear regime.
-
-H(0) → CX(0,1) → CCX(0,1,2) yields the GHZ state (|000>+|111>)/√2, so:
-  - target {"000","111"} has true success probability 1.0
-  - observable "XXX" has true expectation value 1.0
-"""
+Hardware compilation / 硬件编译"""
 
 from quonic import compile, qgate, zne
 from quonic.gates import CCX, CX, H

@@ -1,7 +1,6 @@
-"""QInt: load a 3-bit register as |5>, then quantum-add 3 (mod 8).
+"""Quantum integer / 量子整数
 
-5 + 3 ≡ 0 (mod 8), so the output is almost surely |000>.
-"""
+Quantum integer / 量子整数"""
 
 from quonic import QInt, qshow
 

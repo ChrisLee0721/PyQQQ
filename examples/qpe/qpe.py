@@ -1,9 +1,6 @@
-"""Quantum phase estimation: estimate the phase of Rz(pi) on |1>.
+"""Quantum Phase Estimation / 量子相位估计
 
-Rz(theta)|1> = e^{i theta/2}|1>, so the eigenvalue phase is phi = theta/2.
-With 3 precision qubits, j/2^3 ~ theta/(4 pi) = 1/4, so j = 2.
-The rightmost 3 bits of the output are the phase estimate "010".
-"""
+Quantum Phase Estimation / 量子相位估计"""
 
 import math
 

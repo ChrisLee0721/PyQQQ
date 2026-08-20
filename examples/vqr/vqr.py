@@ -1,8 +1,16 @@
-"""Variational Quantum Regressor.
+"""Variational Quantum Regressor / 变分量子回归器
 
 Quantum model for regression tasks.
-Output: predicted values.
-"""
+用于回归任务的量子模型。
+
+## Application / 应用场景
+- Regression (回归)
+- Prediction (预测)
+- Function fitting (函数拟合)
+
+## Output / 输出
+Predicted values.
+预测值。"""
 
 from quonic.algorithms import vqr
 

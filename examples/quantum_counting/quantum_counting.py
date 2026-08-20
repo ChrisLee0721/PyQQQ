@@ -1,8 +1,6 @@
-"""Quantum counting: estimate how many states satisfy a predicate.
+"""Quantum Counting / 量子计数
 
-Among 3 qubits (N = 8) there are 4 even numbers (x & 1 == 0), so the
-estimate should be close to 4.
-"""
+Quantum Counting / 量子计数"""
 
 from quonic.algorithms import oracle, quantum_counting
 

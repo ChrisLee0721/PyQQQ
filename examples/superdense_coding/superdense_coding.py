@@ -1,8 +1,16 @@
-"""Superdense coding: send 2 classical bits using 1 qubit.
+"""Superdense Coding / 超密编码
 
-Alice encodes 2 bits by manipulating her half of an entangled pair.
-Output: decoded message.
-"""
+Send 2 classical bits using 1 qubit.
+用 1 个量子比特发送 2 个经典比特。
+
+## Application / 应用场景
+- Quantum communication (量子通信)
+- Bandwidth doubling (带宽翻倍)
+- Teleportation (隐形传态)
+
+## Output / 输出
+Decoded 2-bit message.
+解码的 2 比特消息。"""
 
 from quonic.algorithms import superdense_coding
 

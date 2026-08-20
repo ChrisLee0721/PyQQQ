@@ -1,14 +1,16 @@
-"""BB84 Quantum Key Distribution — simplified demo.
+"""Quantum key distribution / 量子密钥分发
 
-Demonstrates the BB84 protocol:
-1. Alice prepares random qubits in random bases
-2. Bob measures in random bases
-3. They compare bases and keep matching results
-4. The matching results form the secret key
+BB84 protocol for secure key exchange using quantum mechanics.
+BB84 协议利用量子力学实现安全密钥交换。
 
-Usage:
-    python examples/bb84/bb84.py
-"""
+## Application / 应用场景
+- Secure communication (安全通信)
+- Quantum cryptography (量子密码学)
+- Key distribution (密钥分发)
+
+## Output / 输出
+Shared secret key between Alice and Bob.
+Alice 和 Bob 共享的密钥。"""
 
 import random
 

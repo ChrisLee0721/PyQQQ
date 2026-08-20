@@ -1,8 +1,16 @@
-"""Simon's algorithm: find the period of a 2-to-1 function.
+"""Simon's Algorithm / Simon 算法
 
-Exponential speedup over classical; precursor to Shor's algorithm.
-Output: the hidden period string s where f(x) = f(x XOR s).
-"""
+Find hidden period of 2-to-1 function. Precursor to Shor.
+找到 2-to-1 函数的隐藏周期。Shor 的前身。
+
+## Application / 应用场景
+- Cryptography (密码学)
+- Period finding (周期查找)
+- Quantum advantage (量子优势)
+
+## Output / 输出
+Hidden period string.
+隐藏周期串。"""
 
 from quonic import qgate
 from quonic.algorithms import simon

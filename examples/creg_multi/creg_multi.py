@@ -1,11 +1,6 @@
-"""Multi-bit classical register: creg(width=2) + cwhile + cif + groverize.
+"""Multiple classical registers / 多经典寄存器
 
-A 2-bit register stores integer values 0..3. The RUS loop prepares two qubits
-with H each and measures both into the register, retrying until reg == 2 ("10").
-groverize() compiles the retry loop into a static circuit, amplifying the
-success probability from 1/4 to 1. A multi-bit cif then branches on the full
-register value.
-"""
+Multiple classical registers / 多经典寄存器"""
 
 from quonic import cif, creg, cwhile, qgate, reset
 from quonic.backends import get_backend

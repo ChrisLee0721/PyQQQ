@@ -1,9 +1,6 @@
-"""Grover diffusion as a reusable primitive.
+"""Diffusion operator / 扩散算子
 
-mark_state("11") flips the phase of |11>; diffusion(2) then applies the
-amplitude-amplification operator 2|s><s| - I. One iteration on 2 qubits
-drives |11> to probability 1.0.
-"""
+Diffusion operator / 扩散算子"""
 
 from quonic import qgate, qshow
 from quonic.algorithms import diffusion, mark_state

@@ -1,8 +1,6 @@
-"""NoiseModel: separate single- and two-qubit depolarizing rates.
+"""Noise model / 噪声模型
 
-On a Bell state, 1% single-qubit and 5% two-qubit depolarizing noise
-leaks a little population into |01> and |10> (zero without noise).
-"""
+Noise model / 噪声模型"""
 
 from quonic import NoiseModel, qgate, qshow
 from quonic.gates import CX, H

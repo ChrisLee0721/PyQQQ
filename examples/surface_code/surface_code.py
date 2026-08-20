@@ -1,8 +1,16 @@
-"""Surface code error correction demo.
+"""Surface Code / 表面码
 
-The leading candidate for fault-tolerant quantum computation.
-Output: logical qubit with error correction.
-"""
+Leading candidate for fault-tolerant quantum computing.
+容错量子计算的主要候选方案。
+
+## Application / 应用场景
+- Fault tolerance (容错)
+- Quantum memory (量子存储)
+- Logical qubits (逻辑比特)
+
+## Output / 输出
+Logical qubit with error protection.
+具有错误保护的逻辑比特。"""
 
 from quonic.algorithms import surface_code_demo
 

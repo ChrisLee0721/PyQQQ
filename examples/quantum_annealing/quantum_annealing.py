@@ -1,8 +1,16 @@
-"""Quantum annealing with hybrid classical-quantum solver.
+"""Quantum Annealing / 量子退火
 
-Simulates quantum annealing for optimization problems.
-Output: approximate ground state.
-"""
+Hybrid classical-quantum annealing for optimization.
+用于优化的混合经典-量子退火。
+
+## Application / 应用场景
+- Optimization (优化)
+- Combinatorial problems (组合问题)
+- Sampling (采样)
+
+## Output / 输出
+Approximate ground state.
+近似基态。"""
 
 from quonic.algorithms import quantum_annealing_hybrid_demo
 

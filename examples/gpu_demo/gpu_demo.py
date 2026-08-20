@@ -1,14 +1,6 @@
-"""GPU acceleration demo — shows how to use method="gpu" and smart scheduling.
+"""GPU acceleration / GPU 加速
 
-Demonstrates:
-  1. Direct GPU execution via method="gpu"
-  2. Smart scheduling via recommend_backend_gpu()
-  3. CuPy fallback when native GPU is unavailable
-  4. Performance comparison (CPU vs GPU)
-
-Usage:
-    python examples/gpu_demo/gpu_demo.py
-"""
+GPU acceleration / GPU 加速"""
 
 import math
 import time

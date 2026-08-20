@@ -1,8 +1,16 @@
-"""Quantum walk on a line.
+"""Quantum Walk / 量子行走
 
-The quantum analogue of a random walk — spreads quadratically faster.
-Output: position distribution after n steps.
-"""
+Quantum analogue of random walk, spreads quadratically faster.
+随机行走的量子类比，二次方更快扩展。
+
+## Application / 应用场景
+- Search algorithms (搜索算法)
+- Graph algorithms (图算法)
+- Transport phenomena (输运现象)
+
+## Output / 输出
+Position distribution after n steps.
+n 步后的位置分布。"""
 
 from quonic.algorithms import quantum_walk
 

@@ -1,14 +1,6 @@
-"""Error mitigation demo — shows ZNE and readout calibration.
+"""Error mitigation / 错误缓解
 
-Demonstrates:
-  1. Zero-noise extrapolation (ZNE) with linear and exponential fits
-  2. Readout calibration (per-qubit and correlated)
-  3. Stacking ZNE + readout calibration for best results
-
-Usage:
-    python examples/error_mitigation/error_mitigation.py
-"""
-
+Error mitigation / 错误缓解"""
 
 from quonic import calibrate, qgate, reset, zne
 from quonic.backends import get_backend

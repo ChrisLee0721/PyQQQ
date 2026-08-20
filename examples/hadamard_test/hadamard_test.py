@@ -1,8 +1,16 @@
-"""Hadamard test: estimate Re(<psi|U|psi>).
+"""Estimate Re(<ψ|U|ψ>) / 估计 Re(<ψ|U|ψ>)
 
-A primitive for many quantum algorithms (inner product estimation).
-Output: probability of measuring |0> encodes the real part.
-"""
+Primitive for inner product estimation.
+内积估计的基本操作。
+
+## Application / 应用场景
+- Quantum algorithms (量子算法)
+- State overlap (态重叠)
+- Expectation values (期望值)
+
+## Output / 输出
+Probability of |0⟩ encodes the real part.
+|0⟩ 的概率编码实部。"""
 
 from quonic import qgate
 from quonic.algorithms import hadamard_test

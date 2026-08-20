@@ -1,7 +1,6 @@
-"""Depolarizing noise on a Bell state.
+"""Noise simulation / 噪声模拟
 
-5% depolarizing after each gate leaks population into |01> and |10>.
-"""
+Noise simulation / 噪声模拟"""
 
 from quonic import qgate, qshow
 from quonic.gates import CX, H

@@ -1,11 +1,6 @@
-"""from_qiskit_nature: import a Pauli Hamiltonian from Qiskit.
+"""Convert from Qiskit Nature / 从 Qiskit Nature 转换
 
-Build H = Z⊗Z + X⊗I + I⊗X as a SparsePauliOp, convert it to the
-[(coeff, pauli), ...] form that vqe() expects, then solve for the
-ground energy (exact value -√5 ~ -2.236).
-
-Requires qiskit and scipy: pip install 'quonic[algorithms]'.
-"""
+Convert from Qiskit Nature / 从 Qiskit Nature 转换"""
 
 from qiskit.quantum_info import SparsePauliOp
 

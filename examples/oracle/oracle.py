@@ -1,7 +1,6 @@
-"""@oracle: turn a classical predicate into a Grover phase oracle.
+"""Oracle construction / 预言机构造
 
-The predicate marks x == 5 (|101>); Grover search then amplifies that state.
-"""
+Oracle construction / 预言机构造"""
 
 from quonic.algorithms import grover, oracle
 

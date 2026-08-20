@@ -1,8 +1,6 @@
-"""CouplingMap: check connectivity and route SWAPs.
+"""Coupling map / 耦合图
 
-A CX(0,2) cannot be placed directly on a 3-qubit line (0-1-2), so
-compile() raises RoutingError. route_swaps() fixes it by inserting SWAPs.
-"""
+Coupling map / 耦合图"""
 
 from quonic import CouplingMap, RoutingError
 from quonic.compiler import compile, route_swaps
