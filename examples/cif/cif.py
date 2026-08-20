@@ -1,10 +1,15 @@
-"""Classical if: cif(0).then(X,1).else_(Z,1) measures then branches.
+"""Classical if statement / 经典 if 语句
 
-Unlike qif (quantum superposition if), cif MEASURES the control qubit first,
-producing a classical mixed state — no entanglement. With the control in
-superposition, the final H⊗H rotation spreads counts across all four basis
-states (~25% each), the signature of a mixture rather than a Bell state.
-"""
+Classical if statement / 经典 if 语句
+
+## Application / 应用场景
+- Quantum computing (量子计算)
+- Algorithm demonstration (算法演示)
+- Educational (教学)
+
+## Output / 输出
+See code comments for output explanation.
+参见代码注释了解输出说明。"""
 
 from quonic import cif, qgate, qshow
 from quonic.gates import H, X, Z

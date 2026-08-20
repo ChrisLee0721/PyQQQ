@@ -1,20 +1,16 @@
 """Quantum Chemistry Workflow / 量子化学工作流
 
-Complete workflow for molecular ground state energy calculation using VQE.
+Complete workflow for molecular ground state energy calculation.
+分子基态能量计算的完整工作流。
 
-## Problem / 问题
-Calculate the ground state energy of H₂ molecule using quantum simulation.
-
-## QuoNic Features Used / 使用的 QuoNic 功能
-- VQE algorithm (变分量子本征求解器)
-- Parameter-shift gradient (参数偏移梯度)
-- Noise modeling (噪声建模)
-- Error mitigation (错误缓解)
-- Smart scheduling (智能调度)
+## Application / 应用场景
+- Drug discovery (药物发现)
+- Material design (材料设计)
+- Chemical reactions (化学反应)
 
 ## Output / 输出
-Ground state energy of H₂ ≈ -1.137 Hartree (exact: -1.1372)
-"""
+Ground state energy with error mitigation.
+带有错误缓解的基态能量。"""
 
 from quonic.algorithms import vqe
 from quonic.ml import Ansatz, SPSAOptimizer, train, param_shift_grad

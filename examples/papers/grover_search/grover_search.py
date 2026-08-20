@@ -1,20 +1,16 @@
-"""Paper Reproduction: Grover's Algorithm / 论文复现：Grover 搜索算法
+"""Grover's Search Algorithm / Grover 搜索算法
 
-Reproduces the quantum search from:
-Grover, L.K., "A fast quantum mechanical algorithm for database search"
-Proceedings of STOC 1996, pp. 212-219
+Reproduce Grover (1996) quantum search.
+复现 Grover (1996) 量子搜索。
 
-## Original Result / 原始结果
-N=4: find target with 100% probability in 1 query (classical: 3 queries)
+## Application / 应用场景
+- Database search (数据库搜索)
+- Cryptography (密码学)
+- Benchmark (基准测试)
 
-## QuoNic Result / QuoNic 结果
-Grover finds target with ~99% probability
-
-## Significance / 意义
-- First quantum search algorithm
-- Demonstrates quadratic speedup over classical
-- Foundation for many quantum algorithms
-"""
+## Output / 输出
+Target found with ~99% probability.
+目标以 ~99% 概率找到。"""
 
 from quonic.algorithms import grover, groverize
 from quonic import cwhile, creg, qgate, reset

@@ -1,6 +1,15 @@
 """Scheduling / 调度
 
-Scheduling / 调度"""
+Scheduling / 调度
+
+## Application / 应用场景
+- Quantum computing (量子计算)
+- Algorithm demonstration (算法演示)
+- Educational (教学)
+
+## Output / 输出
+See code comments for output explanation.
+参见代码注释了解输出说明。"""
 
 from quonic.ir import Circuit, GateOperation
 from quonic.scheduler import circuit_features, schedule

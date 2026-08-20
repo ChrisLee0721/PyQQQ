@@ -1,26 +1,15 @@
-"""Teleport quantum state / 隐形传态量子态
+"""Quantum teleportation / 量子隐形传态
 
-Transfer quantum state from one location to another using entanglement.
-使用纠缠将量子态从一个位置传送到另一个位置。
+Quantum teleportation / 量子隐形传态
 
 ## Application / 应用场景
-- Quantum communication (量子通信)
-- Quantum networks (量子网络)
-- Distributed quantum computing (分布式量子计算)
+- Quantum computing (量子计算)
+- Algorithm demonstration (算法演示)
+- Educational (教学)
 
-## How it works / 原理
-Bell pair + Bell measurement + classical communication + correction.
-Bell 对 + Bell 测量 + 经典通信 + 纠正。
-
-## Output / 输出说明
-Target qubit receives the original state (with classical corrections).
-目标量子比特接收原始态（需要经典纠正）。
-
-## Classical vs Quantum / 经典 vs 量子
-Classical: can't transmit unknown quantum state. Quantum: instant transfer.
-经典：无法传输未知量子态。量子：即时传输。
-"""
-
+## Output / 输出
+See code comments for output explanation.
+参见代码注释了解输出说明。"""
 
 import math
 

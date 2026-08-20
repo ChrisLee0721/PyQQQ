@@ -1,20 +1,16 @@
-"""Paper Reproduction: QAOA for MaxCut / 论文复现：QAOA 求解 MaxCut
+"""QAOA for MaxCut / QAOA 求解 MaxCut
 
-Reproduces the MaxCut optimization from:
-Farhi et al., "A Quantum Approximate Optimization Algorithm"
-arXiv:1411.4028 (2014)
+Reproduce Farhi et al. (2014) MaxCut optimization.
+复现 Farhi et al. (2014) MaxCut 优化。
 
-## Original Result / 原始结果
-Triangle graph: MaxCut = 2 (partition {0} vs {1,2})
+## Application / 应用场景
+- Combinatorial optimization (组合优化)
+- Graph partitioning (图划分)
+- Benchmark (基准测试)
 
-## QuoNic Result / QuoNic 结果
-QAOA with p=1 finds cut value ≥ 1.8 (close to optimal)
-
-## Significance / 意义
-- First quantum approximate optimization algorithm
-- Demonstrates quantum advantage for combinatorial optimization
-- Foundation for quantum optimization on NISQ devices
-"""
+## Output / 输出
+MaxCut value ≥ 1.8 on triangle.
+三角图上 MaxCut ≥ 1.8。"""
 
 from quonic.algorithms import qaoa_maxcut
 from quonic.ir import Circuit, GateOperation

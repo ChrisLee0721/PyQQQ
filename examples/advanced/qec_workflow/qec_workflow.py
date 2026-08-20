@@ -1,20 +1,16 @@
 """Quantum Error Correction Workflow / 量子纠错工作流
 
-Complete workflow for quantum error correction using QEC module.
+Complete QEC workflow with noise modeling and decoding.
+带有噪声建模和解码的完整 QEC 工作流。
 
-## Problem / 问题
-Demonstrate quantum error correction with noise modeling and decoding.
-
-## QuoNic Features Used / 使用的 QuoNic 功能
-- QEC codes (量子纠错码)
-- Stabilizer formalism (稳定子形式)
-- Decoders (解码器)
-- Noise modeling (噪声建模)
-- Readout calibration (读出校准)
+## Application / 应用场景
+- Fault-tolerant computing (容错计算)
+- Quantum memory (量子存储)
+- Logical qubits (逻辑比特)
 
 ## Output / 输出
 Error correction performance comparison.
-"""
+纠错性能对比。"""
 
 from quonic.qec import (
     BitFlipCode, PhaseFlipCode, SteaneCode,

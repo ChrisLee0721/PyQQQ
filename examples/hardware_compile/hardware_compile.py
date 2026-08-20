@@ -1,6 +1,16 @@
-"""Hardware compilation / 硬件编译
+"""Hardware-Aware Compilation / 硬件感知编译
 
-Hardware compilation / 硬件编译"""
+Circuit compilation with topology constraints and optimization.
+带有拓扑约束和优化的电路编译。
+
+## Application / 应用场景
+- NISQ algorithms (NISQ 算法)
+- Hardware targeting (硬件目标)
+- Circuit optimization (电路优化)
+
+## Output / 输出
+Compiled circuit with reduced depth.
+减少深度的编译电路。"""
 
 from quonic import compile, qgate, zne
 from quonic.gates import CCX, CX, H

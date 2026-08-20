@@ -1,20 +1,16 @@
-"""Paper Reproduction: VQE for H₂ / 论文复现：VQE 计算 H₂ 基态能量
+"""VQE for H₂ Molecule / VQE 计算 H₂ 分子
 
-Reproduces the ground state energy calculation from:
-Peruzzo et al., "A variational eigenvalue solver on a photonic quantum processor"
-Nature Communications 5, 4213 (2014)
+Reproduce Peruzzo et al. (2014) ground state energy calculation.
+复现 Peruzzo et al. (2014) 基态能量计算。
 
-## Original Result / 原始结果
-H₂ ground state energy: -1.1372 Hartree (exact)
+## Application / 应用场景
+- Quantum chemistry (量子化学)
+- Molecular simulation (分子模拟)
+- Benchmark (基准测试)
 
-## QuoNic Result / QuoNic 结果
-VQE converges to -1.137 Hartree within chemical accuracy (1.6 mHartree)
-
-## Significance / 意义
-- First demonstration of VQE on quantum hardware
-- Shows quantum advantage for chemistry problems
-- Foundation for quantum chemistry on NISQ devices
-"""
+## Output / 输出
+Ground state energy ≈ -1.137 Hartree.
+基态能量 ≈ -1.137 Hartree。"""
 
 from quonic.algorithms import vqe
 from quonic.ml import Ansatz, SPSAOptimizer, train

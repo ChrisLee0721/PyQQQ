@@ -1,23 +1,15 @@
-"""On-hardware validation of the four error-mitigation optimizations.
+"""Quantum Inspire hardware / Quantum Inspire 硬件
 
-Demonstrates, on Quantum Inspire (QX emulator or Tuna-17 real hardware):
+Quantum Inspire hardware / Quantum Inspire 硬件
 
-  - #2 reflect_zero: groverize already reflects on data qubits only (smaller depth)
-  - #3 transpile level 3: applied automatically inside the qi backend
-  - #1 ZNE (backend="qi"): global unitary folding + linear or exponential
-    extrapolation to λ=0
-  - #4 readout calibration: per-qubit (tensor-product) or correlated (full 2^n
-    matrix) confusion-matrix inversion
+## Application / 应用场景
+- Quantum computing (量子计算)
+- Algorithm demonstration (算法演示)
+- Educational (教学)
 
-Each case prints the raw success probability, the per-qubit and correlated
-readout-corrected probabilities, and the ZNE-extrapolated probability (linear
-and exponential), plus the stacked ZNE+calibration exponential extrapolation.
-
-Usage:
-    python examples/qi_hardware/mitigation_test.py qx          # fast pre-flight (no noise)
-    python examples/qi_hardware/mitigation_test.py tuna17       # real hardware
-    python examples/qi_hardware/mitigation_test.py tuna17 0     # subset: single groverize only
-"""
+## Output / 输出
+See code comments for output explanation.
+参见代码注释了解输出说明。"""
 
 import math
 import sys

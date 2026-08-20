@@ -1,18 +1,15 @@
-"""Real-hardware validation of the new features on Quantum Inspire (Tuna-17).
+"""Quantum Inspire hardware / Quantum Inspire 硬件
 
-Runs a batch of static circuits (no mid-circuit feedback, so all are hardware-safe):
-  - typical references: Bell (|00>+|11>) and GHZ-3 (|000>+|111>)
-  - qif:            qif(0).then(X,1).else_(I,1)  == CNOT -> Bell
-                    qif(0).then(Ry(π/2),1).else_(Ry(-π/2),1) -> uniform 25% each
-  - cwhile.groverize: Ry(2π/3) RUS (single bit) and a 2-bit register RUS, both
-                      compiled to static Grover circuits
+Quantum Inspire hardware / Quantum Inspire 硬件
 
-Usage:
-    python examples/qi_hardware/hardware_test.py qx       # QX cloud simulator (validate first)
-    python examples/qi_hardware/hardware_test.py tuna17    # Tuna-17 real hardware
+## Application / 应用场景
+- Quantum computing (量子计算)
+- Algorithm demonstration (算法演示)
+- Educational (教学)
 
-Real hardware queues and consumes quota; always validate on qx first.
-"""
+## Output / 输出
+See code comments for output explanation.
+参见代码注释了解输出说明。"""
 
 import math
 import sys

@@ -1,20 +1,16 @@
-"""Hardware-Aware Compilation Workflow / 硬件感知编译工作流
+"""Hardware-Aware Compilation / 硬件感知编译
 
-Complete workflow for circuit compilation with hardware constraints.
+Circuit compilation with topology constraints and optimization.
+带有拓扑约束和优化的电路编译。
 
-## Problem / 问题
-Compile a circuit for specific hardware topology with optimization.
-
-## QuoNic Features Used / 使用的 QuoNic 功能
-- Gate decomposition (门分解)
+## Application / 应用场景
+- NISQ algorithms (NISQ 算法)
+- Hardware targeting (硬件目标)
 - Circuit optimization (电路优化)
-- SWAP routing (SWAP 路由)
-- Gate fusion (门融合)
-- Smart scheduling (智能调度)
 
 ## Output / 输出
-Compiled circuit with reduced depth and gate count.
-"""
+Compiled circuit with reduced depth.
+减少深度的编译电路。"""
 
 from quonic.compiler import decompose, optimize, route_swaps
 from quonic.ir import Circuit, GateOperation

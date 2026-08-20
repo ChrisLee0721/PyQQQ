@@ -1,19 +1,16 @@
 """Quantum Optimization Workflow / 量子优化工作流
 
-Complete workflow for combinatorial optimization using QAOA.
+Complete workflow for combinatorial optimization with QAOA.
+QAOA 组合优化的完整工作流。
 
-## Problem / 问题
-Solve MaxCut problem on a graph using QAOA with multi-backend comparison.
-
-## QuoNic Features Used / 使用的 QuoNic 功能
-- QAOA algorithm (量子近似优化算法)
-- Multi-backend comparison (多后端对比)
-- Result analysis (结果分析)
-- Smart scheduling (智能调度)
+## Application / 应用场景
+- Logistics (物流)
+- Scheduling (调度)
+- Network design (网络设计)
 
 ## Output / 输出
-MaxCut value and optimal partition.
-"""
+Optimized solution with multi-backend comparison.
+多后端对比的优化解。"""
 
 from quonic.algorithms import qaoa_maxcut
 from quonic import qshow, reset

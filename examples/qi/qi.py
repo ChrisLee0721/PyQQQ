@@ -1,9 +1,15 @@
-"""Bell state on Quantum Inspire real hardware (Tuna-9).
+"""Quantum Inspire backend / Quantum Inspire 后端
 
-Generates |00> + |11> and runs it on the 9-qubit superconducting device.
-Run the QX emulator first to validate the submit pipeline before using
-hardware (see README).
-"""
+Quantum Inspire backend / Quantum Inspire 后端
+
+## Application / 应用场景
+- Quantum computing (量子计算)
+- Algorithm demonstration (算法演示)
+- Educational (教学)
+
+## Output / 输出
+See code comments for output explanation.
+参见代码注释了解输出说明。"""
 
 from quonic import qgate, qshow
 from quonic.gates import CX, H

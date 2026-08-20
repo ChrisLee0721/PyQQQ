@@ -1,17 +1,16 @@
-"""调度器收益演示：自动选最优方法 vs 手动选错/默认。
+"""Scheduler Demo / 调度器收益演示
 
-跑三个典型电路，对比「调度器自动选择」与「手动选错或默认」的差异：
+Compare smart scheduling vs manual backend selection.
+对比智能调度 vs 手动选择后端。
 
-一、选对方法（性能）：调度器 vs 手动默认 statevector
-    GHZ(24)   —— 纯 Clifford，调度器路由到 stabilizer（默认 statevector 撞 2^n）
-    QAOA(24)  —— 低树宽非 Clifford，调度器路由到 matrix_product_state
+## Application / 应用场景
+- Backend selection (后端选择)
+- Performance optimization (性能优化)
+- Circuit analysis (电路分析)
 
-二、能力矩阵（正确性）：Grover(10) 高树宽非 Clifford
-    调度器正确地留在 statevector；手动选错 stabilizer / MPS / density_matrix
-    都会因 Aer 不支持 mcz->mcphase 而崩溃。
-
-用法：
-    python examples/scheduler_demo.py
+## Output / 输出
+Performance comparison between smart scheduling and manual selection.
+智能调度与手动选择的性能对比。
 """
 
 import time

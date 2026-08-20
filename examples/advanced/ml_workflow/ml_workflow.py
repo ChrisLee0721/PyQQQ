@@ -1,19 +1,16 @@
 """Quantum Machine Learning Workflow / 量子机器学习工作流
 
-Complete workflow for quantum classification using VQC.
+Complete QML workflow with training and prediction.
+带有训练和预测的完整 QML 工作流。
 
-## Problem / 问题
-Classify data points using a variational quantum classifier.
-
-## QuoNic Features Used / 使用的 QuoNic 功能
-- VQC (变分量子分类器)
-- Parameter-shift gradient (参数偏移梯度)
-- Training loop (训练循环)
-- Prediction (预测)
+## Application / 应用场景
+- Classification (分类)
+- Regression (回归)
+- Pattern recognition (模式识别)
 
 ## Output / 输出
-Classification accuracy on training data.
-"""
+Trained model with predictions.
+带有预测的训练模型。"""
 
 from quonic.ml import Ansatz, SPSAOptimizer, train, param_shift_grad, QMLPipeline
 from quonic.ir import Circuit, GateOperation

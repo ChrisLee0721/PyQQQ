@@ -1,16 +1,16 @@
-"""MaxCut problem / 最大割问题
+"""QAOA for MaxCut / QAOA 求解 MaxCut
 
-QAOA for MaxCut: partition graph to maximize edges between sets.
-QAOA 求解最大割：划分图以最大化集合间边数。
+Reproduce Farhi et al. (2014) MaxCut optimization.
+复现 Farhi et al. (2014) MaxCut 优化。
 
 ## Application / 应用场景
+- Combinatorial optimization (组合优化)
 - Graph partitioning (图划分)
-- Network design (网络设计)
-- Clustering (聚类)
+- Benchmark (基准测试)
 
 ## Output / 输出
-Approximate max cut value.
-近似最大割值。"""
+MaxCut value ≥ 1.8 on triangle.
+三角图上 MaxCut ≥ 1.8。"""
 
 from quonic.algorithms import qaoa_maxcut
 
