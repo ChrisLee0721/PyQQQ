@@ -262,7 +262,7 @@ def main():
         examples_root = Path(sys.argv[1])
     else:
         examples_root = Path(__file__).resolve().parent.parent.parent / "PyQQQ" / "examples"
-    tutorials_dir = Path(__file__).resolve().parent.parent / "src" / "pages" / "docs" / "examples"
+    tutorials_dir = Path(__file__).resolve().parent.parent / "public" / "docs" / "examples"
     tutorials_dir.mkdir(parents=True, exist_ok=True)
 
     count = 0

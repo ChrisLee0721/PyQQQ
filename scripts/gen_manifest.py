@@ -18,7 +18,7 @@ import os
 from pathlib import Path
 
 
-def scan_docs(docs_dir: str = "src/pages/docs") -> dict:
+def scan_docs(docs_dir: str = "public/docs") -> dict:
     """Scan docs directory and build manifest."""
     sections = []
     docs_path = Path(docs_dir)
@@ -84,8 +84,8 @@ def scan_docs(docs_dir: str = "src/pages/docs") -> dict:
 def main():
     manifest = scan_docs()
 
-    # Write manifest
-    out_path = "src/pages/docs/manifest.json"
+    # Write manifest to public/docs/ (served as static files)
+    out_path = "public/docs/manifest.json"
     with open(out_path, "w", encoding="utf-8") as f:
         json.dump(manifest, f, indent=2, ensure_ascii=False)
 
