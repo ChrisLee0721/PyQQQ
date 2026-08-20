@@ -3,7 +3,7 @@
 [![CI](https://github.com/ChrisLee0721/QuoNic/actions/workflows/ci.yml/badge.svg)](https://github.com/ChrisLee0721/QuoNic/actions/workflows/ci.yml)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
 [![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/)
-[![Version](https://img.shields.io/badge/version-0.8.2-purple.svg)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-0.10.0-purple.svg)](CHANGELOG.md)
 
 [![Qiskit](https://img.shields.io/badge/Qiskit-1.0+-green.svg)](https://qiskit.org/)
 [![Cirq](https://img.shields.io/badge/Cirq-1.0+-orange.svg)](https://quantumai.google/cirq)
@@ -37,7 +37,47 @@ qshow()
 
 **This is the Bell state — the most classic result in quantum computing.** The same thing takes 10+ lines in raw Qiskit. QuoNic does it in 3. The result appears directly in your terminal or Jupyter.
 
-More copy-and-run examples (GHZ, `qif`, `QInt`, Grover, VQE, QAOA, noise, GPU acceleration, error mitigation) live in [`examples/`](examples/).
+```
+backend: qiskit | shots: 1024
+Result:
+  |00>     512  ( 50.0%)  ####################
+  |11>     512  ( 50.0%)  ####################
+```
+
+### What QuoNic can do / QuoNic 能做什么
+
+```python
+# 75 algorithm templates — one line each
+from quonic.algorithms import grover, vqe, qft, qaoa_maxcut
+
+result = grover("11", 2, shots=1024)           # Grover search
+result = vqe(H2_hamiltonian, n_qubits=2)       # VQE for chemistry
+result = qft(n_qubits=4, shots=1024)           # Quantum Fourier Transform
+result = qaoa_maxcut(edges, n_qubits=3)        # QAOA for optimization
+
+# Smart scheduling — auto-select best backend
+qshow()  # Automatically picks native/qulacs/qiskit based on circuit
+
+# Error mitigation
+from quonic import zne
+result = zne(circuit, noise=0.05, extrapolation="linear")
+
+# Quantum error correction
+from quonic.qec import BitFlipCode, qec_round_trip
+result = qec_round_trip(code="bit_flip", error_rate=0.01)
+
+# Pulse-level control
+from quonic.pulse import grape_optimize
+result = grape_optimize(target_unitary, n_steps=50)
+
+# ZX-calculus optimization
+from quonic.zx import circuit_to_zx, optimize_zx, extract_circuit
+graph = circuit_to_zx(circuit)
+simplified = optimize_zx(graph)
+optimized = extract_circuit(simplified)
+```
+
+More copy-and-run examples (106 total, all bilingual) live in [`examples/`](examples/).
 
 ---
 
