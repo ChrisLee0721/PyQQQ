@@ -35,14 +35,32 @@ def scan_docs(docs_dir: str = "src/pages/docs") -> dict:
             continue
 
         items = []
+        # Scan for .md files
         for md_file in sorted(subdir.glob("*.md")):
-            # Skip Chinese versions (show as separate items)
             if md_file.stem.endswith("_zh"):
                 continue
-
             title = md_file.stem.replace("_", " ").replace("-", " ").title()
             rel_path = f"docs/{subdir.name}/{md_file.name}"
             items.append({"title": title, "file": rel_path})
+
+        # Scan for .py files (examples)
+        for py_file in sorted(subdir.glob("*.py")):
+            if py_file.stem.startswith("_"):
+                continue
+            title = py_file.stem.replace("_", " ").replace("-", " ").title()
+            rel_path = f"docs/{subdir.name}/{py_file.name}"
+            items.append({"title": f"[PY] {title}", "file": rel_path})
+
+        # Scan for nested subdirectories (examples with subfolders)
+        for nested in sorted(subdir.iterdir()):
+            if not nested.is_dir():
+                continue
+            for py_file in sorted(nested.glob("*.py")):
+                if py_file.stem.startswith("_"):
+                    continue
+                title = nested.name.replace("_", " ").replace("-", " ").title()
+                rel_path = f"docs/{subdir.name}/{nested.name}/{py_file.name}"
+                items.append({"title": f"[PY] {title}", "file": rel_path})
 
         if items:
             section_title = subdir.name.replace("_", " ").replace("-", " ").title()

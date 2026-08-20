@@ -4,12 +4,48 @@
       "title": "Getting Started",
       "items": [
         {
+          "title": "Algorithm Report",
+          "file": "docs/algorithm-report.md"
+        },
+        {
+          "title": "Benchmarks",
+          "file": "docs/benchmarks.md"
+        },
+        {
+          "title": "Changelog",
+          "file": "docs/changelog.md"
+        },
+        {
+          "title": "Examples",
+          "file": "docs/examples.md"
+        },
+        {
+          "title": "Gpu Architecture Report",
+          "file": "docs/gpu-architecture-report.md"
+        },
+        {
+          "title": "Index",
+          "file": "docs/index.md"
+        },
+        {
+          "title": "Optimization Report",
+          "file": "docs/optimization-report.md"
+        },
+        {
           "title": "Qgate",
           "file": "docs/qgate.md"
         },
         {
           "title": "Quickstart",
           "file": "docs/quickstart.md"
+        },
+        {
+          "title": "Roadmap",
+          "file": "docs/roadmap.md"
+        },
+        {
+          "title": "Visualization",
+          "file": "docs/visualization.md"
         }
       ]
     },
@@ -71,6 +107,403 @@
         {
           "title": "Zx",
           "file": "docs/api/zx.md"
+        }
+      ]
+    },
+    {
+      "title": "Examples",
+      "items": [
+        {
+          "title": "[PY] Scheduler Demo",
+          "file": "docs/examples/scheduler_demo.py"
+        },
+        {
+          "title": "[PY] Amplitude Amplification",
+          "file": "docs/examples/amplitude_amplification/amplitude_amplification.py"
+        },
+        {
+          "title": "[PY] Amplitude Estimation",
+          "file": "docs/examples/amplitude_estimation/amplitude_estimation.py"
+        },
+        {
+          "title": "[PY] Basic Gates",
+          "file": "docs/examples/basic_gates/basic_gates.py"
+        },
+        {
+          "title": "[PY] Bb84",
+          "file": "docs/examples/bb84/bb84.py"
+        },
+        {
+          "title": "[PY] Bell",
+          "file": "docs/examples/bell/bell.py"
+        },
+        {
+          "title": "[PY] Bernstein Vazirani",
+          "file": "docs/examples/bernstein_vazirani/bernstein_vazirani.py"
+        },
+        {
+          "title": "[PY] Bit Flip Code",
+          "file": "docs/examples/bit_flip_code/bit_flip_code.py"
+        },
+        {
+          "title": "[PY] Cif",
+          "file": "docs/examples/cif/cif.py"
+        },
+        {
+          "title": "[PY] Color Code",
+          "file": "docs/examples/color_code/color_code.py"
+        },
+        {
+          "title": "[PY] Communication",
+          "file": "docs/examples/communication/teleportation.py"
+        },
+        {
+          "title": "[PY] Compare",
+          "file": "docs/examples/compare/compare.py"
+        },
+        {
+          "title": "[PY] Controlled",
+          "file": "docs/examples/controlled/controlled.py"
+        },
+        {
+          "title": "[PY] Coupling Map",
+          "file": "docs/examples/coupling_map/coupling_map.py"
+        },
+        {
+          "title": "[PY] Creg Multi",
+          "file": "docs/examples/creg_multi/creg_multi.py"
+        },
+        {
+          "title": "[PY] Cwhile",
+          "file": "docs/examples/cwhile/cwhile.py"
+        },
+        {
+          "title": "[PY] Decompose",
+          "file": "docs/examples/decompose/decompose.py"
+        },
+        {
+          "title": "[PY] Deutsch Jozsa",
+          "file": "docs/examples/deutsch_jozsa/deutsch_jozsa.py"
+        },
+        {
+          "title": "[PY] Diffusion",
+          "file": "docs/examples/diffusion/diffusion.py"
+        },
+        {
+          "title": "[PY] Discrete Log",
+          "file": "docs/examples/discrete_log/discrete_log.py"
+        },
+        {
+          "title": "[PY] Dqaoa",
+          "file": "docs/examples/dqaoa/dqaoa.py"
+        },
+        {
+          "title": "[PY] Dynamics Simulation",
+          "file": "docs/examples/dynamics_simulation/dynamics_simulation.py"
+        },
+        {
+          "title": "[PY] E91",
+          "file": "docs/examples/e91/e91.py"
+        },
+        {
+          "title": "[PY] Elliptic Curve",
+          "file": "docs/examples/elliptic_curve/elliptic_curve.py"
+        },
+        {
+          "title": "[PY] Error Correction",
+          "file": "docs/examples/error_correction/bit_flip_code.py"
+        },
+        {
+          "title": "[PY] Error Mitigation",
+          "file": "docs/examples/error_mitigation/error_mitigation.py"
+        },
+        {
+          "title": "[PY] Foundational",
+          "file": "docs/examples/foundational/deutsch_jozsa.py"
+        },
+        {
+          "title": "[PY] From Qiskit Nature",
+          "file": "docs/examples/from_qiskit_nature/from_qiskit_nature.py"
+        },
+        {
+          "title": "[PY] Ft Gate",
+          "file": "docs/examples/ft_gate/ft_gate.py"
+        },
+        {
+          "title": "[PY] Ghz",
+          "file": "docs/examples/ghz/ghz.py"
+        },
+        {
+          "title": "[PY] Gpu Demo",
+          "file": "docs/examples/gpu_demo/gpu_demo.py"
+        },
+        {
+          "title": "[PY] Grover",
+          "file": "docs/examples/grover/grover.py"
+        },
+        {
+          "title": "[PY] Groverize",
+          "file": "docs/examples/groverize/groverize.py"
+        },
+        {
+          "title": "[PY] Hadamard Test",
+          "file": "docs/examples/hadamard_test/hadamard_test.py"
+        },
+        {
+          "title": "[PY] Hamiltonian Simulation",
+          "file": "docs/examples/hamiltonian_simulation/hamiltonian_simulation.py"
+        },
+        {
+          "title": "[PY] Hardware Compile",
+          "file": "docs/examples/hardware_compile/hardware_compile.py"
+        },
+        {
+          "title": "[PY] Hhl",
+          "file": "docs/examples/hhl/hhl.py"
+        },
+        {
+          "title": "[PY] Hsp",
+          "file": "docs/examples/hsp/hsp.py"
+        },
+        {
+          "title": "[PY] Jordan Wigner",
+          "file": "docs/examples/jordan_wigner/jordan_wigner.py"
+        },
+        {
+          "title": "[PY] Lattice Svp",
+          "file": "docs/examples/lattice_svp/lattice_svp.py"
+        },
+        {
+          "title": "[PY] Mark State",
+          "file": "docs/examples/mark_state/mark_state.py"
+        },
+        {
+          "title": "[PY] Molecule Vqe",
+          "file": "docs/examples/molecule_vqe/molecule_vqe.py"
+        },
+        {
+          "title": "[PY] Noise",
+          "file": "docs/examples/noise/noise.py"
+        },
+        {
+          "title": "[PY] Noise Model",
+          "file": "docs/examples/noise_model/noise_model.py"
+        },
+        {
+          "title": "[PY] Oracle",
+          "file": "docs/examples/oracle/oracle.py"
+        },
+        {
+          "title": "[PY] Phase Flip Code",
+          "file": "docs/examples/phase_flip_code/phase_flip_code.py"
+        },
+        {
+          "title": "[PY] Qaoa",
+          "file": "docs/examples/qaoa/qaoa.py"
+        },
+        {
+          "title": "[PY] Qaoa Knapsack",
+          "file": "docs/examples/qaoa_knapsack/qaoa_knapsack.py"
+        },
+        {
+          "title": "[PY] Qaoa Maxcut",
+          "file": "docs/examples/qaoa_maxcut/qaoa_maxcut.py"
+        },
+        {
+          "title": "[PY] Qaoa Mis",
+          "file": "docs/examples/qaoa_mis/qaoa_mis.py"
+        },
+        {
+          "title": "[PY] Qaoa Tsp",
+          "file": "docs/examples/qaoa_tsp/qaoa_tsp.py"
+        },
+        {
+          "title": "[PY] Qbm",
+          "file": "docs/examples/qbm/qbm.py"
+        },
+        {
+          "title": "[PY] Qcnn",
+          "file": "docs/examples/qcnn/qcnn.py"
+        },
+        {
+          "title": "[PY] Qft",
+          "file": "docs/examples/qft/qft.py"
+        },
+        {
+          "title": "[PY] Qgan",
+          "file": "docs/examples/qgan/qgan.py"
+        },
+        {
+          "title": "[PY] Qgnn",
+          "file": "docs/examples/qgnn/qgnn.py"
+        },
+        {
+          "title": "[PY] Qi",
+          "file": "docs/examples/qi/qi.py"
+        },
+        {
+          "title": "[PY] Qi Hardware",
+          "file": "docs/examples/qi_hardware/hardware_test.py"
+        },
+        {
+          "title": "[PY] Qi Hardware",
+          "file": "docs/examples/qi_hardware/mitigation_test.py"
+        },
+        {
+          "title": "[PY] Qif",
+          "file": "docs/examples/qif/qif.py"
+        },
+        {
+          "title": "[PY] Qint",
+          "file": "docs/examples/qint/qint.py"
+        },
+        {
+          "title": "[PY] Qng",
+          "file": "docs/examples/qng/qng.py"
+        },
+        {
+          "title": "[PY] Qnn",
+          "file": "docs/examples/qnn/qnn.py"
+        },
+        {
+          "title": "[PY] Qpca",
+          "file": "docs/examples/qpca/qpca.py"
+        },
+        {
+          "title": "[PY] Qpe",
+          "file": "docs/examples/qpe/qpe.py"
+        },
+        {
+          "title": "[PY] Qrl",
+          "file": "docs/examples/qrl/qrl.py"
+        },
+        {
+          "title": "[PY] Qsp",
+          "file": "docs/examples/qsp/qsp.py"
+        },
+        {
+          "title": "[PY] Qsvm",
+          "file": "docs/examples/qsvm/qsvm.py"
+        },
+        {
+          "title": "[PY] Qtda",
+          "file": "docs/examples/qtda/qtda.py"
+        },
+        {
+          "title": "[PY] Qtransformer",
+          "file": "docs/examples/qtransformer/qtransformer.py"
+        },
+        {
+          "title": "[PY] Quantum Annealing",
+          "file": "docs/examples/quantum_annealing/quantum_annealing.py"
+        },
+        {
+          "title": "[PY] Quantum Bayesian",
+          "file": "docs/examples/quantum_bayesian/quantum_bayesian.py"
+        },
+        {
+          "title": "[PY] Quantum Clustering",
+          "file": "docs/examples/quantum_clustering/quantum_clustering.py"
+        },
+        {
+          "title": "[PY] Quantum Counting",
+          "file": "docs/examples/quantum_counting/quantum_counting.py"
+        },
+        {
+          "title": "[PY] Quantum Eigenvalue",
+          "file": "docs/examples/quantum_eigenvalue/quantum_eigenvalue.py"
+        },
+        {
+          "title": "[PY] Quantum Fitting",
+          "file": "docs/examples/quantum_fitting/quantum_fitting.py"
+        },
+        {
+          "title": "[PY] Quantum Kernel",
+          "file": "docs/examples/quantum_kernel/quantum_kernel.py"
+        },
+        {
+          "title": "[PY] Quantum Matrix Inversion",
+          "file": "docs/examples/quantum_matrix_inversion/quantum_matrix_inversion.py"
+        },
+        {
+          "title": "[PY] Quantum Monte Carlo",
+          "file": "docs/examples/quantum_monte_carlo/quantum_monte_carlo.py"
+        },
+        {
+          "title": "[PY] Quantum Ode",
+          "file": "docs/examples/quantum_ode/quantum_ode.py"
+        },
+        {
+          "title": "[PY] Quantum Pde",
+          "file": "docs/examples/quantum_pde/quantum_pde.py"
+        },
+        {
+          "title": "[PY] Quantum Walk",
+          "file": "docs/examples/quantum_walk/quantum_walk.py"
+        },
+        {
+          "title": "[PY] Rejection Sampling",
+          "file": "docs/examples/rejection_sampling/rejection_sampling.py"
+        },
+        {
+          "title": "[PY] Schedule",
+          "file": "docs/examples/schedule/schedule.py"
+        },
+        {
+          "title": "[PY] Shor",
+          "file": "docs/examples/shor/shor.py"
+        },
+        {
+          "title": "[PY] Shor Code",
+          "file": "docs/examples/shor_code/shor_code.py"
+        },
+        {
+          "title": "[PY] Simon",
+          "file": "docs/examples/simon/simon.py"
+        },
+        {
+          "title": "[PY] Stabilizer",
+          "file": "docs/examples/stabilizer/stabilizer.py"
+        },
+        {
+          "title": "[PY] Steane Code",
+          "file": "docs/examples/steane_code/steane_code.py"
+        },
+        {
+          "title": "[PY] Superdense Coding",
+          "file": "docs/examples/superdense_coding/superdense_coding.py"
+        },
+        {
+          "title": "[PY] Surface Code",
+          "file": "docs/examples/surface_code/surface_code.py"
+        },
+        {
+          "title": "[PY] Swap Test",
+          "file": "docs/examples/swap_test/swap_test.py"
+        },
+        {
+          "title": "[PY] Syndrome",
+          "file": "docs/examples/syndrome/syndrome.py"
+        },
+        {
+          "title": "[PY] Teleportation",
+          "file": "docs/examples/teleportation/teleportation.py"
+        },
+        {
+          "title": "[PY] Trotter",
+          "file": "docs/examples/trotter/trotter.py"
+        },
+        {
+          "title": "[PY] Vqc",
+          "file": "docs/examples/vqc/vqc.py"
+        },
+        {
+          "title": "[PY] Vqe",
+          "file": "docs/examples/vqe/vqe.py"
+        },
+        {
+          "title": "[PY] Vqr",
+          "file": "docs/examples/vqr/vqr.py"
         }
       ]
     },
