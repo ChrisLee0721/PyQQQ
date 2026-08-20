@@ -36,7 +36,7 @@ This amplifies the marked state's probability. After ~√N iterations, measuring
 
 ### Circuit / 电路
 
-![Grover Search Circuit](/images/grover_circuit.png)
+![Grover Search Circuit](/images/grover_circuit.svg)
 
 ## Step-by-step walkthrough / 逐步解析
 

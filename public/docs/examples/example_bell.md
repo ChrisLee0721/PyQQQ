@@ -82,7 +82,7 @@ print(result.counts)  # {'00': ~512, '11': ~512}
 
 ### 电路图
 
-![Bell State Circuit](/images/bell_circuit.png)
+![Bell State Circuit](/images/bell_circuit.svg)
 
 - **H** = Hadamard 门（创建叠加态）
 - **●—⊕** = CNOT 门（创建纠缠）
