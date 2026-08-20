@@ -39,16 +39,7 @@ markdown_extensions:
       permalink: true
 
 exclude_docs: |
-  domestic-hardware.md
-  quonic-hub.md
-  scheduler-enhancement.md
-  tech-debt.md
-  performance-optimization.md
-  v0.6.0-report.md
-  tutorial.ipynb
-  paper-outline.md
-  coupling-matrix.md
-  community.md
+  local/**
 
 plugins:
   - search
