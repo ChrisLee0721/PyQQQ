@@ -12,9 +12,8 @@ Reproduce Farhi et al. (2014) MaxCut optimization.
 MaxCut value ≥ 1.8 on triangle.
 三角图上 MaxCut ≥ 1.8。"""
 
+
 from quonic.algorithms import qaoa_maxcut
-from quonic.ir import Circuit, GateOperation
-import numpy as np
 
 print("=== Paper Reproduction: QAOA for MaxCut ===")
 print("Reference: Farhi et al., arXiv:1411.4028 (2014)")

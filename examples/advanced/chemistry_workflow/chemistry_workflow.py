@@ -12,10 +12,9 @@ Complete workflow for molecular ground state energy calculation.
 Ground state energy with error mitigation.
 带有错误缓解的基态能量。"""
 
+from quonic import NoiseModel, zne
 from quonic.algorithms import vqe
-from quonic.ml import Ansatz, SPSAOptimizer, train, param_shift_grad
-from quonic import zne, NoiseModel
-from quonic.ir import Circuit, GateOperation
+from quonic.ml import Ansatz, SPSAOptimizer, train
 
 # H₂ Hamiltonian (simplified)
 # H = -0.81261 II + 0.17120 ZZ + -0.22279 XX + 0.17120 YY

@@ -12,9 +12,8 @@ Complete QML workflow with training and prediction.
 Trained model with predictions.
 带有预测的训练模型。"""
 
-from quonic.ml import Ansatz, SPSAOptimizer, train, param_shift_grad, QMLPipeline
-from quonic.ir import Circuit, GateOperation
-import numpy as np
+
+from quonic.ml import Ansatz, QMLPipeline, SPSAOptimizer, train
 
 print("=== Quantum Machine Learning: VQC Classification ===")
 print()

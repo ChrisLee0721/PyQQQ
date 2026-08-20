@@ -12,14 +12,15 @@ Complete QEC workflow with noise modeling and decoding.
 Error correction performance comparison.
 纠错性能对比。"""
 
+
 from quonic.qec import (
-    BitFlipCode, PhaseFlipCode, SteaneCode,
-    StabilizerCode, UnionFindDecoder,
-    decode_mwpm, decode_lookup,
+    BitFlipCode,
+    StabilizerCode,
+    UnionFindDecoder,
+    decode_lookup,
+    decode_mwpm,
     qec_round_trip,
 )
-from quonic.ir import Circuit, GateOperation
-import numpy as np
 
 print("=== Quantum Error Correction Workflow ===")
 print()
@@ -28,7 +29,7 @@ print()
 print("--- 1. Bit-flip Code ---")
 code = BitFlipCode()
 print(f"Code: [{code.n_total}, {code.n_data}, 3]")
-print(f"Can correct: single bit-flip errors")
+print("Can correct: single bit-flip errors")
 print()
 
 # 2. End-to-end QEC

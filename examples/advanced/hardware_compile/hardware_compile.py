@@ -15,8 +15,6 @@ Compiled circuit with reduced depth.
 from quonic.compiler import decompose, optimize, route_swaps
 from quonic.ir import Circuit, GateOperation
 from quonic.topology import CouplingMap
-from quonic import qshow, reset
-from quonic.gates import H, CX
 
 print("=== Hardware-Aware Compilation ===")
 print()

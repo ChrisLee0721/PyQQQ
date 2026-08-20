@@ -12,9 +12,10 @@ QAOA 组合优化的完整工作流。
 Optimized solution with multi-backend comparison.
 多后端对比的优化解。"""
 
+from quonic import qgate, qshow, reset
 from quonic.algorithms import qaoa_maxcut
-from quonic import qshow, reset
-from quonic.gates import H, CX
+from quonic.compiler import decompose, optimize
+from quonic.gates import CX, H
 from quonic.ir import Circuit, GateOperation
 
 # Define graph: triangle with edges (0,1), (1,2), (0,2)
@@ -49,7 +50,6 @@ print()
 
 # Method 3: Circuit optimization
 print("--- Method 3: Circuit Optimization ---")
-from quonic.compiler import optimize, decompose
 
 circuit = Circuit()
 circuit.allocate(3)

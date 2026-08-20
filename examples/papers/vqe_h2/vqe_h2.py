@@ -12,10 +12,8 @@ Reproduce Peruzzo et al. (2014) ground state energy calculation.
 Ground state energy ≈ -1.137 Hartree.
 基态能量 ≈ -1.137 Hartree。"""
 
-from quonic.algorithms import vqe
+
 from quonic.ml import Ansatz, SPSAOptimizer, train
-from quonic.ir import Circuit, GateOperation
-import numpy as np
 
 print("=== Paper Reproduction: VQE for H₂ ===")
 print("Reference: Peruzzo et al., Nature Communications 5, 4213 (2014)")

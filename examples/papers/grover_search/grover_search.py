@@ -12,11 +12,12 @@ Reproduce Grover (1996) quantum search.
 Target found with ~99% probability.
 目标以 ~99% 概率找到。"""
 
+
+from quonic import creg, cwhile, qgate, reset
 from quonic.algorithms import grover, groverize
-from quonic import cwhile, creg, qgate, reset
-from quonic.gates import H, Ry
-from quonic.ir import Circuit, GateOperation
-import math
+from quonic.backends.native import NativeBackend
+from quonic.gates import Ry
+from quonic.stack import current_circuit
 
 print("=== Paper Reproduction: Grover's Algorithm ===")
 print("Reference: Grover, L.K., STOC 1996")
