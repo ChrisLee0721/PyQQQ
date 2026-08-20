@@ -71,11 +71,21 @@ nav:
     - Distributed: api/distributed.md
     - ZX-Calculus: api/zx.md
   - Tutorials:
-    - 01 Basics: tutorials/01_basics.md
-    - 02 Algorithms: tutorials/02_algorithms.md
-    - 03 Noise Mitigation: tutorials/03_noise_mitigation.md
-    - 04 GPU Acceleration: tutorials/04_gpu_acceleration.md
-    - 05 Advanced: tutorials/05_advanced.md
+    - 01 Basics:
+      - English: tutorials/01_basics/01_basics.md
+      - 中文: tutorials/01_basics/01_basics_zh.md
+    - 02 Algorithms:
+      - English: tutorials/02_algorithms/02_algorithms.md
+      - 中文: tutorials/02_algorithms/02_algorithms_zh.md
+    - 03 Noise Mitigation:
+      - English: tutorials/03_noise_mitigation/03_noise_mitigation.md
+      - 中文: tutorials/03_noise_mitigation/03_noise_mitigation_zh.md
+    - 04 GPU Acceleration:
+      - English: tutorials/04_gpu_acceleration/04_gpu_acceleration.md
+      - 中文: tutorials/04_gpu_acceleration/04_gpu_acceleration_zh.md
+    - 05 Advanced:
+      - English: tutorials/05_advanced/05_advanced.md
+      - 中文: tutorials/05_advanced/05_advanced_zh.md
   - Examples: examples.md
   - Benchmarks: benchmarks.md
   - Changelog: changelog.md
