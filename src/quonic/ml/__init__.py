@@ -11,6 +11,7 @@ Example::
     result = train(ansatz, encoded, opt, observable="ZZZZ")
 """
 
+from .adjoint import adjoint_grad, adjoint_grad_statevector
 from .ansatz import Ansatz
 from .encoding import amplitude_encode, angle_encode, iqp_encode
 from .loss import cross_entropy_loss, expectation_loss, fidelity_loss
@@ -22,6 +23,8 @@ __all__ = [
     "Ansatz",
     "QMLPipeline",
     "QMLResult",
+    "adjoint_grad",
+    "adjoint_grad_statevector",
     "angle_encode",
     "amplitude_encode",
     "iqp_encode",
