@@ -4,6 +4,26 @@ QuoNic benchmarks cover simulation speed, circuit compilation, algorithm perform
 
 QuoNic 的基准测试覆盖模拟速度、电路编译、算法性能和调度器优化。
 
+## Code Size: QuoNic vs Qiskit
+
+QuoNic reduces quantum program code by **77%** on average compared to raw Qiskit.
+
+| Example | QuoNic (lines) | Qiskit (lines) | Reduction |
+|---------|---------------|----------------|-----------|
+| Bell State | 3 | 10 | 3.3x |
+| GHZ State (n qubits) | 5 | 11 | 2.2x |
+| Grover Search | 3 | 25 | 8.3x |
+| QFT (n qubits) | 4 | 20 | 5.0x |
+| VQE | 8 | 30 | 3.8x |
+| Noise Simulation | 4 | 20 | 5.0x |
+| **Total** | **27** | **116** | **4.3x** |
+
+Why is QuoNic shorter?
+- No `QuantumCircuit` object — just call `qgate()`
+- No manual `measure()` — `qshow()` handles it
+- No backend boilerplate — smart scheduling picks the best one
+- Built-in algorithms — `grover()`, `qft()`, `vqe()` are one-liners
+
 ## Simulation Speed / 模拟速度
 
 ### Statevector Simulator / 态向量模拟器
