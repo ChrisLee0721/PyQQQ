@@ -45,7 +45,7 @@ Result:
   |11>     512  ( 50.0%)  ####################
 ```
 
-### What QuoNic can do / QuoNic 能做什么
+### What QuoNic can do / QuoNic 
 
 ```python
 # 75 algorithm templates — one line each
@@ -82,7 +82,7 @@ More copy-and-run examples (106 total, all bilingual) live in [`examples/`](exam
 
 ---
 
-##  Real Hardware / 真机验证
+##  Real Hardware / 
 
 QuoNic has been tested on **3 real quantum hardware platforms**:
 
