@@ -2,6 +2,46 @@
 
 本项目所有重要变更都记录于此。All notable changes to this project are documented here.
 
+## [1.0.0] — 2026-08-20
+
+正式版发布。API 冻结，穷举测试完成，真机验证。
+Official release. API freeze, exhaustive testing, real hardware verified.
+
+### 新增 Added
+
+- **穷举测试**：跨后端一致性 + 边界情况 + 功能组合，771 测试全绿
+  **Exhaustive tests**: cross-backend consistency + edge cases + integration, 771 tests passing
+
+- **真机验证**：本源量子 WK_C180 + AWS Rigetti Cepheus + Quantum Inspire Tuna
+  **Real hardware**: Origin Quantum WK_C180 + AWS Rigetti Cepheus + Quantum Inspire Tuna
+
+- **ML 框架完整**：伴随微分 + GPU 加速 + 批处理 + 混合模型 + 可视化
+  **ML framework complete**: adjoint diff + GPU + batch + hybrid model + visualization
+
+- **MPS 张量网络**：期望值 + 正则化 + DMRG + 噪声 + 自定义门
+  **MPS tensor network**: expectation + canonicalize + DMRG + noise + custom gates
+
+- **ZX-calculus**：7 种重写规则 + 电路提取 + 模式匹配
+  **ZX-calculus**: 7 rewrite rules + circuit extraction + pattern matching
+
+### API 冻结 / API Freeze
+
+v1.0.0 后遵循 semver 2.0.0：
+- Patch (1.0.x): bug fix, 不改 API
+- Minor (1.x.0): 新功能, 不破坏旧 API
+- Major (2.0.0): 破坏性变更, 需要迁移指南
+
+### 统计 Stats
+
+- 771 passed, 61 skipped, 0 failed
+- 19 backends (12 simulators + 7 hardware)
+- 75 algorithm templates with examples
+- 25 visualization functions
+- 106 examples (all bilingual)
+- 5/5 tutorial notebooks
+- 14 API documentation pages
+- 3 real hardware platforms verified
+
 ## [0.10.0] — 2026-08-20
 
 进阶案例 + 论文复现 + 双语文档 + FPAA 优化。Advanced examples, paper reproductions, bilingual docs, FPAA optimization.
