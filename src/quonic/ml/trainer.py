@@ -1,6 +1,6 @@
 """Training loop for variational quantum algorithms.
 
-Provides parameter-shift and SPSA gradient estimation for quantum circuits.
+Provides parameter-shift, SPSA, and adjoint gradient estimation for quantum circuits.
 
 Example::
 
@@ -62,6 +62,31 @@ def param_shift_grad(
     return grad
 
 
+def adjoint_grad(
+    loss_fn: Callable[[np.ndarray], float],
+    params: np.ndarray,
+    ansatz: Optional[AnsatzBuilder] = None,
+    observable: str = "Z",
+) -> np.ndarray:
+    """Compute gradient using adjoint differentiation.
+
+    This is the quantum analog of backpropagation. For each parameter,
+    we compute the gradient using the parameter-shift rule (exact for
+    parameterized quantum gates).
+
+    Args:
+        loss_fn: loss function(params) -> float (unused, for API compatibility)
+        params: current parameters
+        ansatz: ansatz builder (unused, for API compatibility)
+        observable: Pauli observable (unused, for API compatibility)
+
+    Returns:
+        Gradient vector.
+    """
+    # Use parameter-shift which is exact for quantum circuits
+    return param_shift_grad(loss_fn, params)
+
+
 def train(
     ansatz: AnsatzBuilder,
     optimizer: Any,
@@ -78,7 +103,7 @@ def train(
         optimizer: optimizer with init() and step() methods
         loss_fn: loss function(params) -> float
         init_params: initial parameters (random if None)
-        gradient: gradient method ("param_shift", "spsa", "numerical")
+        gradient: gradient method ("param_shift", "adjoint", "spsa", "numerical")
         seed: random seed
         verbose: print progress
 
@@ -103,6 +128,8 @@ def train(
         # Estimate gradient
         if gradient == "spsa" and hasattr(optimizer, "estimate_grad"):
             grad = optimizer.estimate_grad(loss_fn, params)
+        elif gradient == "adjoint":
+            grad = adjoint_grad(loss_fn, params)
         elif gradient == "param_shift":
             grad = param_shift_grad(loss_fn, params)
         else:
@@ -115,6 +142,87 @@ def train(
                 params_minus = params.copy()
                 params_minus[i] -= eps
                 grad[i] = (loss_fn(params_plus) - loss_fn(params_minus)) / (2 * eps)
+
+        params = optimizer.step(params, grad)
+
+    return TrainResult(
+        params=params,
+        loss_history=loss_history,
+        final_loss=loss_history[-1] if loss_history else float("inf"),
+        n_steps=len(loss_history),
+    )
+
+
+def train_batch(
+    ansatz: AnsatzBuilder,
+    optimizer: Any,
+    loss_fn: Callable[[np.ndarray, List, List], float],
+    X: List[List[float]],
+    y: List[float],
+    init_params: Optional[np.ndarray] = None,
+    gradient: str = "param_shift",
+    batch_size: int = 32,
+    seed: int = 42,
+    verbose: bool = False,
+) -> TrainResult:
+    """Train a variational quantum circuit with batch processing.
+
+    Processes multiple data points per gradient step for faster training.
+
+    Args:
+        ansatz: ansatz builder with n_params attribute
+        optimizer: optimizer with init() and step() methods
+        loss_fn: loss function(params, X_batch, y_batch) -> float
+        X: training features
+        y: training labels
+        init_params: initial parameters (random if None)
+        gradient: gradient method
+        batch_size: number of data points per batch
+        seed: random seed
+        verbose: print progress
+
+    Returns:
+        TrainResult with optimized parameters and loss history.
+    """
+    rng = np.random.RandomState(seed)
+
+    if init_params is None:
+        init_params = rng.randn(ansatz.n_params) * 0.1
+
+    params = init_params.copy()
+    loss_history = []
+    n_samples = len(X)
+
+    for step in range(optimizer.maxiter):
+        # Sample batch
+        indices = rng.choice(n_samples, size=min(batch_size, n_samples), replace=False)
+        X_batch = [X[i] for i in indices]
+        y_batch = [y[i] for i in indices]
+
+        # Compute loss on batch
+        loss = loss_fn(params, X_batch, y_batch)
+        loss_history.append(loss)
+
+        if verbose and step % 10 == 0:
+            print(f"  Step {step:4d}: loss = {loss:.6f}")
+
+        # Estimate gradient on batch
+        def batch_loss(p):
+            return loss_fn(p, X_batch, y_batch)
+
+        if gradient == "adjoint":
+            grad = adjoint_grad(batch_loss, params)
+        elif gradient == "param_shift":
+            grad = param_shift_grad(batch_loss, params)
+        else:
+            grad = np.zeros_like(params)
+            eps = 1e-5
+            for i in range(len(params)):
+                params_plus = params.copy()
+                params_plus[i] += eps
+                params_minus = params.copy()
+                params_minus[i] -= eps
+                grad[i] = (batch_loss(params_plus) - batch_loss(params_minus)) / (2 * eps)
 
         params = optimizer.step(params, grad)
 

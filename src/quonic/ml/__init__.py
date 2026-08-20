@@ -12,18 +12,20 @@ Example::
 """
 
 from .adjoint import adjoint_grad, adjoint_grad_statevector
+from .adjoint_gpu import adjoint_grad_gpu
 from .ansatz import Ansatz
 from .encoding import amplitude_encode, angle_encode, iqp_encode
 from .loss import cross_entropy_loss, expectation_loss, fidelity_loss
 from .optimizer import AdamOptimizer, QNGOptimizer, SPSAOptimizer
 from .pipeline import QMLPipeline, QMLResult
-from .trainer import param_shift_grad, train
+from .trainer import param_shift_grad, train, train_batch
 
 __all__ = [
     "Ansatz",
     "QMLPipeline",
     "QMLResult",
     "adjoint_grad",
+    "adjoint_grad_gpu",
     "adjoint_grad_statevector",
     "angle_encode",
     "amplitude_encode",
@@ -36,4 +38,5 @@ __all__ = [
     "QNGOptimizer",
     "param_shift_grad",
     "train",
+    "train_batch",
 ]
