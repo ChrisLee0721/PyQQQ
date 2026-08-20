@@ -2,10 +2,10 @@
 
 本项目所有重要变更都记录于此。All notable changes to this project are documented here.
 
-## [1.0.0] — 2026-08-20
+## [0.11.0] — 2026-08-20
 
-正式版发布。API 冻结，穷举测试完成，真机验证。
-Official release. API freeze, exhaustive testing, real hardware verified.
+穷举测试 + 真机验证 + API 锁定。
+Exhaustive testing + real hardware verification + API lock.
 
 ### 新增 Added
 
