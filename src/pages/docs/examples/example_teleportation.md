@@ -19,6 +19,8 @@ Transfer a quantum state from one qubit to another using entanglement and classi
 
 Teleportation uses 3 qubits and 2 classical bits / 隐形传态使用 3 个量子比特和 2 个经典比特：
 
+![Quantum Teleportation Circuit](/images/teleportation_circuit.png)
+
 ```
 Alice                          Bob
   q₀ (state to send)           q₂ (receives state)

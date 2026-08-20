@@ -34,6 +34,10 @@ This amplifies the marked state's probability. After ~√N iterations, measuring
 
 经过 ~√N 次迭代，测量几乎必然给出目标态。
 
+### Circuit / 电路
+
+![Grover Search Circuit](/images/grover_circuit.png)
+
 ## Step-by-step walkthrough / 逐步解析
 
 ### Step 1: Initialize superposition / 初始化叠加态
