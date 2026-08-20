@@ -66,7 +66,7 @@
                     <i class="fa-solid fa-globe text-xs"></i>
                     <span id="lang-label">EN</span>
                 </button>
-                <a href="docs.html" class="text-sm text-doc-accent font-medium">Docs Home</a>
+                <a href="doc-viewer.html?file=docs/quickstart.md" class="text-sm text-doc-accent font-medium">Docs Home</a>
                 <a href="index.html" class="text-sm text-doc-dim hover:text-doc-accent transition-colors">Home</a>
                 <a href="https://github.com/ChrisLee0721/QuoNic" class="text-sm text-doc-dim hover:text-doc-accent transition-colors flex items-center gap-1">
                     <i class="fa-brands fa-github"></i> GitHub
@@ -109,7 +109,6 @@
         });
 
         // --- Language system ---
-        // Files that have _zh counterparts
         const ZH_FILES = new Set();
         let currentLang = localStorage.getItem('quonic-docs-lang') || 'en';
 
@@ -128,9 +127,8 @@
 
         function applyLang() {
             document.getElementById('lang-label').textContent = currentLang === 'en' ? 'EN' : '中文';
-            // Update sidebar links
             document.querySelectorAll('#sidebar a[data-file]').forEach(a => {
-                const baseFile = a.dataset.file; // always the EN path
+                const baseFile = a.dataset.file;
                 const badge = a.querySelector('.lang-badge');
                 if (currentLang === 'zh' && hasZh(baseFile)) {
                     a.href = `doc-viewer.html?file=${toZhPath(baseFile)}`;
@@ -147,25 +145,23 @@
             localStorage.setItem('quonic-docs-lang', currentLang);
             applyLang();
 
-            // Reload current document in new language
-            const params = new URLSearchParams(window.location.search);
-            const filePath = params.get('file');
-            if (filePath) {
+            const p = new URLSearchParams(window.location.search);
+            const f = p.get('file');
+            if (f) {
                 let newFile;
-                if (currentLang === 'zh' && hasZh(filePath)) {
-                    newFile = toZhPath(filePath);
-                } else if (currentLang === 'zh' && !hasZh(filePath)) {
-                    // Stay on current file, show notice
-                    showLangNotice(filePath);
+                if (currentLang === 'zh' && hasZh(f)) {
+                    newFile = toZhPath(f);
+                } else if (currentLang === 'zh' && !hasZh(f)) {
+                    showLangNotice(f);
                     return;
                 } else {
-                    newFile = toEnPath(filePath);
+                    newFile = toEnPath(f);
                 }
                 window.location.search = '?file=' + newFile;
             }
         }
 
-        function showLangNotice(filePath) {
+        function showLangNotice(f) {
             const notice = document.getElementById('lang-notice');
             const text = document.getElementById('lang-notice-text');
             text.textContent = 'This page is bilingual — Chinese content is included inline. / 本页为双语页面，中文内容已包含在内。';
@@ -176,8 +172,6 @@
         fetch('docs/manifest.json')
             .then(r => r.json())
             .then(manifest => {
-                // Collect all files that have _zh versions by scanning manifest
-                // We'll also do a HEAD check for known _zh files
                 const zhChecks = [];
                 manifest.sections.forEach(section => {
                     section.items.forEach(item => {
@@ -192,7 +186,6 @@
                     });
                 });
 
-                // Build sidebar
                 const sidebar = document.getElementById('sidebar');
                 sidebar.innerHTML = '';
                 manifest.sections.forEach(section => {
@@ -204,12 +197,11 @@
 
                     section.items.forEach(item => {
                         const a = document.createElement('a');
-                        a.dataset.file = item.file; // store base EN path
+                        a.dataset.file = item.file;
                         a.href = `doc-viewer.html?file=${item.file}`;
                         a.textContent = item.title;
                         a.className = 'block px-3 py-1.5 rounded-lg text-doc-dim hover:text-doc-text hover:bg-doc-surface transition-colors';
 
-                        // Add language badge for .md files
                         if (item.file.endsWith('.md') && !item.file.endsWith('_zh.md')) {
                             const badge = document.createElement('span');
                             badge.className = 'lang-badge en';
@@ -222,15 +214,13 @@
                     sidebar.appendChild(div);
                 });
 
-                // After collecting zh file info, apply language
                 Promise.all(zhChecks).then(() => {
                     applyLang();
 
-                    // Highlight active link
-                    const params = new URLSearchParams(window.location.search);
-                    const filePath = params.get('file');
-                    if (filePath) {
-                        const normPath = toEnPath(filePath); // normalize to EN for matching
+                    const p = new URLSearchParams(window.location.search);
+                    const f = p.get('file');
+                    if (f) {
+                        const normPath = toEnPath(f);
                         sidebar.querySelectorAll('a[data-file]').forEach(a => {
                             if (a.dataset.file === normPath) {
                                 a.classList.add('text-doc-accent', 'bg-doc-accent/10', 'font-medium');
@@ -238,9 +228,8 @@
                             }
                         });
 
-                        // Show notice if viewing in zh but file has no zh version
-                        if (currentLang === 'zh' && !hasZh(filePath) && filePath.endsWith('.md')) {
-                            showLangNotice(filePath);
+                        if (currentLang === 'zh' && !hasZh(f) && f.endsWith('.md')) {
+                            showLangNotice(f);
                         }
                     }
                 });
@@ -250,27 +239,24 @@
             });
 
         // --- Load and render document ---
-        const params = new URLSearchParams(window.location.search);
-        const filePath = params.get('file');
+        const urlParams = new URLSearchParams(window.location.search);
+        const urlFile = urlParams.get('file');
 
-        if (filePath) {
-            fetch(filePath)
+        if (urlFile) {
+            fetch(urlFile)
                 .then(response => {
-                    if (!response.ok) throw new Error('File not found');
+                    if (!response.ok) throw new Error('File not found: ' + urlFile);
                     return response.text();
                 })
                 .then(md => {
-                    // Remove YAML frontmatter
                     const content = md.replace(/^---[\s\S]*?---\n/, '');
                     document.getElementById('content').innerHTML = marked.parse(content);
                     document.getElementById('content').style.display = 'block';
                     document.getElementById('loading').style.display = 'none';
 
-                    // Update title
                     const h1 = document.querySelector('.markdown-body h1');
                     if (h1) document.title = h1.textContent + ' — QuoNic';
 
-                    // Generate TOC from headings
                     const headings = document.querySelectorAll('.markdown-body h2, .markdown-body h3');
                     const toc = document.getElementById('toc');
                     toc.innerHTML = '';
@@ -294,7 +280,7 @@
                     document.getElementById('loading').textContent = 'Error loading document: ' + err.message;
                 });
         } else {
-            document.getElementById('loading').innerHTML = 'Select a document from the sidebar to get started.<br><br><a href="docs.html" style="color:#7aa2f7">← Back to Docs Home</a>';
+            document.getElementById('loading').innerHTML = 'Select a document from the sidebar to get started.<br><br><a href="doc-viewer.html?file=docs/quickstart.md" style="color:#7aa2f7">← Back to Docs Home</a>';
         }
     </script>
 </body>
