@@ -1,20 +1,32 @@
-# Quantum Bayesian / 量子贝叶斯
+# Quantum Bayesian / Quantum version of Bayesian updating.
 
-> **Quantum ML** / 量子机器学习
+> **Example** / 示例
 
-## Overview / 概述
+---
+
+## 目录
+
+- [为什么需要？](#为什么需要)
+- [快速上手](#快速上手)
+- [原理详解](#原理详解)
+- [代码详解](#代码详解)
+- [进阶用法](#进阶用法)
+- [适用场景](#适用场景)
+- [常见问题](#常见问题)
+- [学习路径](#学习路径)
+- [完整示例代码](#完整示例代码)
+
+---
+
+## 为什么需要？
 
 Quantum Bayesian Inference / 量子贝叶斯推断
 
 Quantum version of Bayesian updating.
 
-## Application / 应用场景
+---
 
-- Inference (推断)
-- Decision making (决策)
-- Statistics (统计)
-
-## Code / 代码
+## 快速上手
 
 ```python
 from quonic.algorithms import quantum_bayesian_demo
@@ -23,12 +35,113 @@ result = quantum_bayesian_demo(prior_h0=0.5, likelihood_h0=0.8, likelihood_h1=0.
 print(result.counts)
 ```
 
-## Run / 运行
+**预期输出**：
+
+```
+See code comments for output explanation.
+```
+
+---
+
+## 原理详解
+
+### 电路图
+
+![Quantum Bayesian circuit](/images/quantum_bayesian_circuit.svg)
+
+See code comments for explanation.
+
+---
+
+## 代码详解
+
+```python
+from quonic.algorithms import quantum_bayesian_demo
+
+result = quantum_bayesian_demo(prior_h0=0.5, likelihood_h0=0.8, likelihood_h1=0.3)
+print(result.counts)
+```
+
+---
+
+## 进阶用法
+
+See the full example code below for more advanced usage.
+
+---
+
+## 适用场景
+
+- - Inference (推断)
+- - Decision making (决策)
+- - Statistics (统计)
+
+---
+
+## 常见问题
+
+### Q1: How to run this example?
 
 ```bash
 python examples/quantum_bayesian/quantum_bayesian.py
 ```
 
-## Download / 下载
+### Q2: What backend is used?
 
-[quantum_bayesian.py](https://github.com/ChrisLee0721/QuoNic/blob/main/examples/quantum_bayesian/quantum_bayesian.py)
+The example uses the default backend. You can specify a different one:
+
+```python
+qshow(backend='qiskit')
+```
+
+---
+
+## 学习路径
+
+### 前置知识
+
+- Basic quantum computing concepts
+- QuoNic API basics
+
+### 继续学习
+
+- Other examples in this documentation
+- QuoNic API reference
+
+---
+
+## 完整示例代码
+
+```python
+"""Quantum Bayesian Inference / 量子贝叶斯推断
+
+Quantum version of Bayesian updating.
+量子版贝叶斯更新。
+
+## Application / 应用场景
+- Inference (推断)
+- Decision making (决策)
+- Statistics (统计)
+
+## Output / 输出
+Posterior probabilities.
+后验概率。"""
+
+from quonic.algorithms import quantum_bayesian_demo
+
+result = quantum_bayesian_demo(prior_h0=0.5, likelihood_h0=0.8, likelihood_h1=0.3)
+print(result.counts)
+
+```
+
+### 运行方式
+
+```bash
+python examples/quantum_bayesian/quantum_bayesian.py
+```
+
+---
+
+## 下载
+
+- [quantum_bayesian.py](https://github.com/ChrisLee0721/QuoNic/blob/main/examples/quantum_bayesian/quantum_bayesian.py)

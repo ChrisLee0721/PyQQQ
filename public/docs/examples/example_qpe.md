@@ -1,90 +1,152 @@
-# Quantum Phase Estimation / 量子相位估计
+# Qpe / Quantum Phase Estimation / 量子相位估计
 
-> **Algorithms** / 算法
+> **Example** / 示例
 
-## Overview / 概述
+---
 
-Estimate the eigenvalue of a unitary operator. Foundation for Shor's algorithm and quantum chemistry.
+## 目录
 
-估计酉算子的本征值。是 Shor 算法和量子化学的基础。
+- [为什么需要？](#为什么需要)
+- [快速上手](#快速上手)
+- [原理详解](#原理详解)
+- [代码详解](#代码详解)
+- [进阶用法](#进阶用法)
+- [适用场景](#适用场景)
+- [常见问题](#常见问题)
+- [学习路径](#学习路径)
+- [完整示例代码](#完整示例代码)
 
-## Application / 应用场景
+---
 
-- Shor's algorithm: period finding (Shor 算法：周期查找)
-- Quantum chemistry: energy eigenvalues (量子化学：能量本征值)
-- Quantum counting: number of solutions (量子计数：解的数量)
-- HHL algorithm: linear systems (HHL 算法：线性系统)
+## 为什么需要？
 
-## How it works / 原理
+Quantum Phase Estimation / 量子相位估计
 
-QPE estimates θ in U|ψ⟩ = e^{2πiθ}|ψ⟩ / QPE 估计 U|ψ⟩ = e^{2πiθ}|ψ⟩ 中的 θ：
+Quantum Phase Estimation / 量子相位估计
 
-```
-Control qubits          Target
-  |0⟩ ─H─●──●──●──QFT†──Measure → θ
-  |0⟩ ─H─┼──●──┼───────
-  |0⟩ ─H─┼──┼──●───────
-              │
-         U^{2^0} U^{2^1} U^{2^2}
-              │
-         |ψ⟩ ─U──────────────────
-```
+---
 
-### Steps / 步骤
-
-1. **Initialize**: Put control qubits in superposition
-   初始化：将控制量子比特置于叠加态
-
-2. **Controlled-U**: Apply U^{2^k} controlled by qubit k
-   受控 U：应用由量子比特 k 控制的 U^{2^k}
-
-3. **Inverse QFT**: Extract phase information
-   逆 QFT：提取相位信息
-
-4. **Measure**: Read out the phase as a binary fraction
-   测量：读出相位的二进制小数
-
-## Code / 代码
+## 快速上手
 
 ```python
 import math
+
 from quonic.algorithms import qpe
 
-# Estimate phase of e^{iπ} = e^{2πi·0.5} → θ = 0.5
-# 估计 e^{iπ} = e^{2πi·0.5} 的相位 → θ = 0.5
 result = qpe(math.pi, n_precision=3, shots=1024)
-print(result.counts)
-# Dominant: "...100" → binary 0.100 = 0.5 ✓
+print(result.counts)  # dominated by "...010" (rightmost 3 bits -> j = 2)
 ```
 
-### Understanding the output / 理解输出
-
-The measurement gives a binary fraction / 测量给出二进制小数：
+**预期输出**：
 
 ```
-n_precision=3, θ=0.5
-Binary: 0.100 = 1/2 = 0.5 ✓
-
-n_precision=4, θ=0.25
-Binary: 0.0100 = 1/4 = 0.25 ✓
+See code comments for output explanation.
 ```
 
-## Expected Output / 预期输出
+---
 
+## 原理详解
+
+### 电路图
+
+![Qpe circuit](/images/qpe_circuit.svg)
+
+See code comments for explanation.
+
+---
+
+## 代码详解
+
+```python
+import math
+
+from quonic.algorithms import qpe
+
+result = qpe(math.pi, n_precision=3, shots=1024)
+print(result.counts)  # dominated by "...010" (rightmost 3 bits -> j = 2)
 ```
-backend: native | shots: 1024
-Result:
-  |010>    1024  (100.0%)  ####################
-```
 
-Rightmost 3 bits = `010` → binary 0.10 = 0.5 → phase = π ✓
+---
 
-## Run / 运行
+## 进阶用法
+
+See the full example code below for more advanced usage.
+
+---
+
+## 适用场景
+
+- - Quantum computing (量子计算)
+- - Algorithm demonstration (算法演示)
+- - Educational (教学)
+
+---
+
+## 常见问题
+
+### Q1: How to run this example?
 
 ```bash
 python examples/qpe/qpe.py
 ```
 
-## Download / 下载
+### Q2: What backend is used?
 
-[qpe.py](https://github.com/ChrisLee0721/QuoNic/blob/main/examples/qpe/qpe.py)
+The example uses the default backend. You can specify a different one:
+
+```python
+qshow(backend='qiskit')
+```
+
+---
+
+## 学习路径
+
+### 前置知识
+
+- Basic quantum computing concepts
+- QuoNic API basics
+
+### 继续学习
+
+- Other examples in this documentation
+- QuoNic API reference
+
+---
+
+## 完整示例代码
+
+```python
+"""Quantum Phase Estimation / 量子相位估计
+
+Quantum Phase Estimation / 量子相位估计
+
+## Application / 应用场景
+- Quantum computing (量子计算)
+- Algorithm demonstration (算法演示)
+- Educational (教学)
+
+## Output / 输出
+See code comments for output explanation.
+参见代码注释了解输出说明。"""
+
+import math
+
+from quonic.algorithms import qpe
+
+result = qpe(math.pi, n_precision=3, shots=1024)
+print(result.counts)  # dominated by "...010" (rightmost 3 bits -> j = 2)
+
+```
+
+### 运行方式
+
+```bash
+python examples/qpe/qpe.py
+```
+
+---
+
+## 下载
+
+- [qpe.py](https://github.com/ChrisLee0721/QuoNic/blob/main/examples/qpe/qpe.py)

@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="420" height="200" viewBox="-10 0 390 200">
+<svg xmlns="http://www.w3.org/2000/svg" width="380" height="220" viewBox="-10 0 390 220">
   <rect width="100%" height="100%" fill="white" rx="8"/>
   <style>
     text { font-family: 'Consolas', 'Courier New', monospace; }
@@ -12,69 +12,29 @@
     .target-plus { stroke: #333; stroke-width: 1.8; }
     .conn-line { stroke: #333; stroke-width: 1.8; }
     .title { font-size: 16px; fill: #333; font-weight: bold; }
+    .measure-box { fill: #fff; stroke: #333; stroke-width: 1.8; }
   </style>
 
-  <!-- Title -->
-  <text x="180" y="24" text-anchor="middle" class="title">GHZ state circuit</text>
+  <text x="190" y="24" text-anchor="middle" class="title">GHZ state circuit</text>
 
-  <!-- Qubit labels -->
-  <text x="0" y="64" class="qubit-label">|q₀⟩ = |0⟩</text>
-  <text x="0" y="124" class="qubit-label">|q₁⟩ = |0⟩</text>
-  <text x="0" y="184" class="qubit-label">|q₂⟩ = |0⟩</text>
+  <text x="5" y="64" class="qubit-label">|q₀⟩ = |0⟩</text>
+  <text x="5" y="124" class="qubit-label">|q₁⟩ = |0⟩</text>
+  <text x="5" y="184" class="qubit-label">|q₂⟩ = |0⟩</text>
 
-  <!-- Quantum wires -->
-  <line x1="80" y1="60" x2="280" y2="60" class="wire"/>
-  <line x1="80" y1="120" x2="280" y2="120" class="wire"/>
-  <line x1="80" y1="180" x2="280" y2="180" class="wire"/>
+  <line x1="100" y1="60" x2="280" y2="60" class="wire"/>
+  <line x1="100" y1="120" x2="280" y2="120" class="wire"/>
+  <line x1="100" y1="180" x2="280" y2="180" class="wire"/>
 
-  <!-- H gate on q0 -->
-  <rect x="110" y="48" width="20" height="20" class="gate-box"/>
-  <text x="120" y="62" text-anchor="middle" class="gate-label" style="font-size: 10px;">H</text>
-
-  <!-- CNOT q0→q1 -->
-  <line x1="170" y1="60" x2="170" y2="120" class="conn-line"/>
-  <circle cx="170" cy="60" r="3" class="control-dot"/>
-  <circle cx="170" cy="120" r="11" class="target-circle"/>
-  <line x1="159" y1="120" x2="181" y2="120" class="target-plus"/>
-  <line x1="170" y1="109" x2="170" y2="131" class="target-plus"/>
-
-  <!-- CNOT q1→q2 -->
-  <line x1="230" y1="120" x2="230" y2="180" class="conn-line"/>
-  <circle cx="230" cy="120" r="3" class="control-dot"/>
-  <circle cx="230" cy="180" r="11" class="target-circle"/>
-  <line x1="219" y1="180" x2="241" y2="180" class="target-plus"/>
-  <line x1="230" y1="169" x2="230" y2="191" class="target-plus"/>
-
-  <!-- Annotations -->
-  <text x="120" y="78" text-anchor="middle" class="annotation" style="font-size: 9px;">H</text>
-  <text x="170" y="141" text-anchor="middle" class="annotation" style="font-size: 9px;">CNOT</text>
-  <text x="230" y="200" text-anchor="middle" class="annotation" style="font-size: 9px;">CNOT</text>
-
-  <!-- Output state with MathML -->
-  <foreignObject x="285" y="70" width="100" height="50">
-    <math xmlns="http://www.w3.org/1998/Math/MathML" style="font-size: 9px;">
-      <mfrac>
-        <mn>1</mn>
-        <msqrt>
-          <mn>2</mn>
-        </msqrt>
-      </mfrac>
-      <mo>(</mo>
-      <mrow>
-        <mo>|</mo><mn>000</mn><mo>⟩</mo>
-        <mo>+</mo>
-        <mo>|</mo><mn>111</mn><mo>⟩</mo>
-      </mrow>
-      <mo>)</mo>
-    </math>
-  </foreignObject>
-
-  <!-- GHZ label -->
-  <foreignObject x="295" y="140" width="50" height="30">
-    <math xmlns="http://www.w3.org/1998/Math/MathML" style="font-size: 12px;">
-      <mo>|</mo>
-      <mi>GHZ</mi>
-      <mo>⟩</mo>
-    </math>
-  </foreignObject>
+  <rect x="120" y="48" width="20" height="24" class="gate-box"/>
+  <text x="130" y="64" text-anchor="middle" class="gate-label" style="font-size: 10px;">H</text>
+  <line x1="190" y1="60" x2="190" y2="120" class="conn-line"/>
+  <circle cx="190" cy="60" r="3" class="control-dot"/>
+  <circle cx="190" cy="120" r="11" class="target-circle"/>
+  <line x1="179" y1="120" x2="201" y2="120" class="target-plus"/>
+  <line x1="190" y1="109" x2="190" y2="131" class="target-plus"/>
+  <line x1="250" y1="120" x2="250" y2="180" class="conn-line"/>
+  <circle cx="250" cy="120" r="3" class="control-dot"/>
+  <circle cx="250" cy="180" r="11" class="target-circle"/>
+  <line x1="239" y1="180" x2="261" y2="180" class="target-plus"/>
+  <line x1="250" y1="169" x2="250" y2="191" class="target-plus"/>
 </svg>

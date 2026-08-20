@@ -1,20 +1,32 @@
-# Surface Code / 表面码
+# Surface Code / Leading candidate for fault-tolerant quantum computing.
 
-> **Error Correction** / 量子纠错
+> **Example** / 示例
 
-## Overview / 概述
+---
+
+## 目录
+
+- [为什么需要？](#为什么需要)
+- [快速上手](#快速上手)
+- [原理详解](#原理详解)
+- [代码详解](#代码详解)
+- [进阶用法](#进阶用法)
+- [适用场景](#适用场景)
+- [常见问题](#常见问题)
+- [学习路径](#学习路径)
+- [完整示例代码](#完整示例代码)
+
+---
+
+## 为什么需要？
 
 Surface Code / 表面码
 
 Leading candidate for fault-tolerant quantum computing.
 
-## Application / 应用场景
+---
 
-- Fault tolerance (容错)
-- Quantum memory (量子存储)
-- Logical qubits (逻辑比特)
-
-## Code / 代码
+## 快速上手
 
 ```python
 from quonic.algorithms import surface_code_demo
@@ -23,12 +35,113 @@ result = surface_code_demo(distance=3, shots=100)
 print(result.counts)
 ```
 
-## Run / 运行
+**预期输出**：
+
+```
+See code comments for output explanation.
+```
+
+---
+
+## 原理详解
+
+### 电路图
+
+![Surface Code circuit](/images/surface_code_circuit.svg)
+
+See code comments for explanation.
+
+---
+
+## 代码详解
+
+```python
+from quonic.algorithms import surface_code_demo
+
+result = surface_code_demo(distance=3, shots=100)
+print(result.counts)
+```
+
+---
+
+## 进阶用法
+
+See the full example code below for more advanced usage.
+
+---
+
+## 适用场景
+
+- - Fault tolerance (容错)
+- - Quantum memory (量子存储)
+- - Logical qubits (逻辑比特)
+
+---
+
+## 常见问题
+
+### Q1: How to run this example?
 
 ```bash
 python examples/surface_code/surface_code.py
 ```
 
-## Download / 下载
+### Q2: What backend is used?
 
-[surface_code.py](https://github.com/ChrisLee0721/QuoNic/blob/main/examples/surface_code/surface_code.py)
+The example uses the default backend. You can specify a different one:
+
+```python
+qshow(backend='qiskit')
+```
+
+---
+
+## 学习路径
+
+### 前置知识
+
+- Basic quantum computing concepts
+- QuoNic API basics
+
+### 继续学习
+
+- Other examples in this documentation
+- QuoNic API reference
+
+---
+
+## 完整示例代码
+
+```python
+"""Surface Code / 表面码
+
+Leading candidate for fault-tolerant quantum computing.
+容错量子计算的主要候选方案。
+
+## Application / 应用场景
+- Fault tolerance (容错)
+- Quantum memory (量子存储)
+- Logical qubits (逻辑比特)
+
+## Output / 输出
+Logical qubit with error protection.
+具有错误保护的逻辑比特。"""
+
+from quonic.algorithms import surface_code_demo
+
+result = surface_code_demo(distance=3, shots=100)
+print(result.counts)
+
+```
+
+### 运行方式
+
+```bash
+python examples/surface_code/surface_code.py
+```
+
+---
+
+## 下载
+
+- [surface_code.py](https://github.com/ChrisLee0721/QuoNic/blob/main/examples/surface_code/surface_code.py)

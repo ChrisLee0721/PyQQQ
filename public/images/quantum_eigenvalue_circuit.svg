@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="300" height="160" viewBox="-10 0 310 160">
+  <rect width="100%" height="100%" fill="white" rx="8"/>
+  <style>
+    text { font-family: 'Consolas', 'Courier New', monospace; }
+    .qubit-label { font-size: 14px; fill: #555; }
+    .gate-label { font-size: 15px; fill: #222; font-weight: bold; }
+    .annotation { font-size: 11px; fill: #888; }
+    .wire { stroke: #bbb; stroke-width: 1.5; }
+    .gate-box { fill: #fff; stroke: #333; stroke-width: 1.8; rx: 4; }
+    .control-dot { fill: #333; }
+    .target-circle { fill: #fff; stroke: #333; stroke-width: 1.8; }
+    .target-plus { stroke: #333; stroke-width: 1.8; }
+    .conn-line { stroke: #333; stroke-width: 1.8; }
+    .title { font-size: 16px; fill: #333; font-weight: bold; }
+    .measure-box { fill: #fff; stroke: #333; stroke-width: 1.8; }
+  </style>
+
+  <text x="150" y="24" text-anchor="middle" class="title">Quantum Eigenvalue circuit</text>
+
+  <text x="5" y="64" class="qubit-label">|q0⟩</text>
+  <text x="5" y="124" class="qubit-label">|q1⟩</text>
+
+  <line x1="100" y1="60" x2="200" y2="60" class="wire"/>
+  <line x1="100" y1="120" x2="200" y2="120" class="wire"/>
+
+</svg>

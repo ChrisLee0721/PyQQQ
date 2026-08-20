@@ -1,0 +1,68 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="920" height="220" viewBox="-10 0 930 220">
+  <rect width="100%" height="100%" fill="white" rx="8"/>
+  <style>
+    text { font-family: 'Consolas', 'Courier New', monospace; }
+    .qubit-label { font-size: 14px; fill: #555; }
+    .gate-label { font-size: 15px; fill: #222; font-weight: bold; }
+    .annotation { font-size: 11px; fill: #888; }
+    .wire { stroke: #bbb; stroke-width: 1.5; }
+    .gate-box { fill: #fff; stroke: #333; stroke-width: 1.8; rx: 4; }
+    .control-dot { fill: #333; }
+    .target-circle { fill: #fff; stroke: #333; stroke-width: 1.8; }
+    .target-plus { stroke: #333; stroke-width: 1.8; }
+    .conn-line { stroke: #333; stroke-width: 1.8; }
+    .title { font-size: 16px; fill: #333; font-weight: bold; }
+    .measure-box { fill: #fff; stroke: #333; stroke-width: 1.8; }
+  </style>
+
+  <text x="460" y="24" text-anchor="middle" class="title">Phase-flip error correction code</text>
+
+  <text x="5" y="64" class="qubit-label">|q₀⟩</text>
+  <text x="5" y="124" class="qubit-label">|q₁⟩</text>
+  <text x="5" y="184" class="qubit-label">|q₂⟩</text>
+
+  <line x1="100" y1="60" x2="820" y2="60" class="wire"/>
+  <line x1="100" y1="120" x2="820" y2="120" class="wire"/>
+  <line x1="100" y1="180" x2="820" y2="180" class="wire"/>
+
+  <line x1="130" y1="60" x2="130" y2="120" class="conn-line"/>
+  <circle cx="130" cy="60" r="3" class="control-dot"/>
+  <circle cx="130" cy="120" r="11" class="target-circle"/>
+  <line x1="119" y1="120" x2="141" y2="120" class="target-plus"/>
+  <line x1="130" y1="109" x2="130" y2="131" class="target-plus"/>
+  <line x1="190" y1="60" x2="190" y2="180" class="conn-line"/>
+  <circle cx="190" cy="60" r="3" class="control-dot"/>
+  <circle cx="190" cy="180" r="11" class="target-circle"/>
+  <line x1="179" y1="180" x2="201" y2="180" class="target-plus"/>
+  <line x1="190" y1="169" x2="190" y2="191" class="target-plus"/>
+  <rect x="240" y="48" width="20" height="24" class="gate-box"/>
+  <text x="250" y="64" text-anchor="middle" class="gate-label" style="font-size: 10px;">H</text>
+  <rect x="300" y="108" width="20" height="24" class="gate-box"/>
+  <text x="310" y="124" text-anchor="middle" class="gate-label" style="font-size: 10px;">H</text>
+  <rect x="360" y="168" width="20" height="24" class="gate-box"/>
+  <text x="370" y="184" text-anchor="middle" class="gate-label" style="font-size: 10px;">H</text>
+  <rect x="420" y="108" width="20" height="24" class="gate-box"/>
+  <text x="430" y="124" text-anchor="middle" class="gate-label" style="font-size: 10px;">Error</text>
+  <rect x="480" y="48" width="20" height="24" class="gate-box"/>
+  <text x="490" y="64" text-anchor="middle" class="gate-label" style="font-size: 10px;">H</text>
+  <rect x="540" y="108" width="20" height="24" class="gate-box"/>
+  <text x="550" y="124" text-anchor="middle" class="gate-label" style="font-size: 10px;">H</text>
+  <rect x="600" y="168" width="20" height="24" class="gate-box"/>
+  <text x="610" y="184" text-anchor="middle" class="gate-label" style="font-size: 10px;">H</text>
+  <line x1="670" y1="60" x2="670" y2="120" class="conn-line"/>
+  <circle cx="670" cy="60" r="3" class="control-dot"/>
+  <circle cx="670" cy="120" r="11" class="target-circle"/>
+  <line x1="659" y1="120" x2="681" y2="120" class="target-plus"/>
+  <line x1="670" y1="109" x2="670" y2="131" class="target-plus"/>
+  <line x1="730" y1="60" x2="730" y2="180" class="conn-line"/>
+  <circle cx="730" cy="60" r="3" class="control-dot"/>
+  <circle cx="730" cy="180" r="11" class="target-circle"/>
+  <line x1="719" y1="180" x2="741" y2="180" class="target-plus"/>
+  <line x1="730" y1="169" x2="730" y2="191" class="target-plus"/>
+  <line x1="790" y1="120" x2="790" y2="60" class="conn-line"/>
+  <circle cx="790" cy="120" r="3" class="control-dot"/>
+  <circle cx="790" cy="180" r="3" class="control-dot"/>
+  <circle cx="790" cy="60" r="11" class="target-circle"/>
+  <line x1="779" y1="60" x2="801" y2="60" class="target-plus"/>
+  <line x1="790" y1="49" x2="790" y2="71" class="target-plus"/>
+</svg>

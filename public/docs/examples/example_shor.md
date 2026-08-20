@@ -1,85 +1,149 @@
-# Shor's Algorithm / Shor 算法
+# Shor / Shor's algorithm / Shor 算法
 
-> **Algorithms** / 算法
+> **Example** / 示例
 
-## Overview / 概述
+---
 
-Factor integers in polynomial time using quantum period finding. Breaks RSA encryption.
+## 目录
 
-使用量子周期查找在多项式时间内分解整数。能破解 RSA 加密。
+- [为什么需要？](#为什么需要)
+- [快速上手](#快速上手)
+- [原理详解](#原理详解)
+- [代码详解](#代码详解)
+- [进阶用法](#进阶用法)
+- [适用场景](#适用场景)
+- [常见问题](#常见问题)
+- [学习路径](#学习路径)
+- [完整示例代码](#完整示例代码)
 
-## Application / 应用场景
+---
 
-- Cryptography: break RSA encryption (密码学：破解 RSA 加密)
-- Number theory: integer factorization (数论：整数分解)
-- Security: motivate post-quantum cryptography (安全：推动后量子密码学)
+## 为什么需要？
 
-## How it works / 原理
+Shor's algorithm / Shor 算法
 
-Shor's algorithm has two parts / Shor 算法分两部分：
+Shor's algorithm / Shor 算法
 
-```
-┌─────────────────────────────────────────────────┐
-│ Classical part / 经典部分                         │
-│ 1. Pick random a < N                             │
-│ 2. Compute gcd(a, N) — if >1, done!             │
-│ 3. Find period r of a^x mod N ← quantum part    │
-│ 4. Compute gcd(a^{r/2} ± 1, N) → factors        │
-└─────────────────────────────────────────────────┘
-         │
-         ▼
-┌─────────────────────────────────────────────────┐
-│ Quantum part / 量子部分                          │
-│ Quantum Period Finding:                          │
-│ 1. Superposition of all x                        │
-│ 2. Compute a^x mod N                             │
-│ 3. QFT to extract period                         │
-│ 4. Measure → get period r                        │
-└─────────────────────────────────────────────────┘
-```
+---
 
-### Example: Factor 15 / 示例：分解 15
-
-1. Pick a=7, N=15
-2. Compute 7^x mod 15: 7, 4, 13, 1, 7, 4, ... (period r=4)
-3. gcd(7^{4/2} ± 1, 15) = gcd(48, 15) = 3, gcd(50, 15) = 5
-4. **15 = 3 × 5**
-
-## Code / 代码
+## 快速上手
 
 ```python
 from quonic.algorithms import shor
 
-# Factor 15 using a=7, 6 qubits for period estimation
-# 用 a=7 分解 15，6 个量子比特用于周期估计
 result = shor(15, a=7, t=6, shots=256)
 print(result.value)                    # 3 or 5
 print(result.metadata["period"])       # 4 (the order of 7 mod 15)
 ```
 
-## Expected Output / 预期输出
+**预期输出**：
 
 ```
-Factor found: 3
-Period: 4
-Verification: 15 / 3 = 5
+See code comments for output explanation.
 ```
 
-## Why it matters / 为什么重要
+---
 
-- **Exponential speedup**: Classical factorization is sub-exponential; Shor's is polynomial
-  指数加速：经典分解是亚指数的；Shor 是多项式的
-- **Threatens RSA**: A sufficiently large quantum computer breaks RSA-2048
-  威胁 RSA：足够大的量子计算机能破解 RSA-2048
-- **Motivates post-quantum crypto**: NIST is standardizing quantum-resistant algorithms
-  推动后量子密码：NIST 正在标准化抗量子算法
+## 原理详解
 
-## Run / 运行
+### 电路图
+
+![Shor circuit](/images/shor_circuit.svg)
+
+See code comments for explanation.
+
+---
+
+## 代码详解
+
+```python
+from quonic.algorithms import shor
+
+result = shor(15, a=7, t=6, shots=256)
+print(result.value)                    # 3 or 5
+print(result.metadata["period"])       # 4 (the order of 7 mod 15)
+```
+
+---
+
+## 进阶用法
+
+See the full example code below for more advanced usage.
+
+---
+
+## 适用场景
+
+- - Quantum computing (量子计算)
+- - Algorithm demonstration (算法演示)
+- - Educational (教学)
+
+---
+
+## 常见问题
+
+### Q1: How to run this example?
 
 ```bash
 python examples/shor/shor.py
 ```
 
-## Download / 下载
+### Q2: What backend is used?
 
-[shor.py](https://github.com/ChrisLee0721/QuoNic/blob/main/examples/shor/shor.py)
+The example uses the default backend. You can specify a different one:
+
+```python
+qshow(backend='qiskit')
+```
+
+---
+
+## 学习路径
+
+### 前置知识
+
+- Basic quantum computing concepts
+- QuoNic API basics
+
+### 继续学习
+
+- Other examples in this documentation
+- QuoNic API reference
+
+---
+
+## 完整示例代码
+
+```python
+"""Shor's algorithm / Shor 算法
+
+Shor's algorithm / Shor 算法
+
+## Application / 应用场景
+- Quantum computing (量子计算)
+- Algorithm demonstration (算法演示)
+- Educational (教学)
+
+## Output / 输出
+See code comments for output explanation.
+参见代码注释了解输出说明。"""
+
+from quonic.algorithms import shor
+
+result = shor(15, a=7, t=6, shots=256)
+print(result.value)                    # 3 or 5
+print(result.metadata["period"])       # 4 (the order of 7 mod 15)
+
+```
+
+### 运行方式
+
+```bash
+python examples/shor/shor.py
+```
+
+---
+
+## 下载
+
+- [shor.py](https://github.com/ChrisLee0721/QuoNic/blob/main/examples/shor/shor.py)

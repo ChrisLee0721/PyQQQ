@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="380" height="220" viewBox="-10 0 390 220">
+  <rect width="100%" height="100%" fill="white" rx="8"/>
+  <style>
+    text { font-family: 'Consolas', 'Courier New', monospace; }
+    .qubit-label { font-size: 14px; fill: #555; }
+    .gate-label { font-size: 15px; fill: #222; font-weight: bold; }
+    .annotation { font-size: 11px; fill: #888; }
+    .wire { stroke: #bbb; stroke-width: 1.5; }
+    .gate-box { fill: #fff; stroke: #333; stroke-width: 1.8; rx: 4; }
+    .control-dot { fill: #333; }
+    .target-circle { fill: #fff; stroke: #333; stroke-width: 1.8; }
+    .target-plus { stroke: #333; stroke-width: 1.8; }
+    .conn-line { stroke: #333; stroke-width: 1.8; }
+    .title { font-size: 16px; fill: #333; font-weight: bold; }
+    .measure-box { fill: #fff; stroke: #333; stroke-width: 1.8; }
+  </style>
+
+  <text x="190" y="24" text-anchor="middle" class="title">QFT circuit (3 qubits)</text>
+
+  <text x="5" y="64" class="qubit-label">|q₀⟩</text>
+  <text x="5" y="124" class="qubit-label">|q₁⟩</text>
+  <text x="5" y="184" class="qubit-label">|q₂⟩</text>
+
+  <line x1="100" y1="60" x2="280" y2="60" class="wire"/>
+  <line x1="100" y1="120" x2="280" y2="120" class="wire"/>
+  <line x1="100" y1="180" x2="280" y2="180" class="wire"/>
+
+  <rect x="120" y="48" width="20" height="24" class="gate-box"/>
+  <text x="130" y="64" text-anchor="middle" class="gate-label" style="font-size: 10px;">H</text>
+  <rect x="180" y="108" width="20" height="24" class="gate-box"/>
+  <text x="190" y="124" text-anchor="middle" class="gate-label" style="font-size: 10px;">H</text>
+  <rect x="240" y="168" width="20" height="24" class="gate-box"/>
+  <text x="250" y="184" text-anchor="middle" class="gate-label" style="font-size: 10px;">H</text>
+</svg>
