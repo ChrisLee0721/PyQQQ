@@ -45,6 +45,51 @@ Result:
   |11>     512  ( 50.0%)  ####################
 ```
 
+##  5-Minute Tutorial
+
+**Step 1: Install**
+
+```bash
+pip install quonic
+```
+
+**Step 2: Your first circuit — Bell state**
+
+```python
+from quonic import qgate, qshow
+from quonic.gates import H, CX
+
+qgate(H, 0)      # Hadamard on qubit 0 → superposition
+qgate(CX, 0, 1)  # CNOT: entangle qubit 0 and 1
+qshow()           # Run and display results
+```
+
+**Step 3: Switch backend — same code, different engine**
+
+```python
+qshow(backend='native')   # Fast Python simulator (default)
+qshow(backend='qiskit')   # Qiskit AerSimulator
+qshow(backend='cirq')     # Google Cirq
+qshow(backend='qulacs')   # Qulacs (C++ fast)
+```
+
+**Step 4: Add noise — simulate real hardware**
+
+```python
+qshow(noise=0.05)  # 5% depolarizing noise
+```
+
+**Step 5: Use algorithms — one line each**
+
+```python
+from quonic.algorithms import grover, qft
+
+result = grover("11", 2)           # Search for |11>
+result = qft(n_qubits=4)          # Quantum Fourier Transform
+```
+
+That's it. You just ran quantum circuits with noise simulation and algorithm templates — in 5 minutes.
+
 ### What QuoNic can do / QuoNic 
 
 ```python
