@@ -96,15 +96,19 @@ class BraketBackend(Backend):
                 + "\n    or: pip install amazon-braket-sdk"
             ) from e
 
+        # Decompose high-level gates (mcz, ccx, cp) into basic gates
+        from ..compiler import decompose
+        decomposed = decompose(circuit)
+
         # Build Braket circuit
         bc = BraketCircuit()
-        for op in circuit.ops:
+        for op in decomposed.ops:
             if op.name == "measure":
                 continue
             _translate_gate(bc, BG, op)
 
         # Auto-measure all qubits
-        for q in range(circuit.num_qubits):
+        for q in range(decomposed.num_qubits):
             bc.measure(q)
 
         # Handle local simulator
