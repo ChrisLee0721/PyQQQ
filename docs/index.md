@@ -3,7 +3,7 @@
 [![CI](https://github.com/ChrisLee0721/QuoNic/actions/workflows/ci.yml/badge.svg)](https://github.com/ChrisLee0721/QuoNic/actions/workflows/ci.yml)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
 [![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/)
-[![Version](https://img.shields.io/badge/version-0.5.0-purple.svg)](changelog.md)
+[![Version](https://img.shields.io/badge/version-0.11.0-purple.svg)](changelog.md)
 
 **QuoNic makes quantum programming as simple as writing Python.**
 
