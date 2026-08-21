@@ -155,6 +155,7 @@
         }
 
         function toggleLang() {
+            const prevLang = currentLang;
             currentLang = currentLang === 'en' ? 'zh' : 'en';
             localStorage.setItem('quonic-docs-lang', currentLang);
             applyLang();
@@ -163,11 +164,13 @@
             const f = p.get('file');
             if (!f) return;
 
-            // .html files are always Chinese - switching to English shows notice
+            // .html files are always Chinese
             if (f.endsWith('.html')) {
-                if (currentLang === 'en') {
+                // If user was on Chinese and switched to English, show notice
+                if (prevLang === 'zh' && currentLang === 'en') {
                     showLangNotice(f);
                 }
+                // If user was on English and switched to Chinese, do nothing (already Chinese)
                 return;
             }
 
