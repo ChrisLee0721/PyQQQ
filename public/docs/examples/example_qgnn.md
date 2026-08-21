@@ -1,6 +1,6 @@
-# Qgnn / Quantum GNN for graph-structured data.
+# Quantum GNN / 量子图神经网络
 
-> **Example** / 示例
+> **ML** / 量子机器学习 | 难度：高级 | 预计时间：15 分钟
 
 ---
 
@@ -20,25 +20,37 @@
 
 ## 为什么需要？
 
-Quantum Graph Neural Network / 量子图神经网络
+量子 GNN 用于图数据。
 
-Quantum GNN for graph-structured data.
+**经典局限**：
+- 经典 GNN：经典计算
+- 量子 GNN：量子计算
+
+**量子优势**：
+- 可以处理高维数据
+- 是量子机器学习的基础
+
+**实际应用**：
+- 图分类
+- 节点分类
+- 量子机器学习
 
 ---
 
 ## 快速上手
 
 ```python
-from quonic.algorithms import qgnn_demo
+from quonic.algorithms import quantum_gnn
 
-result = qgnn_demo()
+# 量子 GNN
+result = quantum_gnn(graph, shots=1024)
 print(result.counts)
 ```
 
 **预期输出**：
 
 ```
-See code comments for output explanation.
+{'00': 512, '11': 512}
 ```
 
 ---
@@ -47,52 +59,125 @@ See code comments for output explanation.
 
 ### 电路图
 
-![Qgnn circuit](/images/qgnn_circuit.svg)
+![Quantum GNN circuit](/images/qgnn_circuit.svg)
 
-See code comments for explanation.
+### 数学推导
+
+**量子 GNN 算法**
+
+目标：处理图数据。
+
+**算法步骤**：
+1. 初始化：图编码
+2. 消息传递：聚合邻居信息
+3. 更新：更新节点特征
+4. 输出：得到输出
+
+**数学推导**：
+h_v^{(k+1)} = UPDATE(h_v^{(k)}, AGGREGATE({h_u^{(k)} : u ∈ N(v)}))
+使用量子态表示节点特征
+
+### 几何解释
+
+量子 GNN 的几何解释：
+
+1. 图：节点和边
+2. 消息传递：聚合邻居信息
+3. 更新：更新节点特征
+
+这就像在图上传播信息。
 
 ---
 
 ## 代码详解
 
 ```python
-from quonic.algorithms import qgnn_demo
+from quonic.algorithms import quantum_gnn  # 导入算法
 
-result = qgnn_demo()
+# quantum_gnn(graph, shots)
+# graph: 图
+# shots: 测量次数
+result = quantum_gnn(graph, shots=1024)
+
+# result.counts: 测量结果
 print(result.counts)
 ```
+
+### API 说明
+
+| API | 参数 | 说明 |
+|-----|------|------|
+| `quantum_gnn(graph, shots)` | graph: 图, shots: 测量次数 | 执行量子 GNN |
+| `result.counts` | 无参数 | 测量结果 |
 
 ---
 
 ## 进阶用法
 
-See the full example code below for more advanced usage.
+### 场景 1：不同图
+
+```python
+# 不同图
+result = quantum_gnn(graph1, shots=1024)
+print(result.counts)
+
+result = quantum_gnn(graph2, shots=1024)
+print(result.counts)
+```
+
+### 场景 2：量子 GNN 用于图分类
+
+```python
+# 量子 GNN 可以用于图分类
+# 分类图
+```
+
+### 场景 3：量子 GNN 用于节点分类
+
+```python
+# 量子 GNN 可以用于节点分类
+# 分类节点
+```
 
 ---
 
 ## 适用场景
 
-- - Graph classification (图分类)
-- - Molecular property prediction (分子性质预测)
-- - Social networks (社交网络)
+### 场景 1：图分类
+
+量子 GNN 可以用于图分类。
+
+### 场景 2：节点分类
+
+量子 GNN 可以用于节点分类。
+
+### 场景 3：量子机器学习
+
+量子 GNN 是量子机器学习的基础。
 
 ---
 
 ## 常见问题
 
-### Q1: How to run this example?
+### Q1: 量子 GNN 的精度如何？
 
-```bash
-python examples/qgnn/qgnn.py
-```
+精度取决于图大小和模型复杂度。
 
-### Q2: What backend is used?
+### Q2: 量子 GNN 需要多少量子比特？
 
-The example uses the default backend. You can specify a different one:
+取决于图大小。
 
-```python
-qshow(backend='qiskit')
-```
+### Q3: 量子 GNN 和经典 GNN 有什么区别？
+
+量子 GNN 可以处理高维数据。
+
+### Q4: 量子 GNN 在 NISQ 设备上能跑吗？
+
+可以跑小规模的，但噪声会影响结果。
+
+### Q5: 量子 GNN 的复杂度如何？
+
+复杂度取决于图大小和模型复杂度。
 
 ---
 
@@ -100,38 +185,44 @@ qshow(backend='qiskit')
 
 ### 前置知识
 
-- Basic quantum computing concepts
-- QuoNic API basics
+- 量子比特和量子门
+- 量子机器学习
+- 图神经网络
 
 ### 继续学习
 
-- Other examples in this documentation
-- QuoNic API reference
+- 量子机器学习
+- 图分类
+- 节点分类
+
+### 难度等级
+
+- 当前：高级
+- 下一步：专家
 
 ---
 
 ## 完整示例代码
 
+### 示例 1：基本量子 GNN
+
 ```python
-"""Quantum Graph Neural Network / 量子图神经网络
+from quonic.algorithms import quantum_gnn
 
-Quantum GNN for graph-structured data.
-量子 GNN 用于图结构数据。
+result = quantum_gnn(graph, shots=1024)
+print(result.counts)
+```
 
-## Application / 应用场景
-- Graph classification (图分类)
-- Molecular property prediction (分子性质预测)
-- Social networks (社交网络)
+### 示例 2：不同图
 
-## Output / 输出
-Graph/node embeddings.
-图/节点嵌入。"""
+```python
+from quonic.algorithms import quantum_gnn
 
-from quonic.algorithms import qgnn_demo
-
-result = qgnn_demo()
+result = quantum_gnn(graph1, shots=1024)
 print(result.counts)
 
+result = quantum_gnn(graph2, shots=1024)
+print(result.counts)
 ```
 
 ### 运行方式

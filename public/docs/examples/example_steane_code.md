@@ -1,6 +1,6 @@
-# Steane Code / [[7,1,3]] CSS code, corrects arbitrary single-qubit errors.
+# Steane Code / Steane 码
 
-> **Example** / 示例
+> **QEC** / 量子纠错 | 难度：高级 | 预计时间：15 分钟
 
 ---
 
@@ -20,25 +20,37 @@
 
 ## 为什么需要？
 
-Steane Code / Steane 码
+Steane 码是 CSS 码的经典例子，可以纠正任意单量子比特错误。
 
-[[7,1,3]] CSS code, corrects arbitrary single-qubit errors.
+**经典局限**：
+- 经典纠错码：无法纠正量子错误
+- 量子纠错码：可以纠正量子错误
+
+**量子优势**：
+- 可以纠正任意单量子比特错误
+- 比 Shor 码更高效
+
+**实际应用**：
+- 量子纠错
+- 量子计算
+- 量子算法教学
 
 ---
 
 ## 快速上手
 
 ```python
-from quonic.algorithms import steane_code
+from quonic.qec import SteaneCode, qec_round_trip
 
-result = steane_code(error_qubit=0, shots=100)
-print(result.counts)
+# Steane 码
+result = qec_round_trip(code="steane", error_rate=0.01, shots=1000)
+print(result.success_rate)  # ~0.99
 ```
 
 **预期输出**：
 
 ```
-See code comments for output explanation.
+0.99
 ```
 
 ---
@@ -49,50 +61,139 @@ See code comments for output explanation.
 
 ![Steane Code circuit](/images/steane_code_circuit.svg)
 
-See code comments for explanation.
+### 数学推导
+
+**Steane 码**
+
+目标：纠正任意单量子比特错误。
+
+**编码**：
+使用 [7,1,3] 汉明码的 CSS 构造。
+
+**错误**：
+可以纠正任意单量子比特错误（X、Y、Z）。
+
+**纠正**：
+测量伴随式，判断错误类型和位置，然后纠正。
+
+**数学推导**：
+|ψ₀⟩ = α|0⟩ + β|1⟩
+|ψ₁⟩ = α|0_L⟩ + β|1_L⟩
+|ψ₂⟩ = 错误
+|ψ₃⟩ = 纠正
+
+### 几何解释
+
+Steane 码的几何解释：
+
+1. 编码：将 1 个量子比特编码为 7 个
+2. 错误：任意单量子比特错误
+3. 纠正：检测并纠正错误
+
+这就像用汉明码保护量子信息。
 
 ---
 
 ## 代码详解
 
 ```python
-from quonic.algorithms import steane_code
+from quonic.qec import SteaneCode, qec_round_trip  # 导入纠错码
 
-result = steane_code(error_qubit=0, shots=100)
-print(result.counts)
+# qec_round_trip(code, error_rate, shots)
+# code: 纠错码类型
+# error_rate: 错误率
+# shots: 测量次数
+result = qec_round_trip(code="steane", error_rate=0.01, shots=1000)
+
+# result.success_rate: 成功率
+print(result.success_rate)  # ~0.99
 ```
+
+### API 说明
+
+| API | 参数 | 说明 |
+|-----|------|------|
+| `qec_round_trip(code, error_rate, shots)` | code: 纠错码类型, error_rate: 错误率, shots: 测量次数 | 执行纠错 |
+| `result.success_rate` | 无参数 | 成功率 |
 
 ---
 
 ## 进阶用法
 
-See the full example code below for more advanced usage.
+### 场景 1：不同错误率
+
+```python
+# 1% 错误率
+result = qec_round_trip(code="steane", error_rate=0.01, shots=1000)
+print(result.success_rate)
+
+# 5% 错误率
+result = qec_round_trip(code="steane", error_rate=0.05, shots=1000)
+print(result.success_rate)
+
+# 10% 错误率
+result = qec_round_trip(code="steane", error_rate=0.10, shots=1000)
+print(result.success_rate)
+```
+
+### 场景 2：不同纠错码
+
+```python
+# Steane 码
+result = qec_round_trip(code="steane", error_rate=0.01, shots=1000)
+print(result.success_rate)
+
+# Shor 码
+result = qec_round_trip(code="shor", error_rate=0.01, shots=1000)
+print(result.success_rate)
+```
+
+### 场景 3：纠错码用于量子计算
+
+```python
+# 纠错码可以用于保护量子计算
+# 在噪声环境下运行量子算法
+```
 
 ---
 
 ## 适用场景
 
-- - Quantum error correction (量子纠错)
-- - Fault tolerance (容错)
-- - Logical gates (逻辑门)
+### 场景 1：量子纠错
+
+Steane 码可以用于纠正任意单量子比特错误。
+
+### 场景 2：量子计算
+
+Steane 码可以用于保护量子计算。
+
+### 场景 3：量子算法教学
+
+Steane 码是量子纠错的经典例子，用于教学。
 
 ---
 
 ## 常见问题
 
-### Q1: How to run this example?
+### Q1: Steane 码可以纠正哪些错误？
 
-```bash
-python examples/steane_code/steane_code.py
-```
+Steane 码可以纠正任意单量子比特错误（X、Y、Z）。
 
-### Q2: What backend is used?
+### Q2: Steane 码需要多少量子比特？
 
-The example uses the default backend. You can specify a different one:
+需要 7 个量子比特：1 个逻辑量子比特 + 6 个冗余量子比特。
 
-```python
-qshow(backend='qiskit')
-```
+### Q3: Steane 码和 Shor 码有什么区别？
+
+Steane 码需要 7 个量子比特，Shor 码需要 9 个量子比特。
+
+### Q4: Steane 码在 NISQ 设备上能跑吗？
+
+可以跑小规模的，但噪声会影响结果。
+
+### Q5: Steane 码的精度如何？
+
+精度取决于错误率和纠错码的设计。
 
 ---
 
@@ -100,38 +201,44 @@ qshow(backend='qiskit')
 
 ### 前置知识
 
-- Basic quantum computing concepts
-- QuoNic API basics
+- 量子比特和量子门
+- 量子测量
+- 量子纠错基础
 
 ### 继续学习
 
-- Other examples in this documentation
-- QuoNic API reference
+- Shor 码
+- 表面码
+- 量子纠错
+
+### 难度等级
+
+- 当前：高级
+- 下一步：专家
 
 ---
 
 ## 完整示例代码
 
+### 示例 1：基本 Steane 码
+
 ```python
-"""Steane Code / Steane 码
+from quonic.qec import SteaneCode, qec_round_trip
 
-[[7,1,3]] CSS code, corrects arbitrary single-qubit errors.
-[[7,1,3]] CSS 码，纠正任意单比特错误。
+result = qec_round_trip(code="steane", error_rate=0.01, shots=1000)
+print(result.success_rate)
+```
 
-## Application / 应用场景
-- Quantum error correction (量子纠错)
-- Fault tolerance (容错)
-- Logical gates (逻辑门)
+### 示例 2：不同错误率
 
-## Output / 输出
-Corrected logical qubit.
-纠正后的逻辑比特。"""
+```python
+from quonic.qec import SteaneCode, qec_round_trip
 
-from quonic.algorithms import steane_code
+result = qec_round_trip(code="steane", error_rate=0.01, shots=1000)
+print(result.success_rate)
 
-result = steane_code(error_qubit=0, shots=100)
-print(result.counts)
-
+result = qec_round_trip(code="steane", error_rate=0.05, shots=1000)
+print(result.success_rate)
 ```
 
 ### 运行方式

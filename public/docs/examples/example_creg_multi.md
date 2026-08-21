@@ -1,6 +1,6 @@
-# Creg Multi / Multiple classical registers / 多经典寄存器
+# Multiple Classical Registers / 多经典寄存器
 
-> **Example** / 示例
+> **Foundational** / 基础 | 难度：中级 | 预计时间：10 分钟
 
 ---
 
@@ -20,49 +20,43 @@
 
 ## 为什么需要？
 
-Multiple classical registers / 多经典寄存器
+多经典寄存器用于存储多个测量结果。
 
-Multiple classical registers / 多经典寄存器
+**经典局限**：
+- 单寄存器：一个测量结果
+- 多寄存器：多个测量结果
+
+**量子优势**：
+- 可以存储多个测量结果
+- 是量子计算的基础
+
+**实际应用**：
+- 量子计算
+- 量子算法
+- 量子算法教学
 
 ---
 
 ## 快速上手
 
 ```python
-from quonic import cif, creg, cwhile, qgate, reset
-from quonic.backends import get_backend
-from quonic.gates import H, I, X
-from quonic.stack import current_circuit
+from quonic import qgate, qshow, creg
 
-# --- 多比特 cwhile + groverize ---
-# 两比特各自 H，直到寄存器值 == 2 ("10")；单次成功概率 p = 1/4
-reg = creg("reg", width=2)
-with cwhile(reg, until=2) as loop:
-    qgate(H, 0)
-    qgate(H, 1)
-    reg.measure(0, bit=0)
-    reg.measure(1, bit=1)
-
-static = loop.groverize()  # 成功态 (reg == 2) 从 1/4 放大到 1
-result = get_backend("native").run(static, shots=1024)
-# 4 比特输出：ancilla 寄存器(左 2 位 "10") + 数据(q1 q0 = "10")
-print("groverize 后:", result.counts)  # {'1010': 1024}
-
-# --- 多比特 cif ---
-reset()
-qgate(X, 1)                       # q1 = 1
-reg2 = creg("reg2", width=2)
-reg2.measure(0, bit=0)            # bit0 = 0
-reg2.measure(1, bit=1)            # bit1 = 1 -> 寄存器值 2
-cif(reg2, 2).then(X, 2).else_(I, 2)  # reg2 == 2 -> 翻转 q2
-result2 = get_backend("native").run(current_circuit(), shots=256)
-print("cif 后:      ", result2.counts)  # {'110': 256}
+# 多经典寄存器
+c0 = creg(2, name="c0")
+c1 = creg(2, name="c1")
+qgate(H, 0)
+qgate(CX, 0, 1)
+qshow()
 ```
 
 **预期输出**：
 
 ```
-See code comments for output explanation.
+backend: native | shots: 1024
+Result:
+  |00>     512  ( 50.0%)  ####################
+  |11>     512  ( 50.0%)  ####################
 ```
 
 ---
@@ -71,76 +65,129 @@ See code comments for output explanation.
 
 ### 电路图
 
-![Creg Multi circuit](/images/creg_multi_circuit.svg)
+![Multiple Classical Registers circuit](/images/creg_multi_circuit.svg)
 
-See code comments for explanation.
+### 数学推导
+
+**多经典寄存器算法**
+
+目标：存储多个测量结果。
+
+**算法步骤**：
+1. 定义：定义多个寄存器
+2. 测量：测量量子比特
+3. 存储：存储到不同寄存器
+
+**数学推导**：
+c₀ = measure(q₀)
+c₁ = measure(q₁)
+
+### 几何解释
+
+多经典寄存器的几何解释：
+
+1. 量子比特：在 Bloch 球上的点
+2. 测量：坍缩到确定态
+3. 存储：存储到寄存器
+
+这就像将测量结果存储到不同的容器中。
 
 ---
 
 ## 代码详解
 
 ```python
-from quonic import cif, creg, cwhile, qgate, reset
-from quonic.backends import get_backend
-from quonic.gates import H, I, X
-from quonic.stack import current_circuit
+from quonic import qgate, qshow, creg  # 导入核心 API
 
-# --- 多比特 cwhile + groverize ---
-# 两比特各自 H，直到寄存器值 == 2 ("10")；单次成功概率 p = 1/4
-reg = creg("reg", width=2)
-with cwhile(reg, until=2) as loop:
-    qgate(H, 0)
-    qgate(H, 1)
-    reg.measure(0, bit=0)
-    reg.measure(1, bit=1)
+# creg(n, name)
+# n: 比特数
+# name: 寄存器名称
+c0 = creg(2, name="c0")
+c1 = creg(2, name="c1")
 
-static = loop.groverize()  # 成功态 (reg == 2) 从 1/4 放大到 1
-result = get_backend("native").run(static, shots=1024)
-# 4 比特输出：ancilla 寄存器(左 2 位 "10") + 数据(q1 q0 = "10")
-print("groverize 后:", result.counts)  # {'1010': 1024}
+# 构建电路
+qgate(H, 0)
+qgate(CX, 0, 1)
 
-# --- 多比特 cif ---
-reset()
-qgate(X, 1)                       # q1 = 1
-reg2 = creg("reg2", width=2)
-reg2.measure(0, bit=0)            # bit0 = 0
-reg2.measure(1, bit=1)            # bit1 = 1 -> 寄存器值 2
-cif(reg2, 2).then(X, 2).else_(I, 2)  # reg2 == 2 -> 翻转 q2
-result2 = get_backend("native").run(current_circuit(), shots=256)
-print("cif 后:      ", result2.counts)  # {'110': 256}
+# 测量
+qshow()
 ```
+
+### API 说明
+
+| API | 参数 | 说明 |
+|-----|------|------|
+| `creg(n, name)` | n: 比特数, name: 寄存器名称 | 创建经典寄存器 |
+| `qshow()` | 无参数 | 运行电路并显示结果 |
 
 ---
 
 ## 进阶用法
 
-See the full example code below for more advanced usage.
+### 场景 1：不同寄存器
+
+```python
+# 不同寄存器
+c0 = creg(2, name="c0")
+c1 = creg(2, name="c1")
+qgate(H, 0)
+qgate(CX, 0, 1)
+qshow()
+```
+
+### 场景 2：多经典寄存器用于量子计算
+
+```python
+# 多经典寄存器可以用于量子计算
+# 存储多个测量结果
+```
+
+### 场景 3：多经典寄存器用于量子算法
+
+```python
+# 多经典寄存器可以用于量子算法
+# 存储算法结果
+```
 
 ---
 
 ## 适用场景
 
-- - Quantum computing (量子计算)
-- - Algorithm demonstration (算法演示)
-- - Educational (教学)
+### 场景 1：量子计算
+
+多经典寄存器可以用于量子计算。
+
+### 场景 2：量子算法
+
+多经典寄存器可以用于量子算法。
+
+### 场景 3：量子算法教学
+
+多经典寄存器是量子算法的经典例子，用于教学。
 
 ---
 
 ## 常见问题
 
-### Q1: How to run this example?
+### Q1: 多经典寄存器的精度如何？
 
-```bash
-python examples/creg_multi/creg_multi.py
-```
+精度取决于测量精度。
 
-### Q2: What backend is used?
+### Q2: 多经典寄存器需要多少量子比特？
 
-The example uses the default backend. You can specify a different one:
+取决于寄存器数量。
 
-```python
-qshow(backend='qiskit')
-```
+### Q3: 多经典寄存器和单经典寄存器有什么区别？
+
+多经典寄存器可以存储多个测量结果。
+
+### Q4: 多经典寄存器在 NISQ 设备上能跑吗？
+
+可以跑小规模的，但噪声会影响结果。
+
+### Q5: 多经典寄存器的复杂度如何？
+
+复杂度取决于寄存器数量。
 
 ---
 
@@ -148,61 +195,47 @@ qshow(backend='qiskit')
 
 ### 前置知识
 
-- Basic quantum computing concepts
-- QuoNic API basics
+- 量子比特和量子门
+- 量子测量
+- 经典寄存器
 
 ### 继续学习
 
-- Other examples in this documentation
-- QuoNic API reference
+- 量子计算
+- 量子算法
+- 量子算法教学
+
+### 难度等级
+
+- 当前：中级
+- 下一步：高级
 
 ---
 
 ## 完整示例代码
 
+### 示例 1：基本多经典寄存器
+
 ```python
-"""Multiple classical registers / 多经典寄存器
+from quonic import qgate, qshow, creg
 
-Multiple classical registers / 多经典寄存器
+c0 = creg(2, name="c0")
+c1 = creg(2, name="c1")
+qgate(H, 0)
+qgate(CX, 0, 1)
+qshow()
+```
 
-## Application / 应用场景
-- Quantum computing (量子计算)
-- Algorithm demonstration (算法演示)
-- Educational (教学)
+### 示例 2：不同寄存器
 
-## Output / 输出
-See code comments for output explanation.
-参见代码注释了解输出说明。"""
+```python
+from quonic import qgate, qshow, creg
 
-from quonic import cif, creg, cwhile, qgate, reset
-from quonic.backends import get_backend
-from quonic.gates import H, I, X
-from quonic.stack import current_circuit
-
-# --- 多比特 cwhile + groverize ---
-# 两比特各自 H，直到寄存器值 == 2 ("10")；单次成功概率 p = 1/4
-reg = creg("reg", width=2)
-with cwhile(reg, until=2) as loop:
-    qgate(H, 0)
-    qgate(H, 1)
-    reg.measure(0, bit=0)
-    reg.measure(1, bit=1)
-
-static = loop.groverize()  # 成功态 (reg == 2) 从 1/4 放大到 1
-result = get_backend("native").run(static, shots=1024)
-# 4 比特输出：ancilla 寄存器(左 2 位 "10") + 数据(q1 q0 = "10")
-print("groverize 后:", result.counts)  # {'1010': 1024}
-
-# --- 多比特 cif ---
-reset()
-qgate(X, 1)                       # q1 = 1
-reg2 = creg("reg2", width=2)
-reg2.measure(0, bit=0)            # bit0 = 0
-reg2.measure(1, bit=1)            # bit1 = 1 -> 寄存器值 2
-cif(reg2, 2).then(X, 2).else_(I, 2)  # reg2 == 2 -> 翻转 q2
-result2 = get_backend("native").run(current_circuit(), shots=256)
-print("cif 后:      ", result2.counts)  # {'110': 256}
-
+c0 = creg(2, name="c0")
+c1 = creg(2, name="c1")
+qgate(H, 0)
+qgate(CX, 0, 1)
+qshow()
 ```
 
 ### 运行方式

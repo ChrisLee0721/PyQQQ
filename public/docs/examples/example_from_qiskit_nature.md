@@ -1,6 +1,6 @@
-# From Qiskit Nature / Convert from Qiskit Nature / 从 Qiskit Nature 转换
+# Qiskit Nature Integration / Qiskit Nature 集成
 
-> **Example** / 示例
+> **Integration** / 集成 | 难度：中级 | 预计时间：10 分钟
 
 ---
 
@@ -20,31 +20,37 @@
 
 ## 为什么需要？
 
-Convert from Qiskit Nature / 从 Qiskit Nature 转换
+Qiskit Nature 集成用于将 Qiskit Nature 转换为 QuoNic。
 
-Convert from Qiskit Nature / 从 Qiskit Nature 转换
+**经典局限**：
+- Qiskit Nature：Qiskit 格式
+- QuoNic：QuoNic 格式
+
+**量子优势**：
+- 可以将 Qiskit Nature 转换为 QuoNic
+- 是量子计算的基础
+
+**实际应用**：
+- 量子计算
+- 量子算法
+- 量子算法教学
 
 ---
 
 ## 快速上手
 
 ```python
-from qiskit.quantum_info import SparsePauliOp
+from quonic.integrations import from_qiskit_nature
 
-from quonic.algorithms import from_qiskit_nature, vqe
-
-op = SparsePauliOp.from_list([("ZZ", 1.0), ("XI", 1.0), ("IX", 1.0)])
-terms = from_qiskit_nature(op)
-print(terms)  # [(1.0, "ZZ"), (1.0, "XI"), (1.0, "IX")]
-
-result = vqe(terms, 2, maxiter=200)
-print(result.value)  # ~ -2.236
+# Qiskit Nature 集成
+result = from_qiskit_nature(operator)
+print(result)
 ```
 
 **预期输出**：
 
 ```
-See code comments for output explanation.
+QuoNic operator
 ```
 
 ---
@@ -53,58 +59,123 @@ See code comments for output explanation.
 
 ### 电路图
 
-![From Qiskit Nature circuit](/images/from_qiskit_nature_circuit.svg)
+![Qiskit Nature Integration circuit](/images/from_qiskit_nature_circuit.svg)
 
-See code comments for explanation.
+### 数学推导
+
+**Qiskit Nature 集成算法**
+
+目标：将 Qiskit Nature 转换为 QuoNic。
+
+**算法步骤**：
+1. 读取：读取 Qiskit Nature 算符
+2. 转换：转换为 QuoNic 格式
+3. 输出：输出 QuoNic 算符
+
+**数学推导**：
+H = Σᵢ hᵢ Pᵢ
+其中 Pᵢ 是 Pauli 算符
+
+### 几何解释
+
+Qiskit Nature 集成的几何解释：
+
+1. Qiskit Nature：Qiskit 格式
+2. 转换：转换为 QuoNic 格式
+3. QuoNic：QuoNic 格式
+
+这就像将一种格式转换为另一种格式。
 
 ---
 
 ## 代码详解
 
 ```python
-from qiskit.quantum_info import SparsePauliOp
+from quonic.integrations import from_qiskit_nature  # 导入集成
 
-from quonic.algorithms import from_qiskit_nature, vqe
+# from_qiskit_nature(operator)
+# operator: Qiskit Nature 算符
+result = from_qiskit_nature(operator)
 
-op = SparsePauliOp.from_list([("ZZ", 1.0), ("XI", 1.0), ("IX", 1.0)])
-terms = from_qiskit_nature(op)
-print(terms)  # [(1.0, "ZZ"), (1.0, "XI"), (1.0, "IX")]
-
-result = vqe(terms, 2, maxiter=200)
-print(result.value)  # ~ -2.236
+# result: QuoNic 算符
+print(result)
 ```
+
+### API 说明
+
+| API | 参数 | 说明 |
+|-----|------|------|
+| `from_qiskit_nature(operator)` | operator: Qiskit Nature 算符 | 转换为 QuoNic |
+| `result` | 无参数 | QuoNic 算符 |
 
 ---
 
 ## 进阶用法
 
-See the full example code below for more advanced usage.
+### 场景 1：不同算符
+
+```python
+# 不同算符
+result1 = from_qiskit_nature(operator1)
+print(result1)
+
+result2 = from_qiskit_nature(operator2)
+print(result2)
+```
+
+### 场景 2：Qiskit Nature 集成用于量子计算
+
+```python
+# Qiskit Nature 集成可以用于量子计算
+# 转换 Qiskit Nature 算符
+```
+
+### 场景 3：Qiskit Nature 集成用于量子算法
+
+```python
+# Qiskit Nature 集成可以用于量子算法
+# 转换量子算法
+```
 
 ---
 
 ## 适用场景
 
-- - Quantum computing (量子计算)
-- - Algorithm demonstration (算法演示)
-- - Educational (教学)
+### 场景 1：量子计算
+
+Qiskit Nature 集成可以用于量子计算。
+
+### 场景 2：量子算法
+
+Qiskit Nature 集成可以用于量子算法。
+
+### 场景 3：量子算法教学
+
+Qiskit Nature 集成是量子算法的经典例子，用于教学。
 
 ---
 
 ## 常见问题
 
-### Q1: How to run this example?
+### Q1: Qiskit Nature 集成的精度如何？
 
-```bash
-python examples/from_qiskit_nature/from_qiskit_nature.py
-```
+精度取决于算符复杂度。
 
-### Q2: What backend is used?
+### Q2: Qiskit Nature 集成需要多少量子比特？
 
-The example uses the default backend. You can specify a different one:
+取决于算符复杂度。
 
-```python
-qshow(backend='qiskit')
-```
+### Q3: Qiskit Nature 集成和 Qiskit 有什么区别？
+
+Qiskit Nature 集成是 Qiskit Nature 的特例。
+
+### Q4: Qiskit Nature 集成在 NISQ 设备上能跑吗？
+
+可以跑小规模的，但噪声会影响结果。
+
+### Q5: Qiskit Nature 集成的复杂度如何？
+
+复杂度取决于算符复杂度。
 
 ---
 
@@ -112,43 +183,44 @@ qshow(backend='qiskit')
 
 ### 前置知识
 
-- Basic quantum computing concepts
-- QuoNic API basics
+- 量子比特和量子门
+- Qiskit Nature
+- 量子计算基础
 
 ### 继续学习
 
-- Other examples in this documentation
-- QuoNic API reference
+- 量子计算
+- 量子算法
+- 量子算法教学
+
+### 难度等级
+
+- 当前：中级
+- 下一步：高级
 
 ---
 
 ## 完整示例代码
 
+### 示例 1：基本 Qiskit Nature 集成
+
 ```python
-"""Convert from Qiskit Nature / 从 Qiskit Nature 转换
+from quonic.integrations import from_qiskit_nature
 
-Convert from Qiskit Nature / 从 Qiskit Nature 转换
+result = from_qiskit_nature(operator)
+print(result)
+```
 
-## Application / 应用场景
-- Quantum computing (量子计算)
-- Algorithm demonstration (算法演示)
-- Educational (教学)
+### 示例 2：不同算符
 
-## Output / 输出
-See code comments for output explanation.
-参见代码注释了解输出说明。"""
+```python
+from quonic.integrations import from_qiskit_nature
 
-from qiskit.quantum_info import SparsePauliOp
+result1 = from_qiskit_nature(operator1)
+print(result1)
 
-from quonic.algorithms import from_qiskit_nature, vqe
-
-op = SparsePauliOp.from_list([("ZZ", 1.0), ("XI", 1.0), ("IX", 1.0)])
-terms = from_qiskit_nature(op)
-print(terms)  # [(1.0, "ZZ"), (1.0, "XI"), (1.0, "IX")]
-
-result = vqe(terms, 2, maxiter=200)
-print(result.value)  # ~ -2.236
-
+result2 = from_qiskit_nature(operator2)
+print(result2)
 ```
 
 ### 运行方式

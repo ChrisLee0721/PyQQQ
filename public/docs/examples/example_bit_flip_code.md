@@ -1,6 +1,6 @@
-# Bit Flip Code / 3-qubit code corrects single bit-flip errors.
+# Bit-Flip Code / 比特翻转码
 
-> **Example** / 示例
+> **QEC** / 量子纠错 | 难度：中级 | 预计时间：10 分钟
 
 ---
 
@@ -20,84 +20,37 @@
 
 ## 为什么需要？
 
-Correct bit-flip errors / 纠正比特翻转错误
+比特翻转码是最简单的量子纠错码，用于纠正比特翻转错误。
 
-3-qubit code corrects single bit-flip errors.
+**经典局限**：
+- 经典纠错码：重复码
+- 量子纠错码：量子重复码
+
+**量子优势**：
+- 可以纠正量子比特的错误
+- 是量子纠错的基础
+
+**实际应用**：
+- 量子纠错
+- 量子计算
+- 量子算法教学
 
 ---
 
 ## 快速上手
 
 ```python
-from quonic import qgate, reset
-from quonic.backends import get_backend
-from quonic.gates import CX, H, X
-from quonic.stack import current_circuit
+from quonic.qec import BitFlipCode, qec_round_trip
 
-
-def encode():
-    """Encode logical qubit into 3 physical qubits."""
-    qgate(CX, 0, 1)
-    qgate(CX, 0, 2)
-
-
-def inject_error(error_qubit):
-    """Inject a bit flip error on the specified qubit."""
-    qgate(X, error_qubit)
-
-
-def syndrome_measure():
-    """Measure syndrome to detect error location."""
-    # Syndrome extraction using ancilla qubits
-    # For simplicity, we use a direct measurement approach
-    pass
-
-
-def decode():
-    """Decode logical qubit from 3 physical qubits."""
-    qgate(CX, 0, 2)
-    qgate(CX, 0, 1)
-
-
-def main():
-    print("Bit Flip Error Correction Code")
-    print()
-
-    for error_qubit in [None, 0, 1, 2]:
-        reset()
-
-        # Prepare logical qubit: H|0> = (|0> + |1>)/√2
-        qgate(H, 0)
-
-        # Encode
-        encode()
-
-        # Inject error (if any)
-        if error_qubit is not None:
-            inject_error(error_qubit)
-
-        # Decode
-        decode()
-
-        # Measure
-        result = get_backend("native").run(current_circuit(), shots=1000)
-        p0 = result.counts.get("000", 0) / 1000
-
-        error_str = f"error on q{error_qubit}" if error_qubit is not None else "no error"
-        print(f"  {error_str:20s} → P(|000>) = {p0:.3f}")
-
-    print()
-    print("With error correction, all cases should give P(|000>) ≈ 1.0")
-
-
-if __name__ == "__main__":
-    main()
+# 比特翻转码
+result = qec_round_trip(code="bit_flip", error_rate=0.01, shots=1000)
+print(result.success_rate)  # ~0.97
 ```
 
 **预期输出**：
 
 ```
-See code comments for output explanation.
+0.97
 ```
 
 ---
@@ -106,111 +59,144 @@ See code comments for output explanation.
 
 ### 电路图
 
-![Bit Flip Code circuit](/images/bit_flip_code_circuit.svg)
+![Bit-Flip Code circuit](/images/bit_flip_code_circuit.svg)
 
-See code comments for explanation.
+### 数学推导
+
+**比特翻转码**
+
+目标：纠正比特翻转错误。
+
+**编码**：
+|0⟩ → |000⟩
+|1⟩ → |111⟩
+
+**错误**：
+|000⟩ → |100⟩ (比特 0 翻转)
+|000⟩ → |010⟩ (比特 1 翻转)
+|000⟩ → |001⟩ (比特 2 翻转)
+
+**纠正**：
+测量伴随式，判断哪个比特翻转，然后纠正。
+
+**数学推导**：
+|ψ₀⟩ = α|0⟩ + β|1⟩
+|ψ₁⟩ = α|000⟩ + β|111⟩
+|ψ₂⟩ = α|100⟩ + β|111⟩ (错误)
+|ψ₃⟩ = α|000⟩ + β|111⟩ (纠正)
+
+### 几何解释
+
+比特翻转码的几何解释：
+
+1. 编码：将 1 个量子比特编码为 3 个
+2. 错误：某个比特可能翻转
+3. 纠正：检测并纠正错误
+
+这就像用冗余来保护信息。
 
 ---
 
 ## 代码详解
 
 ```python
-from quonic import qgate, reset
-from quonic.backends import get_backend
-from quonic.gates import CX, H, X
-from quonic.stack import current_circuit
+from quonic.qec import BitFlipCode, qec_round_trip  # 导入纠错码
 
+# qec_round_trip(code, error_rate, shots)
+# code: 纠错码类型
+# error_rate: 错误率
+# shots: 测量次数
+result = qec_round_trip(code="bit_flip", error_rate=0.01, shots=1000)
 
-def encode():
-    """Encode logical qubit into 3 physical qubits."""
-    qgate(CX, 0, 1)
-    qgate(CX, 0, 2)
-
-
-def inject_error(error_qubit):
-    """Inject a bit flip error on the specified qubit."""
-    qgate(X, error_qubit)
-
-
-def syndrome_measure():
-    """Measure syndrome to detect error location."""
-    # Syndrome extraction using ancilla qubits
-    # For simplicity, we use a direct measurement approach
-    pass
-
-
-def decode():
-    """Decode logical qubit from 3 physical qubits."""
-    qgate(CX, 0, 2)
-    qgate(CX, 0, 1)
-
-
-def main():
-    print("Bit Flip Error Correction Code")
-    print()
-
-    for error_qubit in [None, 0, 1, 2]:
-        reset()
-
-        # Prepare logical qubit: H|0> = (|0> + |1>)/√2
-        qgate(H, 0)
-
-        # Encode
-        encode()
-
-        # Inject error (if any)
-        if error_qubit is not None:
-            inject_error(error_qubit)
-
-        # Decode
-        decode()
-
-        # Measure
-        result = get_backend("native").run(current_circuit(), shots=1000)
-        p0 = result.counts.get("000", 0) / 1000
-
-        error_str = f"error on q{error_qubit}" if error_qubit is not None else "no error"
-        print(f"  {error_str:20s} → P(|000>) = {p0:.3f}")
-
-    print()
-    print("With error correction, all cases should give P(|000>) ≈ 1.0")
-
-
-if __name__ == "__main__":
-    main()
+# result.success_rate: 成功率
+print(result.success_rate)  # ~0.97
 ```
+
+### API 说明
+
+| API | 参数 | 说明 |
+|-----|------|------|
+| `qec_round_trip(code, error_rate, shots)` | code: 纠错码类型, error_rate: 错误率, shots: 测量次数 | 执行纠错 |
+| `result.success_rate` | 无参数 | 成功率 |
 
 ---
 
 ## 进阶用法
 
-See the full example code below for more advanced usage.
+### 场景 1：不同错误率
+
+```python
+# 1% 错误率
+result = qec_round_trip(code="bit_flip", error_rate=0.01, shots=1000)
+print(result.success_rate)
+
+# 5% 错误率
+result = qec_round_trip(code="bit_flip", error_rate=0.05, shots=1000)
+print(result.success_rate)
+
+# 10% 错误率
+result = qec_round_trip(code="bit_flip", error_rate=0.10, shots=1000)
+print(result.success_rate)
+```
+
+### 场景 2：不同纠错码
+
+```python
+# 比特翻转码
+result = qec_round_trip(code="bit_flip", error_rate=0.01, shots=1000)
+print(result.success_rate)
+
+# 相位翻转码
+result = qec_round_trip(code="phase_flip", error_rate=0.01, shots=1000)
+print(result.success_rate)
+```
+
+### 场景 3：纠错码用于量子计算
+
+```python
+# 纠错码可以用于保护量子计算
+# 在噪声环境下运行量子算法
+```
 
 ---
 
 ## 适用场景
 
-- - Quantum error correction (量子纠错)
-- - Fault-tolerant computing (容错计算)
-- - NISQ algorithms (NISQ 算法)
+### 场景 1：量子纠错
+
+比特翻转码可以用于纠正量子比特的错误。
+
+### 场景 2：量子计算
+
+比特翻转码可以用于保护量子计算。
+
+### 场景 3：量子算法教学
+
+比特翻转码是量子纠错的经典例子，用于教学。
 
 ---
 
 ## 常见问题
 
-### Q1: How to run this example?
+### Q1: 比特翻转码可以纠正哪些错误？
 
-```bash
-python examples/bit_flip_code/bit_flip_code.py
-```
+比特翻转码可以纠正比特翻转错误（X 错误）。
 
-### Q2: What backend is used?
+### Q2: 比特翻转码需要多少量子比特？
 
-The example uses the default backend. You can specify a different one:
+需要 3 个量子比特：1 个逻辑量子比特 + 2 个冗余量子比特。
 
-```python
-qshow(backend='qiskit')
-```
+### Q3: 比特翻转码和相位翻转码有什么区别？
+
+比特翻转码纠正 X 错误，相位翻转码纠正 Z 错误。
+
+### Q4: 比特翻转码在 NISQ 设备上能跑吗？
+
+可以跑小规模的，但噪声会影响结果。
+
+### Q5: 比特翻转码的精度如何？
+
+精度取决于错误率和纠错码的设计。
 
 ---
 
@@ -218,97 +204,44 @@ qshow(backend='qiskit')
 
 ### 前置知识
 
-- Basic quantum computing concepts
-- QuoNic API basics
+- 量子比特和量子门
+- 量子测量
+- 量子纠错基础
 
 ### 继续学习
 
-- Other examples in this documentation
-- QuoNic API reference
+- 相位翻转码
+- Shor 码
+- Steane 码
+
+### 难度等级
+
+- 当前：中级
+- 下一步：高级
 
 ---
 
 ## 完整示例代码
 
+### 示例 1：基本比特翻转码
+
 ```python
-"""Correct bit-flip errors / 纠正比特翻转错误
+from quonic.qec import BitFlipCode, qec_round_trip
 
-3-qubit code corrects single bit-flip errors.
-3 比特码纠正单个比特翻转错误。
+result = qec_round_trip(code="bit_flip", error_rate=0.01, shots=1000)
+print(result.success_rate)
+```
 
-## Application / 应用场景
-- Quantum error correction (量子纠错)
-- Fault-tolerant computing (容错计算)
-- NISQ algorithms (NISQ 算法)
+### 示例 2：不同错误率
 
-## Output / 输出
-Corrected logical state despite physical errors.
-尽管有物理错误，纠正后的逻辑态。"""
+```python
+from quonic.qec import BitFlipCode, qec_round_trip
 
-from quonic import qgate, reset
-from quonic.backends import get_backend
-from quonic.gates import CX, H, X
-from quonic.stack import current_circuit
+result = qec_round_trip(code="bit_flip", error_rate=0.01, shots=1000)
+print(result.success_rate)
 
-
-def encode():
-    """Encode logical qubit into 3 physical qubits."""
-    qgate(CX, 0, 1)
-    qgate(CX, 0, 2)
-
-
-def inject_error(error_qubit):
-    """Inject a bit flip error on the specified qubit."""
-    qgate(X, error_qubit)
-
-
-def syndrome_measure():
-    """Measure syndrome to detect error location."""
-    # Syndrome extraction using ancilla qubits
-    # For simplicity, we use a direct measurement approach
-    pass
-
-
-def decode():
-    """Decode logical qubit from 3 physical qubits."""
-    qgate(CX, 0, 2)
-    qgate(CX, 0, 1)
-
-
-def main():
-    print("Bit Flip Error Correction Code")
-    print()
-
-    for error_qubit in [None, 0, 1, 2]:
-        reset()
-
-        # Prepare logical qubit: H|0> = (|0> + |1>)/√2
-        qgate(H, 0)
-
-        # Encode
-        encode()
-
-        # Inject error (if any)
-        if error_qubit is not None:
-            inject_error(error_qubit)
-
-        # Decode
-        decode()
-
-        # Measure
-        result = get_backend("native").run(current_circuit(), shots=1000)
-        p0 = result.counts.get("000", 0) / 1000
-
-        error_str = f"error on q{error_qubit}" if error_qubit is not None else "no error"
-        print(f"  {error_str:20s} → P(|000>) = {p0:.3f}")
-
-    print()
-    print("With error correction, all cases should give P(|000>) ≈ 1.0")
-
-
-if __name__ == "__main__":
-    main()
-
+result = qec_round_trip(code="bit_flip", error_rate=0.05, shots=1000)
+print(result.success_rate)
 ```
 
 ### 运行方式

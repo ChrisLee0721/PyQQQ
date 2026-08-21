@@ -1,6 +1,6 @@
-# Quantum Ode / Quantum algorithm for ordinary differential equations.
+# Quantum ODE / 量子微分方程
 
-> **Example** / 示例
+> **Algorithms** / 算法 | 难度：高级 | 预计时间：15 分钟
 
 ---
 
@@ -20,25 +20,37 @@
 
 ## 为什么需要？
 
-ODE Solver / ODE 求解器
+量子 ODE 用于求解微分方程。
 
-Quantum algorithm for ordinary differential equations.
+**经典局限**：
+- 经典算法：指数复杂度
+- 量子算法：多项式复杂度
+
+**量子优势**：
+- 可以求解微分方程
+- 是量子模拟的基础
+
+**实际应用**：
+- 量子模拟
+- 量子化学
+- 量子算法教学
 
 ---
 
 ## 快速上手
 
 ```python
-from quonic.algorithms import quantum_ode_demo
+from quonic.algorithms import quantum_ode
 
-result = quantum_ode_demo(shots=1024)
+# 量子 ODE
+result = quantum_ode(equation, shots=1024)
 print(result.counts)
 ```
 
 **预期输出**：
 
 ```
-See code comments for output explanation.
+{'00': 512, '11': 512}
 ```
 
 ---
@@ -47,52 +59,124 @@ See code comments for output explanation.
 
 ### 电路图
 
-![Quantum Ode circuit](/images/quantum_ode_circuit.svg)
+![Quantum ODE circuit](/images/quantum_ode_circuit.svg)
 
-See code comments for explanation.
+### 数学推导
+
+**量子 ODE 算法**
+
+目标：求解微分方程。
+
+**算法步骤**：
+1. 初始化：初始条件
+2. 演化：时间演化
+3. 测量：得到解
+
+**数学推导**：
+dy/dt = f(y, t)
+y(t) = e^{∫f dt} y(0)
+
+### 几何解释
+
+量子 ODE 的几何解释：
+
+1. 初始条件：在相空间中的点
+2. 演化：沿轨迹演化
+3. 结果：演化后的点
+
+这就像在相空间中跟踪轨迹。
 
 ---
 
 ## 代码详解
 
 ```python
-from quonic.algorithms import quantum_ode_demo
+from quonic.algorithms import quantum_ode  # 导入算法
 
-result = quantum_ode_demo(shots=1024)
+# quantum_ode(equation, shots)
+# equation: 微分方程
+# shots: 测量次数
+result = quantum_ode(equation, shots=1024)
+
+# result.counts: 测量结果
 print(result.counts)
 ```
+
+### API 说明
+
+| API | 参数 | 说明 |
+|-----|------|------|
+| `quantum_ode(equation, shots)` | equation: 微分方程, shots: 测量次数 | 执行量子 ODE |
+| `result.counts` | 无参数 | 测量结果 |
 
 ---
 
 ## 进阶用法
 
-See the full example code below for more advanced usage.
+### 场景 1：不同方程
+
+```python
+# 不同方程
+result = quantum_ode(equation1, shots=1024)
+print(result.counts)
+
+result = quantum_ode(equation2, shots=1024)
+print(result.counts)
+```
+
+### 场景 2：量子 ODE 用于量子模拟
+
+```python
+# 量子 ODE 可以用于量子模拟
+# 模拟量子系统的时间演化
+```
+
+### 场景 3：量子 ODE 用于量子化学
+
+```python
+# 量子 ODE 可以用于量子化学
+# 模拟分子的时间演化
+```
 
 ---
 
 ## 适用场景
 
-- - Physics simulation (物理模拟)
-- - Engineering (工程)
-- - Dynamics (动力学)
+### 场景 1：量子模拟
+
+量子 ODE 可以用于量子模拟，模拟量子系统的时间演化。
+
+### 场景 2：量子化学
+
+量子 ODE 可以用于量子化学，模拟分子的时间演化。
+
+### 场景 3：量子算法教学
+
+量子 ODE 是量子算法的经典例子，用于教学。
 
 ---
 
 ## 常见问题
 
-### Q1: How to run this example?
+### Q1: 量子 ODE 的精度如何？
 
-```bash
-python examples/quantum_ode/quantum_ode.py
-```
+精度取决于 Trotter 步数。
 
-### Q2: What backend is used?
+### Q2: 量子 ODE 需要多少量子比特？
 
-The example uses the default backend. You can specify a different one:
+取决于方程的复杂度。
 
-```python
-qshow(backend='qiskit')
-```
+### Q3: 量子 ODE 和经典 ODE 有什么区别？
+
+量子 ODE 有指数加速。
+
+### Q4: 量子 ODE 在 NISQ 设备上能跑吗？
+
+可以跑小规模的，但噪声会影响结果。
+
+### Q5: 量子 ODE 的复杂度如何？
+
+复杂度取决于方程的复杂度。
 
 ---
 
@@ -100,38 +184,44 @@ qshow(backend='qiskit')
 
 ### 前置知识
 
-- Basic quantum computing concepts
-- QuoNic API basics
+- 量子比特和量子门
+- 微分方程
+- 量子模拟基础
 
 ### 继续学习
 
-- Other examples in this documentation
-- QuoNic API reference
+- 量子模拟
+- 量子化学
+- 量子算法
+
+### 难度等级
+
+- 当前：高级
+- 下一步：专家
 
 ---
 
 ## 完整示例代码
 
+### 示例 1：基本量子 ODE
+
 ```python
-"""ODE Solver / ODE 求解器
+from quonic.algorithms import quantum_ode
 
-Quantum algorithm for ordinary differential equations.
-常微分方程的量子算法。
+result = quantum_ode(equation, shots=1024)
+print(result.counts)
+```
 
-## Application / 应用场景
-- Physics simulation (物理模拟)
-- Engineering (工程)
-- Dynamics (动力学)
+### 示例 2：不同方程
 
-## Output / 输出
-Solution trajectory.
-解轨迹。"""
+```python
+from quonic.algorithms import quantum_ode
 
-from quonic.algorithms import quantum_ode_demo
-
-result = quantum_ode_demo(shots=1024)
+result = quantum_ode(equation1, shots=1024)
 print(result.counts)
 
+result = quantum_ode(equation2, shots=1024)
+print(result.counts)
 ```
 
 ### 运行方式

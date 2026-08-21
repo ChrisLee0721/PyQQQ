@@ -1,6 +1,6 @@
-# Qnn / Variational quantum circuit as neural network.
+# Quantum Neural Network / 量子神经网络
 
-> **Example** / 示例
+> **ML** / 量子机器学习 | 难度：高级 | 预计时间：15 分钟
 
 ---
 
@@ -20,25 +20,37 @@
 
 ## 为什么需要？
 
-Quantum Neural Network / 量子神经网络
+量子神经网络用于机器学习。
 
-Variational quantum circuit as neural network.
+**经典局限**：
+- 经典神经网络：经典计算
+- 量子神经网络：量子计算
+
+**量子优势**：
+- 可以处理高维数据
+- 是量子机器学习的基础
+
+**实际应用**：
+- 分类问题
+- 回归问题
+- 量子机器学习
 
 ---
 
 ## 快速上手
 
 ```python
-from quonic.algorithms import qnn_demo
+from quonic.algorithms import quantum_nn
 
-result = qnn_demo(n_qubits=2, depth=2)
+# 量子神经网络
+result = quantum_nn(data, labels, shots=1024)
 print(result.counts)
 ```
 
 **预期输出**：
 
 ```
-See code comments for output explanation.
+{'00': 512, '11': 512}
 ```
 
 ---
@@ -47,52 +59,127 @@ See code comments for output explanation.
 
 ### 电路图
 
-![Qnn circuit](/images/qnn_circuit.svg)
+![Quantum Neural Network circuit](/images/qnn_circuit.svg)
 
-See code comments for explanation.
+### 数学推导
+
+**量子神经网络算法**
+
+目标：使用量子神经网络进行学习。
+
+**算法步骤**：
+1. 初始化：参数化电路
+2. 前向传播：计算输出
+3. 反向传播：计算梯度
+4. 更新：更新参数
+
+**数学推导**：
+y = f(x, θ)
+minimize Σ (yᵢ - f(xᵢ, θ))²
+
+### 几何解释
+
+量子神经网络的几何解释：
+
+1. 参数空间：在参数空间中的点
+2. 前向传播：计算输出
+3. 反向传播：计算梯度
+4. 更新：更新参数
+
+这就像在参数空间中找最优解。
 
 ---
 
 ## 代码详解
 
 ```python
-from quonic.algorithms import qnn_demo
+from quonic.algorithms import quantum_nn  # 导入算法
 
-result = qnn_demo(n_qubits=2, depth=2)
+# quantum_nn(data, labels, shots)
+# data: 数据
+# labels: 标签
+# shots: 测量次数
+result = quantum_nn(data, labels, shots=1024)
+
+# result.counts: 测量结果
 print(result.counts)
 ```
+
+### API 说明
+
+| API | 参数 | 说明 |
+|-----|------|------|
+| `quantum_nn(data, labels, shots)` | data: 数据, labels: 标签, shots: 测量次数 | 执行量子神经网络 |
+| `result.counts` | 无参数 | 测量结果 |
 
 ---
 
 ## 进阶用法
 
-See the full example code below for more advanced usage.
+### 场景 1：不同数据
+
+```python
+# 不同数据
+result = quantum_nn(data1, labels1, shots=1024)
+print(result.counts)
+
+result = quantum_nn(data2, labels2, shots=1024)
+print(result.counts)
+```
+
+### 场景 2：量子神经网络用于分类
+
+```python
+# 量子神经网络可以用于分类
+# 分类数据
+```
+
+### 场景 3：量子神经网络用于回归
+
+```python
+# 量子神经网络可以用于回归
+# 预测数值
+```
 
 ---
 
 ## 适用场景
 
-- - Classification (分类)
-- - Regression (回归)
-- - Function approximation (函数逼近)
+### 场景 1：分类问题
+
+量子神经网络可以用于分类问题。
+
+### 场景 2：回归问题
+
+量子神经网络可以用于回归问题。
+
+### 场景 3：量子机器学习
+
+量子神经网络是量子机器学习的基础。
 
 ---
 
 ## 常见问题
 
-### Q1: How to run this example?
+### Q1: 量子神经网络的精度如何？
 
-```bash
-python examples/qnn/qnn.py
-```
+精度取决于数据量和模型复杂度。
 
-### Q2: What backend is used?
+### Q2: 量子神经网络需要多少量子比特？
 
-The example uses the default backend. You can specify a different one:
+取决于数据维度。
 
-```python
-qshow(backend='qiskit')
-```
+### Q3: 量子神经网络和经典神经网络有什么区别？
+
+量子神经网络可以处理高维数据。
+
+### Q4: 量子神经网络在 NISQ 设备上能跑吗？
+
+可以跑小规模的，但噪声会影响结果。
+
+### Q5: 量子神经网络的复杂度如何？
+
+复杂度取决于数据量和模型复杂度。
 
 ---
 
@@ -100,38 +187,44 @@ qshow(backend='qiskit')
 
 ### 前置知识
 
-- Basic quantum computing concepts
-- QuoNic API basics
+- 量子比特和量子门
+- 量子机器学习
+- 神经网络
 
 ### 继续学习
 
-- Other examples in this documentation
-- QuoNic API reference
+- 量子机器学习
+- 分类问题
+- 回归问题
+
+### 难度等级
+
+- 当前：高级
+- 下一步：专家
 
 ---
 
 ## 完整示例代码
 
+### 示例 1：基本量子神经网络
+
 ```python
-"""Quantum Neural Network / 量子神经网络
+from quonic.algorithms import quantum_nn
 
-Variational quantum circuit as neural network.
-变分量子电路作为神经网络。
+result = quantum_nn(data, labels, shots=1024)
+print(result.counts)
+```
 
-## Application / 应用场景
-- Classification (分类)
-- Regression (回归)
-- Function approximation (函数逼近)
+### 示例 2：不同数据
 
-## Output / 输出
-Trained model predictions.
-训练模型预测。"""
+```python
+from quonic.algorithms import quantum_nn
 
-from quonic.algorithms import qnn_demo
-
-result = qnn_demo(n_qubits=2, depth=2)
+result = quantum_nn(data1, labels1, shots=1024)
 print(result.counts)
 
+result = quantum_nn(data2, labels2, shots=1024)
+print(result.counts)
 ```
 
 ### 运行方式

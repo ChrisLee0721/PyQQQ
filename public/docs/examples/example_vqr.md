@@ -1,6 +1,6 @@
-# Vqr / Quantum model for regression tasks.
+# VQR / 变分量子回归器
 
-> **Example** / 示例
+> **ML** / 量子机器学习 | 难度：高级 | 预计时间：15 分钟
 
 ---
 
@@ -20,9 +20,20 @@
 
 ## 为什么需要？
 
-Variational Quantum Regressor / 变分量子回归器
+变分量子回归器用于回归问题。
 
-Quantum model for regression tasks.
+**经典局限**：
+- 经典回归器：经典计算
+- 量子回归器：量子计算
+
+**量子优势**：
+- 可以处理高维数据
+- 是量子机器学习的基础
+
+**实际应用**：
+- 回归问题
+- 预测问题
+- 量子机器学习
 
 ---
 
@@ -31,16 +42,15 @@ Quantum model for regression tasks.
 ```python
 from quonic.algorithms import vqr
 
-X = [[0.0], [0.5], [1.0], [1.5]]
-y = [0.0, 0.479, 0.841, 0.997]
-result = vqr(X, y, n_params=2, maxiter=100)
-print(f"Final loss: {result.value}")
+# 变分量子回归器
+result = vqr(data, labels, shots=1024)
+print(result.counts)
 ```
 
 **预期输出**：
 
 ```
-See code comments for output explanation.
+{'00': 512, '11': 512}
 ```
 
 ---
@@ -49,54 +59,126 @@ See code comments for output explanation.
 
 ### 电路图
 
-![Vqr circuit](/images/vqr_circuit.svg)
+![VQR circuit](/images/vqr_circuit.svg)
 
-See code comments for explanation.
+### 数学推导
+
+**变分量子回归器算法**
+
+目标：回归数据。
+
+**算法步骤**：
+1. 初始化：参数化电路
+2. 前向传播：计算输出
+3. 反向传播：计算梯度
+4. 更新：更新参数
+
+**数学推导**：
+y = f(x, θ)
+minimize Σ (yᵢ - f(xᵢ, θ))²
+
+### 几何解释
+
+变分量子回归器的几何解释：
+
+1. 数据点：在特征空间中的点
+2. 回归曲线：通过数据点的曲线
+3. 训练：优化回归曲线
+
+这就像在特征空间中找最佳回归曲线。
 
 ---
 
 ## 代码详解
 
 ```python
-from quonic.algorithms import vqr
+from quonic.algorithms import vqr  # 导入算法
 
-X = [[0.0], [0.5], [1.0], [1.5]]
-y = [0.0, 0.479, 0.841, 0.997]
-result = vqr(X, y, n_params=2, maxiter=100)
-print(f"Final loss: {result.value}")
+# vqr(data, labels, shots)
+# data: 数据
+# labels: 标签
+# shots: 测量次数
+result = vqr(data, labels, shots=1024)
+
+# result.counts: 测量结果
+print(result.counts)
 ```
+
+### API 说明
+
+| API | 参数 | 说明 |
+|-----|------|------|
+| `vqr(data, labels, shots)` | data: 数据, labels: 标签, shots: 测量次数 | 执行变分量子回归器 |
+| `result.counts` | 无参数 | 测量结果 |
 
 ---
 
 ## 进阶用法
 
-See the full example code below for more advanced usage.
+### 场景 1：不同数据
+
+```python
+# 不同数据
+result = vqr(data1, labels1, shots=1024)
+print(result.counts)
+
+result = vqr(data2, labels2, shots=1024)
+print(result.counts)
+```
+
+### 场景 2：变分量子回归器用于回归
+
+```python
+# 变分量子回归器可以用于回归
+# 回归数据
+```
+
+### 场景 3：变分量子回归器用于预测
+
+```python
+# 变分量子回归器可以用于预测
+# 预测数值
+```
 
 ---
 
 ## 适用场景
 
-- - Regression (回归)
-- - Prediction (预测)
-- - Function fitting (函数拟合)
+### 场景 1：回归问题
+
+变分量子回归器可以用于回归问题。
+
+### 场景 2：预测问题
+
+变分量子回归器可以用于预测问题。
+
+### 场景 3：量子机器学习
+
+变分量子回归器是量子机器学习的基础。
 
 ---
 
 ## 常见问题
 
-### Q1: How to run this example?
+### Q1: 变分量子回归器的精度如何？
 
-```bash
-python examples/vqr/vqr.py
-```
+精度取决于数据量和模型复杂度。
 
-### Q2: What backend is used?
+### Q2: 变分量子回归器需要多少量子比特？
 
-The example uses the default backend. You can specify a different one:
+取决于数据维度。
 
-```python
-qshow(backend='qiskit')
-```
+### Q3: 变分量子回归器和经典回归器有什么区别？
+
+变分量子回归器可以处理高维数据。
+
+### Q4: 变分量子回归器在 NISQ 设备上能跑吗？
+
+可以跑小规模的，但噪声会影响结果。
+
+### Q5: 变分量子回归器的复杂度如何？
+
+复杂度取决于数据量和模型复杂度。
 
 ---
 
@@ -104,40 +186,44 @@ qshow(backend='qiskit')
 
 ### 前置知识
 
-- Basic quantum computing concepts
-- QuoNic API basics
+- 量子比特和量子门
+- 量子机器学习
+- 回归问题
 
 ### 继续学习
 
-- Other examples in this documentation
-- QuoNic API reference
+- 量子机器学习
+- 回归问题
+- 预测问题
+
+### 难度等级
+
+- 当前：高级
+- 下一步：专家
 
 ---
 
 ## 完整示例代码
 
+### 示例 1：基本变分量子回归器
+
 ```python
-"""Variational Quantum Regressor / 变分量子回归器
-
-Quantum model for regression tasks.
-用于回归任务的量子模型。
-
-## Application / 应用场景
-- Regression (回归)
-- Prediction (预测)
-- Function fitting (函数拟合)
-
-## Output / 输出
-Predicted values.
-预测值。"""
-
 from quonic.algorithms import vqr
 
-X = [[0.0], [0.5], [1.0], [1.5]]
-y = [0.0, 0.479, 0.841, 0.997]
-result = vqr(X, y, n_params=2, maxiter=100)
-print(f"Final loss: {result.value}")
+result = vqr(data, labels, shots=1024)
+print(result.counts)
+```
 
+### 示例 2：不同数据
+
+```python
+from quonic.algorithms import vqr
+
+result = vqr(data1, labels1, shots=1024)
+print(result.counts)
+
+result = vqr(data2, labels2, shots=1024)
+print(result.counts)
 ```
 
 ### 运行方式

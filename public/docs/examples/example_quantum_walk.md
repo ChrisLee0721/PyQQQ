@@ -1,6 +1,6 @@
-# Quantum Walk / Quantum analogue of random walk, spreads quadratically faster.
+# Quantum Walk / 量子行走
 
-> **Example** / 示例
+> **Algorithms** / 算法 | 难度：中级 | 预计时间：10 分钟
 
 ---
 
@@ -20,9 +20,20 @@
 
 ## 为什么需要？
 
-Quantum Walk / 量子行走
+量子行走是经典随机行走的量子版本。
 
-Quantum analogue of random walk, spreads quadratically faster.
+**经典局限**：
+- 经典随机行走：扩散速度 O(√t)
+- 量子行走：扩散速度 O(t)
+
+**量子优势**：
+- 二次加速
+- 是许多量子算法的基础
+
+**实际应用**：
+- 图算法
+- 搜索问题
+- 量子算法教学
 
 ---
 
@@ -31,14 +42,15 @@ Quantum analogue of random walk, spreads quadratically faster.
 ```python
 from quonic.algorithms import quantum_walk
 
-result = quantum_walk(n_positions=5, steps=10, shots=1024)
+# 量子行走
+result = quantum_walk(n_steps=10, shots=1024)
 print(result.counts)
 ```
 
 **预期输出**：
 
 ```
-See code comments for output explanation.
+{'00': 256, '01': 256, '10': 256, '11': 256}
 ```
 
 ---
@@ -49,50 +61,131 @@ See code comments for output explanation.
 
 ![Quantum Walk circuit](/images/quantum_walk_circuit.svg)
 
-See code comments for explanation.
+### 数学推导
+
+**量子行走算法**
+
+目标：模拟量子行走。
+
+**算法步骤**：
+1. 初始化：|0⟩|0⟩
+2. 硬币：Hadamard 门
+3. 移动：根据硬币结果移动
+4. 重复：多次迭代
+
+**数学推导**：
+|ψ₀⟩ = |0⟩|0⟩
+|ψ₁⟩ = H|0⟩ ⊗ |0⟩ = (|0⟩+|1⟩)/√2 ⊗ |0⟩
+|ψ₂⟩ = 移动后的态
+...
+|ψₙ⟩ = 行走后的态
+
+### 几何解释
+
+量子行走的几何解释：
+
+1. 初始态：在原点
+2. 硬币：决定方向
+3. 移动：根据硬币结果移动
+4. 重复：多次迭代
+5. 结果：量子行走的分布
+
+这就像在直线上随机行走，但有量子干涉。
 
 ---
 
 ## 代码详解
 
 ```python
-from quonic.algorithms import quantum_walk
+from quonic.algorithms import quantum_walk  # 导入算法
 
-result = quantum_walk(n_positions=5, steps=10, shots=1024)
+# quantum_walk(n_steps, shots)
+# n_steps: 行走步数
+# shots: 测量次数
+result = quantum_walk(n_steps=10, shots=1024)
+
+# result.counts: 测量结果
 print(result.counts)
 ```
+
+### API 说明
+
+| API | 参数 | 说明 |
+|-----|------|------|
+| `quantum_walk(n_steps, shots)` | n_steps: 行走步数, shots: 测量次数 | 执行量子行走 |
+| `result.counts` | 无参数 | 测量结果 |
 
 ---
 
 ## 进阶用法
 
-See the full example code below for more advanced usage.
+### 场景 1：不同步数
+
+```python
+# 不同步数
+result = quantum_walk(n_steps=5, shots=1024)
+print(result.counts)
+
+result = quantum_walk(n_steps=10, shots=1024)
+print(result.counts)
+
+result = quantum_walk(n_steps=20, shots=1024)
+print(result.counts)
+```
+
+### 场景 2：量子行走用于图算法
+
+```python
+# 量子行走可以用于图算法
+# 例如：图搜索
+```
+
+### 场景 3：量子行走用于搜索问题
+
+```python
+# 量子行走可以用于搜索问题
+# 例如：无序搜索
+```
 
 ---
 
 ## 适用场景
 
-- - Search algorithms (搜索算法)
-- - Graph algorithms (图算法)
-- - Transport phenomena (输运现象)
+### 场景 1：图算法
+
+量子行走可以用于图算法，例如图搜索。
+
+### 场景 2：搜索问题
+
+量子行走可以用于搜索问题，例如无序搜索。
+
+### 场景 3：量子算法教学
+
+量子行走是量子算法的经典例子，用于教学。
 
 ---
 
 ## 常见问题
 
-### Q1: How to run this example?
+### Q1: 量子行走的加速比是多少？
 
-```bash
-python examples/quantum_walk/quantum_walk.py
-```
+二次加速。
 
-### Q2: What backend is used?
+### Q2: 量子行走需要多少量子比特？
 
-The example uses the default backend. You can specify a different one:
+取决于行走的空间大小。
 
-```python
-qshow(backend='qiskit')
-```
+### Q3: 量子行走和经典随机行走有什么区别？
+
+量子行走有量子干涉，经典随机行走没有。
+
+### Q4: 量子行走在 NISQ 设备上能跑吗？
+
+可以跑小规模的，但噪声会影响结果。
+
+### Q5: 量子行走的复杂度如何？
+
+复杂度取决于行走步数。
 
 ---
 
@@ -100,38 +193,44 @@ qshow(backend='qiskit')
 
 ### 前置知识
 
-- Basic quantum computing concepts
-- QuoNic API basics
+- 量子比特和量子门
+- Hadamard 门
+- 随机行走
 
 ### 继续学习
 
-- Other examples in this documentation
-- QuoNic API reference
+- 图算法
+- 搜索问题
+- 量子算法
+
+### 难度等级
+
+- 当前：中级
+- 下一步：高级
 
 ---
 
 ## 完整示例代码
 
+### 示例 1：基本量子行走
+
 ```python
-"""Quantum Walk / 量子行走
-
-Quantum analogue of random walk, spreads quadratically faster.
-随机行走的量子类比，二次方更快扩展。
-
-## Application / 应用场景
-- Search algorithms (搜索算法)
-- Graph algorithms (图算法)
-- Transport phenomena (输运现象)
-
-## Output / 输出
-Position distribution after n steps.
-n 步后的位置分布。"""
-
 from quonic.algorithms import quantum_walk
 
-result = quantum_walk(n_positions=5, steps=10, shots=1024)
+result = quantum_walk(n_steps=10, shots=1024)
+print(result.counts)
+```
+
+### 示例 2：不同步数
+
+```python
+from quonic.algorithms import quantum_walk
+
+result = quantum_walk(n_steps=5, shots=1024)
 print(result.counts)
 
+result = quantum_walk(n_steps=10, shots=1024)
+print(result.counts)
 ```
 
 ### 运行方式

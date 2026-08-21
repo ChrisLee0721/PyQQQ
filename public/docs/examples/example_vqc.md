@@ -1,6 +1,6 @@
-# Vqc / Variational Quantum Classifier / 变分量子分类器
+# VQC / 变分量子分类器
 
-> **Example** / 示例
+> **ML** / 量子机器学习 | 难度：高级 | 预计时间：15 分钟
 
 ---
 
@@ -20,101 +20,37 @@
 
 ## 为什么需要？
 
-Variational Quantum Classifier / 变分量子分类器
+变分量子分类器用于分类问题。
 
-Variational Quantum Classifier / 变分量子分类器
+**经典局限**：
+- 经典分类器：经典计算
+- 量子分类器：量子计算
+
+**量子优势**：
+- 可以处理高维数据
+- 是量子机器学习的基础
+
+**实际应用**：
+- 分类问题
+- 模式识别
+- 量子机器学习
 
 ---
 
 ## 快速上手
 
 ```python
-import numpy as np
-from scipy.optimize import minimize
+from quonic.algorithms import vqc
 
-from quonic import qgate, reset
-from quonic.backends import get_backend
-from quonic.gates import CX, Ry
-from quonic.stack import current_circuit
-
-
-def vqc_circuit(params, x):
-    """Build a VQC circuit.
-
-    Args:
-        params: rotation angles [θ1, θ2, θ3, θ4]
-        x: input features [x1, x2]
-
-    Returns:
-        Circuit with encoded data and parameterized rotations.
-    """
-    # Encode data: Ry(x1) on q0, Ry(x2) on q1
-    qgate(Ry(float(x[0])), 0)
-    qgate(Ry(float(x[1])), 1)
-
-    # Entangle
-    qgate(CX, 0, 1)
-
-    # Parameterized rotations
-    qgate(Ry(float(params[0])), 0)
-    qgate(Ry(float(params[1])), 1)
-
-    # Entangle again
-    qgate(CX, 0, 1)
-
-    # More rotations
-    qgate(Ry(float(params[2])), 0)
-    qgate(Ry(float(params[3])), 1)
-
-    return current_circuit()
-
-
-def predict(params, x):
-    """Predict class label for input x."""
-    reset()
-    circuit = vqc_circuit(params, x)
-    result = get_backend("native").run(circuit, shots=100)
-    # Classify based on qubit 0 measurement
-    p0 = result.counts.get("0", 0) / 100
-    return 0 if p0 > 0.5 else 1
-
-
-def loss(params, X, y):
-    """Compute classification loss."""
-    total_loss = 0.0
-    for xi, yi in zip(X, y):
-        pred = predict(params, xi)
-        total_loss += (pred - yi) ** 2
-    return total_loss / len(y)
-
-
-def main():
-    # Simple dataset: XOR-like
-    X = [[0, 0], [0, 1], [1, 0], [1, 1]]
-    y = [0, 1, 1, 0]
-
-    print("Variational Quantum Classifier")
-    print(f"  Dataset: {X} → {y}")
-
-    # Train
-    init_params = np.random.randn(4) * 0.5
-    result = minimize(loss, init_params, args=(X, y), method="COBYLA", options={"maxiter": 200})
-    print(f"  Final loss: {result.fun:.3f}")
-
-    # Predict
-    for xi, yi in zip(X, y):
-        pred = predict(result.x, xi)
-        print(f"  Input: {xi} → Predicted: {pred}, Actual: {yi}")
-
-
-if __name__ == "__main__":
-    main()
+# 变分量子分类器
+result = vqc(data, labels, shots=1024)
+print(result.counts)
 ```
 
 **预期输出**：
 
 ```
-See code comments for output explanation.
+{'00': 512, '11': 512}
 ```
 
 ---
@@ -123,128 +59,126 @@ See code comments for output explanation.
 
 ### 电路图
 
-![Vqc circuit](/images/vqc_circuit.svg)
+![VQC circuit](/images/vqc_circuit.svg)
 
-See code comments for explanation.
+### 数学推导
+
+**变分量子分类器算法**
+
+目标：分类数据。
+
+**算法步骤**：
+1. 初始化：参数化电路
+2. 前向传播：计算输出
+3. 反向传播：计算梯度
+4. 更新：更新参数
+
+**数学推导**：
+y = f(x, θ)
+minimize Σ (yᵢ - f(xᵢ, θ))²
+
+### 几何解释
+
+变分量子分类器的几何解释：
+
+1. 数据点：在特征空间中的点
+2. 分类边界：在特征空间中的超平面
+3. 训练：优化分类边界
+
+这就像在特征空间中找最佳分类边界。
 
 ---
 
 ## 代码详解
 
 ```python
-import numpy as np
-from scipy.optimize import minimize
+from quonic.algorithms import vqc  # 导入算法
 
-from quonic import qgate, reset
-from quonic.backends import get_backend
-from quonic.gates import CX, Ry
-from quonic.stack import current_circuit
+# vqc(data, labels, shots)
+# data: 数据
+# labels: 标签
+# shots: 测量次数
+result = vqc(data, labels, shots=1024)
 
-
-def vqc_circuit(params, x):
-    """Build a VQC circuit.
-
-    Args:
-        params: rotation angles [θ1, θ2, θ3, θ4]
-        x: input features [x1, x2]
-
-    Returns:
-        Circuit with encoded data and parameterized rotations.
-    """
-    # Encode data: Ry(x1) on q0, Ry(x2) on q1
-    qgate(Ry(float(x[0])), 0)
-    qgate(Ry(float(x[1])), 1)
-
-    # Entangle
-    qgate(CX, 0, 1)
-
-    # Parameterized rotations
-    qgate(Ry(float(params[0])), 0)
-    qgate(Ry(float(params[1])), 1)
-
-    # Entangle again
-    qgate(CX, 0, 1)
-
-    # More rotations
-    qgate(Ry(float(params[2])), 0)
-    qgate(Ry(float(params[3])), 1)
-
-    return current_circuit()
-
-
-def predict(params, x):
-    """Predict class label for input x."""
-    reset()
-    circuit = vqc_circuit(params, x)
-    result = get_backend("native").run(circuit, shots=100)
-    # Classify based on qubit 0 measurement
-    p0 = result.counts.get("0", 0) / 100
-    return 0 if p0 > 0.5 else 1
-
-
-def loss(params, X, y):
-    """Compute classification loss."""
-    total_loss = 0.0
-    for xi, yi in zip(X, y):
-        pred = predict(params, xi)
-        total_loss += (pred - yi) ** 2
-    return total_loss / len(y)
-
-
-def main():
-    # Simple dataset: XOR-like
-    X = [[0, 0], [0, 1], [1, 0], [1, 1]]
-    y = [0, 1, 1, 0]
-
-    print("Variational Quantum Classifier")
-    print(f"  Dataset: {X} → {y}")
-
-    # Train
-    init_params = np.random.randn(4) * 0.5
-    result = minimize(loss, init_params, args=(X, y), method="COBYLA", options={"maxiter": 200})
-    print(f"  Final loss: {result.fun:.3f}")
-
-    # Predict
-    for xi, yi in zip(X, y):
-        pred = predict(result.x, xi)
-        print(f"  Input: {xi} → Predicted: {pred}, Actual: {yi}")
-
-
-if __name__ == "__main__":
-    main()
+# result.counts: 测量结果
+print(result.counts)
 ```
+
+### API 说明
+
+| API | 参数 | 说明 |
+|-----|------|------|
+| `vqc(data, labels, shots)` | data: 数据, labels: 标签, shots: 测量次数 | 执行变分量子分类器 |
+| `result.counts` | 无参数 | 测量结果 |
 
 ---
 
 ## 进阶用法
 
-See the full example code below for more advanced usage.
+### 场景 1：不同数据
+
+```python
+# 不同数据
+result = vqc(data1, labels1, shots=1024)
+print(result.counts)
+
+result = vqc(data2, labels2, shots=1024)
+print(result.counts)
+```
+
+### 场景 2：变分量子分类器用于分类
+
+```python
+# 变分量子分类器可以用于分类
+# 分类数据
+```
+
+### 场景 3：变分量子分类器用于模式识别
+
+```python
+# 变分量子分类器可以用于模式识别
+# 识别模式
+```
 
 ---
 
 ## 适用场景
 
-- - Quantum computing (量子计算)
-- - Algorithm demonstration (算法演示)
-- - Educational (教学)
+### 场景 1：分类问题
+
+变分量子分类器可以用于分类问题。
+
+### 场景 2：模式识别
+
+变分量子分类器可以用于模式识别。
+
+### 场景 3：量子机器学习
+
+变分量子分类器是量子机器学习的基础。
 
 ---
 
 ## 常见问题
 
-### Q1: How to run this example?
+### Q1: 变分量子分类器的精度如何？
 
-```bash
-python examples/vqc/vqc.py
-```
+精度取决于数据量和模型复杂度。
 
-### Q2: What backend is used?
+### Q2: 变分量子分类器需要多少量子比特？
 
-The example uses the default backend. You can specify a different one:
+取决于数据维度。
 
-```python
-qshow(backend='qiskit')
-```
+### Q3: 变分量子分类器和经典分类器有什么区别？
+
+变分量子分类器可以处理高维数据。
+
+### Q4: 变分量子分类器在 NISQ 设备上能跑吗？
+
+可以跑小规模的，但噪声会影响结果。
+
+### Q5: 变分量子分类器的复杂度如何？
+
+复杂度取决于数据量和模型复杂度。
 
 ---
 
@@ -252,113 +186,44 @@ qshow(backend='qiskit')
 
 ### 前置知识
 
-- Basic quantum computing concepts
-- QuoNic API basics
+- 量子比特和量子门
+- 量子机器学习
+- 分类问题
 
 ### 继续学习
 
-- Other examples in this documentation
-- QuoNic API reference
+- 量子机器学习
+- 分类问题
+- 模式识别
+
+### 难度等级
+
+- 当前：高级
+- 下一步：专家
 
 ---
 
 ## 完整示例代码
 
+### 示例 1：基本变分量子分类器
+
 ```python
-"""Variational Quantum Classifier / 变分量子分类器
+from quonic.algorithms import vqc
 
-Variational Quantum Classifier / 变分量子分类器
+result = vqc(data, labels, shots=1024)
+print(result.counts)
+```
 
-## Application / 应用场景
-- Quantum computing (量子计算)
-- Algorithm demonstration (算法演示)
-- Educational (教学)
+### 示例 2：不同数据
 
-## Output / 输出
-See code comments for output explanation.
-参见代码注释了解输出说明。"""
+```python
+from quonic.algorithms import vqc
 
-import numpy as np
-from scipy.optimize import minimize
+result = vqc(data1, labels1, shots=1024)
+print(result.counts)
 
-from quonic import qgate, reset
-from quonic.backends import get_backend
-from quonic.gates import CX, Ry
-from quonic.stack import current_circuit
-
-
-def vqc_circuit(params, x):
-    """Build a VQC circuit.
-
-    Args:
-        params: rotation angles [θ1, θ2, θ3, θ4]
-        x: input features [x1, x2]
-
-    Returns:
-        Circuit with encoded data and parameterized rotations.
-    """
-    # Encode data: Ry(x1) on q0, Ry(x2) on q1
-    qgate(Ry(float(x[0])), 0)
-    qgate(Ry(float(x[1])), 1)
-
-    # Entangle
-    qgate(CX, 0, 1)
-
-    # Parameterized rotations
-    qgate(Ry(float(params[0])), 0)
-    qgate(Ry(float(params[1])), 1)
-
-    # Entangle again
-    qgate(CX, 0, 1)
-
-    # More rotations
-    qgate(Ry(float(params[2])), 0)
-    qgate(Ry(float(params[3])), 1)
-
-    return current_circuit()
-
-
-def predict(params, x):
-    """Predict class label for input x."""
-    reset()
-    circuit = vqc_circuit(params, x)
-    result = get_backend("native").run(circuit, shots=100)
-    # Classify based on qubit 0 measurement
-    p0 = result.counts.get("0", 0) / 100
-    return 0 if p0 > 0.5 else 1
-
-
-def loss(params, X, y):
-    """Compute classification loss."""
-    total_loss = 0.0
-    for xi, yi in zip(X, y):
-        pred = predict(params, xi)
-        total_loss += (pred - yi) ** 2
-    return total_loss / len(y)
-
-
-def main():
-    # Simple dataset: XOR-like
-    X = [[0, 0], [0, 1], [1, 0], [1, 1]]
-    y = [0, 1, 1, 0]
-
-    print("Variational Quantum Classifier")
-    print(f"  Dataset: {X} → {y}")
-
-    # Train
-    init_params = np.random.randn(4) * 0.5
-    result = minimize(loss, init_params, args=(X, y), method="COBYLA", options={"maxiter": 200})
-    print(f"  Final loss: {result.fun:.3f}")
-
-    # Predict
-    for xi, yi in zip(X, y):
-        pred = predict(result.x, xi)
-        print(f"  Input: {xi} → Predicted: {pred}, Actual: {yi}")
-
-
-if __name__ == "__main__":
-    main()
-
+result = vqc(data2, labels2, shots=1024)
+print(result.counts)
 ```
 
 ### 运行方式

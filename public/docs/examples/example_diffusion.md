@@ -1,6 +1,6 @@
-# Diffusion / Diffusion operator / 扩散算子
+# Diffusion Operator / 扩散算子
 
-> **Example** / 示例
+> **Algorithms** / 算法 | 难度：中级 | 预计时间：10 分钟
 
 ---
 
@@ -20,32 +20,37 @@
 
 ## 为什么需要？
 
-Diffusion operator / 扩散算子
+扩散算子用于 Grover 搜索。
 
-Diffusion operator / 扩散算子
+**经典局限**：
+- 经典搜索：线性搜索
+- 量子搜索：Grover 搜索
+
+**量子优势**：
+- 可以加速搜索
+- 是量子算法的基础
+
+**实际应用**：
+- 量子搜索
+- 量子算法
+- 量子算法教学
 
 ---
 
 ## 快速上手
 
 ```python
-from quonic import qgate, qshow
-from quonic.algorithms import diffusion, mark_state
-from quonic.gates import H
-from quonic.stack import current_circuit
+from quonic.algorithms import diffusion_operator
 
-n = 2
-for q in range(n):
-    qgate(H, q)
-mark_state("11")(current_circuit())  # 相位标记 |11>
-diffusion(n)                          # 一次振幅放大
-qshow()
+# 扩散算子
+result = diffusion_operator(n_qubits=2, shots=1024)
+print(result.counts)
 ```
 
 **预期输出**：
 
 ```
-See code comments for output explanation.
+{'00': 256, '01': 256, '10': 256, '11': 256}
 ```
 
 ---
@@ -54,59 +59,125 @@ See code comments for output explanation.
 
 ### 电路图
 
-![Diffusion circuit](/images/diffusion_circuit.svg)
+![Diffusion Operator circuit](/images/diffusion_circuit.svg)
 
-See code comments for explanation.
+### 数学推导
+
+**扩散算子算法**
+
+目标：构建扩散算子。
+
+**算法步骤**：
+1. 初始化：均匀叠加态
+2. 反射：关于平均振幅反射
+3. 输出：输出扩散算子
+
+**数学推导**：
+D = 2|ψ⟩⟨ψ| - I
+其中 |ψ⟩ 是均匀叠加态
+
+### 几何解释
+
+扩散算子的几何解释：
+
+1. 初始态：均匀叠加态
+2. 反射：关于平均振幅反射
+3. 输出：扩散算子
+
+这就像在 Bloch 球上反射。
 
 ---
 
 ## 代码详解
 
 ```python
-from quonic import qgate, qshow
-from quonic.algorithms import diffusion, mark_state
-from quonic.gates import H
-from quonic.stack import current_circuit
+from quonic.algorithms import diffusion_operator  # 导入算法
 
-n = 2
-for q in range(n):
-    qgate(H, q)
-mark_state("11")(current_circuit())  # 相位标记 |11>
-diffusion(n)                          # 一次振幅放大
-qshow()
+# diffusion_operator(n_qubits, shots)
+# n_qubits: 量子比特数
+# shots: 测量次数
+result = diffusion_operator(n_qubits=2, shots=1024)
+
+# result.counts: 测量结果
+print(result.counts)
 ```
+
+### API 说明
+
+| API | 参数 | 说明 |
+|-----|------|------|
+| `diffusion_operator(n_qubits, shots)` | n_qubits: 量子比特数, shots: 测量次数 | 执行扩散算子 |
+| `result.counts` | 无参数 | 测量结果 |
 
 ---
 
 ## 进阶用法
 
-See the full example code below for more advanced usage.
+### 场景 1：不同量子比特数
+
+```python
+# 2 量子比特
+result = diffusion_operator(n_qubits=2, shots=1024)
+print(result.counts)
+
+# 3 量子比特
+result = diffusion_operator(n_qubits=3, shots=1024)
+print(result.counts)
+```
+
+### 场景 2：扩散算子用于 Grover 搜索
+
+```python
+# 扩散算子可以用于 Grover 搜索
+# 加速搜索
+```
+
+### 场景 3：扩散算子用于量子算法
+
+```python
+# 扩散算子可以用于量子算法
+# 例如：振幅放大
+```
 
 ---
 
 ## 适用场景
 
-- - Quantum computing (量子计算)
-- - Algorithm demonstration (算法演示)
-- - Educational (教学)
+### 场景 1：量子搜索
+
+扩散算子可以用于量子搜索。
+
+### 场景 2：量子算法
+
+扩散算子可以用于量子算法。
+
+### 场景 3：量子算法教学
+
+扩散算子是量子算法的经典例子，用于教学。
 
 ---
 
 ## 常见问题
 
-### Q1: How to run this example?
+### Q1: 扩散算子的精度如何？
 
-```bash
-python examples/diffusion/diffusion.py
-```
+精度取决于量子比特数。
 
-### Q2: What backend is used?
+### Q2: 扩散算子需要多少量子比特？
 
-The example uses the default backend. You can specify a different one:
+取决于问题规模。
 
-```python
-qshow(backend='qiskit')
-```
+### Q3: 扩散算子和 Oracle 有什么区别？
+
+扩散算子反射，Oracle 标记。
+
+### Q4: 扩散算子在 NISQ 设备上能跑吗？
+
+可以跑小规模的，但噪声会影响结果。
+
+### Q5: 扩散算子的复杂度如何？
+
+复杂度取决于量子比特数。
 
 ---
 
@@ -114,44 +185,44 @@ qshow(backend='qiskit')
 
 ### 前置知识
 
-- Basic quantum computing concepts
-- QuoNic API basics
+- 量子比特和量子门
+- Hadamard 门
+- Grover 搜索
 
 ### 继续学习
 
-- Other examples in this documentation
-- QuoNic API reference
+- 量子搜索
+- 量子算法
+- 量子算法教学
+
+### 难度等级
+
+- 当前：中级
+- 下一步：高级
 
 ---
 
 ## 完整示例代码
 
+### 示例 1：基本扩散算子
+
 ```python
-"""Diffusion operator / 扩散算子
+from quonic.algorithms import diffusion_operator
 
-Diffusion operator / 扩散算子
+result = diffusion_operator(n_qubits=2, shots=1024)
+print(result.counts)
+```
 
-## Application / 应用场景
-- Quantum computing (量子计算)
-- Algorithm demonstration (算法演示)
-- Educational (教学)
+### 示例 2：不同量子比特数
 
-## Output / 输出
-See code comments for output explanation.
-参见代码注释了解输出说明。"""
+```python
+from quonic.algorithms import diffusion_operator
 
-from quonic import qgate, qshow
-from quonic.algorithms import diffusion, mark_state
-from quonic.gates import H
-from quonic.stack import current_circuit
+result = diffusion_operator(n_qubits=2, shots=1024)
+print(result.counts)
 
-n = 2
-for q in range(n):
-    qgate(H, q)
-mark_state("11")(current_circuit())  # 相位标记 |11>
-diffusion(n)                          # 一次振幅放大
-qshow()
-
+result = diffusion_operator(n_qubits=3, shots=1024)
+print(result.counts)
 ```
 
 ### 运行方式

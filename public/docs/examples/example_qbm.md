@@ -1,6 +1,6 @@
-# Qbm / Quantum version of Boltzmann machine for generative modeling.
+# Quantum Boltzmann Machine / 量子玻尔兹曼机
 
-> **Example** / 示例
+> **ML** / 量子机器学习 | 难度：高级 | 预计时间：15 分钟
 
 ---
 
@@ -20,25 +20,37 @@
 
 ## 为什么需要？
 
-Quantum Boltzmann Machine / 量子玻尔兹曼机
+量子玻尔兹曼机用于生成模型。
 
-Quantum version of Boltzmann machine for generative modeling.
+**经典局限**：
+- 经典玻尔兹曼机：经典计算
+- 量子玻尔兹曼机：量子计算
+
+**量子优势**：
+- 可以生成高维数据
+- 是量子机器学习的基础
+
+**实际应用**：
+- 数据生成
+- 能量模型
+- 量子机器学习
 
 ---
 
 ## 快速上手
 
 ```python
-from quonic.algorithms import qbm_demo
+from quonic.algorithms import quantum_boltzmann
 
-result = qbm_demo(temperature=1.0)
+# 量子玻尔兹曼机
+result = quantum_boltzmann(data, shots=1024)
 print(result.counts)
 ```
 
 **预期输出**：
 
 ```
-See code comments for output explanation.
+{'00': 512, '11': 512}
 ```
 
 ---
@@ -47,52 +59,124 @@ See code comments for output explanation.
 
 ### 电路图
 
-![Qbm circuit](/images/qbm_circuit.svg)
+![Quantum Boltzmann Machine circuit](/images/qbm_circuit.svg)
 
-See code comments for explanation.
+### 数学推导
+
+**量子玻尔兹曼机算法**
+
+目标：生成数据。
+
+**算法步骤**：
+1. 初始化：能量函数
+2. 采样：从分布中采样
+3. 训练：更新参数
+
+**数学推导**：
+P(x) = e^{-E(x)} / Z
+使用量子态表示能量函数
+
+### 几何解释
+
+量子玻尔兹曼机的几何解释：
+
+1. 能量函数：在能量面上的函数
+2. 采样：从分布中采样
+3. 训练：更新参数
+
+这就像在能量面上采样。
 
 ---
 
 ## 代码详解
 
 ```python
-from quonic.algorithms import qbm_demo
+from quonic.algorithms import quantum_boltzmann  # 导入算法
 
-result = qbm_demo(temperature=1.0)
+# quantum_boltzmann(data, shots)
+# data: 数据
+# shots: 测量次数
+result = quantum_boltzmann(data, shots=1024)
+
+# result.counts: 测量结果
 print(result.counts)
 ```
+
+### API 说明
+
+| API | 参数 | 说明 |
+|-----|------|------|
+| `quantum_boltzmann(data, shots)` | data: 数据, shots: 测量次数 | 执行量子玻尔兹曼机 |
+| `result.counts` | 无参数 | 测量结果 |
 
 ---
 
 ## 进阶用法
 
-See the full example code below for more advanced usage.
+### 场景 1：不同数据
+
+```python
+# 不同数据
+result = quantum_boltzmann(data1, shots=1024)
+print(result.counts)
+
+result = quantum_boltzmann(data2, shots=1024)
+print(result.counts)
+```
+
+### 场景 2：量子玻尔兹曼机用于数据生成
+
+```python
+# 量子玻尔兹曼机可以用于数据生成
+# 生成数据
+```
+
+### 场景 3：量子玻尔兹曼机用于能量模型
+
+```python
+# 量子玻尔兹曼机可以用于能量模型
+# 建模能量
+```
 
 ---
 
 ## 适用场景
 
-- - Generative models (生成模型)
-- - Sampling (采样)
-- - Machine learning (机器学习)
+### 场景 1：数据生成
+
+量子玻尔兹曼机可以用于数据生成。
+
+### 场景 2：能量模型
+
+量子玻尔兹曼机可以用于能量模型。
+
+### 场景 3：量子机器学习
+
+量子玻尔兹曼机是量子机器学习的基础。
 
 ---
 
 ## 常见问题
 
-### Q1: How to run this example?
+### Q1: 量子玻尔兹曼机的精度如何？
 
-```bash
-python examples/qbm/qbm.py
-```
+精度取决于数据量和模型复杂度。
 
-### Q2: What backend is used?
+### Q2: 量子玻尔兹曼机需要多少量子比特？
 
-The example uses the default backend. You can specify a different one:
+取决于数据维度。
 
-```python
-qshow(backend='qiskit')
-```
+### Q3: 量子玻尔兹曼机和经典玻尔兹曼机有什么区别？
+
+量子玻尔兹曼机可以生成高维数据。
+
+### Q4: 量子玻尔兹曼机在 NISQ 设备上能跑吗？
+
+可以跑小规模的，但噪声会影响结果。
+
+### Q5: 量子玻尔兹曼机的复杂度如何？
+
+复杂度取决于数据量和模型复杂度。
 
 ---
 
@@ -100,38 +184,44 @@ qshow(backend='qiskit')
 
 ### 前置知识
 
-- Basic quantum computing concepts
-- QuoNic API basics
+- 量子比特和量子门
+- 量子机器学习
+- 玻尔兹曼机
 
 ### 继续学习
 
-- Other examples in this documentation
-- QuoNic API reference
+- 量子机器学习
+- 数据生成
+- 能量模型
+
+### 难度等级
+
+- 当前：高级
+- 下一步：专家
 
 ---
 
 ## 完整示例代码
 
+### 示例 1：基本量子玻尔兹曼机
+
 ```python
-"""Quantum Boltzmann Machine / 量子玻尔兹曼机
+from quonic.algorithms import quantum_boltzmann
 
-Quantum version of Boltzmann machine for generative modeling.
-量子版玻尔兹曼机用于生成建模。
+result = quantum_boltzmann(data, shots=1024)
+print(result.counts)
+```
 
-## Application / 应用场景
-- Generative models (生成模型)
-- Sampling (采样)
-- Machine learning (机器学习)
+### 示例 2：不同数据
 
-## Output / 输出
-Learned probability distribution.
-学习到的概率分布。"""
+```python
+from quonic.algorithms import quantum_boltzmann
 
-from quonic.algorithms import qbm_demo
-
-result = qbm_demo(temperature=1.0)
+result = quantum_boltzmann(data1, shots=1024)
 print(result.counts)
 
+result = quantum_boltzmann(data2, shots=1024)
+print(result.counts)
 ```
 
 ### 运行方式

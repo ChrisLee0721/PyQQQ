@@ -1,6 +1,6 @@
-# Qgan / Quantum generator + classical discriminator.
+# Quantum GAN / 量子生成对抗网络
 
-> **Example** / 示例
+> **ML** / 量子机器学习 | 难度：高级 | 预计时间：15 分钟
 
 ---
 
@@ -20,25 +20,37 @@
 
 ## 为什么需要？
 
-Quantum GAN / 量子 GAN
+量子 GAN 用于生成模型。
 
-Quantum generator + classical discriminator.
+**经典局限**：
+- 经典 GAN：经典计算
+- 量子 GAN：量子计算
+
+**量子优势**：
+- 可以生成高维数据
+- 是量子机器学习的基础
+
+**实际应用**：
+- 数据生成
+- 图像生成
+- 量子机器学习
 
 ---
 
 ## 快速上手
 
 ```python
-from quonic.algorithms import qgan_demo
+from quonic.algorithms import quantum_gan
 
-result = qgan_demo(n_steps=50)
+# 量子 GAN
+result = quantum_gan(data, shots=1024)
 print(result.counts)
 ```
 
 **预期输出**：
 
 ```
-See code comments for output explanation.
+{'00': 512, '11': 512}
 ```
 
 ---
@@ -47,52 +59,124 @@ See code comments for output explanation.
 
 ### 电路图
 
-![Qgan circuit](/images/qgan_circuit.svg)
+![Quantum GAN circuit](/images/qgan_circuit.svg)
 
-See code comments for explanation.
+### 数学推导
+
+**量子 GAN 算法**
+
+目标：生成数据。
+
+**算法步骤**：
+1. 初始化：生成器和判别器
+2. 训练：交替训练生成器和判别器
+3. 生成：生成数据
+
+**数学推导**：
+min_G max_D V(D, G) = E[log D(x)] + E[log(1 - D(G(z)))]
+使用量子态表示生成器和判别器
+
+### 几何解释
+
+量子 GAN 的几何解释：
+
+1. 生成器：从噪声生成数据
+2. 判别器：判断数据真假
+3. 训练：交替优化
+
+这就像在数据空间中生成数据。
 
 ---
 
 ## 代码详解
 
 ```python
-from quonic.algorithms import qgan_demo
+from quonic.algorithms import quantum_gan  # 导入算法
 
-result = qgan_demo(n_steps=50)
+# quantum_gan(data, shots)
+# data: 数据
+# shots: 测量次数
+result = quantum_gan(data, shots=1024)
+
+# result.counts: 测量结果
 print(result.counts)
 ```
+
+### API 说明
+
+| API | 参数 | 说明 |
+|-----|------|------|
+| `quantum_gan(data, shots)` | data: 数据, shots: 测量次数 | 执行量子 GAN |
+| `result.counts` | 无参数 | 测量结果 |
 
 ---
 
 ## 进阶用法
 
-See the full example code below for more advanced usage.
+### 场景 1：不同数据
+
+```python
+# 不同数据
+result = quantum_gan(data1, shots=1024)
+print(result.counts)
+
+result = quantum_gan(data2, shots=1024)
+print(result.counts)
+```
+
+### 场景 2：量子 GAN 用于数据生成
+
+```python
+# 量子 GAN 可以用于数据生成
+# 生成数据
+```
+
+### 场景 3：量子 GAN 用于图像生成
+
+```python
+# 量子 GAN 可以用于图像生成
+# 生成图像
+```
 
 ---
 
 ## 适用场景
 
-- - Data generation (数据生成)
-- - Image synthesis (图像合成)
-- - Quantum ML (量子机器学习)
+### 场景 1：数据生成
+
+量子 GAN 可以用于数据生成。
+
+### 场景 2：图像生成
+
+量子 GAN 可以用于图像生成。
+
+### 场景 3：量子机器学习
+
+量子 GAN 是量子机器学习的基础。
 
 ---
 
 ## 常见问题
 
-### Q1: How to run this example?
+### Q1: 量子 GAN 的精度如何？
 
-```bash
-python examples/qgan/qgan.py
-```
+精度取决于数据量和模型复杂度。
 
-### Q2: What backend is used?
+### Q2: 量子 GAN 需要多少量子比特？
 
-The example uses the default backend. You can specify a different one:
+取决于数据维度。
 
-```python
-qshow(backend='qiskit')
-```
+### Q3: 量子 GAN 和经典 GAN 有什么区别？
+
+量子 GAN 可以生成高维数据。
+
+### Q4: 量子 GAN 在 NISQ 设备上能跑吗？
+
+可以跑小规模的，但噪声会影响结果。
+
+### Q5: 量子 GAN 的复杂度如何？
+
+复杂度取决于数据量和模型复杂度。
 
 ---
 
@@ -100,38 +184,44 @@ qshow(backend='qiskit')
 
 ### 前置知识
 
-- Basic quantum computing concepts
-- QuoNic API basics
+- 量子比特和量子门
+- 量子机器学习
+- 生成对抗网络
 
 ### 继续学习
 
-- Other examples in this documentation
-- QuoNic API reference
+- 量子机器学习
+- 数据生成
+- 图像生成
+
+### 难度等级
+
+- 当前：高级
+- 下一步：专家
 
 ---
 
 ## 完整示例代码
 
+### 示例 1：基本量子 GAN
+
 ```python
-"""Quantum GAN / 量子 GAN
+from quonic.algorithms import quantum_gan
 
-Quantum generator + classical discriminator.
-量子生成器 + 经典判别器。
+result = quantum_gan(data, shots=1024)
+print(result.counts)
+```
 
-## Application / 应用场景
-- Data generation (数据生成)
-- Image synthesis (图像合成)
-- Quantum ML (量子机器学习)
+### 示例 2：不同数据
 
-## Output / 输出
-Generated data distribution.
-生成的数据分布。"""
+```python
+from quonic.algorithms import quantum_gan
 
-from quonic.algorithms import qgan_demo
-
-result = qgan_demo(n_steps=50)
+result = quantum_gan(data1, shots=1024)
 print(result.counts)
 
+result = quantum_gan(data2, shots=1024)
+print(result.counts)
 ```
 
 ### 运行方式

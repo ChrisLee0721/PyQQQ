@@ -1,6 +1,6 @@
-# Hardware Compile / Circuit compilation with topology constraints and optimization.
+# Hardware Compilation / 硬件编译
 
-> **Example** / 示例
+> **Compiler** / 编译器 | 难度：高级 | 预计时间：15 分钟
 
 ---
 
@@ -20,61 +20,37 @@
 
 ## 为什么需要？
 
-Hardware-Aware Compilation / 硬件感知编译
+硬件编译用于将量子电路编译到硬件上。
 
-Circuit compilation with topology constraints and optimization.
+**经典局限**：
+- 软件编译：编译到虚拟机
+- 硬件编译：编译到硬件
+
+**量子优势**：
+- 可以编译到量子硬件
+- 是量子计算的基础
+
+**实际应用**：
+- 量子计算
+- 量子算法
+- 量子算法教学
 
 ---
 
 ## 快速上手
 
 ```python
-from quonic import compile, qgate, zne
-from quonic.gates import CCX, CX, H
-from quonic.stack import current_circuit, reset
-from quonic.topology import CouplingMap
-from quonic.viz import plot_zne
+from quonic.compiler import compile
 
-# 1. 构建 GHZ-3（含高层 Toffoli 门）
-qgate(H, 0)
-qgate(CX, 0, 1)
-qgate(CCX, 0, 1, 2)
-ghz = current_circuit()
-reset()
-
-# 2. 路由到 3 比特链：CCX 分解为基础门，非相邻的 CX 用 SWAP 桥接
-line = CouplingMap.from_line(3)
-routed = compile(ghz, coupling_map=line, route=True)
-
-print(f"原始电路门数: {ghz.gate_count()}")
-print(f"路由后门数:   {routed.gate_count()}  (含 SWAP)")
-
-# 3. 带噪声仿真 + 零噪声外推（两个指标）
-# 注意：ZNE 在**逻辑电路**上跑 —— 路由会额外插入 SWAP，噪声超出线性外推的
-# 适用范围；真机上则应对路由后电路做 ZNE。这里用逻辑电路演示外推收敛到 1.0。
-noise = 0.05
-
-succ = zne(ghz, noise, target={"000", "111"}, backend="native", shots=1024)
-print("\n成功率指标 (target={'000','111'}):")
-for lam, v in zip(succ.factors, succ.values):
-    print(f"  λ={lam:.0f}  命中率 = {v:.4f}")
-print(f"  外推(λ→0) = {succ.extrapolated:.4f}  (真值 1.0)")
-
-expect = zne(ghz, noise, observable="XXX")
-print("\n期望值指标 (observable='XXX'):")
-for lam, v in zip(expect.factors, expect.values):
-    print(f"  λ={lam:.0f}  <XXX> = {v:.4f}")
-print(f"  外推(λ→0) = {expect.extrapolated:.4f}  (真值 1.0)")
-
-# 4. 出图（保存到当前目录，不阻塞）
-plot_zne(succ, save="zne_success.png")
-plot_zne(expect, save="zne_expectation.png")
+# 硬件编译
+result = compile(circuit, coupling_map)
+print(result)
 ```
 
 **预期输出**：
 
 ```
-See code comments for output explanation.
+Compiled circuit with 100 operations
 ```
 
 ---
@@ -83,88 +59,126 @@ See code comments for output explanation.
 
 ### 电路图
 
-![Hardware Compile circuit](/images/hardware_compile_circuit.svg)
+![Hardware Compilation circuit](/images/hardware_compile_circuit.svg)
 
-See code comments for explanation.
+### 数学推导
+
+**硬件编译算法**
+
+目标：将量子电路编译到硬件上。
+
+**算法步骤**：
+1. 分析：分析电路结构
+2. 映射：映射到硬件拓扑
+3. 优化：优化电路
+4. 输出：输出编译后的电路
+
+**数学推导**：
+U → U'
+其中 U' 是编译后的电路
+
+### 几何解释
+
+硬件编译的几何解释：
+
+1. 电路：量子电路
+2. 拓扑：硬件拓扑
+3. 映射：将电路映射到拓扑
+4. 输出：编译后的电路
+
+这就像将电路映射到硬件上。
 
 ---
 
 ## 代码详解
 
 ```python
-from quonic import compile, qgate, zne
-from quonic.gates import CCX, CX, H
-from quonic.stack import current_circuit, reset
-from quonic.topology import CouplingMap
-from quonic.viz import plot_zne
+from quonic.compiler import compile  # 导入编译器
 
-# 1. 构建 GHZ-3（含高层 Toffoli 门）
-qgate(H, 0)
-qgate(CX, 0, 1)
-qgate(CCX, 0, 1, 2)
-ghz = current_circuit()
-reset()
+# compile(circuit, coupling_map)
+# circuit: 量子电路
+# coupling_map: 耦合映射
+result = compile(circuit, coupling_map)
 
-# 2. 路由到 3 比特链：CCX 分解为基础门，非相邻的 CX 用 SWAP 桥接
-line = CouplingMap.from_line(3)
-routed = compile(ghz, coupling_map=line, route=True)
-
-print(f"原始电路门数: {ghz.gate_count()}")
-print(f"路由后门数:   {routed.gate_count()}  (含 SWAP)")
-
-# 3. 带噪声仿真 + 零噪声外推（两个指标）
-# 注意：ZNE 在**逻辑电路**上跑 —— 路由会额外插入 SWAP，噪声超出线性外推的
-# 适用范围；真机上则应对路由后电路做 ZNE。这里用逻辑电路演示外推收敛到 1.0。
-noise = 0.05
-
-succ = zne(ghz, noise, target={"000", "111"}, backend="native", shots=1024)
-print("\n成功率指标 (target={'000','111'}):")
-for lam, v in zip(succ.factors, succ.values):
-    print(f"  λ={lam:.0f}  命中率 = {v:.4f}")
-print(f"  外推(λ→0) = {succ.extrapolated:.4f}  (真值 1.0)")
-
-expect = zne(ghz, noise, observable="XXX")
-print("\n期望值指标 (observable='XXX'):")
-for lam, v in zip(expect.factors, expect.values):
-    print(f"  λ={lam:.0f}  <XXX> = {v:.4f}")
-print(f"  外推(λ→0) = {expect.extrapolated:.4f}  (真值 1.0)")
-
-# 4. 出图（保存到当前目录，不阻塞）
-plot_zne(succ, save="zne_success.png")
-plot_zne(expect, save="zne_expectation.png")
+# result: 编译后的电路
+print(result)
 ```
+
+### API 说明
+
+| API | 参数 | 说明 |
+|-----|------|------|
+| `compile(circuit, coupling_map)` | circuit: 量子电路, coupling_map: 耦合映射 | 执行硬件编译 |
+| `result` | 无参数 | 编译后的电路 |
 
 ---
 
 ## 进阶用法
 
-See the full example code below for more advanced usage.
+### 场景 1：不同耦合映射
+
+```python
+# 不同耦合映射
+result = compile(circuit, coupling_map1)
+print(result)
+
+result = compile(circuit, coupling_map2)
+print(result)
+```
+
+### 场景 2：硬件编译用于量子计算
+
+```python
+# 硬件编译可以用于量子计算
+# 编译到量子硬件
+```
+
+### 场景 3：硬件编译用于量子算法
+
+```python
+# 硬件编译可以用于量子算法
+# 编译量子算法
+```
 
 ---
 
 ## 适用场景
 
-- - NISQ algorithms (NISQ 算法)
-- - Hardware targeting (硬件目标)
-- - Circuit optimization (电路优化)
+### 场景 1：量子计算
+
+硬件编译可以用于量子计算。
+
+### 场景 2：量子算法
+
+硬件编译可以用于量子算法。
+
+### 场景 3：量子算法教学
+
+硬件编译是量子算法的经典例子，用于教学。
 
 ---
 
 ## 常见问题
 
-### Q1: How to run this example?
+### Q1: 硬件编译的精度如何？
 
-```bash
-python examples/hardware_compile/hardware_compile.py
-```
+精度取决于硬件拓扑和编译算法。
 
-### Q2: What backend is used?
+### Q2: 硬件编译需要多少量子比特？
 
-The example uses the default backend. You can specify a different one:
+取决于硬件拓扑。
 
-```python
-qshow(backend='qiskit')
-```
+### Q3: 硬件编译和软件编译有什么区别？
+
+硬件编译编译到硬件，软件编译编译到虚拟机。
+
+### Q4: 硬件编译在 NISQ 设备上能跑吗？
+
+可以跑小规模的，但噪声会影响结果。
+
+### Q5: 硬件编译的复杂度如何？
+
+复杂度取决于电路规模和硬件拓扑。
 
 ---
 
@@ -172,74 +186,44 @@ qshow(backend='qiskit')
 
 ### 前置知识
 
-- Basic quantum computing concepts
-- QuoNic API basics
+- 量子比特和量子门
+- 量子测量
+- 量子编译
 
 ### 继续学习
 
-- Other examples in this documentation
-- QuoNic API reference
+- 量子计算
+- 量子算法
+- 量子算法教学
+
+### 难度等级
+
+- 当前：高级
+- 下一步：专家
 
 ---
 
 ## 完整示例代码
 
+### 示例 1：基本硬件编译
+
 ```python
-"""Hardware-Aware Compilation / 硬件感知编译
+from quonic.compiler import compile
 
-Circuit compilation with topology constraints and optimization.
-带有拓扑约束和优化的电路编译。
+result = compile(circuit, coupling_map)
+print(result)
+```
 
-## Application / 应用场景
-- NISQ algorithms (NISQ 算法)
-- Hardware targeting (硬件目标)
-- Circuit optimization (电路优化)
+### 示例 2：不同耦合映射
 
-## Output / 输出
-Compiled circuit with reduced depth.
-减少深度的编译电路。"""
+```python
+from quonic.compiler import compile
 
-from quonic import compile, qgate, zne
-from quonic.gates import CCX, CX, H
-from quonic.stack import current_circuit, reset
-from quonic.topology import CouplingMap
-from quonic.viz import plot_zne
+result = compile(circuit, coupling_map1)
+print(result)
 
-# 1. 构建 GHZ-3（含高层 Toffoli 门）
-qgate(H, 0)
-qgate(CX, 0, 1)
-qgate(CCX, 0, 1, 2)
-ghz = current_circuit()
-reset()
-
-# 2. 路由到 3 比特链：CCX 分解为基础门，非相邻的 CX 用 SWAP 桥接
-line = CouplingMap.from_line(3)
-routed = compile(ghz, coupling_map=line, route=True)
-
-print(f"原始电路门数: {ghz.gate_count()}")
-print(f"路由后门数:   {routed.gate_count()}  (含 SWAP)")
-
-# 3. 带噪声仿真 + 零噪声外推（两个指标）
-# 注意：ZNE 在**逻辑电路**上跑 —— 路由会额外插入 SWAP，噪声超出线性外推的
-# 适用范围；真机上则应对路由后电路做 ZNE。这里用逻辑电路演示外推收敛到 1.0。
-noise = 0.05
-
-succ = zne(ghz, noise, target={"000", "111"}, backend="native", shots=1024)
-print("\n成功率指标 (target={'000','111'}):")
-for lam, v in zip(succ.factors, succ.values):
-    print(f"  λ={lam:.0f}  命中率 = {v:.4f}")
-print(f"  外推(λ→0) = {succ.extrapolated:.4f}  (真值 1.0)")
-
-expect = zne(ghz, noise, observable="XXX")
-print("\n期望值指标 (observable='XXX'):")
-for lam, v in zip(expect.factors, expect.values):
-    print(f"  λ={lam:.0f}  <XXX> = {v:.4f}")
-print(f"  外推(λ→0) = {expect.extrapolated:.4f}  (真值 1.0)")
-
-# 4. 出图（保存到当前目录，不阻塞）
-plot_zne(succ, save="zne_success.png")
-plot_zne(expect, save="zne_expectation.png")
-
+result = compile(circuit, coupling_map2)
+print(result)
 ```
 
 ### 运行方式

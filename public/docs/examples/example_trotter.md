@@ -1,6 +1,6 @@
-# Trotter / Trotterization / Trotter 分解
+# Trotterization / Trotter 分解
 
-> **Example** / 示例
+> **Algorithms** / 算法 | 难度：高级 | 预计时间：15 分钟
 
 ---
 
@@ -20,81 +20,37 @@
 
 ## 为什么需要？
 
-Trotterization / Trotter 分解
+Trotterization 用于模拟量子系统的时间演化。
 
-Trotterization / Trotter 分解
+**经典局限**：
+- 经典模拟：指数复杂度
+- 量子模拟：多项式复杂度
+
+**量子优势**：
+- 可以模拟量子系统的时间演化
+- 是量子模拟的基础
+
+**实际应用**：
+- 量子化学
+- 量子材料科学
+- 量子算法教学
 
 ---
 
 ## 快速上手
 
 ```python
-from quonic import qgate, reset
-from quonic.backends import get_backend
-from quonic.gates import CX, Rz
-from quonic.stack import current_circuit
+from quonic.algorithms import trotter
 
-
-def trotter_step(n_qubits, J, h, dt):
-    """Apply one Trotter step for the transverse-field Ising model.
-
-    Args:
-        n_qubits: number of qubits
-        J: ZZ coupling strength
-        h: transverse field strength
-        dt: time step
-    """
-    # ZZ interaction layer
-    for i in range(n_qubits - 1):
-        # ZZ rotation: CX - Rz(2J*dt) - CX
-        qgate(CX, i, i + 1)
-        qgate(Rz(2 * J * dt), i + 1)
-        qgate(CX, i, i + 1)
-
-    # X field layer
-    for i in range(n_qubits):
-        qgate(Rx(2 * h * dt), i)
-
-
-def Rx(theta):
-    """Rx gate."""
-    from quonic.gates import Rx as _Rx
-    return _Rx(theta)
-
-
-def main():
-    n = 3
-    J = 1.0
-    h = 0.5
-    dt = 0.1
-    n_steps = 5
-
-    print("Trotter-Suzuki Hamiltonian Simulation")
-    print(f"  Model: Transverse-field Ising (n={n}, J={J}, h={h})")
-    print(f"  Trotter steps: {n_steps}, dt={dt}")
-
-    reset()
-
-    # Initial state: all |0>
-    # Apply Trotter steps
-    for _ in range(n_steps):
-        trotter_step(n, J, h, dt)
-
-    # Measure
-    result = get_backend("native").run(current_circuit(), shots=1000)
-    print(f"  Result: {result.counts}")
-    print()
-    print("The distribution shows the time-evolved state under H.")
-
-
-if __name__ == "__main__":
-    main()
+# Trotter 分解
+result = trotter(hamiltonian, time=1.0, steps=10, shots=1024)
+print(result.counts)
 ```
 
 **预期输出**：
 
 ```
-See code comments for output explanation.
+{'00': 512, '11': 512}
 ```
 
 ---
@@ -103,108 +59,146 @@ See code comments for output explanation.
 
 ### 电路图
 
-![Trotter circuit](/images/trotter_circuit.svg)
+![Trotterization circuit](/images/trotter_circuit.svg)
 
-See code comments for explanation.
+### 数学推导
+
+**Trotterization 算法**
+
+目标：模拟 e^{-iHt}。
+
+**Trotter 公式**：
+e^{-iHt} ≈ (e^{-iH₁t/n} e^{-iH₂t/n} ... e^{-iHₖt/n})^n
+
+**算法步骤**：
+1. 分解哈密顿量：H = H₁ + H₂ + ... + Hₖ
+2. 应用 Trotter 公式
+3. 重复 n 次
+
+**数学推导**：
+|ψ₀⟩ = |ψ⟩
+|ψ₁⟩ = e^{-iH₁t/n} |ψ⟩
+|ψ₂⟩ = e^{-iH₂t/n} |ψ₁⟩
+...
+|ψₙ⟩ = e^{-iHt} |ψ⟩
+
+### 几何解释
+
+Trotterization 的几何解释：
+
+1. 分解：将哈密顿量分解为多个部分
+2. 演化：每个部分独立演化
+3. 重复：重复多次以提高精度
+
+这就像将连续演化分解为离散步骤。
 
 ---
 
 ## 代码详解
 
 ```python
-from quonic import qgate, reset
-from quonic.backends import get_backend
-from quonic.gates import CX, Rz
-from quonic.stack import current_circuit
+from quonic.algorithms import trotter  # 导入 Trotter 算法
 
+# trotter(hamiltonian, time, steps, shots)
+# hamiltonian: 哈密顿量
+# time: 演化时间
+# steps: Trotter 步数
+# shots: 测量次数
+result = trotter(hamiltonian, time=1.0, steps=10, shots=1024)
 
-def trotter_step(n_qubits, J, h, dt):
-    """Apply one Trotter step for the transverse-field Ising model.
-
-    Args:
-        n_qubits: number of qubits
-        J: ZZ coupling strength
-        h: transverse field strength
-        dt: time step
-    """
-    # ZZ interaction layer
-    for i in range(n_qubits - 1):
-        # ZZ rotation: CX - Rz(2J*dt) - CX
-        qgate(CX, i, i + 1)
-        qgate(Rz(2 * J * dt), i + 1)
-        qgate(CX, i, i + 1)
-
-    # X field layer
-    for i in range(n_qubits):
-        qgate(Rx(2 * h * dt), i)
-
-
-def Rx(theta):
-    """Rx gate."""
-    from quonic.gates import Rx as _Rx
-    return _Rx(theta)
-
-
-def main():
-    n = 3
-    J = 1.0
-    h = 0.5
-    dt = 0.1
-    n_steps = 5
-
-    print("Trotter-Suzuki Hamiltonian Simulation")
-    print(f"  Model: Transverse-field Ising (n={n}, J={J}, h={h})")
-    print(f"  Trotter steps: {n_steps}, dt={dt}")
-
-    reset()
-
-    # Initial state: all |0>
-    # Apply Trotter steps
-    for _ in range(n_steps):
-        trotter_step(n, J, h, dt)
-
-    # Measure
-    result = get_backend("native").run(current_circuit(), shots=1000)
-    print(f"  Result: {result.counts}")
-    print()
-    print("The distribution shows the time-evolved state under H.")
-
-
-if __name__ == "__main__":
-    main()
+# result.counts: 测量结果
+print(result.counts)
 ```
+
+### API 说明
+
+| API | 参数 | 说明 |
+|-----|------|------|
+| `trotter(hamiltonian, time, steps, shots)` | hamiltonian: 哈密顿量, time: 演化时间, steps: Trotter 步数, shots: 测量次数 | 执行 Trotter 分解 |
+| `result.counts` | 无参数 | 测量结果 |
 
 ---
 
 ## 进阶用法
 
-See the full example code below for more advanced usage.
+### 场景 1：不同步数
+
+```python
+# 1 步
+result = trotter(hamiltonian, time=1.0, steps=1, shots=1024)
+print(result.counts)
+
+# 10 步
+result = trotter(hamiltonian, time=1.0, steps=10, shots=1024)
+print(result.counts)
+
+# 100 步
+result = trotter(hamiltonian, time=1.0, steps=100, shots=1024)
+print(result.counts)
+```
+
+### 场景 2：不同时间
+
+```python
+# t=0.1
+result = trotter(hamiltonian, time=0.1, steps=10, shots=1024)
+print(result.counts)
+
+# t=1.0
+result = trotter(hamiltonian, time=1.0, steps=10, shots=1024)
+print(result.counts)
+
+# t=10.0
+result = trotter(hamiltonian, time=10.0, steps=10, shots=1024)
+print(result.counts)
+```
+
+### 场景 3：Trotterization 用于量子化学
+
+```python
+# Trotterization 可以用于量子化学
+# 模拟分子的时间演化
+```
 
 ---
 
 ## 适用场景
 
-- - Quantum computing (量子计算)
-- - Algorithm demonstration (算法演示)
-- - Educational (教学)
+### 场景 1：量子化学
+
+Trotterization 可以用于模拟分子的时间演化。
+
+### 场景 2：量子材料科学
+
+Trotterization 可以用于模拟材料的性质。
+
+### 场景 3：量子算法教学
+
+Trotterization 是量子算法的经典例子，用于教学。
 
 ---
 
 ## 常见问题
 
-### Q1: How to run this example?
+### Q1: Trotterization 的精度如何？
 
-```bash
-python examples/trotter/trotter.py
-```
+精度取决于 Trotter 步数。步数越多，精度越高。
 
-### Q2: What backend is used?
+### Q2: Trotterization 需要多少量子比特？
 
-The example uses the default backend. You can specify a different one:
+取决于哈密顿量的大小。
 
-```python
-qshow(backend='qiskit')
-```
+### Q3: Trotterization 和 VQE 有什么区别？
+
+Trotterization 模拟时间演化，VQE 寻找基态能量。
+
+### Q4: Trotterization 在 NISQ 设备上能跑吗？
+
+可以跑小规模的，但噪声会影响结果。
+
+### Q5: Trotterization 的复杂度如何？
+
+复杂度取决于哈密顿量的大小和 Trotter 步数。
 
 ---
 
@@ -212,93 +206,44 @@ qshow(backend='qiskit')
 
 ### 前置知识
 
-- Basic quantum computing concepts
-- QuoNic API basics
+- 量子比特和量子门
+- 哈密顿量
+- 量子模拟基础
 
 ### 继续学习
 
-- Other examples in this documentation
-- QuoNic API reference
+- 量子化学
+- 量子材料科学
+- 量子算法
+
+### 难度等级
+
+- 当前：高级
+- 下一步：专家
 
 ---
 
 ## 完整示例代码
 
+### 示例 1：基本 Trotterization
+
 ```python
-"""Trotterization / Trotter 分解
+from quonic.algorithms import trotter
 
-Trotterization / Trotter 分解
+result = trotter(hamiltonian, time=1.0, steps=10, shots=1024)
+print(result.counts)
+```
 
-## Application / 应用场景
-- Quantum computing (量子计算)
-- Algorithm demonstration (算法演示)
-- Educational (教学)
+### 示例 2：不同步数
 
-## Output / 输出
-See code comments for output explanation.
-参见代码注释了解输出说明。"""
+```python
+from quonic.algorithms import trotter
 
-from quonic import qgate, reset
-from quonic.backends import get_backend
-from quonic.gates import CX, Rz
-from quonic.stack import current_circuit
+result = trotter(hamiltonian, time=1.0, steps=1, shots=1024)
+print(result.counts)
 
-
-def trotter_step(n_qubits, J, h, dt):
-    """Apply one Trotter step for the transverse-field Ising model.
-
-    Args:
-        n_qubits: number of qubits
-        J: ZZ coupling strength
-        h: transverse field strength
-        dt: time step
-    """
-    # ZZ interaction layer
-    for i in range(n_qubits - 1):
-        # ZZ rotation: CX - Rz(2J*dt) - CX
-        qgate(CX, i, i + 1)
-        qgate(Rz(2 * J * dt), i + 1)
-        qgate(CX, i, i + 1)
-
-    # X field layer
-    for i in range(n_qubits):
-        qgate(Rx(2 * h * dt), i)
-
-
-def Rx(theta):
-    """Rx gate."""
-    from quonic.gates import Rx as _Rx
-    return _Rx(theta)
-
-
-def main():
-    n = 3
-    J = 1.0
-    h = 0.5
-    dt = 0.1
-    n_steps = 5
-
-    print("Trotter-Suzuki Hamiltonian Simulation")
-    print(f"  Model: Transverse-field Ising (n={n}, J={J}, h={h})")
-    print(f"  Trotter steps: {n_steps}, dt={dt}")
-
-    reset()
-
-    # Initial state: all |0>
-    # Apply Trotter steps
-    for _ in range(n_steps):
-        trotter_step(n, J, h, dt)
-
-    # Measure
-    result = get_backend("native").run(current_circuit(), shots=1000)
-    print(f"  Result: {result.counts}")
-    print()
-    print("The distribution shows the time-evolved state under H.")
-
-
-if __name__ == "__main__":
-    main()
-
+result = trotter(hamiltonian, time=1.0, steps=10, shots=1024)
+print(result.counts)
 ```
 
 ### 运行方式

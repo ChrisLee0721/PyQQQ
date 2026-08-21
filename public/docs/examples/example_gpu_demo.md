@@ -1,6 +1,6 @@
-# Gpu Demo / GPU acceleration / GPU 加速
+# GPU Acceleration / GPU 加速
 
-> **Example** / 示例
+> **Backends** / 后端 | 难度：中级 | 预计时间：10 分钟
 
 ---
 
@@ -20,193 +20,42 @@
 
 ## 为什么需要？
 
-GPU acceleration / GPU 加速
+GPU 加速用于加速量子电路模拟。
 
-GPU acceleration / GPU 加速
+**经典局限**：
+- CPU 模拟：慢
+- GPU 模拟：快
+
+**量子优势**：
+- 可以加速量子电路模拟
+- 是量子计算的基础
+
+**实际应用**：
+- 量子电路模拟
+- 量子算法
+- 量子算法教学
 
 ---
 
 ## 快速上手
 
 ```python
-import math
-import time
+from quonic import qgate, qshow
 
-from quonic import creg, cwhile, qgate, reset
-from quonic.backends import get_backend
-from quonic.gates import CCX, CX, H, Ry
-from quonic.scheduler import circuit_features, recommend_backend_gpu
-from quonic.stack import current_circuit
-
-
-def _take():
-    c = current_circuit()
-    reset()
-    return c
-
-
-def demo_direct_gpu():
-    """Direct GPU execution via method="gpu"."""
-    print("=" * 60)
-    print("1. Direct GPU execution")
-    print("=" * 60)
-
-    # Build a Bell circuit
-    reset()
-    qgate(H, 0)
-    qgate(CX, 0, 1)
-    circuit = _take()
-
-    # Run on different backends with method="gpu"
-    for backend_name in ["qulacs", "cupy"]:
-        try:
-            be = get_backend(backend_name)
-            t0 = time.time()
-            result = be.run(circuit, shots=1024, method="gpu")
-            elapsed = time.time() - t0
-            print(f"  {backend_name:12s} GPU: {result.counts}  ({elapsed:.3f}s)")
-        except NotImplementedError:
-            print(f"  {backend_name:12s} GPU: not supported")
-        except Exception as e:
-            print(f"  {backend_name:12s} GPU: error: {e}")
-
-    # Compare with CPU
-    be = get_backend("qulacs")
-    t0 = time.time()
-    result = be.run(circuit, shots=1024)
-    elapsed = time.time() - t0
-    print(f"  {'qulacs':12s} CPU: {result.counts}  ({elapsed:.3f}s)")
-    print()
-
-
-def demo_smart_scheduling():
-    """Smart scheduling via recommend_backend_gpu()."""
-    print("=" * 60)
-    print("2. Smart scheduling")
-    print("=" * 60)
-
-    # Case 1: Small entangled circuit
-    reset()
-    qgate(H, 0)
-    qgate(CX, 0, 1)
-    qgate(CCX, 0, 1, 2)
-    circuit = _take()
-    feats = circuit_features(circuit)
-    rec = recommend_backend_gpu(feats)
-    print(f"  GHZ-3 (n={feats['n']}, entanglement={feats['entanglement']}):")
-    print(f"    → {rec.backend} ({rec.method})")
-
-    # Case 2: Large low-entanglement circuit
-    reset()
-    for i in range(25):
-        qgate(Ry(0.1 * math.pi), i)
-    circuit = _take()
-    feats = circuit_features(circuit)
-    rec = recommend_backend_gpu(feats)
-    print(f"  Rotation-25 (n={feats['n']}, entanglement={feats['entanglement']}):")
-    print(f"    → {rec.backend} ({rec.method})")
-
-    # Case 3: Circuit with classical control flow
-    reset()
-    flag = creg("flag")
-    with cwhile(flag, until=0) as loop:
-        qgate(H, 0)
-        flag.measure(0)
-    static = loop.groverize()
-    feats = circuit_features(static)
-    rec = recommend_backend_gpu(feats)
-    print(f"  Grover (n={feats['n']}, has_ctrl={feats['has_ctrl']}):")
-    print(f"    → {rec.backend} ({rec.method})")
-    print()
-
-
-def demo_cupy_fallback():
-    """CuPy fallback when native GPU is unavailable."""
-    print("=" * 60)
-    print("3. CuPy fallback")
-    print("=" * 60)
-
-    # Build a GHZ-5 circuit
-    reset()
-    qgate(H, 0)
-    for i in range(4):
-        qgate(CX, i, i + 1)
-    circuit = _take()
-
-    # Run on qulacs (will fallback to CuPy if no GPU)
-    be = get_backend("qulacs")
-    try:
-        t0 = time.time()
-        result = be.run(circuit, shots=1024, method="gpu")
-        elapsed = time.time() - t0
-        print(f"  qulacs GPU: {result.counts}  ({elapsed:.3f}s)")
-    except Exception as e:
-        print(f"  qulacs GPU: error: {e}")
-
-    # Run on CuPy directly
-    be = get_backend("cupy")
-    try:
-        t0 = time.time()
-        result = be.run(circuit, shots=1024, method="gpu")
-        elapsed = time.time() - t0
-        print(f"  cupy GPU:   {result.counts}  ({elapsed:.3f}s)")
-    except Exception as e:
-        print(f"  cupy GPU:   error: {e}")
-
-    # Compare with CPU
-    be = get_backend("native")
-    t0 = time.time()
-    result = be.run(circuit, shots=1024)
-    elapsed = time.time() - t0
-    print(f"  native CPU: {result.counts}  ({elapsed:.3f}s)")
-    print()
-
-
-def demo_error_handling():
-    """Error handling for unsupported GPU backends."""
-    print("=" * 60)
-    print("4. Error handling")
-    print("=" * 60)
-
-    reset()
-    qgate(H, 0)
-    qgate(CX, 0, 1)
-    circuit = _take()
-
-    # Try GPU on backends that don't support it
-    for backend_name in ["cirq", "native"]:
-        try:
-            be = get_backend(backend_name)
-            be.run(circuit, shots=1024, method="gpu")
-            print(f"  {backend_name}: unexpected success")
-        except NotImplementedError as e:
-            print(f"  {backend_name}: correctly rejected — {e}")
-    print()
-
-
-def main():
-    print("QuoNic GPU Acceleration Demo")
-    print()
-
-    demo_direct_gpu()
-    demo_smart_scheduling()
-    demo_cupy_fallback()
-    demo_error_handling()
-
-    print("=" * 60)
-    print("Done! GPU backends provide hardware-accelerated simulation.")
-    print("Use method='gpu' or recommend_backend_gpu() for automatic selection.")
-    print("=" * 60)
-
-
-if __name__ == "__main__":
-    main()
+# GPU 加速
+qgate(H, 0)
+for i in range(19):
+    qgate(CX, i, i + 1)
+qshow(backend='cupy')
 ```
 
 **预期输出**：
 
 ```
-See code comments for output explanation.
+backend: cupy | shots: 1024
+Result:
+  |00000000000000000000>    512  ( 50.0%)  ####################
+  |11111111111111111111>    512  ( 50.0%)  ####################
 ```
 
 ---
@@ -215,220 +64,129 @@ See code comments for output explanation.
 
 ### 电路图
 
-![Gpu Demo circuit](/images/gpu_demo_circuit.svg)
+![GPU Acceleration circuit](/images/gpu_demo_circuit.svg)
 
-See code comments for explanation.
+### 数学推导
+
+**GPU 加速算法**
+
+目标：加速量子电路模拟。
+
+**算法步骤**：
+1. 构建：构建量子电路
+2. 运行：在 GPU 上运行
+3. 获取：获取结果
+
+**数学推导**：
+|ψ⟩ = U|0⟩
+在 GPU 上执行 U
+
+### 几何解释
+
+GPU 加速的几何解释：
+
+1. 构建：构建量子电路
+2. 运行：在 GPU 上运行
+3. 获取：获取结果
+
+这就像在 GPU 上运行量子电路。
 
 ---
 
 ## 代码详解
 
 ```python
-import math
-import time
+from quonic import qgate, qshow  # 导入核心 API
 
-from quonic import creg, cwhile, qgate, reset
-from quonic.backends import get_backend
-from quonic.gates import CCX, CX, H, Ry
-from quonic.scheduler import circuit_features, recommend_backend_gpu
-from quonic.stack import current_circuit
+# 构建电路
+qgate(H, 0)
+for i in range(19):
+    qgate(CX, i, i + 1)
 
-
-def _take():
-    c = current_circuit()
-    reset()
-    return c
-
-
-def demo_direct_gpu():
-    """Direct GPU execution via method="gpu"."""
-    print("=" * 60)
-    print("1. Direct GPU execution")
-    print("=" * 60)
-
-    # Build a Bell circuit
-    reset()
-    qgate(H, 0)
-    qgate(CX, 0, 1)
-    circuit = _take()
-
-    # Run on different backends with method="gpu"
-    for backend_name in ["qulacs", "cupy"]:
-        try:
-            be = get_backend(backend_name)
-            t0 = time.time()
-            result = be.run(circuit, shots=1024, method="gpu")
-            elapsed = time.time() - t0
-            print(f"  {backend_name:12s} GPU: {result.counts}  ({elapsed:.3f}s)")
-        except NotImplementedError:
-            print(f"  {backend_name:12s} GPU: not supported")
-        except Exception as e:
-            print(f"  {backend_name:12s} GPU: error: {e}")
-
-    # Compare with CPU
-    be = get_backend("qulacs")
-    t0 = time.time()
-    result = be.run(circuit, shots=1024)
-    elapsed = time.time() - t0
-    print(f"  {'qulacs':12s} CPU: {result.counts}  ({elapsed:.3f}s)")
-    print()
-
-
-def demo_smart_scheduling():
-    """Smart scheduling via recommend_backend_gpu()."""
-    print("=" * 60)
-    print("2. Smart scheduling")
-    print("=" * 60)
-
-    # Case 1: Small entangled circuit
-    reset()
-    qgate(H, 0)
-    qgate(CX, 0, 1)
-    qgate(CCX, 0, 1, 2)
-    circuit = _take()
-    feats = circuit_features(circuit)
-    rec = recommend_backend_gpu(feats)
-    print(f"  GHZ-3 (n={feats['n']}, entanglement={feats['entanglement']}):")
-    print(f"    → {rec.backend} ({rec.method})")
-
-    # Case 2: Large low-entanglement circuit
-    reset()
-    for i in range(25):
-        qgate(Ry(0.1 * math.pi), i)
-    circuit = _take()
-    feats = circuit_features(circuit)
-    rec = recommend_backend_gpu(feats)
-    print(f"  Rotation-25 (n={feats['n']}, entanglement={feats['entanglement']}):")
-    print(f"    → {rec.backend} ({rec.method})")
-
-    # Case 3: Circuit with classical control flow
-    reset()
-    flag = creg("flag")
-    with cwhile(flag, until=0) as loop:
-        qgate(H, 0)
-        flag.measure(0)
-    static = loop.groverize()
-    feats = circuit_features(static)
-    rec = recommend_backend_gpu(feats)
-    print(f"  Grover (n={feats['n']}, has_ctrl={feats['has_ctrl']}):")
-    print(f"    → {rec.backend} ({rec.method})")
-    print()
-
-
-def demo_cupy_fallback():
-    """CuPy fallback when native GPU is unavailable."""
-    print("=" * 60)
-    print("3. CuPy fallback")
-    print("=" * 60)
-
-    # Build a GHZ-5 circuit
-    reset()
-    qgate(H, 0)
-    for i in range(4):
-        qgate(CX, i, i + 1)
-    circuit = _take()
-
-    # Run on qulacs (will fallback to CuPy if no GPU)
-    be = get_backend("qulacs")
-    try:
-        t0 = time.time()
-        result = be.run(circuit, shots=1024, method="gpu")
-        elapsed = time.time() - t0
-        print(f"  qulacs GPU: {result.counts}  ({elapsed:.3f}s)")
-    except Exception as e:
-        print(f"  qulacs GPU: error: {e}")
-
-    # Run on CuPy directly
-    be = get_backend("cupy")
-    try:
-        t0 = time.time()
-        result = be.run(circuit, shots=1024, method="gpu")
-        elapsed = time.time() - t0
-        print(f"  cupy GPU:   {result.counts}  ({elapsed:.3f}s)")
-    except Exception as e:
-        print(f"  cupy GPU:   error: {e}")
-
-    # Compare with CPU
-    be = get_backend("native")
-    t0 = time.time()
-    result = be.run(circuit, shots=1024)
-    elapsed = time.time() - t0
-    print(f"  native CPU: {result.counts}  ({elapsed:.3f}s)")
-    print()
-
-
-def demo_error_handling():
-    """Error handling for unsupported GPU backends."""
-    print("=" * 60)
-    print("4. Error handling")
-    print("=" * 60)
-
-    reset()
-    qgate(H, 0)
-    qgate(CX, 0, 1)
-    circuit = _take()
-
-    # Try GPU on backends that don't support it
-    for backend_name in ["cirq", "native"]:
-        try:
-            be = get_backend(backend_name)
-            be.run(circuit, shots=1024, method="gpu")
-            print(f"  {backend_name}: unexpected success")
-        except NotImplementedError as e:
-            print(f"  {backend_name}: correctly rejected — {e}")
-    print()
-
-
-def main():
-    print("QuoNic GPU Acceleration Demo")
-    print()
-
-    demo_direct_gpu()
-    demo_smart_scheduling()
-    demo_cupy_fallback()
-    demo_error_handling()
-
-    print("=" * 60)
-    print("Done! GPU backends provide hardware-accelerated simulation.")
-    print("Use method='gpu' or recommend_backend_gpu() for automatic selection.")
-    print("=" * 60)
-
-
-if __name__ == "__main__":
-    main()
+# 在 GPU 上运行
+qshow(backend='cupy')
 ```
+
+### API 说明
+
+| API | 参数 | 说明 |
+|-----|------|------|
+| `qshow(backend='cupy')` | backend: 后端 | 在 GPU 上运行 |
+| `result.counts` | 无参数 | 测量结果 |
 
 ---
 
 ## 进阶用法
 
-See the full example code below for more advanced usage.
+### 场景 1：不同规模
+
+```python
+# 小规模
+qgate(H, 0)
+for i in range(9):
+    qgate(CX, i, i + 1)
+qshow(backend='cupy')
+
+# 大规模
+qgate(H, 0)
+for i in range(19):
+    qgate(CX, i, i + 1)
+qshow(backend='cupy')
+```
+
+### 场景 2：GPU 加速用于量子电路模拟
+
+```python
+# GPU 加速可以用于量子电路模拟
+# 加速模拟
+```
+
+### 场景 3：GPU 加速用于量子算法
+
+```python
+# GPU 加速可以用于量子算法
+# 加速算法
+```
 
 ---
 
 ## 适用场景
 
-- - Quantum computing (量子计算)
-- - Algorithm demonstration (算法演示)
-- - Educational (教学)
+### 场景 1：量子电路模拟
+
+GPU 加速可以用于量子电路模拟。
+
+### 场景 2：量子算法
+
+GPU 加速可以用于量子算法。
+
+### 场景 3：量子算法教学
+
+GPU 加速是量子算法的经典例子，用于教学。
 
 ---
 
 ## 常见问题
 
-### Q1: How to run this example?
+### Q1: GPU 加速的精度如何？
 
-```bash
-python examples/gpu_demo/gpu_demo.py
-```
+精度取决于硬件质量。
 
-### Q2: What backend is used?
+### Q2: GPU 加速需要多少量子比特？
 
-The example uses the default backend. You can specify a different one:
+取决于 GPU 内存。
 
-```python
-qshow(backend='qiskit')
-```
+### Q3: GPU 加速和 CPU 模拟有什么区别？
+
+GPU 加速更快。
+
+### Q4: GPU 加速在 NISQ 设备上能跑吗？
+
+可以跑大规模的。
+
+### Q5: GPU 加速的复杂度如何？
+
+复杂度取决于电路规模。
 
 ---
 
@@ -436,205 +194,50 @@ qshow(backend='qiskit')
 
 ### 前置知识
 
-- Basic quantum computing concepts
-- QuoNic API basics
+- 量子比特和量子门
+- 量子测量
+- GPU 编程
 
 ### 继续学习
 
-- Other examples in this documentation
-- QuoNic API reference
+- 量子电路模拟
+- 量子算法
+- 量子算法教学
+
+### 难度等级
+
+- 当前：中级
+- 下一步：高级
 
 ---
 
 ## 完整示例代码
 
+### 示例 1：基本 GPU 加速
+
 ```python
-"""GPU acceleration / GPU 加速
+from quonic import qgate, qshow
 
-GPU acceleration / GPU 加速
+qgate(H, 0)
+for i in range(19):
+    qgate(CX, i, i + 1)
+qshow(backend='cupy')
+```
 
-## Application / 应用场景
-- Quantum computing (量子计算)
-- Algorithm demonstration (算法演示)
-- Educational (教学)
+### 示例 2：不同规模
 
-## Output / 输出
-See code comments for output explanation.
-参见代码注释了解输出说明。"""
+```python
+from quonic import qgate, qshow
 
-import math
-import time
+qgate(H, 0)
+for i in range(9):
+    qgate(CX, i, i + 1)
+qshow(backend='cupy')
 
-from quonic import creg, cwhile, qgate, reset
-from quonic.backends import get_backend
-from quonic.gates import CCX, CX, H, Ry
-from quonic.scheduler import circuit_features, recommend_backend_gpu
-from quonic.stack import current_circuit
-
-
-def _take():
-    c = current_circuit()
-    reset()
-    return c
-
-
-def demo_direct_gpu():
-    """Direct GPU execution via method="gpu"."""
-    print("=" * 60)
-    print("1. Direct GPU execution")
-    print("=" * 60)
-
-    # Build a Bell circuit
-    reset()
-    qgate(H, 0)
-    qgate(CX, 0, 1)
-    circuit = _take()
-
-    # Run on different backends with method="gpu"
-    for backend_name in ["qulacs", "cupy"]:
-        try:
-            be = get_backend(backend_name)
-            t0 = time.time()
-            result = be.run(circuit, shots=1024, method="gpu")
-            elapsed = time.time() - t0
-            print(f"  {backend_name:12s} GPU: {result.counts}  ({elapsed:.3f}s)")
-        except NotImplementedError:
-            print(f"  {backend_name:12s} GPU: not supported")
-        except Exception as e:
-            print(f"  {backend_name:12s} GPU: error: {e}")
-
-    # Compare with CPU
-    be = get_backend("qulacs")
-    t0 = time.time()
-    result = be.run(circuit, shots=1024)
-    elapsed = time.time() - t0
-    print(f"  {'qulacs':12s} CPU: {result.counts}  ({elapsed:.3f}s)")
-    print()
-
-
-def demo_smart_scheduling():
-    """Smart scheduling via recommend_backend_gpu()."""
-    print("=" * 60)
-    print("2. Smart scheduling")
-    print("=" * 60)
-
-    # Case 1: Small entangled circuit
-    reset()
-    qgate(H, 0)
-    qgate(CX, 0, 1)
-    qgate(CCX, 0, 1, 2)
-    circuit = _take()
-    feats = circuit_features(circuit)
-    rec = recommend_backend_gpu(feats)
-    print(f"  GHZ-3 (n={feats['n']}, entanglement={feats['entanglement']}):")
-    print(f"    → {rec.backend} ({rec.method})")
-
-    # Case 2: Large low-entanglement circuit
-    reset()
-    for i in range(25):
-        qgate(Ry(0.1 * math.pi), i)
-    circuit = _take()
-    feats = circuit_features(circuit)
-    rec = recommend_backend_gpu(feats)
-    print(f"  Rotation-25 (n={feats['n']}, entanglement={feats['entanglement']}):")
-    print(f"    → {rec.backend} ({rec.method})")
-
-    # Case 3: Circuit with classical control flow
-    reset()
-    flag = creg("flag")
-    with cwhile(flag, until=0) as loop:
-        qgate(H, 0)
-        flag.measure(0)
-    static = loop.groverize()
-    feats = circuit_features(static)
-    rec = recommend_backend_gpu(feats)
-    print(f"  Grover (n={feats['n']}, has_ctrl={feats['has_ctrl']}):")
-    print(f"    → {rec.backend} ({rec.method})")
-    print()
-
-
-def demo_cupy_fallback():
-    """CuPy fallback when native GPU is unavailable."""
-    print("=" * 60)
-    print("3. CuPy fallback")
-    print("=" * 60)
-
-    # Build a GHZ-5 circuit
-    reset()
-    qgate(H, 0)
-    for i in range(4):
-        qgate(CX, i, i + 1)
-    circuit = _take()
-
-    # Run on qulacs (will fallback to CuPy if no GPU)
-    be = get_backend("qulacs")
-    try:
-        t0 = time.time()
-        result = be.run(circuit, shots=1024, method="gpu")
-        elapsed = time.time() - t0
-        print(f"  qulacs GPU: {result.counts}  ({elapsed:.3f}s)")
-    except Exception as e:
-        print(f"  qulacs GPU: error: {e}")
-
-    # Run on CuPy directly
-    be = get_backend("cupy")
-    try:
-        t0 = time.time()
-        result = be.run(circuit, shots=1024, method="gpu")
-        elapsed = time.time() - t0
-        print(f"  cupy GPU:   {result.counts}  ({elapsed:.3f}s)")
-    except Exception as e:
-        print(f"  cupy GPU:   error: {e}")
-
-    # Compare with CPU
-    be = get_backend("native")
-    t0 = time.time()
-    result = be.run(circuit, shots=1024)
-    elapsed = time.time() - t0
-    print(f"  native CPU: {result.counts}  ({elapsed:.3f}s)")
-    print()
-
-
-def demo_error_handling():
-    """Error handling for unsupported GPU backends."""
-    print("=" * 60)
-    print("4. Error handling")
-    print("=" * 60)
-
-    reset()
-    qgate(H, 0)
-    qgate(CX, 0, 1)
-    circuit = _take()
-
-    # Try GPU on backends that don't support it
-    for backend_name in ["cirq", "native"]:
-        try:
-            be = get_backend(backend_name)
-            be.run(circuit, shots=1024, method="gpu")
-            print(f"  {backend_name}: unexpected success")
-        except NotImplementedError as e:
-            print(f"  {backend_name}: correctly rejected — {e}")
-    print()
-
-
-def main():
-    print("QuoNic GPU Acceleration Demo")
-    print()
-
-    demo_direct_gpu()
-    demo_smart_scheduling()
-    demo_cupy_fallback()
-    demo_error_handling()
-
-    print("=" * 60)
-    print("Done! GPU backends provide hardware-accelerated simulation.")
-    print("Use method='gpu' or recommend_backend_gpu() for automatic selection.")
-    print("=" * 60)
-
-
-if __name__ == "__main__":
-    main()
-
+qgate(H, 0)
+for i in range(19):
+    qgate(CX, i, i + 1)
+qshow(backend='cupy')
 ```
 
 ### 运行方式

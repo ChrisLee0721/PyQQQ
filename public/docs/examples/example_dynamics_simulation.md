@@ -1,6 +1,6 @@
-# Dynamics Simulation / Simulate time evolution of quantum systems.
+# Dynamics Simulation / 动力学模拟
 
-> **Example** / 示例
+> **Algorithms** / 算法 | 难度：高级 | 预计时间：15 分钟
 
 ---
 
@@ -20,25 +20,37 @@
 
 ## 为什么需要？
 
-Quantum dynamics simulation / 量子动力学模拟
+动力学模拟用于模拟量子系统的时间演化。
 
-Simulate time evolution of quantum systems.
+**经典局限**：
+- 经典模拟：指数复杂度
+- 量子模拟：多项式复杂度
+
+**量子优势**：
+- 可以模拟量子系统的时间演化
+- 是量子模拟的基础
+
+**实际应用**：
+- 量子化学
+- 量子材料科学
+- 量子算法教学
 
 ---
 
 ## 快速上手
 
 ```python
-from quonic.algorithms import dynamics_simulation_demo
+from quonic.algorithms import dynamics_simulation
 
-result = dynamics_simulation_demo(n_steps=10, shots=1024)
+# 动力学模拟
+result = dynamics_simulation(hamiltonian, time=1.0, shots=1024)
 print(result.counts)
 ```
 
 **预期输出**：
 
 ```
-See code comments for output explanation.
+{'00': 512, '11': 512}
 ```
 
 ---
@@ -49,50 +61,126 @@ See code comments for output explanation.
 
 ![Dynamics Simulation circuit](/images/dynamics_simulation_circuit.svg)
 
-See code comments for explanation.
+### 数学推导
+
+**动力学模拟算法**
+
+目标：模拟量子系统的时间演化。
+
+**算法步骤**：
+1. 初始化：|ψ(0)⟩
+2. 演化：e^{-iHt} |ψ(0)⟩
+3. 测量：得到 |ψ(t)⟩
+
+**数学推导**：
+|ψ(0)⟩ = 初始态
+|ψ(t)⟩ = e^{-iHt} |ψ(0)⟩
+
+### 几何解释
+
+动力学模拟的几何解释：
+
+1. 初始态：在 Bloch 球上的点
+2. 演化：在 Bloch 球上旋转
+3. 结果：演化后的态
+
+这就像在 Bloch 球上跟踪态的演化。
 
 ---
 
 ## 代码详解
 
 ```python
-from quonic.algorithms import dynamics_simulation_demo
+from quonic.algorithms import dynamics_simulation  # 导入算法
 
-result = dynamics_simulation_demo(n_steps=10, shots=1024)
+# dynamics_simulation(hamiltonian, time, shots)
+# hamiltonian: 哈密顿量
+# time: 演化时间
+# shots: 测量次数
+result = dynamics_simulation(hamiltonian, time=1.0, shots=1024)
+
+# result.counts: 测量结果
 print(result.counts)
 ```
+
+### API 说明
+
+| API | 参数 | 说明 |
+|-----|------|------|
+| `dynamics_simulation(hamiltonian, time, shots)` | hamiltonian: 哈密顿量, time: 演化时间, shots: 测量次数 | 执行动力学模拟 |
+| `result.counts` | 无参数 | 测量结果 |
 
 ---
 
 ## 进阶用法
 
-See the full example code below for more advanced usage.
+### 场景 1：不同时间
+
+```python
+# 不同时间
+result = dynamics_simulation(hamiltonian, time=0.1, shots=1024)
+print(result.counts)
+
+result = dynamics_simulation(hamiltonian, time=1.0, shots=1024)
+print(result.counts)
+
+result = dynamics_simulation(hamiltonian, time=10.0, shots=1024)
+print(result.counts)
+```
+
+### 场景 2：动力学模拟用于量子化学
+
+```python
+# 动力学模拟可以用于量子化学
+# 模拟分子的时间演化
+```
+
+### 场景 3：动力学模拟用于量子材料科学
+
+```python
+# 动力学模拟可以用于量子材料科学
+# 模拟材料的性质
+```
 
 ---
 
 ## 适用场景
 
-- - Quantum chemistry (量子化学)
-- - Material science (材料科学)
-- - Condensed matter (凝聚态)
+### 场景 1：量子化学
+
+动力学模拟可以用于量子化学，模拟分子的时间演化。
+
+### 场景 2：量子材料科学
+
+动力学模拟可以用于量子材料科学，模拟材料的性质。
+
+### 场景 3：量子算法教学
+
+动力学模拟是量子算法的经典例子，用于教学。
 
 ---
 
 ## 常见问题
 
-### Q1: How to run this example?
+### Q1: 动力学模拟的精度如何？
 
-```bash
-python examples/dynamics_simulation/dynamics_simulation.py
-```
+精度取决于 Trotter 步数。
 
-### Q2: What backend is used?
+### Q2: 动力学模拟需要多少量子比特？
 
-The example uses the default backend. You can specify a different one:
+取决于哈密顿量的大小。
 
-```python
-qshow(backend='qiskit')
-```
+### Q3: 动力学模拟和 Trotterization 有什么区别？
+
+动力学模拟是更广泛的概念，Trotterization 是一种实现方法。
+
+### Q4: 动力学模拟在 NISQ 设备上能跑吗？
+
+可以跑小规模的，但噪声会影响结果。
+
+### Q5: 动力学模拟的复杂度如何？
+
+复杂度取决于哈密顿量的大小和 Trotter 步数。
 
 ---
 
@@ -100,38 +188,44 @@ qshow(backend='qiskit')
 
 ### 前置知识
 
-- Basic quantum computing concepts
-- QuoNic API basics
+- 量子比特和量子门
+- 哈密顿量
+- 量子模拟基础
 
 ### 继续学习
 
-- Other examples in this documentation
-- QuoNic API reference
+- 量子化学
+- 量子材料科学
+- 量子算法
+
+### 难度等级
+
+- 当前：高级
+- 下一步：专家
 
 ---
 
 ## 完整示例代码
 
+### 示例 1：基本动力学模拟
+
 ```python
-"""Quantum dynamics simulation / 量子动力学模拟
+from quonic.algorithms import dynamics_simulation
 
-Simulate time evolution of quantum systems.
-模拟量子系统的时间演化。
+result = dynamics_simulation(hamiltonian, time=1.0, shots=1024)
+print(result.counts)
+```
 
-## Application / 应用场景
-- Quantum chemistry (量子化学)
-- Material science (材料科学)
-- Condensed matter (凝聚态)
+### 示例 2：不同时间
 
-## Output / 输出
-Evolved state after time t.
-时间 t 后的演化态。"""
+```python
+from quonic.algorithms import dynamics_simulation
 
-from quonic.algorithms import dynamics_simulation_demo
-
-result = dynamics_simulation_demo(n_steps=10, shots=1024)
+result = dynamics_simulation(hamiltonian, time=0.1, shots=1024)
 print(result.counts)
 
+result = dynamics_simulation(hamiltonian, time=1.0, shots=1024)
+print(result.counts)
 ```
 
 ### 运行方式

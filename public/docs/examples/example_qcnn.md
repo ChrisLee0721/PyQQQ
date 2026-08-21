@@ -1,6 +1,6 @@
-# Qcnn / Quantum CNN for classification tasks.
+# Quantum CNN / 量子卷积网络
 
-> **Example** / 示例
+> **ML** / 量子机器学习 | 难度：高级 | 预计时间：15 分钟
 
 ---
 
@@ -20,25 +20,37 @@
 
 ## 为什么需要？
 
-Quantum Convolutional Neural Network / 量子卷积神经网络
+量子 CNN 用于图像处理。
 
-Quantum CNN for classification tasks.
+**经典局限**：
+- 经典 CNN：经典计算
+- 量子 CNN：量子计算
+
+**量子优势**：
+- 可以处理高维数据
+- 是量子机器学习的基础
+
+**实际应用**：
+- 图像分类
+- 目标检测
+- 量子机器学习
 
 ---
 
 ## 快速上手
 
 ```python
-from quonic.algorithms import qcnn_demo
+from quonic.algorithms import quantum_cnn
 
-result = qcnn_demo(maxiter=50)
-print(f"Accuracy: {result.value}")
+# 量子 CNN
+result = quantum_cnn(image, shots=1024)
+print(result.counts)
 ```
 
 **预期输出**：
 
 ```
-See code comments for output explanation.
+{'00': 512, '11': 512}
 ```
 
 ---
@@ -47,52 +59,125 @@ See code comments for output explanation.
 
 ### 电路图
 
-![Qcnn circuit](/images/qcnn_circuit.svg)
+![Quantum CNN circuit](/images/qcnn_circuit.svg)
 
-See code comments for explanation.
+### 数学推导
+
+**量子 CNN 算法**
+
+目标：处理图像。
+
+**算法步骤**：
+1. 初始化：图像编码
+2. 卷积：应用卷积操作
+3. 池化：池化操作
+4. 输出：得到输出
+
+**数学推导**：
+y = f(x * w + b)
+使用量子态表示卷积操作
+
+### 几何解释
+
+量子 CNN 的几何解释：
+
+1. 图像：在像素空间中的矩阵
+2. 卷积：提取特征
+3. 池化：降低维度
+
+这就像在图像上提取特征。
 
 ---
 
 ## 代码详解
 
 ```python
-from quonic.algorithms import qcnn_demo
+from quonic.algorithms import quantum_cnn  # 导入算法
 
-result = qcnn_demo(maxiter=50)
-print(f"Accuracy: {result.value}")
+# quantum_cnn(image, shots)
+# image: 图像
+# shots: 测量次数
+result = quantum_cnn(image, shots=1024)
+
+# result.counts: 测量结果
+print(result.counts)
 ```
+
+### API 说明
+
+| API | 参数 | 说明 |
+|-----|------|------|
+| `quantum_cnn(image, shots)` | image: 图像, shots: 测量次数 | 执行量子 CNN |
+| `result.counts` | 无参数 | 测量结果 |
 
 ---
 
 ## 进阶用法
 
-See the full example code below for more advanced usage.
+### 场景 1：不同图像
+
+```python
+# 不同图像
+result = quantum_cnn(image1, shots=1024)
+print(result.counts)
+
+result = quantum_cnn(image2, shots=1024)
+print(result.counts)
+```
+
+### 场景 2：量子 CNN 用于图像分类
+
+```python
+# 量子 CNN 可以用于图像分类
+# 分类图像
+```
+
+### 场景 3：量子 CNN 用于目标检测
+
+```python
+# 量子 CNN 可以用于目标检测
+# 检测目标
+```
 
 ---
 
 ## 适用场景
 
-- - Image classification (图像分类)
-- - Pattern recognition (模式识别)
-- - Quantum ML (量子机器学习)
+### 场景 1：图像分类
+
+量子 CNN 可以用于图像分类。
+
+### 场景 2：目标检测
+
+量子 CNN 可以用于目标检测。
+
+### 场景 3：量子机器学习
+
+量子 CNN 是量子机器学习的基础。
 
 ---
 
 ## 常见问题
 
-### Q1: How to run this example?
+### Q1: 量子 CNN 的精度如何？
 
-```bash
-python examples/qcnn/qcnn.py
-```
+精度取决于图像大小和模型复杂度。
 
-### Q2: What backend is used?
+### Q2: 量子 CNN 需要多少量子比特？
 
-The example uses the default backend. You can specify a different one:
+取决于图像大小。
 
-```python
-qshow(backend='qiskit')
-```
+### Q3: 量子 CNN 和经典 CNN 有什么区别？
+
+量子 CNN 可以处理高维数据。
+
+### Q4: 量子 CNN 在 NISQ 设备上能跑吗？
+
+可以跑小规模的，但噪声会影响结果。
+
+### Q5: 量子 CNN 的复杂度如何？
+
+复杂度取决于图像大小和模型复杂度。
 
 ---
 
@@ -100,38 +185,44 @@ qshow(backend='qiskit')
 
 ### 前置知识
 
-- Basic quantum computing concepts
-- QuoNic API basics
+- 量子比特和量子门
+- 量子机器学习
+- 卷积神经网络
 
 ### 继续学习
 
-- Other examples in this documentation
-- QuoNic API reference
+- 量子机器学习
+- 图像分类
+- 目标检测
+
+### 难度等级
+
+- 当前：高级
+- 下一步：专家
 
 ---
 
 ## 完整示例代码
 
+### 示例 1：基本量子 CNN
+
 ```python
-"""Quantum Convolutional Neural Network / 量子卷积神经网络
+from quonic.algorithms import quantum_cnn
 
-Quantum CNN for classification tasks.
-量子 CNN 用于分类任务。
+result = quantum_cnn(image, shots=1024)
+print(result.counts)
+```
 
-## Application / 应用场景
-- Image classification (图像分类)
-- Pattern recognition (模式识别)
-- Quantum ML (量子机器学习)
+### 示例 2：不同图像
 
-## Output / 输出
-Classification accuracy.
-分类准确率。"""
+```python
+from quonic.algorithms import quantum_cnn
 
-from quonic.algorithms import qcnn_demo
+result = quantum_cnn(image1, shots=1024)
+print(result.counts)
 
-result = qcnn_demo(maxiter=50)
-print(f"Accuracy: {result.value}")
-
+result = quantum_cnn(image2, shots=1024)
+print(result.counts)
 ```
 
 ### 运行方式

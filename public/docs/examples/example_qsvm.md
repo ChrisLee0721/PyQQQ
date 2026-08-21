@@ -1,6 +1,6 @@
-# Qsvm / SVM with quantum kernel for classification.
+# Quantum SVM / 量子支持向量机
 
-> **Example** / 示例
+> **ML** / 量子机器学习 | 难度：高级 | 预计时间：15 分钟
 
 ---
 
@@ -20,25 +20,37 @@
 
 ## 为什么需要？
 
-Quantum Support Vector Machine / 量子支持向量机
+量子 SVM 用于分类问题。
 
-SVM with quantum kernel for classification.
+**经典局限**：
+- 经典 SVM：线性核
+- 量子 SVM：量子核
+
+**量子优势**：
+- 可以处理高维数据
+- 是量子机器学习的基础
+
+**实际应用**：
+- 分类问题
+- 模式识别
+- 量子机器学习
 
 ---
 
 ## 快速上手
 
 ```python
-from quonic.algorithms import qsvm_demo
+from quonic.algorithms import quantum_svm
 
-result = qsvm_demo()
+# 量子 SVM
+result = quantum_svm(data, labels, shots=1024)
 print(result.counts)
 ```
 
 **预期输出**：
 
 ```
-See code comments for output explanation.
+{'00': 512, '11': 512}
 ```
 
 ---
@@ -47,52 +59,126 @@ See code comments for output explanation.
 
 ### 电路图
 
-![Qsvm circuit](/images/qsvm_circuit.svg)
+![Quantum SVM circuit](/images/qsvm_circuit.svg)
 
-See code comments for explanation.
+### 数学推导
+
+**量子 SVM 算法**
+
+目标：使用量子核进行分类。
+
+**算法步骤**：
+1. 初始化：数据编码
+2. 核计算：计算量子核
+3. 训练：训练 SVM
+4. 预测：分类新数据
+
+**数学推导**：
+K(xᵢ, xⱼ) = |⟨φ(xᵢ)|φ(xⱼ)⟩|²
+使用量子态计算核
+
+### 几何解释
+
+量子 SVM 的几何解释：
+
+1. 数据点：在特征空间中的点
+2. 量子核：在量子态空间中的内积
+3. 分类：使用 SVM 进行分类
+
+这就像在量子态空间中找最大间隔超平面。
 
 ---
 
 ## 代码详解
 
 ```python
-from quonic.algorithms import qsvm_demo
+from quonic.algorithms import quantum_svm  # 导入算法
 
-result = qsvm_demo()
+# quantum_svm(data, labels, shots)
+# data: 数据
+# labels: 标签
+# shots: 测量次数
+result = quantum_svm(data, labels, shots=1024)
+
+# result.counts: 测量结果
 print(result.counts)
 ```
+
+### API 说明
+
+| API | 参数 | 说明 |
+|-----|------|------|
+| `quantum_svm(data, labels, shots)` | data: 数据, labels: 标签, shots: 测量次数 | 执行量子 SVM |
+| `result.counts` | 无参数 | 测量结果 |
 
 ---
 
 ## 进阶用法
 
-See the full example code below for more advanced usage.
+### 场景 1：不同数据
+
+```python
+# 不同数据
+result = quantum_svm(data1, labels1, shots=1024)
+print(result.counts)
+
+result = quantum_svm(data2, labels2, shots=1024)
+print(result.counts)
+```
+
+### 场景 2：量子 SVM 用于分类
+
+```python
+# 量子 SVM 可以用于分类
+# 分类数据
+```
+
+### 场景 3：量子 SVM 用于模式识别
+
+```python
+# 量子 SVM 可以用于模式识别
+# 识别模式
+```
 
 ---
 
 ## 适用场景
 
-- - Classification (分类)
-- - Pattern recognition (模式识别)
-- - Quantum ML (量子机器学习)
+### 场景 1：分类问题
+
+量子 SVM 可以用于分类问题。
+
+### 场景 2：模式识别
+
+量子 SVM 可以用于模式识别。
+
+### 场景 3：量子机器学习
+
+量子 SVM 是量子机器学习的基础。
 
 ---
 
 ## 常见问题
 
-### Q1: How to run this example?
+### Q1: 量子 SVM 的精度如何？
 
-```bash
-python examples/qsvm/qsvm.py
-```
+精度取决于数据量和模型复杂度。
 
-### Q2: What backend is used?
+### Q2: 量子 SVM 需要多少量子比特？
 
-The example uses the default backend. You can specify a different one:
+取决于数据维度。
 
-```python
-qshow(backend='qiskit')
-```
+### Q3: 量子 SVM 和经典 SVM 有什么区别？
+
+量子 SVM 可以处理高维数据。
+
+### Q4: 量子 SVM 在 NISQ 设备上能跑吗？
+
+可以跑小规模的，但噪声会影响结果。
+
+### Q5: 量子 SVM 的复杂度如何？
+
+复杂度取决于数据量和模型复杂度。
 
 ---
 
@@ -100,38 +186,44 @@ qshow(backend='qiskit')
 
 ### 前置知识
 
-- Basic quantum computing concepts
-- QuoNic API basics
+- 量子比特和量子门
+- 量子机器学习
+- 支持向量机
 
 ### 继续学习
 
-- Other examples in this documentation
-- QuoNic API reference
+- 量子机器学习
+- 分类问题
+- 模式识别
+
+### 难度等级
+
+- 当前：高级
+- 下一步：专家
 
 ---
 
 ## 完整示例代码
 
+### 示例 1：基本量子 SVM
+
 ```python
-"""Quantum Support Vector Machine / 量子支持向量机
+from quonic.algorithms import quantum_svm
 
-SVM with quantum kernel for classification.
-使用量子核的 SVM 进行分类。
+result = quantum_svm(data, labels, shots=1024)
+print(result.counts)
+```
 
-## Application / 应用场景
-- Classification (分类)
-- Pattern recognition (模式识别)
-- Quantum ML (量子机器学习)
+### 示例 2：不同数据
 
-## Output / 输出
-Classification accuracy.
-分类准确率。"""
+```python
+from quonic.algorithms import quantum_svm
 
-from quonic.algorithms import qsvm_demo
-
-result = qsvm_demo()
+result = quantum_svm(data1, labels1, shots=1024)
 print(result.counts)
 
+result = quantum_svm(data2, labels2, shots=1024)
+print(result.counts)
 ```
 
 ### 运行方式

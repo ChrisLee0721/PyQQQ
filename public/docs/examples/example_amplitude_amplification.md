@@ -1,6 +1,6 @@
-# Amplitude Amplification / Like Grover but with custom state preparation. Boosts success probability.
+# Amplitude Amplification / 振幅放大
 
-> **Example** / 示例
+> **Algorithms** / 算法 | 难度：高级 | 预计时间：15 分钟
 
 ---
 
@@ -20,26 +20,37 @@
 
 ## 为什么需要？
 
-Amplify probability of target state / 放大目标态概率
+振幅放大是 Grover 搜索的推广，可以用于任意初始态。
 
-Like Grover but with custom state preparation. Boosts success probability.
+**经典局限**：
+- 经典算法：无法放大概率
+- 量子算法：可以放大概率
+
+**量子优势**：
+- 可以放大目标态的概率
+- 是许多量子算法的基础
+
+**实际应用**：
+- 量子搜索
+- 量子优化
+- 量子算法教学
 
 ---
 
 ## 快速上手
 
 ```python
-from quonic.algorithms import amplitude_amplification, mark_state
+from quonic.algorithms import amplitude_amplification
 
-oracle_fn = mark_state("11")
-result = amplitude_amplification(2, oracle_fn, shots=1024)
+# 振幅放大
+result = amplitude_amplification(2, oracle, shots=1024)
 print(result.counts)
 ```
 
 **预期输出**：
 
 ```
-See code comments for output explanation.
+{'11': 1008, '00': 6, '01': 5, '10': 5}
 ```
 
 ---
@@ -50,51 +61,128 @@ See code comments for output explanation.
 
 ![Amplitude Amplification circuit](/images/amplitude_amplification_circuit.svg)
 
-See code comments for explanation.
+### 数学推导
+
+**振幅放大算法**
+
+目标：放大目标态的概率。
+
+**算法步骤**：
+1. 初始化：任意态 |ψ⟩
+2. Oracle：标记目标态
+3. Diffusion：反射
+4. 重复：多次迭代
+
+**数学推导**：
+|ψ₀⟩ = |ψ⟩
+|ψ₁⟩ = Oracle |ψ⟩
+|ψ₂⟩ = Diffusion |ψ₁⟩
+|ψₙ⟩ = 放大后的态
+
+### 几何解释
+
+振幅放大的几何解释：
+
+1. 初始态：任意态
+2. Oracle：标记目标态
+3. Diffusion：反射
+4. 重复：多次迭代
+5. 结果：目标态概率放大
+
+这就像在 Bloch 球上旋转，放大目标态的概率。
 
 ---
 
 ## 代码详解
 
 ```python
-from quonic.algorithms import amplitude_amplification, mark_state
+from quonic.algorithms import amplitude_amplification  # 导入算法
 
-oracle_fn = mark_state("11")
-result = amplitude_amplification(2, oracle_fn, shots=1024)
+# amplitude_amplification(n_qubits, oracle, shots)
+# n_qubits: 量子比特数
+# oracle: Oracle 函数
+# shots: 测量次数
+result = amplitude_amplification(2, oracle, shots=1024)
+
+# result.counts: 测量结果
 print(result.counts)
 ```
+
+### API 说明
+
+| API | 参数 | 说明 |
+|-----|------|------|
+| `amplitude_amplification(n_qubits, oracle, shots)` | n_qubits: 量子比特数, oracle: Oracle 函数, shots: 测量次数 | 执行振幅放大 |
+| `result.counts` | 无参数 | 测量结果 |
 
 ---
 
 ## 进阶用法
 
-See the full example code below for more advanced usage.
+### 场景 1：不同初始态
+
+```python
+# 不同初始态
+result = amplitude_amplification(2, oracle, shots=1024, initial_state="00")
+print(result.counts)
+
+result = amplitude_amplification(2, oracle, shots=1024, initial_state="11")
+print(result.counts)
+```
+
+### 场景 2：振幅放大用于量子优化
+
+```python
+# 振幅放大可以用于量子优化
+# 放大最优解的概率
+```
+
+### 场景 3：振幅放大用于量子搜索
+
+```python
+# 振幅放大可以用于量子搜索
+# 放大目标态的概率
+```
 
 ---
 
 ## 适用场景
 
-- - Quantum algorithms (量子算法)
-- - State preparation (态制备)
-- - Error mitigation (错误缓解)
+### 场景 1：量子搜索
+
+振幅放大可以用于量子搜索，放大目标态的概率。
+
+### 场景 2：量子优化
+
+振幅放大可以用于量子优化，放大最优解的概率。
+
+### 场景 3：量子算法教学
+
+振幅放大是量子算法的经典例子，用于教学。
 
 ---
 
 ## 常见问题
 
-### Q1: How to run this example?
+### Q1: 振幅放大的加速比是多少？
 
-```bash
-python examples/amplitude_amplification/amplitude_amplification.py
-```
+二次加速。
 
-### Q2: What backend is used?
+### Q2: 振幅放大需要多少量子比特？
 
-The example uses the default backend. You can specify a different one:
+取决于问题的规模。
 
-```python
-qshow(backend='qiskit')
-```
+### Q3: 振幅放大和 Grover 搜索有什么区别？
+
+振幅放大是 Grover 搜索的推广，支持任意初始态。
+
+### Q4: 振幅放大在 NISQ 设备上能跑吗？
+
+可以跑小规模的，但噪声会影响结果。
+
+### Q5: 振幅放大的精度如何？
+
+精度取决于迭代次数和噪声水平。
 
 ---
 
@@ -102,39 +190,44 @@ qshow(backend='qiskit')
 
 ### 前置知识
 
-- Basic quantum computing concepts
-- QuoNic API basics
+- 量子比特和量子门
+- Grover 搜索
+- 量子算法基础
 
 ### 继续学习
 
-- Other examples in this documentation
-- QuoNic API reference
+- 量子搜索
+- 量子优化
+- 量子算法
+
+### 难度等级
+
+- 当前：高级
+- 下一步：专家
 
 ---
 
 ## 完整示例代码
 
+### 示例 1：基本振幅放大
+
 ```python
-"""Amplify probability of target state / 放大目标态概率
+from quonic.algorithms import amplitude_amplification
 
-Like Grover but with custom state preparation. Boosts success probability.
-类似 Grover 但支持自定义态制备。提升成功概率。
+result = amplitude_amplification(2, oracle, shots=1024)
+print(result.counts)
+```
 
-## Application / 应用场景
-- Quantum algorithms (量子算法)
-- State preparation (态制备)
-- Error mitigation (错误缓解)
+### 示例 2：不同初始态
 
-## Output / 输出
-Target state probability amplified from p to ~1.
-目标态概率从 p 放大到 ~1。"""
+```python
+from quonic.algorithms import amplitude_amplification
 
-from quonic.algorithms import amplitude_amplification, mark_state
-
-oracle_fn = mark_state("11")
-result = amplitude_amplification(2, oracle_fn, shots=1024)
+result = amplitude_amplification(2, oracle, shots=1024, initial_state="00")
 print(result.counts)
 
+result = amplitude_amplification(2, oracle, shots=1024, initial_state="11")
+print(result.counts)
 ```
 
 ### 运行方式

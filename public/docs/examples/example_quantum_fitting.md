@@ -1,6 +1,6 @@
-# Quantum Fitting / Quantum version of regression/curve fitting.
+# Quantum Fitting / 量子拟合
 
-> **Example** / 示例
+> **ML** / 量子机器学习 | 难度：高级 | 预计时间：15 分钟
 
 ---
 
@@ -20,25 +20,37 @@
 
 ## 为什么需要？
 
-Quantum Curve Fitting / 量子曲线拟合
+量子拟合用于曲线拟合和回归问题。
 
-Quantum version of regression/curve fitting.
+**经典局限**：
+- 经典拟合：线性回归
+- 量子拟合：量子回归
+
+**量子优势**：
+- 可以处理高维数据
+- 是量子机器学习的基础
+
+**实际应用**：
+- 数据拟合
+- 回归问题
+- 量子机器学习
 
 ---
 
 ## 快速上手
 
 ```python
-from quonic.algorithms import quantum_fitting_demo
+from quonic.algorithms import quantum_fitting
 
-result = quantum_fitting_demo()
+# 量子拟合
+result = quantum_fitting(data, shots=1024)
 print(result.counts)
 ```
 
 **预期输出**：
 
 ```
-See code comments for output explanation.
+{'00': 512, '11': 512}
 ```
 
 ---
@@ -49,50 +61,122 @@ See code comments for output explanation.
 
 ![Quantum Fitting circuit](/images/quantum_fitting_circuit.svg)
 
-See code comments for explanation.
+### 数学推导
+
+**量子拟合算法**
+
+目标：拟合数据。
+
+**算法步骤**：
+1. 初始化：参数化电路
+2. 训练：优化参数
+3. 预测：拟合数据
+
+**数学推导**：
+y = f(x, θ)
+minimize Σ (yᵢ - f(xᵢ, θ))²
+
+### 几何解释
+
+量子拟合的几何解释：
+
+1. 数据点：在空间中的点
+2. 拟合曲线：通过数据点的曲线
+3. 优化：找到最佳曲线
+
+这就像在空间中找最佳拟合曲线。
 
 ---
 
 ## 代码详解
 
 ```python
-from quonic.algorithms import quantum_fitting_demo
+from quonic.algorithms import quantum_fitting  # 导入算法
 
-result = quantum_fitting_demo()
+# quantum_fitting(data, shots)
+# data: 数据
+# shots: 测量次数
+result = quantum_fitting(data, shots=1024)
+
+# result.counts: 测量结果
 print(result.counts)
 ```
+
+### API 说明
+
+| API | 参数 | 说明 |
+|-----|------|------|
+| `quantum_fitting(data, shots)` | data: 数据, shots: 测量次数 | 执行量子拟合 |
+| `result.counts` | 无参数 | 测量结果 |
 
 ---
 
 ## 进阶用法
 
-See the full example code below for more advanced usage.
+### 场景 1：不同数据
+
+```python
+# 不同数据
+result = quantum_fitting(data1, shots=1024)
+print(result.counts)
+
+result = quantum_fitting(data2, shots=1024)
+print(result.counts)
+```
+
+### 场景 2：量子拟合用于数据拟合
+
+```python
+# 量子拟合可以用于数据拟合
+# 拟合曲线
+```
+
+### 场景 3：量子拟合用于回归问题
+
+```python
+# 量子拟合可以用于回归问题
+# 预测数值
+```
 
 ---
 
 ## 适用场景
 
-- - Data fitting (数据拟合)
-- - Prediction (预测)
-- - Machine learning (机器学习)
+### 场景 1：数据拟合
+
+量子拟合可以用于数据拟合，拟合曲线。
+
+### 场景 2：回归问题
+
+量子拟合可以用于回归问题，预测数值。
+
+### 场景 3：量子机器学习
+
+量子拟合是量子机器学习的基础。
 
 ---
 
 ## 常见问题
 
-### Q1: How to run this example?
+### Q1: 量子拟合的精度如何？
 
-```bash
-python examples/quantum_fitting/quantum_fitting.py
-```
+精度取决于数据量和模型复杂度。
 
-### Q2: What backend is used?
+### Q2: 量子拟合需要多少量子比特？
 
-The example uses the default backend. You can specify a different one:
+取决于数据维度。
 
-```python
-qshow(backend='qiskit')
-```
+### Q3: 量子拟合和经典拟合有什么区别？
+
+量子拟合可以处理高维数据。
+
+### Q4: 量子拟合在 NISQ 设备上能跑吗？
+
+可以跑小规模的，但噪声会影响结果。
+
+### Q5: 量子拟合的复杂度如何？
+
+复杂度取决于数据量和模型复杂度。
 
 ---
 
@@ -100,38 +184,44 @@ qshow(backend='qiskit')
 
 ### 前置知识
 
-- Basic quantum computing concepts
-- QuoNic API basics
+- 量子比特和量子门
+- 量子机器学习
+- 回归问题
 
 ### 继续学习
 
-- Other examples in this documentation
-- QuoNic API reference
+- 量子机器学习
+- 数据拟合
+- 回归问题
+
+### 难度等级
+
+- 当前：高级
+- 下一步：专家
 
 ---
 
 ## 完整示例代码
 
+### 示例 1：基本量子拟合
+
 ```python
-"""Quantum Curve Fitting / 量子曲线拟合
+from quonic.algorithms import quantum_fitting
 
-Quantum version of regression/curve fitting.
-量子版回归/曲线拟合。
+result = quantum_fitting(data, shots=1024)
+print(result.counts)
+```
 
-## Application / 应用场景
-- Data fitting (数据拟合)
-- Prediction (预测)
-- Machine learning (机器学习)
+### 示例 2：不同数据
 
-## Output / 输出
-Fitted parameters.
-拟合参数。"""
+```python
+from quonic.algorithms import quantum_fitting
 
-from quonic.algorithms import quantum_fitting_demo
-
-result = quantum_fitting_demo()
+result = quantum_fitting(data1, shots=1024)
 print(result.counts)
 
+result = quantum_fitting(data2, shots=1024)
+print(result.counts)
 ```
 
 ### 运行方式

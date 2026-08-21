@@ -1,6 +1,6 @@
-# Stabilizer / Clifford group simulation via stabilizer tableau.
+# Stabilizer Formalism / 稳定子形式
 
-> **Example** / 示例
+> **QEC** / 量子纠错 | 难度：高级 | 预计时间：15 分钟
 
 ---
 
@@ -20,25 +20,38 @@
 
 ## 为什么需要？
 
-Stabilizer Formalism / 稳定子形式
+稳定子形式用于 Clifford 电路模拟。
 
-Clifford group simulation via stabilizer tableau.
+**经典局限**：
+- 经典模拟：指数复杂度
+- 量子模拟：多项式复杂度
+
+**量子优势**：
+- 可以高效模拟 Clifford 电路
+- 是量子纠错的基础
+
+**实际应用**：
+- 量子纠错
+- 量子计算
+- 量子算法教学
 
 ---
 
 ## 快速上手
 
 ```python
-from quonic.algorithms import stabilizer_demo
+from quonic.qec import StabilizerCode
 
-result = stabilizer_demo(n_qubits=3, shots=100)
-print(result.counts)
+# 稳定子形式
+stabilizers = ["ZZI", "IZZ"]
+code = StabilizerCode(stabilizers)
+print(code)
 ```
 
 **预期输出**：
 
 ```
-See code comments for output explanation.
+StabilizerCode with 2 stabilizers
 ```
 
 ---
@@ -47,52 +60,126 @@ See code comments for output explanation.
 
 ### 电路图
 
-![Stabilizer circuit](/images/stabilizer_circuit.svg)
+![Stabilizer Formalism circuit](/images/stabilizer_circuit.svg)
 
-See code comments for explanation.
+### 数学推导
+
+**稳定子形式**
+
+目标：模拟 Clifford 电路。
+
+**算法步骤**：
+1. 初始化：稳定子
+2. 更新：根据门更新稳定子
+3. 测量：测量稳定子
+
+**数学推导**：
+S = {g ∈ G : g|ψ⟩ = |ψ⟩}
+其中 G 是 Pauli 群
+
+### 几何解释
+
+稳定子形式的几何解释：
+
+1. 稳定子：在 Pauli 群中的元素
+2. 更新：根据门更新稳定子
+3. 测量：测量稳定子
+
+这就像在 Pauli 群中跟踪稳定子。
 
 ---
 
 ## 代码详解
 
 ```python
-from quonic.algorithms import stabilizer_demo
+from quonic.qec import StabilizerCode  # 导入稳定子码
 
-result = stabilizer_demo(n_qubits=3, shots=100)
-print(result.counts)
+# StabilizerCode(stabilizers)
+# stabilizers: 稳定子列表
+stabilizers = ["ZZI", "IZZ"]
+code = StabilizerCode(stabilizers)
+
+# code: 稳定子码
+print(code)
 ```
+
+### API 说明
+
+| API | 参数 | 说明 |
+|-----|------|------|
+| `StabilizerCode(stabilizers)` | stabilizers: 稳定子列表 | 创建稳定子码 |
+| `code` | 无参数 | 稳定子码 |
 
 ---
 
 ## 进阶用法
 
-See the full example code below for more advanced usage.
+### 场景 1：不同稳定子
+
+```python
+# 不同稳定子
+stabilizers1 = ["ZZI", "IZZ"]
+code1 = StabilizerCode(stabilizers1)
+print(code1)
+
+stabilizers2 = ["XXI", "IXX"]
+code2 = StabilizerCode(stabilizers2)
+print(code2)
+```
+
+### 场景 2：稳定子形式用于量子纠错
+
+```python
+# 稳定子形式可以用于量子纠错
+# 检测和纠正错误
+```
+
+### 场景 3：稳定子形式用于量子计算
+
+```python
+# 稳定子形式可以用于量子计算
+# 模拟 Clifford 电路
+```
 
 ---
 
 ## 适用场景
 
-- - Error correction (纠错)
-- - Clifford simulation (Clifford 模拟)
-- - Quantum circuits (量子电路)
+### 场景 1：量子纠错
+
+稳定子形式可以用于量子纠错。
+
+### 场景 2：量子计算
+
+稳定子形式可以用于量子计算。
+
+### 场景 3：量子算法教学
+
+稳定子形式是量子算法的经典例子，用于教学。
 
 ---
 
 ## 常见问题
 
-### Q1: How to run this example?
+### Q1: 稳定子形式的精度如何？
 
-```bash
-python examples/stabilizer/stabilizer.py
-```
+精度取决于稳定子的设计。
 
-### Q2: What backend is used?
+### Q2: 稳定子形式需要多少量子比特？
 
-The example uses the default backend. You can specify a different one:
+取决于稳定子的数量。
 
-```python
-qshow(backend='qiskit')
-```
+### Q3: 稳定子形式和其他纠错码有什么区别？
+
+稳定子形式是 Clifford 电路的高效模拟方法。
+
+### Q4: 稳定子形式在 NISQ 设备上能跑吗？
+
+可以跑小规模的，但噪声会影响结果。
+
+### Q5: 稳定子形式的复杂度如何？
+
+复杂度取决于稳定子的数量。
 
 ---
 
@@ -100,38 +187,47 @@ qshow(backend='qiskit')
 
 ### 前置知识
 
-- Basic quantum computing concepts
-- QuoNic API basics
+- 量子比特和量子门
+- 量子测量
+- 量子纠错基础
 
 ### 继续学习
 
-- Other examples in this documentation
-- QuoNic API reference
+- 量子纠错
+- 量子计算
+- 量子算法
+
+### 难度等级
+
+- 当前：高级
+- 下一步：专家
 
 ---
 
 ## 完整示例代码
 
+### 示例 1：基本稳定子形式
+
 ```python
-"""Stabilizer Formalism / 稳定子形式
+from quonic.qec import StabilizerCode
 
-Clifford group simulation via stabilizer tableau.
-通过稳定子表模拟 Clifford 群。
+stabilizers = ["ZZI", "IZZ"]
+code = StabilizerCode(stabilizers)
+print(code)
+```
 
-## Application / 应用场景
-- Error correction (纠错)
-- Clifford simulation (Clifford 模拟)
-- Quantum circuits (量子电路)
+### 示例 2：不同稳定子
 
-## Output / 输出
-Stabilizer state measurements.
-稳定子态测量。"""
+```python
+from quonic.qec import StabilizerCode
 
-from quonic.algorithms import stabilizer_demo
+stabilizers1 = ["ZZI", "IZZ"]
+code1 = StabilizerCode(stabilizers1)
+print(code1)
 
-result = stabilizer_demo(n_qubits=3, shots=100)
-print(result.counts)
-
+stabilizers2 = ["XXI", "IXX"]
+code2 = StabilizerCode(stabilizers2)
+print(code2)
 ```
 
 ### 运行方式

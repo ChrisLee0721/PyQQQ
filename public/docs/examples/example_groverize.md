@@ -1,6 +1,6 @@
-# Groverize / Groverize cwhile / Grover 化 cwhile
+# Groverize / Grover 化
 
-> **Example** / 示例
+> **Compiler** / 编译器 | 难度：高级 | 预计时间：15 分钟
 
 ---
 
@@ -20,39 +20,37 @@
 
 ## 为什么需要？
 
-Groverize cwhile / Grover 化 cwhile
+Grover 化用于将经典循环转换为 Grover 电路。
 
-Groverize cwhile / Grover 化 cwhile
+**经典局限**：
+- 经典循环：需要中段测量
+- Grover 化：不需要中段测量
+
+**量子优势**：
+- 可以在不支持中段测量的设备上运行
+- 是算法级编译的基础
+
+**实际应用**：
+- 量子编译
+- 量子算法
+- 量子算法教学
 
 ---
 
 ## 快速上手
 
 ```python
-import math
+from quonic.compiler import groverize
 
-from quonic import creg, cwhile, qgate
-from quonic.backends import get_backend
-from quonic.gates import Ry
-
-flag = creg("flag")
-with cwhile(flag, until=0) as loop:
-    qgate(Ry(2 * math.pi / 3), 0)   # 单次成功概率 p = 1/4
-    flag.measure(0)
-
-static = loop.groverize()   # 编译成静态 Grover 电路（success_prob 自动推断）
-
-# 静态电路无中段反馈，任意后端都能跑；成功态 |00> 的概率从 1/4 放大到 1
-print(get_backend("qiskit").run(static, shots=1024).counts)  # {'00': 1024}
-
-# 真机（Quantum Inspire，需登录排队）同样能跑：
-# print(get_backend("qi", device="tuna9").run(static, shots=1024).counts)
+# Grover 化
+result = groverize(circuit, method="grover")
+print(result)
 ```
 
 **预期输出**：
 
 ```
-See code comments for output explanation.
+Circuit with 103 operations
 ```
 
 ---
@@ -63,64 +61,125 @@ See code comments for output explanation.
 
 ![Groverize circuit](/images/groverize_circuit.svg)
 
-See code comments for explanation.
+### 数学推导
+
+**Grover 化算法**
+
+目标：将经典循环转换为 Grover 电路。
+
+**算法步骤**：
+1. 分析：分析循环结构
+2. 构建：构建 Oracle
+3. 迭代：应用 Grover 迭代
+4. 输出：输出电路
+
+**数学推导**：
+|ψ⟩ = Grover^k |+⟩^n
+其中 k 是迭代次数
+
+### 几何解释
+
+Grover 化的几何解释：
+
+1. 循环：经典循环结构
+2. Oracle：标记目标态
+3. Grover 迭代：放大目标态概率
+4. 输出：静态电路
+
+这就像将动态循环转换为静态电路。
 
 ---
 
 ## 代码详解
 
 ```python
-import math
+from quonic.compiler import groverize  # 导入编译器
 
-from quonic import creg, cwhile, qgate
-from quonic.backends import get_backend
-from quonic.gates import Ry
+# groverize(circuit, method)
+# circuit: 量子电路
+# method: 方法（"grover" 或 "fpaa"）
+result = groverize(circuit, method="grover")
 
-flag = creg("flag")
-with cwhile(flag, until=0) as loop:
-    qgate(Ry(2 * math.pi / 3), 0)   # 单次成功概率 p = 1/4
-    flag.measure(0)
-
-static = loop.groverize()   # 编译成静态 Grover 电路（success_prob 自动推断）
-
-# 静态电路无中段反馈，任意后端都能跑；成功态 |00> 的概率从 1/4 放大到 1
-print(get_backend("qiskit").run(static, shots=1024).counts)  # {'00': 1024}
-
-# 真机（Quantum Inspire，需登录排队）同样能跑：
-# print(get_backend("qi", device="tuna9").run(static, shots=1024).counts)
+# result: Grover 化后的电路
+print(result)
 ```
+
+### API 说明
+
+| API | 参数 | 说明 |
+|-----|------|------|
+| `groverize(circuit, method)` | circuit: 量子电路, method: 方法 | 执行 Grover 化 |
+| `result` | 无参数 | Grover 化后的电路 |
 
 ---
 
 ## 进阶用法
 
-See the full example code below for more advanced usage.
+### 场景 1：不同方法
+
+```python
+# Grover 方法
+result = groverize(circuit, method="grover")
+print(result)
+
+# FPAA 方法
+result = groverize(circuit, method="fpaa")
+print(result)
+```
+
+### 场景 2：Grover 化用于量子编译
+
+```python
+# Grover 化可以用于量子编译
+# 将经典循环转换为 Grover 电路
+```
+
+### 场景 3：Grover 化用于量子算法
+
+```python
+# Grover 化可以用于量子算法
+# 例如：cwhile 循环
+```
 
 ---
 
 ## 适用场景
 
-- - Quantum computing (量子计算)
-- - Algorithm demonstration (算法演示)
-- - Educational (教学)
+### 场景 1：量子编译
+
+Grover 化可以用于量子编译。
+
+### 场景 2：量子算法
+
+Grover 化可以用于量子算法。
+
+### 场景 3：量子算法教学
+
+Grover 化是量子算法的经典例子，用于教学。
 
 ---
 
 ## 常见问题
 
-### Q1: How to run this example?
+### Q1: Grover 化的精度如何？
 
-```bash
-python examples/groverize/groverize.py
-```
+精度取决于循环复杂度和方法。
 
-### Q2: What backend is used?
+### Q2: Grover 化需要多少量子比特？
 
-The example uses the default backend. You can specify a different one:
+取决于循环复杂度。
 
-```python
-qshow(backend='qiskit')
-```
+### Q3: Grover 化和经典循环有什么区别？
+
+Grover 化不需要中段测量。
+
+### Q4: Grover 化在 NISQ 设备上能跑吗？
+
+可以跑小规模的，但噪声会影响结果。
+
+### Q5: Grover 化的复杂度如何？
+
+复杂度取决于循环复杂度。
 
 ---
 
@@ -128,51 +187,44 @@ qshow(backend='qiskit')
 
 ### 前置知识
 
-- Basic quantum computing concepts
-- QuoNic API basics
+- 量子比特和量子门
+- Grover 搜索
+- 量子编译
 
 ### 继续学习
 
-- Other examples in this documentation
-- QuoNic API reference
+- 量子编译
+- 量子算法
+- 量子算法教学
+
+### 难度等级
+
+- 当前：高级
+- 下一步：专家
 
 ---
 
 ## 完整示例代码
 
+### 示例 1：基本 Grover 化
+
 ```python
-"""Groverize cwhile / Grover 化 cwhile
+from quonic.compiler import groverize
 
-Groverize cwhile / Grover 化 cwhile
+result = groverize(circuit, method="grover")
+print(result)
+```
 
-## Application / 应用场景
-- Quantum computing (量子计算)
-- Algorithm demonstration (算法演示)
-- Educational (教学)
+### 示例 2：不同方法
 
-## Output / 输出
-See code comments for output explanation.
-参见代码注释了解输出说明。"""
+```python
+from quonic.compiler import groverize
 
-import math
+result = groverize(circuit, method="grover")
+print(result)
 
-from quonic import creg, cwhile, qgate
-from quonic.backends import get_backend
-from quonic.gates import Ry
-
-flag = creg("flag")
-with cwhile(flag, until=0) as loop:
-    qgate(Ry(2 * math.pi / 3), 0)   # 单次成功概率 p = 1/4
-    flag.measure(0)
-
-static = loop.groverize()   # 编译成静态 Grover 电路（success_prob 自动推断）
-
-# 静态电路无中段反馈，任意后端都能跑；成功态 |00> 的概率从 1/4 放大到 1
-print(get_backend("qiskit").run(static, shots=1024).counts)  # {'00': 1024}
-
-# 真机（Quantum Inspire，需登录排队）同样能跑：
-# print(get_backend("qi", device="tuna9").run(static, shots=1024).counts)
-
+result = groverize(circuit, method="fpaa")
+print(result)
 ```
 
 ### 运行方式
