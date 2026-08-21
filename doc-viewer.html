@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QuoNic Documentation</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        doc: { bg: '#1a1b26', surface: '#1e1f2e', border: '#2a2b3d', text: '#c8cad3', dim: '#8b8fa3', accent: '#7aa2f7', accent2: '#9d7cd8', green: '#9ece6a', code: '#15161e' }
+                    },
+                    fontFamily: { sans: ['Inter', 'system-ui', 'sans-serif'], mono: ['JetBrains Mono', 'Fira Code', 'monospace'] }
+                }
+            }
+        }
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/prism.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-python.min.js"></script>
+    <style>
+        body { font-family: 'Inter', sans-serif; background: #1a1b26; color: #c8cad3; line-height: 1.8; }
+        code, pre { font-family: 'JetBrains Mono', monospace; }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #1a1b26; }
+        ::-webkit-scrollbar-thumb { background: #2a2b3d; border-radius: 3px; }
+        .markdown-body h1 { font-size: 2rem; font-weight: 700; color: white; margin-bottom: 0.5rem; }
+        .markdown-body h2 { font-size: 1.5rem; font-weight: 600; color: #7aa2f7; margin: 2rem 0 0.75rem; padding-bottom: 0.5rem; border-bottom: 1px solid #2a2b3d; }
+        .markdown-body h3 { font-size: 1.1rem; font-weight: 600; color: #9d7cd8; margin: 1.5rem 0 0.5rem; }
+        .markdown-body p { margin-bottom: 1rem; }
+        .markdown-body pre { background: #15161e; padding: 1rem; border-radius: 8px; border: 1px solid #2a2b3d; overflow-x: auto; margin: 1rem 0; }
+        .markdown-body code { background: #15161e; padding: 2px 6px; border-radius: 4px; font-size: 0.85em; color: #9ece6a; }
+        .markdown-body pre code { background: none; padding: 0; color: #c8cad3; }
+        .markdown-body table { width: 100%; border-collapse: collapse; margin: 1rem 0; }
+        .markdown-body th, .markdown-body td { padding: 0.5rem 1rem; border-bottom: 1px solid #2a2b3d; text-align: left; font-size: 0.9rem; }
+        .markdown-body th { background: #15161e; color: #7aa2f7; font-weight: 600; }
+        .markdown-body ul, .markdown-body ol { margin: 0.5rem 0 1rem 1.5rem; }
+        .markdown-body li { margin-bottom: 0.25rem; }
+        .markdown-body blockquote { border-left: 4px solid #7aa2f7; padding: 0.5rem 1rem; margin: 1rem 0; background: rgba(122,162,247,0.05); }
+        .markdown-body a { color: #7aa2f7; text-decoration: none; }
+        .markdown-body a:hover { text-decoration: underline; }
+        .markdown-body img { max-width: 100%; border-radius: 8px; }
+        .lang-badge { font-size: 0.65rem; padding: 1px 5px; border-radius: 4px; vertical-align: middle; margin-left: 4px; }
+        .lang-badge.zh { background: rgba(158,206,106,0.15); color: #9ece6a; }
+        .lang-badge.en { background: rgba(122,162,247,0.15); color: #7aa2f7; }
+        /* Active sidebar link */
+        #sidebar a.active { color: #7aa2f7 !important; background: rgba(122,162,247,0.1) !important; font-weight: 500; }
+        /* Active TOC link */
+        #toc a.active { color: #7aa2f7 !important; font-weight: 600; }
+    </style>
+</head>
+<body class="antialiased">
+
+    <!-- Nav -->
+    <header class="sticky top-0 z-50 bg-doc-bg/95 backdrop-blur border-b border-doc-border">
+        <div class="max-w-screen-2xl mx-auto px-4 h-14 flex items-center justify-between">
+            <div class="flex items-center gap-4">
+                <a href="index.html" class="text-lg font-bold text-white flex items-center gap-2">
+                    <span class="w-7 h-7 rounded-lg bg-gradient-to-tr from-blue-500 to-purple-500 flex items-center justify-center text-xs font-bold text-white">Q</span>
+                    QuoNic
+                </a>
+                <span class="text-xs bg-doc-accent/10 text-doc-accent px-2 py-0.5 rounded font-mono border border-doc-accent/20">v0.11.0</span>
+            </div>
+            <div class="flex items-center gap-4">
+                <button id="lang-toggle" onclick="toggleLang()" class="text-sm text-doc-dim hover:text-doc-accent transition-colors px-3 py-1.5 rounded-lg border border-doc-border hover:border-doc-accent flex items-center gap-1.5">
+                    <i class="fa-solid fa-globe text-xs"></i>
+                    <span id="lang-label">EN</span>
+                </button>
+                <a href="doc-viewer.html?file=docs/quickstart.md" class="text-sm text-doc-accent font-medium">Docs Home</a>
+                <a href="index.html" class="text-sm text-doc-dim hover:text-doc-accent transition-colors">Home</a>
+                <a href="https://github.com/ChrisLee0721/QuoNic" class="text-sm text-doc-dim hover:text-doc-accent transition-colors flex items-center gap-1">
+                    <i class="fa-brands fa-github"></i> GitHub
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <div class="max-w-screen-2xl mx-auto flex">
+        <!-- Sidebar (auto-generated from manifest.json) -->
+        <aside class="w-64 shrink-0 border-r border-doc-border h-[calc(100vh-3.5rem)] overflow-y-auto sticky top-14 p-4 hidden lg:block">
+            <nav class="space-y-6 text-sm" id="sidebar">
+                <div class="text-doc-dim text-xs">Loading...</div>
+            </nav>
+        </aside>
+
+        <!-- Content -->
+        <main class="flex-1 min-w-0 p-8 lg:p-12 max-w-4xl">
+            <div id="loading" class="text-doc-dim text-sm">Loading...</div>
+            <div id="lang-notice" class="hidden mb-4 px-4 py-3 rounded-lg bg-yellow-500/10 border border-yellow-500/20 text-yellow-300 text-sm">
+                <i class="fa-solid fa-circle-info mr-2"></i>
+                <span id="lang-notice-text"></span>
+            </div>
+            <div id="content" class="markdown-body" style="display:none"></div>
+        </main>
+
+        <!-- Right TOC -->
+        <aside class="w-48 shrink-0 hidden xl:block sticky top-14 h-[calc(100vh-3.5rem)] overflow-y-auto p-4">
+            <div class="text-xs font-semibold text-white uppercase tracking-wider mb-3">On this page</div>
+            <nav id="toc" class="space-y-1 text-xs"></nav>
+        </aside>
+    </div>
+
+    <script>
+        // Configure marked
+        marked.setOptions({
+            highlight: function(code, lang) { return code; },
+            breaks: true,
+            gfm: true
+        });
+
+        // --- Language system ---
+        const ZH_FILES = new Set();
+        let currentLang = localStorage.getItem('quonic-docs-lang') || 'en';
+
+        function toZhPath(file) {
+            if (file.endsWith('.md') && !file.endsWith('_zh.md')) {
+                return file.replace('.md', '_zh.md');
+            }
+            // .html files are already Chinese
+            if (file.endsWith('.html')) {
+                return file;
+            }
+            return file;
+        }
+        function toEnPath(file) {
+            return file.replace('_zh.md', '.md');
+        }
+        function hasZh(file) {
+            // .html files are always Chinese
+            if (file.endsWith('.html')) {
+                return true;
+            }
+            return ZH_FILES.has(toZhPath(file));
+        }
+
+        function applyLang() {
+            document.getElementById('lang-label').textContent = currentLang === 'en' ? 'EN' : '中文';
+            // Rebuild sidebar with language filter
+            if (typeof allFiles !== 'undefined') {
+                const filteredFiles = filterFilesByLang(allFiles, currentLang);
+                buildSidebar(filteredFiles);
+            }
+        }
+
+        function toggleLang() {
+            const prevLang = currentLang;
+            currentLang = currentLang === 'en' ? 'zh' : 'en';
+            localStorage.setItem('quonic-docs-lang', currentLang);
+
+            const p = new URLSearchParams(window.location.search);
+            const f = p.get('file');
+            if (!f) {
+                window.location.reload();
+                return;
+            }
+
+            // Try to find the same page in the other language
+            let newFile = null;
+            if (f.startsWith('docs/zh/') || f.startsWith('docs/en/')) {
+                // Already in a language folder - switch folder
+                const basePath = f.replace(/^docs\/(zh|en)\//, '');
+                const otherFolder = currentLang === 'zh' ? 'zh' : 'en';
+                const candidate = `docs/${otherFolder}/${basePath}`;
+
+                // Check if file exists
+                fetch(candidate, { method: 'HEAD' })
+                    .then(r => {
+                        if (r.ok) {
+                            window.location.search = '?file=' + candidate;
+                        } else {
+                            // File doesn't exist, go to quickstart
+                            const fallback = currentLang === 'zh' ? 'docs/zh/快速开始.md' : 'docs/en/quickstart.md';
+                            window.location.search = '?file=' + fallback;
+                        }
+                    })
+                    .catch(() => {
+                        const fallback = currentLang === 'zh' ? 'docs/zh/快速开始.md' : 'docs/en/quickstart.md';
+                        window.location.search = '?file=' + fallback;
+                    });
+            } else {
+                // Not in a language folder - go to quickstart
+                const fallback = currentLang === 'zh' ? 'docs/zh/快速开始.md' : 'docs/en/quickstart.md';
+                window.location.search = '?file=' + fallback;
+            }
+        }
+
+        function showLangNotice(f) {
+            const notice = document.getElementById('lang-notice');
+            const text = document.getElementById('lang-notice-text');
+            text.textContent = 'No English version available for this page. / 本页没有英文版本。';
+            notice.classList.remove('hidden');
+            // Auto-hide after 3 seconds
+            setTimeout(() => notice.classList.add('hidden'), 3000);
+        }
+
+        // --- Build sidebar from file list ---
+        function buildSidebar(files) {
+            const sections = {};
+            files.forEach(f => {
+                // Strip docs/zh/ or docs/en/ prefix to get the real path
+                let relPath = f.replace(/^docs\/(zh|en)\//, 'docs/').replace(/^docs\//, '');
+                const parts = relPath.split('/');
+                const section = parts.length > 1 ? parts[0] : 'Getting Started';
+                if (!sections[section]) sections[section] = [];
+                sections[section].push({ file: f, title: parts[parts.length - 1] });
+            });
+
+            const sidebar = document.getElementById('sidebar');
+            sidebar.innerHTML = '';
+
+            // Order: Getting Started first, then alphabetical
+            const order = ['Getting Started', ...Object.keys(sections).filter(s => s !== 'Getting Started').sort()];
+
+            order.forEach(section => {
+                if (!sections[section]) return;
+                const div = document.createElement('div');
+                const header = document.createElement('div');
+                header.className = 'text-xs font-semibold text-doc-dim uppercase tracking-wider mb-2';
+                header.textContent = section.replace(/_/g, ' ').replace(/-/g, ' ');
+                div.appendChild(header);
+
+                sections[section].sort((a, b) => a.title.localeCompare(b.title)).forEach(item => {
+                    const name = item.title;
+                    const baseName = name.replace(/\.(md|html)$/, '').replace(/^example_/, '').replace(/_zh$/, '');
+                    // Use Chinese title if available and in Chinese mode
+                    let title;
+                    if (currentLang === 'zh' && zhTitles[baseName]) {
+                        title = zhTitles[baseName];
+                    } else {
+                        // Format English title: capitalize words, uppercase abbreviations
+                        title = baseName.replace(/_/g, ' ').replace(/-/g, ' ')
+                            .replace(/\b\w/g, c => c.toUpperCase())
+                            .replace(/\b(ir|ml|zx|zne|qec|qft|qpe|qnn|qsvm|qgan|qgnn|qbm|qcnn|qrl|qsp|qtda|qpca|qng|qaoa|vqe|vqc|vqr|bb84|e91|hhl|ghz|viz)\b/gi, m => m.toUpperCase());
+                    }
+                    const a = document.createElement('a');
+                    a.dataset.file = item.file;
+                    a.href = `doc-viewer.html?file=${item.file}`;
+                    a.textContent = title;
+                    a.className = 'block px-3 py-1.5 rounded-lg text-doc-dim hover:text-doc-text hover:bg-doc-surface transition-colors';
+                    div.appendChild(a);
+                });
+                sidebar.appendChild(div);
+            });
+        }
+
+        let allFiles = [];
+        let zhTitles = {};
+
+        // Load Chinese title mapping
+        fetch('docs/zh/titles.json')
+            .then(r => r.json())
+            .then(data => { zhTitles = data; })
+            .catch(() => {});
+
+        // Filter files based on current language
+        function filterFilesByLang(fileList, lang) {
+            // Only show files from the appropriate language folder
+            return fileList.filter(f => {
+                // Skip zh/ and en/ folders
+                if (f.startsWith('docs/zh/') || f.startsWith('docs/en/')) {
+                    return false;
+                }
+                return true;
+            });
+        }
+
+        // Build file list from language folder
+        const langDir = currentLang === 'zh' ? 'docs/zh' : 'docs/en';
+
+        fetch(`${langDir}/files.txt`)
+            .then(r => r.text())
+            .then(text => {
+                const files = text.trim().split('\n').filter(f => f && !f.endsWith('.json') && !f.endsWith('.pdf'));
+                buildSidebar(files);
+            })
+            .catch(() => {
+                // Fallback: try root files.txt
+                fetch('docs/files.txt')
+                    .then(r => r.text())
+                    .then(text => {
+                        const files = text.trim().split('\n').filter(f => f && !f.endsWith('.json') && !f.endsWith('.pdf'));
+                        buildSidebar(files);
+                    })
+                    .catch(() => {
+                        document.getElementById('sidebar').innerHTML = '<div class="text-doc-dim text-xs">Could not load file list</div>';
+                    });
+            });
+
+        // --- Load and render document ---
+        const urlParams = new URLSearchParams(window.location.search);
+        const urlFile = urlParams.get('file');
+
+        function buildTOC() {
+            const headings = document.querySelectorAll('#content h2, #content h3');
+            const toc = document.getElementById('toc');
+            toc.innerHTML = '';
+            headings.forEach((h, i) => {
+                const id = 'heading-' + i;
+                h.id = id;
+                const link = document.createElement('a');
+                link.href = '#' + id;
+                link.textContent = h.textContent;
+                link.className = h.tagName === 'H3'
+                    ? 'block text-slate-400 hover:text-doc-accent transition-colors py-1 pl-3'
+                    : 'block text-slate-300 hover:text-doc-accent transition-colors py-1';
+                link.onclick = (e) => {
+                    e.preventDefault();
+                    h.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                };
+                toc.appendChild(link);
+            });
+
+            // Scroll-based highlighting for TOC and sidebar
+            const tocLinks = document.querySelectorAll('#toc a');
+
+            function highlightOnScroll() {
+                let current = '';
+                const scrollPos = window.scrollY + 100;
+
+                headings.forEach(h => {
+                    if (h.offsetTop <= scrollPos) {
+                        current = h.id;
+                    }
+                });
+
+                // Highlight TOC link
+                tocLinks.forEach(link => {
+                    link.classList.remove('active');
+                    if (link.getAttribute('href') === '#' + current) {
+                        link.classList.add('active');
+                    }
+                });
+            }
+
+            window.addEventListener('scroll', highlightOnScroll);
+            highlightOnScroll(); // Initial call
+        }
+
+        if (urlFile) {
+            // Determine which file to load based on language
+            let actualFile = urlFile;
+
+            // For non-language-specific paths, try language folder first
+            if (urlFile.startsWith('docs/') && !urlFile.startsWith('docs/zh/') && !urlFile.startsWith('docs/en/')) {
+                const langPath = urlFile.replace('docs/', `docs/${currentLang}/`);
+                fetch(langPath, { method: 'HEAD' })
+                    .then(r => { if (r.ok) actualFile = langPath; })
+                    .catch(() => {})
+                    .finally(() => loadDoc(actualFile));
+            } else {
+                loadDoc(actualFile);
+            }
+
+            function loadDoc(file) {
+            fetch(file)
+                .then(response => {
+                    if (!response.ok) throw new Error('File not found: ' + actualFile);
+                    return response.text();
+                })
+                .then(text => {
+                    const content = document.getElementById('content');
+                    const isHtml = urlFile.endsWith('.html');
+
+                    if (isHtml) {
+                        // HTML file: extract body content, inject directly
+                        const parser = new DOMParser();
+                        const doc = parser.parseFromString(text, 'text/html');
+                        const body = doc.querySelector('body');
+                        // Keep only the article content (skip pandoc's wrapper styles)
+                        const article = body.querySelector('article') || body;
+                        content.innerHTML = article.innerHTML;
+                    } else {
+                        // Markdown file: strip frontmatter, render with marked
+                        const md = text.replace(/^---[\s\S]*?---\n/, '');
+                        content.innerHTML = marked.parse(md);
+                    }
+
+                    content.style.display = 'block';
+                    document.getElementById('loading').style.display = 'none';
+
+                    const h1 = content.querySelector('h1');
+                    if (h1) document.title = h1.textContent + ' — QuoNic';
+
+                    // Highlight current document in sidebar
+                    document.querySelectorAll('#sidebar a').forEach(a => {
+                        a.classList.remove('active');
+                        if (a.dataset.file === urlFile || a.href.includes(urlFile)) {
+                            a.classList.add('active');
+                        }
+                    });
+
+                    // Render KaTeX math (pandoc wraps math in <span class="math display/inline">)
+                    if (typeof katex !== 'undefined') {
+                        content.querySelectorAll('span.math').forEach(el => {
+                            let tex = el.textContent.trim();
+                            // Strip pandoc's delimiters
+                            if (tex.startsWith('\\[') && tex.endsWith('\\]')) tex = tex.slice(2, -2);
+                            if (tex.startsWith('\\(') && tex.endsWith('\\)')) tex = tex.slice(2, -2);
+                            // Convert LaTeX environments to KaTeX-compatible ones
+                            tex = tex.replace(/\\begin\{equation\}/g, '').replace(/\\end\{equation\}/g, '');
+                            tex = tex.replace(/\\begin\{align\}/g, '\\begin{aligned}').replace(/\\end\{align\}/g, '\\end{aligned}');
+                            tex = tex.replace(/\\begin\{align\*\}/g, '\\begin{aligned}').replace(/\\end\{align\*\}/g, '\\end{aligned}');
+                            tex = tex.replace(/\\begin\{eqnarray\}/g, '\\begin{aligned}').replace(/\\end\{eqnarray\}/g, '\\end{aligned}');
+                            // Decode HTML entities (pandoc encodes & as &amp; etc.)
+                            tex = tex.replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"');
+                            tex = tex.trim();
+                            const display = el.classList.contains('display');
+                            try {
+                                katex.render(tex, el, { displayMode: display, throwOnError: false });
+                            } catch(e) {
+                                console.warn('KaTeX error:', e);
+                            }
+                        });
+                    }
+
+                    // Syntax highlighting for code blocks
+                    if (typeof Prism !== 'undefined') {
+                        content.querySelectorAll('pre code, pre').forEach(el => {
+                            el.classList.add('language-python');
+                        });
+                        Prism.highlightAllUnder(content);
+                    }
+
+                    buildTOC();
+                })
+                .catch(err => {
+                    document.getElementById('loading').textContent = 'Error loading document: ' + err.message;
+                });
+            } // end loadDoc
+        } else {
+            document.getElementById('loading').innerHTML = 'Select a document from the sidebar to get started.<br><br><a href="doc-viewer.html?file=docs/quickstart.md" style="color:#7aa2f7">← Back to Docs Home</a>';
+        }
+    </script>
+</body>
+</html>
