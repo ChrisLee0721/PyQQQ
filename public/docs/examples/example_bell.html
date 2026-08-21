@@ -173,24 +173,7 @@
       vertical-align: middle;
     }
   </style>
-  <script defer=""
-  src="https://cdn.jsdelivr.net/npm/katex@latest/dist/katex.min.js"></script>
-  <script>document.addEventListener("DOMContentLoaded", function () {
- var mathElements = document.getElementsByClassName("math");
- var macros = [];
- for (var i = 0; i < mathElements.length; i++) {
-  var texText = mathElements[i].firstChild;
-  if (mathElements[i].tagName == "SPAN") {
-   katex.render(texText.data, mathElements[i], {
-    displayMode: mathElements[i].classList.contains('display'),
-    throwOnError: false,
-    macros: macros,
-    fleqn: false
-   });
-}}});
-  </script>
-  <link rel="stylesheet"
-  href="https://cdn.jsdelivr.net/npm/katex@latest/dist/katex.min.css" />
+  <script defer="" src="" type="text/javascript"></script>
 </head>
 <body>
 <header id="title-block-header">
@@ -242,49 +225,49 @@ alt="image" /></p>
 </div>
 <h2 id="数学推导">数学推导</h2>
 <p><strong>Step 1: 初始状态</strong></p>
-<p>两个量子比特都从 <span class="math inline">|0\rangle</span> 开始：
-<span class="math display">\begin{equation}
+<p>两个量子比特都从 <span class="math inline">\(|0\rangle\)</span>
+开始： <span class="math display">\[\begin{equation}
 |\psi_0\rangle = |00\rangle
-\end{equation}</span></p>
+\end{equation}\]</span></p>
 <p><strong>Step 2: Hadamard 门</strong></p>
-<p>对 <span class="math inline">q_0</span> 施加 <span
-class="math inline">H</span> 门： <span
-class="math display">\begin{equation}
+<p>对 <span class="math inline">\(q_0\)</span> 施加 <span
+class="math inline">\(H\)</span> 门： <span
+class="math display">\[\begin{equation}
 H|0\rangle = \frac{|0\rangle + |1\rangle}{\sqrt{2}}
-\end{equation}</span></p>
-<p>所以状态变为： <span class="math display">\begin{equation}
+\end{equation}\]</span></p>
+<p>所以状态变为： <span class="math display">\[\begin{equation}
 |\psi_1\rangle = \frac{|0\rangle + |1\rangle}{\sqrt{2}} \otimes
 |0\rangle = \frac{|00\rangle + |10\rangle}{\sqrt{2}}
-\end{equation}</span></p>
+\end{equation}\]</span></p>
 <p><strong>Step 3: CNOT 门</strong></p>
 <p>CNOT 门的规则：如果控制比特是 <span
-class="math inline">|1\rangle</span>，就翻转目标比特。 <span
-class="math display">\begin{align}
+class="math inline">\(|1\rangle\)</span>，就翻转目标比特。 <span
+class="math display">\[\begin{align}
 \text{CNOT}|00\rangle &amp;= |00\rangle \\
 \text{CNOT}|10\rangle &amp;= |11\rangle
-\end{align}</span></p>
-<p>所以最终状态： <span class="math display">\begin{equation}
+\end{align}\]</span></p>
+<p>所以最终状态： <span class="math display">\[\begin{equation}
 |\psi_2\rangle = \frac{|00\rangle + |11\rangle}{\sqrt{2}}
-\end{equation}</span></p>
+\end{equation}\]</span></p>
 <p><strong>Step 4: 测量概率</strong></p>
 <p>测量时：</p>
 <ul>
-<li><p><span class="math inline">P(|00\rangle) = |1/\sqrt{2}|^2 =
-0.5</span></p></li>
-<li><p><span class="math inline">P(|11\rangle) = |1/\sqrt{2}|^2 =
-0.5</span></p></li>
-<li><p><span class="math inline">P(|01\rangle) = 0</span></p></li>
-<li><p><span class="math inline">P(|10\rangle) = 0</span></p></li>
+<li><p><span class="math inline">\(P(|00\rangle) = |1/\sqrt{2}|^2 =
+0.5\)</span></p></li>
+<li><p><span class="math inline">\(P(|11\rangle) = |1/\sqrt{2}|^2 =
+0.5\)</span></p></li>
+<li><p><span class="math inline">\(P(|01\rangle) = 0\)</span></p></li>
+<li><p><span class="math inline">\(P(|10\rangle) = 0\)</span></p></li>
 </ul>
 <h2 id="几何解释">几何解释</h2>
 <p>在 Bloch 球上：</p>
 <ul>
-<li><p><span class="math inline">|0\rangle</span> 在北极</p></li>
-<li><p><span class="math inline">|1\rangle</span> 在南极</p></li>
-<li><p><span class="math inline">H</span> 门把 <span
-class="math inline">|0\rangle</span> 旋转到赤道上的 <span
-class="math inline">|+\rangle =
-(|0\rangle+|1\rangle)/\sqrt{2}</span></p></li>
+<li><p><span class="math inline">\(|0\rangle\)</span> 在北极</p></li>
+<li><p><span class="math inline">\(|1\rangle\)</span> 在南极</p></li>
+<li><p><span class="math inline">\(H\)</span> 门把 <span
+class="math inline">\(|0\rangle\)</span> 旋转到赤道上的 <span
+class="math inline">\(|+\rangle =
+(|0\rangle+|1\rangle)/\sqrt{2}\)</span></p></li>
 </ul>
 <p>CNOT 门创建纠缠后，两个量子比特的状态不再能用单个 Bloch
 球描述——它们成为一个整体，这就是纠缠的几何意义。</p>
@@ -320,8 +303,9 @@ qshow()           # 自动选择最佳后端
 <tr>
 <td style="text-align: left;"><code>qgate(H, 0)</code></td>
 <td style="text-align: left;">H: Hadamard 门, 0: 量子比特索引</td>
-<td style="text-align: left;">对 <span class="math inline">q_0</span>
-施加 <span class="math inline">H</span> 门</td>
+<td style="text-align: left;">对 <span
+class="math inline">\(q_0\)</span> 施加 <span
+class="math inline">\(H\)</span> 门</td>
 </tr>
 <tr>
 <td style="text-align: left;"><code>qgate(CX, 0, 1)</code></td>
@@ -401,11 +385,11 @@ qshow(noise=0.20)</code></pre>
 <h2 id="如何验证我制备的是-bell-态">如何验证我制备的是 Bell 态？</h2>
 <p>检查测量结果：</p>
 <ol>
-<li><p>只有 <span class="math inline">|00\rangle</span> 和 <span
-class="math inline">|11\rangle</span></p></li>
+<li><p>只有 <span class="math inline">\(|00\rangle\)</span> 和 <span
+class="math inline">\(|11\rangle\)</span></p></li>
 <li><p>两者概率接近 50%</p></li>
-<li><p>没有 <span class="math inline">|01\rangle</span> 和 <span
-class="math inline">|10\rangle</span></p></li>
+<li><p>没有 <span class="math inline">\(|01\rangle\)</span> 和 <span
+class="math inline">\(|10\rangle\)</span></p></li>
 </ol>
 <p>如果满足这三个条件，就是 Bell 态。</p>
 <h2 id="bell-态违反-bell-不等式是什么意思">Bell 态违反 Bell
@@ -415,8 +399,9 @@ class="math inline">|10\rangle</span></p></li>
 <h1 id="学习路径">学习路径</h1>
 <h2 id="前置知识">前置知识</h2>
 <ul>
-<li><p>量子比特的基本概念（<span class="math inline">|0\rangle</span> 和
-<span class="math inline">|1\rangle</span>）</p></li>
+<li><p>量子比特的基本概念（<span
+class="math inline">\(|0\rangle\)</span> 和 <span
+class="math inline">\(|1\rangle\)</span>）</p></li>
 <li><p>叠加态和 Hadamard 门</p></li>
 <li><p>CNOT 门的作用</p></li>
 </ul>
