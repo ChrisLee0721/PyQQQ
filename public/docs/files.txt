@@ -21,7 +21,6 @@ docs/examples/example_amplitude_estimation.md
 docs/examples/example_basic_gates.md
 docs/examples/example_bb84.html
 docs/examples/example_bell.html
-docs/examples/example_bell.md
 docs/examples/example_bernstein_vazirani.html
 docs/examples/example_bit_flip_code.md
 docs/examples/example_cif.md
