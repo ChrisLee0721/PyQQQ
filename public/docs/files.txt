@@ -19,9 +19,11 @@ docs/examples.md
 docs/examples/example_amplitude_amplification.md
 docs/examples/example_amplitude_estimation.md
 docs/examples/example_basic_gates.md
+docs/examples/example_bb84.html
 docs/examples/example_bb84.md
 docs/examples/example_bell.html
 docs/examples/example_bell.md
+docs/examples/example_bernstein_vazirani.html
 docs/examples/example_bernstein_vazirani.md
 docs/examples/example_bit_flip_code.md
 docs/examples/example_cif.md
@@ -32,6 +34,7 @@ docs/examples/example_coupling_map.md
 docs/examples/example_creg_multi.md
 docs/examples/example_cwhile.md
 docs/examples/example_decompose.md
+docs/examples/example_deutsch_jozsa.html
 docs/examples/example_deutsch_jozsa.md
 docs/examples/example_diffusion.md
 docs/examples/example_discrete_log.md
@@ -42,8 +45,10 @@ docs/examples/example_elliptic_curve.md
 docs/examples/example_error_mitigation.md
 docs/examples/example_from_qiskit_nature.md
 docs/examples/example_ft_gate.md
+docs/examples/example_ghz.html
 docs/examples/example_ghz.md
 docs/examples/example_gpu_demo.md
+docs/examples/example_grover.html
 docs/examples/example_grover.md
 docs/examples/example_groverize.md
 docs/examples/example_hadamard_test.md
@@ -66,6 +71,7 @@ docs/examples/example_qaoa_mis.md
 docs/examples/example_qaoa_tsp.md
 docs/examples/example_qbm.md
 docs/examples/example_qcnn.md
+docs/examples/example_qft.html
 docs/examples/example_qft.md
 docs/examples/example_qgan.md
 docs/examples/example_qgnn.md
@@ -75,6 +81,7 @@ docs/examples/example_qint.md
 docs/examples/example_qng.md
 docs/examples/example_qnn.md
 docs/examples/example_qpca.md
+docs/examples/example_qpe.html
 docs/examples/example_qpe.md
 docs/examples/example_qrl.md
 docs/examples/example_qsp.md
@@ -97,13 +104,16 @@ docs/examples/example_rejection_sampling.md
 docs/examples/example_schedule.md
 docs/examples/example_shor.md
 docs/examples/example_shor_code.md
+docs/examples/example_simon.html
 docs/examples/example_simon.md
 docs/examples/example_stabilizer.md
 docs/examples/example_steane_code.md
+docs/examples/example_superdense_coding.html
 docs/examples/example_superdense_coding.md
 docs/examples/example_surface_code.md
 docs/examples/example_swap_test.md
 docs/examples/example_syndrome.md
+docs/examples/example_teleportation.html
 docs/examples/example_teleportation.md
 docs/examples/example_trotter.md
 docs/examples/example_vqc.md

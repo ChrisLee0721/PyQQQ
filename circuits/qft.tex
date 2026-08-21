@@ -1,0 +1,12 @@
+\documentclass[border=5mm]{standalone}
+\usepackage{tikz}
+\usetikzlibrary{quantikz2}
+\usepackage{xcolor}
+\pagecolor{white}
+\begin{document}
+\begin{quantikz}
+  \lstick{$|x_0\rangle$} & \gate{H} & \gate{R_2} & \gate{R_3} & \qw \\
+  \lstick{$|x_1\rangle$} & \qw      & \ctrl{-1}  & \gate{H}   & \gate{R_2} \\
+  \lstick{$|x_2\rangle$} & \qw      & \qw        & \ctrl{-2}  & \ctrl{-1}
+\end{quantikz}
+\end{document}

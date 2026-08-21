@@ -1,0 +1,11 @@
+\documentclass[border=5mm]{standalone}
+\usepackage{tikz}
+\usetikzlibrary{quantikz2}
+\usepackage{xcolor}
+\pagecolor{white}
+\begin{document}
+\begin{quantikz}
+  \lstick{$|0\rangle^{\otimes n}$} & \gate{H^{\otimes n}} & \gate[wires=2]{U_f} & \gate{H^{\otimes n}} & \meter{} \\
+  \lstick{$|0\rangle^{\otimes n}$} & \qw                  &                     & \qw                  & \qw
+\end{quantikz}
+\end{document}

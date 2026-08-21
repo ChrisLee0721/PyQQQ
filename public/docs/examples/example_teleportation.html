@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc 3.10.2" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <meta name="author" content="QuoNic" />
+  <title>teleportation</title>
+  <style>
+    /* Default styles provided by pandoc.
+    ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+    */
+    html {
+      color: #1a1a1a;
+      background-color: #fdfdfd;
+    }
+    body {
+      margin: 0 auto;
+      max-width: 36em;
+      padding-left: 50px;
+      padding-right: 50px;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      hyphens: auto;
+      overflow-wrap: break-word;
+      text-rendering: optimizeLegibility;
+      font-kerning: normal;
+    }
+    @media (max-width: 600px) {
+      body {
+        font-size: 0.9em;
+        padding: 12px;
+      }
+      h1 {
+        font-size: 1.8em;
+      }
+    }
+    @media print {
+      html {
+        background-color: white;
+      }
+      body {
+        background-color: transparent;
+        color: black;
+      }
+      p, h2, h3 {
+        orphans: 3;
+        widows: 3;
+      }
+      h2, h3, h4 {
+        page-break-after: avoid;
+      }
+    }
+    p {
+      margin: 1em 0;
+    }
+    a {
+      color: #1a1a1a;
+    }
+    a:visited {
+      color: #1a1a1a;
+    }
+    img {
+      max-width: 100%;
+    }
+    svg {
+      height: auto;
+      max-width: 100%;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 1.4em;
+    }
+    h5, h6 {
+      font-size: 1em;
+      font-style: italic;
+    }
+    h6 {
+      font-weight: normal;
+    }
+    ol, ul {
+      padding-left: 1.7em;
+      margin-top: 1em;
+    }
+    li > ol, li > ul {
+      margin-top: 0;
+    }
+    blockquote {
+      margin: 1em 0 1em 1.7em;
+      padding-left: 1em;
+      border-left: 2px solid #e6e6e6;
+      color: #606060;
+    }
+    code {
+      white-space: pre-wrap;
+      font-family: Menlo, Monaco, Consolas, 'Lucida Console', monospace;
+      font-size: 85%;
+      margin: 0;
+      hyphens: manual;
+    }
+    pre {
+      margin: 1em 0;
+      overflow: auto;
+    }
+    pre code {
+      padding: 0;
+      overflow: visible;
+      overflow-wrap: normal;
+    }
+    .sourceCode {
+     background-color: transparent;
+     overflow: visible;
+    }
+    hr {
+      border: none;
+      border-top: 1px solid #1a1a1a;
+      height: 1px;
+      margin: 1em 0;
+    }
+    table {
+      margin: 1em 0;
+      border-collapse: collapse;
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+    table caption {
+      margin-bottom: 0.75em;
+    }
+    tbody {
+      margin-top: 0.5em;
+      border-top: 1px solid #1a1a1a;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    th {
+      border-top: 1px solid #1a1a1a;
+      padding: 0.25em 0.5em 0.25em 0.5em;
+    }
+    td {
+      padding: 0.125em 0.5em 0.25em 0.5em;
+    }
+    header {
+      margin-bottom: 4em;
+      text-align: center;
+    }
+    #TOC li {
+      list-style: none;
+    }
+    #TOC ul {
+      padding-left: 1.3em;
+    }
+    #TOC > ul {
+      padding-left: 0;
+    }
+    #TOC a:not(:hover) {
+      text-decoration: none;
+    }
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: 1.5em;}
+    div.column{flex: auto;}
+    @media screen {
+    div.columns{gap: min(4vw, 1.5em);}
+    div.column{overflow-x: auto;}
+    }
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+  </style>
+  <script defer="" src="" type="text/javascript"></script>
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">teleportation</h1>
+<p class="author">QuoNic</p>
+</header>
+<div class="center">
+<p><strong>Communication / 通信</strong> | 难度：中级 | 预计时间：10
+分钟</p>
+</div>
+<h1 id="为什么需要">为什么需要？</h1>
+<p>量子隐形传态可以在不直接传输量子比特的情况下传输量子态。这是量子通信的核心协议。</p>
+<h2 id="经典局限">经典局限</h2>
+<ul>
+<li><p>经典通信无法传输量子态（不可克隆定理禁止复制未知量子态）</p></li>
+<li><p>直接传输量子比特容易受噪声和退相干影响</p></li>
+</ul>
+<h2 id="量子优势">量子优势</h2>
+<ul>
+<li><p>使用纠缠和经典通信传输量子态，不违反不可克隆定理（原始态被销毁）</p></li>
+<li><p>保真度可以接近 100%</p></li>
+<li><p>是量子网络和分布式量子计算的基础</p></li>
+</ul>
+<h2 id="实际应用">实际应用</h2>
+<ul>
+<li><p>量子网络（量子互联网的基础协议）</p></li>
+<li><p>分布式量子计算（在不同量子处理器之间传输态）</p></li>
+<li><p>量子密钥分发（E91 协议的基础）</p></li>
+</ul>
+<h1 id="快速上手">快速上手</h1>
+<pre style="python"><code>import math
+from quonic import qgate, qshow
+from quonic.gates import CX, CZ, H, Ry
+
+# Prepare state to teleport
+qgate(Ry(math.pi / 3), 0)
+
+# Create Bell pair
+qgate(H, 1)
+qgate(CX, 1, 2)
+
+# Alice&#39;s operations
+qgate(CX, 0, 1)
+qgate(H, 0)
+
+# Bob&#39;s corrections
+qgate(CX, 1, 2)
+qgate(CX, 0, 2)
+qgate(CZ, 0, 2)
+
+qshow()</code></pre>
+<p><strong>预期输出</strong>：</p>
+<pre><code>backend: native | shots: 1024
+Result:
+  |000&gt;    256  ( 25.0%)  ##########
+  |010&gt;    256  ( 25.0%)  ##########
+  |100&gt;    256  ( 25.0%)  ##########
+  |110&gt;    256  ( 25.0%)  ##########</code></pre>
+<h1 id="原理详解">原理详解</h1>
+<h2 id="电路图">电路图</h2>
+<div class="center">
+<p><img src="../../images/teleportation_circuit.svg" style="width:70.0%"
+alt="image" /></p>
+</div>
+<h2 id="数学推导">数学推导</h2>
+<p><strong>Step 1: 准备态</strong></p>
+<p>Alice 有 <span class="math inline">\(q_0\)</span> 处于态 <span
+class="math inline">\(|\psi\rangle = \cos(\pi/6)|0\rangle +
+\sin(\pi/6)|1\rangle\)</span></p>
+<p><strong>Step 2: 创建 Bell 对</strong></p>
+<p>Alice 和 Bob 共享 Bell 对： <span
+class="math display">\[\begin{equation}
+|\Phi^+\rangle_{12} = \frac{|00\rangle + |11\rangle}{\sqrt{2}}
+\end{equation}\]</span></p>
+<p><strong>Step 3: Alice 的操作</strong></p>
+<p>Alice 对 <span class="math inline">\(q_0\)</span> 和 <span
+class="math inline">\(q_1\)</span> 执行 CNOT 和 <span
+class="math inline">\(H\)</span> 门。</p>
+<p><strong>Step 4: 测量</strong></p>
+<p>Alice 测量 <span class="math inline">\(q_0\)</span> 和 <span
+class="math inline">\(q_1\)</span>，得到 2 个经典比特 <span
+class="math inline">\((a, b)\)</span>，有 4 种可能：</p>
+<ul>
+<li><p><span class="math inline">\((0,0)\)</span>: <span
+class="math inline">\(q_2 = |\psi\rangle\)</span>（无需校正）</p></li>
+<li><p><span class="math inline">\((0,1)\)</span>: <span
+class="math inline">\(q_2 = X|\psi\rangle\)</span>（需施加 <span
+class="math inline">\(X\)</span> 门）</p></li>
+<li><p><span class="math inline">\((1,0)\)</span>: <span
+class="math inline">\(q_2 = Z|\psi\rangle\)</span>（需施加 <span
+class="math inline">\(Z\)</span> 门）</p></li>
+<li><p><span class="math inline">\((1,1)\)</span>: <span
+class="math inline">\(q_2 = XZ|\psi\rangle\)</span>（需施加 <span
+class="math inline">\(X\)</span> 和 <span
+class="math inline">\(Z\)</span> 门）</p></li>
+</ul>
+<p><strong>Step 5: Bob 的校正</strong></p>
+<p>Bob 根据 Alice 的测量结果校正 <span
+class="math inline">\(q_2\)</span>。</p>
+<p><strong>Step 6: 结果</strong></p>
+<p><span class="math inline">\(q_2\)</span> 现在处于态 <span
+class="math inline">\(|\psi\rangle\)</span>，完成了量子态的传输。</p>
+<h2 id="几何解释">几何解释</h2>
+<p>量子隐形传态的几何解释：</p>
+<ol>
+<li><p>Alice 有 <span
+class="math inline">\(|\psi\rangle\)</span>，想传给 Bob</p></li>
+<li><p>Alice 和 Bob 共享 Bell 对</p></li>
+<li><p>Alice 执行 Bell 测量</p></li>
+<li><p>Bob 根据结果校正</p></li>
+<li><p>Bob 得到 <span
+class="math inline">\(|\psi\rangle\)</span></p></li>
+</ol>
+<h1 id="代码详解">代码详解</h1>
+<pre style="python"><code>import math
+from quonic import qgate, qshow
+from quonic.gates import CX, CZ, H, Ry
+
+# Step 1: Prepare state to teleport
+qgate(Ry(math.pi / 3), 0)  # q0 = cos(pi/6)|0&gt; + sin(pi/6)|1&gt;
+
+# Step 2: Create Bell pair
+qgate(H, 1)      # q1 -&gt; (|0&gt;+|1&gt;)/sqrt(2)
+qgate(CX, 1, 2)  # q1,q2 -&gt; (|00&gt;+|11&gt;)/sqrt(2)
+
+# Step 3: Alice&#39;s operations
+qgate(CX, 0, 1)  # CNOT(q0, q1)
+qgate(H, 0)       # H(q0)
+
+# Step 4: Bob&#39;s corrections
+qgate(CX, 1, 2)  # CNOT(q1, q2)
+qgate(CX, 0, 2)  # CNOT(q0, q2)
+qgate(CZ, 0, 2)  # CZ(q0, q2)
+
+qshow()</code></pre>
+<h1 id="进阶用法">进阶用法</h1>
+<h2 id="场景-1传输不同态">场景 1：传输不同态</h2>
+<pre style="python"><code># Teleport |0&gt;
+qgate(Ry(0), 0)
+# ... teleportation protocol ...
+
+# Teleport |1&gt;
+qgate(Ry(math.pi), 0)
+# ... teleportation protocol ...
+
+# Teleport |+&gt;
+qgate(H, 0)
+# ... teleportation protocol ...</code></pre>
+<h2 id="场景-2噪声下的隐形传态">场景 2：噪声下的隐形传态</h2>
+<pre style="python"><code># No noise
+qshow(noise=0)
+
+# 5% noise
+qshow(noise=0.05)
+
+# 20% noise
+qshow(noise=0.20)</code></pre>
+<h1 id="适用场景">适用场景</h1>
+<h2 id="量子网络">量子网络</h2>
+<p>量子隐形传态是量子网络的基础，可以在节点之间传输量子态。</p>
+<h2 id="分布式量子计算">分布式量子计算</h2>
+<p>在分布式量子计算中，隐形传态用于在不同量子处理器之间传输量子态。</p>
+<h2 id="量子密钥分发">量子密钥分发</h2>
+<p>隐形传态可以用于量子密钥分发，实现安全的密钥传输。</p>
+<h1 id="常见问题">常见问题</h1>
+<h2 id="隐形传态能超光速通信吗">隐形传态能超光速通信吗？</h2>
+<p>不能。隐形传态需要经典通信来传输测量结果，经典通信受光速限制。</p>
+<h2
+id="隐形传态会违反不可克隆定理吗">隐形传态会违反不可克隆定理吗？</h2>
+<p>不会。隐形传态会销毁原始态，所以不违反不可克隆定理。</p>
+<h2 id="隐形传态需要多少量子比特">隐形传态需要多少量子比特？</h2>
+<p>需要 3 个量子比特：1 个要传输的态 + 2 个 Bell 对。</p>
+<h1 id="学习路径">学习路径</h1>
+<h2 id="前置知识">前置知识</h2>
+<ul>
+<li><p>Bell 态（2 量子比特纠缠）</p></li>
+<li><p>CNOT 门和 Hadamard 门</p></li>
+<li><p>量子测量</p></li>
+</ul>
+<h2 id="继续学习">继续学习</h2>
+<ul>
+<li><p>超密编码（用 1 个量子比特传输 2 个经典比特）</p></li>
+<li><p>量子中继（长距离量子通信）</p></li>
+<li><p>量子网络（量子互联网）</p></li>
+</ul>
+<h1 id="完整示例代码">完整示例代码</h1>
+<h2 id="示例-1基本隐形传态">示例 1：基本隐形传态</h2>
+<pre style="python"><code>import math
+from quonic import qgate, qshow
+from quonic.gates import CX, CZ, H, Ry
+
+qgate(Ry(math.pi / 3), 0)
+qgate(H, 1)
+qgate(CX, 1, 2)
+qgate(CX, 0, 1)
+qgate(H, 0)
+qgate(CX, 1, 2)
+qgate(CX, 0, 2)
+qgate(CZ, 0, 2)
+qshow()</code></pre>
+</body>
+</html>

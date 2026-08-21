@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc 3.10.2" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <meta name="author" content="QuoNic" />
+  <title>grover</title>
+  <style>
+    /* Default styles provided by pandoc.
+    ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+    */
+    html {
+      color: #1a1a1a;
+      background-color: #fdfdfd;
+    }
+    body {
+      margin: 0 auto;
+      max-width: 36em;
+      padding-left: 50px;
+      padding-right: 50px;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      hyphens: auto;
+      overflow-wrap: break-word;
+      text-rendering: optimizeLegibility;
+      font-kerning: normal;
+    }
+    @media (max-width: 600px) {
+      body {
+        font-size: 0.9em;
+        padding: 12px;
+      }
+      h1 {
+        font-size: 1.8em;
+      }
+    }
+    @media print {
+      html {
+        background-color: white;
+      }
+      body {
+        background-color: transparent;
+        color: black;
+      }
+      p, h2, h3 {
+        orphans: 3;
+        widows: 3;
+      }
+      h2, h3, h4 {
+        page-break-after: avoid;
+      }
+    }
+    p {
+      margin: 1em 0;
+    }
+    a {
+      color: #1a1a1a;
+    }
+    a:visited {
+      color: #1a1a1a;
+    }
+    img {
+      max-width: 100%;
+    }
+    svg {
+      height: auto;
+      max-width: 100%;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 1.4em;
+    }
+    h5, h6 {
+      font-size: 1em;
+      font-style: italic;
+    }
+    h6 {
+      font-weight: normal;
+    }
+    ol, ul {
+      padding-left: 1.7em;
+      margin-top: 1em;
+    }
+    li > ol, li > ul {
+      margin-top: 0;
+    }
+    blockquote {
+      margin: 1em 0 1em 1.7em;
+      padding-left: 1em;
+      border-left: 2px solid #e6e6e6;
+      color: #606060;
+    }
+    code {
+      white-space: pre-wrap;
+      font-family: Menlo, Monaco, Consolas, 'Lucida Console', monospace;
+      font-size: 85%;
+      margin: 0;
+      hyphens: manual;
+    }
+    pre {
+      margin: 1em 0;
+      overflow: auto;
+    }
+    pre code {
+      padding: 0;
+      overflow: visible;
+      overflow-wrap: normal;
+    }
+    .sourceCode {
+     background-color: transparent;
+     overflow: visible;
+    }
+    hr {
+      border: none;
+      border-top: 1px solid #1a1a1a;
+      height: 1px;
+      margin: 1em 0;
+    }
+    table {
+      margin: 1em 0;
+      border-collapse: collapse;
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+    table caption {
+      margin-bottom: 0.75em;
+    }
+    tbody {
+      margin-top: 0.5em;
+      border-top: 1px solid #1a1a1a;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    th {
+      border-top: 1px solid #1a1a1a;
+      padding: 0.25em 0.5em 0.25em 0.5em;
+    }
+    td {
+      padding: 0.125em 0.5em 0.25em 0.5em;
+    }
+    header {
+      margin-bottom: 4em;
+      text-align: center;
+    }
+    #TOC li {
+      list-style: none;
+    }
+    #TOC ul {
+      padding-left: 1.3em;
+    }
+    #TOC > ul {
+      padding-left: 0;
+    }
+    #TOC a:not(:hover) {
+      text-decoration: none;
+    }
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: 1.5em;}
+    div.column{flex: auto;}
+    @media screen {
+    div.columns{gap: min(4vw, 1.5em);}
+    div.column{overflow-x: auto;}
+    }
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+  </style>
+  <script defer="" src="" type="text/javascript"></script>
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">grover</h1>
+<p class="author">QuoNic</p>
+</header>
+<div class="center">
+<p><strong>Algorithms / 算法</strong> | 难度：中级 | 预计时间：10
+分钟</p>
+</div>
+<h1 id="为什么需要">为什么需要？</h1>
+<p>在无序数据库中查找目标，经典算法需要 <span
+class="math inline">\(O(N)\)</span> 次查询，Grover 算法只需要 <span
+class="math inline">\(O(\sqrt{N})\)</span> 次。</p>
+<h2 id="经典局限">经典局限</h2>
+<ul>
+<li><p>经典搜索：最坏情况需要遍历所有 <span
+class="math inline">\(N\)</span> 个元素</p></li>
+<li><p>对于 <span class="math inline">\(N=10^6\)</span>，经典需要 <span
+class="math inline">\(10^6\)</span> 次，量子只需要 <span
+class="math inline">\(10^3\)</span> 次</p></li>
+</ul>
+<h2 id="量子优势">量子优势</h2>
+<ul>
+<li><p>二次加速：<span class="math inline">\(O(\sqrt{N})\)</span> vs
+<span class="math inline">\(O(N)\)</span></p></li>
+<li><p>对于大规模搜索问题，加速效果显著</p></li>
+<li><p>是许多量子算法的基础（振幅放大、量子计数）</p></li>
+</ul>
+<h2 id="实际应用">实际应用</h2>
+<ul>
+<li><p>数据库搜索</p></li>
+<li><p>密码学（搜索密钥空间）</p></li>
+<li><p>优化问题（寻找最优解）</p></li>
+<li><p>SAT 求解</p></li>
+</ul>
+<h1 id="快速上手">快速上手</h1>
+<pre style="python"><code>from quonic.algorithms import grover
+
+# Search for |11&gt; in 2-qubit space
+result = grover(&quot;11&quot;, 2, shots=1024)
+print(result.counts)</code></pre>
+<p><strong>预期输出</strong>：</p>
+<pre><code>{&#39;11&#39;: 1008, &#39;00&#39;: 6, &#39;01&#39;: 5, &#39;10&#39;: 5}</code></pre>
+<h1 id="原理详解">原理详解</h1>
+<h2 id="电路图">电路图</h2>
+<div class="center">
+<p><img src="../../images/grover_circuit.svg" style="width:60.0%"
+alt="image" /></p>
+</div>
+<h2 id="数学推导">数学推导</h2>
+<p><strong>Step 1: 初始化</strong></p>
+<p>对所有量子比特施加 <span class="math inline">\(H\)</span>
+门，创建均匀叠加态： <span class="math display">\[\begin{equation}
+|\psi_0\rangle = \frac{|00\rangle + |01\rangle + |10\rangle +
+|11\rangle}{2}
+\end{equation}\]</span></p>
+<p><strong>Step 2: Oracle 标记</strong></p>
+<p>Oracle 翻转目标态 <span class="math inline">\(|11\rangle\)</span>
+的相位： <span class="math display">\[\begin{equation}
+|\psi_1\rangle = \frac{|00\rangle + |01\rangle + |10\rangle -
+|11\rangle}{2}
+\end{equation}\]</span></p>
+<p><strong>Step 3: Diffusion 算子</strong></p>
+<p>Diffusion 算子关于平均振幅反射： <span
+class="math display">\[\begin{equation}
+\text{avg} = \frac{1/4 + 1/4 + 1/4 - 1/4}{4} = \frac{1}{8}
+\end{equation}\]</span></p>
+<p>反射后：<span class="math inline">\(|11\rangle\)</span>
+的振幅被放大。</p>
+<p><strong>Step 4: 迭代</strong></p>
+<p>重复 Oracle + Diffusion，每次迭代都放大目标态的振幅。</p>
+<p>最优迭代次数 <span class="math inline">\(\approx
+\pi\sqrt{N}/4\)</span>，测量后目标态概率 <span
+class="math inline">\(\approx 100\%\)</span>。</p>
+<h2 id="几何解释">几何解释</h2>
+<p>Grover 算法的几何解释：</p>
+<ol>
+<li><p>初始态在均匀叠加态空间中</p></li>
+<li><p>Oracle 标记目标态，翻转其相位</p></li>
+<li><p>Diffusion 关于平均振幅反射</p></li>
+<li><p>每次迭代，目标态的振幅被放大</p></li>
+<li><p>经过 <span class="math inline">\(\sim\sqrt{N}\)</span>
+次迭代，目标态概率接近 100%</p></li>
+</ol>
+<h1 id="代码详解">代码详解</h1>
+<pre style="python"><code>from quonic.algorithms import grover
+
+# grover(target, n_qubits, shots)
+# target: target bit string
+# n_qubits: number of qubits
+# shots: number of measurements
+result = grover(&quot;11&quot;, 2, shots=1024)
+
+# result.counts: measurement statistics
+print(result.counts)</code></pre>
+<h1 id="进阶用法">进阶用法</h1>
+<h2 id="场景-1多量子比特搜索">场景 1：多量子比特搜索</h2>
+<pre style="python"><code># Search for |101&gt; in 3-qubit space
+result = grover(&quot;101&quot;, 3, shots=1024)
+print(result.counts)</code></pre>
+<h2 id="场景-2多目标搜索">场景 2：多目标搜索</h2>
+<pre style="python"><code># Search for multiple targets
+from quonic.algorithms import grover_multi
+result = grover_multi([&quot;00&quot;, &quot;11&quot;], 2, shots=1024)
+print(result.counts)</code></pre>
+<h2 id="场景-3grover-搜索用于优化">场景 3：Grover 搜索用于优化</h2>
+<pre style="python"><code># Grover for optimization
+# Find optimal solution in 4 options
+result = grover(&quot;11&quot;, 2, shots=1024)
+# |11&gt; corresponds to optimal solution</code></pre>
+<h1 id="适用场景">适用场景</h1>
+<h2 id="数据库搜索">数据库搜索</h2>
+<p>在无序数据库中查找目标，经典需要 <span
+class="math inline">\(O(N)\)</span>，量子只需要 <span
+class="math inline">\(O(\sqrt{N})\)</span>。</p>
+<h2 id="密码学">密码学</h2>
+<p>搜索密钥空间，可以加速暴力破解。</p>
+<h2 id="优化问题">优化问题</h2>
+<p>寻找最优解，可以加速组合优化问题的求解。</p>
+<h1 id="常见问题">常见问题</h1>
+<h2 id="grover-搜索的加速比是多少">Grover 搜索的加速比是多少？</h2>
+<p>二次加速：<span class="math inline">\(O(\sqrt{N})\)</span> vs <span
+class="math inline">\(O(N)\)</span>。对于 <span
+class="math inline">\(N=10^6\)</span>，经典需要 <span
+class="math inline">\(10^6\)</span> 次，量子只需要 <span
+class="math inline">\(10^3\)</span> 次。</p>
+<h2 id="grover-搜索需要多少次迭代">Grover 搜索需要多少次迭代？</h2>
+<p>最优迭代次数 <span class="math inline">\(\approx
+\pi\sqrt{N}/4\)</span>。对于 <span class="math inline">\(N=4\)</span>（2
+量子比特），只需要 1 次迭代。</p>
+<h2 id="grover-搜索能找到所有目标吗">Grover 搜索能找到所有目标吗？</h2>
+<p>Grover 搜索只能找到一个目标。如果需要找所有目标，需要多次运行。</p>
+<h1 id="学习路径">学习路径</h1>
+<h2 id="前置知识">前置知识</h2>
+<ul>
+<li><p>量子比特和叠加态</p></li>
+<li><p>Hadamard 门和 CNOT 门</p></li>
+<li><p>量子测量</p></li>
+</ul>
+<h2 id="继续学习">继续学习</h2>
+<ul>
+<li><p>振幅放大（Grover 的推广）</p></li>
+<li><p>量子计数（计算目标数量）</p></li>
+<li><p>量子优化算法</p></li>
+</ul>
+<h1 id="完整示例代码">完整示例代码</h1>
+<h2 id="示例-1基本-grover-搜索">示例 1：基本 Grover 搜索</h2>
+<pre style="python"><code>from quonic.algorithms import grover
+
+result = grover(&quot;11&quot;, 2, shots=1024)
+print(result.counts)</code></pre>
+<h2 id="示例-23-量子比特-grover-搜索">示例 2：3 量子比特 Grover
+搜索</h2>
+<pre style="python"><code>from quonic.algorithms import grover
+
+result = grover(&quot;101&quot;, 3, shots=1024)
+print(result.counts)</code></pre>
+</body>
+</html>

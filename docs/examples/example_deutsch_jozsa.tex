@@ -1,0 +1,209 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage[UTF8]{ctex}
+\usepackage{amsmath,amssymb}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{geometry}
+\usepackage{graphicx}
+\geometry{margin=2.5cm}
+
+\lstdefinestyle{python}{
+  language=Python,
+  basicstyle=\ttfamily\small,
+  keywordstyle=\color{blue}\bfseries,
+  commentstyle=\color{gray},
+  stringstyle=\color{red},
+  showstringspaces=false,
+  breaklines=true,
+  frame=single,
+  backgroundcolor=\color{gray!10}
+}
+
+\title{Deutsch-Jozsa Algorithm / Deutsch-Jozsa 算法}
+\author{QuoNic}
+\date{}
+
+\begin{document}
+\maketitle
+
+\begin{center}
+\textbf{Algorithms / 算法} | 难度：中级 | 预计时间：10 分钟
+\end{center}
+
+\tableofcontents
+\newpage
+
+%% ============================================================
+\section{为什么需要？}
+
+Deutsch-Jozsa 算法是第一个证明量子计算优势的算法。
+
+\subsection{经典局限}
+\begin{itemize}
+  \item 经典算法需要 $2^{n-1}+1$ 次查询才能确定函数类型
+  \item 对于 $n$ 量子比特，经典需要指数次查询
+\end{itemize}
+
+\subsection{量子优势}
+\begin{itemize}
+  \item Deutsch-Jozsa 只需要 1 次查询
+  \item 提供指数加速
+  \item 是量子算法设计的范例
+\end{itemize}
+
+\subsection{实际应用}
+\begin{itemize}
+  \item 量子算法教学
+  \item 量子优势验证
+  \item 量子计算理论
+\end{itemize}
+
+%% ============================================================
+\section{快速上手}
+
+\begin{lstlisting}[style=python]
+from quonic.algorithms import deutsch_jozsa
+
+# Determine if function is constant or balanced
+result = deutsch_jozsa("balanced", n_qubits=3)
+print(f"Function type: {result.type}")
+\end{lstlisting}
+
+\textbf{预期输出}：
+\begin{verbatim}
+Function type: balanced
+\end{verbatim}
+
+%% ============================================================
+\section{原理详解}
+
+\subsection{电路图}
+
+\begin{center}
+\includegraphics[width=0.6\textwidth]{../../images/deutsch_jozsa_circuit.svg}
+\end{center}
+
+\subsection{数学推导}
+
+Deutsch-Jozsa 算法判断函数 $f: \{0,1\}^n \to \{0,1\}$ 是常数还是平衡的。
+
+\textbf{Step 1: 初始化}
+\begin{equation}
+|\psi_0\rangle = |0\rangle^{\otimes n}|1\rangle
+\end{equation}
+
+\textbf{Step 2: Hadamard 门}
+\begin{equation}
+|\psi_1\rangle = \frac{1}{\sqrt{2^n}} \sum_{x=0}^{2^n-1} |x\rangle \cdot \frac{|0\rangle - |1\rangle}{\sqrt{2}}
+\end{equation}
+
+\textbf{Step 3: Oracle 查询}
+\begin{equation}
+|\psi_2\rangle = \frac{1}{\sqrt{2^n}} \sum_{x=0}^{2^n-1} (-1)^{f(x)} |x\rangle \cdot \frac{|0\rangle - |1\rangle}{\sqrt{2}}
+\end{equation}
+
+\textbf{Step 4: Hadamard 门和测量}
+
+如果测量结果是 $|0\rangle^{\otimes n}$，函数是常数的；否则是平衡的。
+
+\subsection{几何解释}
+
+Deutsch-Jozsa 算法利用量子叠加态同时查询所有输入，通过干涉效应判断函数类型。
+
+%% ============================================================
+\section{代码详解}
+
+\begin{lstlisting}[style=python]
+from quonic.algorithms import deutsch_jozsa
+
+# deutsch_jozsa(function_type, n_qubits)
+# function_type: "constant" or "balanced"
+# n_qubits: number of input qubits
+result = deutsch_jozsa("balanced", n_qubits=3)
+
+# result.type: "constant" or "balanced"
+print(f"Function type: {result.type}")
+\end{lstlisting}
+
+%% ============================================================
+\section{进阶用法}
+
+\subsection{场景 1：常数函数}
+
+\begin{lstlisting}[style=python]
+# Constant function: f(x) = 0 for all x
+result = deutsch_jozsa("constant", n_qubits=3)
+print(f"Function type: {result.type}")
+# Output: constant
+\end{lstlisting}
+
+\subsection{场景 2：平衡函数}
+
+\begin{lstlisting}[style=python]
+# Balanced function: f(x) = 0 for half x, 1 for other half
+result = deutsch_jozsa("balanced", n_qubits=3)
+print(f"Function type: {result.type}")
+# Output: balanced
+\end{lstlisting}
+
+%% ============================================================
+\section{适用场景}
+
+\subsection{量子算法教学}
+
+Deutsch-Jozsa 是量子算法的经典入门案例。
+
+\subsection{量子优势验证}
+
+Deutsch-Jozsa 是第一个证明量子计算优势的算法。
+
+\subsection{量子计算理论}
+
+Deutsch-Jozsa 是量子算法设计的范例。
+
+%% ============================================================
+\section{常见问题}
+
+\subsection{Deutsch-Jozsa 算法的加速比是多少？}
+
+指数加速：经典需要 $2^{n-1}+1$ 次查询，量子只需要 1 次。
+
+\subsection{Deutsch-Jozsa 算法有什么实际应用？}
+
+Deutsch-Jozsa 主要用于教学和理论研究，实际应用有限。
+
+\subsection{Deutsch-Jozsa 算法的局限性是什么？}
+
+Deutsch-Jozsa 只能判断函数是常数还是平衡的，不能处理其他类型的函数。
+
+%% ============================================================
+\section{学习路径}
+
+\subsection{前置知识}
+\begin{itemize}
+  \item 量子比特和叠加态
+  \item Hadamard 门和 CNOT 门
+  \item 量子测量
+\end{itemize}
+
+\subsection{继续学习}
+\begin{itemize}
+  \item Bernstein-Vazirani 算法
+  \item Simon 算法
+  \item Shor 算法
+\end{itemize}
+
+%% ============================================================
+\section{完整示例代码}
+
+\subsection{示例 1：基本 Deutsch-Jozsa}
+
+\begin{lstlisting}[style=python]
+from quonic.algorithms import deutsch_jozsa
+
+result = deutsch_jozsa("balanced", n_qubits=3)
+print(f"Function type: {result.type}")
+\end{lstlisting}
+
+\end{document}

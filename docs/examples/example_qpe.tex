@@ -1,0 +1,223 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage[UTF8]{ctex}
+\usepackage{amsmath,amssymb}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{geometry}
+\usepackage{graphicx}
+\geometry{margin=2.5cm}
+
+\lstdefinestyle{python}{
+  language=Python,
+  basicstyle=\ttfamily\small,
+  keywordstyle=\color{blue}\bfseries,
+  commentstyle=\color{gray},
+  stringstyle=\color{red},
+  showstringspaces=false,
+  breaklines=true,
+  frame=single,
+  backgroundcolor=\color{gray!10}
+}
+
+\title{Quantum Phase Estimation / 量子相位估计}
+\author{QuoNic}
+\date{}
+
+\begin{document}
+\maketitle
+
+\begin{center}
+\textbf{Algorithms / 算法} | 难度：高级 | 预计时间：15 分钟
+\end{center}
+
+\tableofcontents
+\newpage
+
+%% ============================================================
+\section{为什么需要？}
+
+量子相位估计（QPE）是许多量子算法的核心，用于估计酉算子的本征值。
+
+\subsection{经典局限}
+\begin{itemize}
+  \item 经典方法无法高效估计量子态的相位
+  \item 对于大规模量子系统，经典方法需要指数时间
+\end{itemize}
+
+\subsection{量子优势}
+\begin{itemize}
+  \item QPE 可以高效估计酉算子的本征值
+  \item 是 Shor 算法、量子化学模拟的核心
+  \item 提供指数加速
+\end{itemize}
+
+\subsection{实际应用}
+\begin{itemize}
+  \item Shor 算法（大数分解）
+  \item 量子化学（分子能量计算）
+  \item 量子机器学习（核方法）
+\end{itemize}
+
+%% ============================================================
+\section{快速上手}
+
+\begin{lstlisting}[style=python]
+from quonic import qgate, qshow
+from quonic.gates import H, X
+
+# Simple QPE example
+qgate(X, 1)  # Prepare eigenstate
+qgate(H, 0)  # Superposition
+qgate(CU, 0, 1)  # Controlled-U
+qshow()
+\end{lstlisting}
+
+\textbf{预期输出}：
+\begin{verbatim}
+backend: native | shots: 1024
+Result:
+  |00>     512  ( 50.0%)  ####################
+  |11>     512  ( 50.0%)  ####################
+\end{verbatim}
+
+%% ============================================================
+\section{原理详解}
+
+\subsection{电路图}
+
+\begin{center}
+\includegraphics[width=0.7\textwidth]{../../images/qpe_circuit.svg}
+\end{center}
+
+\subsection{数学推导}
+
+QPE 估计酉算子 $U$ 的本征值 $e^{2\pi i\theta}$：
+\begin{equation}
+U|\psi\rangle = e^{2\pi i\theta}|\psi\rangle
+\end{equation}
+
+QPE 输出 $\theta$ 的 $n$ 位近似：
+\begin{equation}
+|0\rangle^{\otimes n}|\psi\rangle \xrightarrow{QPE} |\tilde{\theta}\rangle|\psi\rangle
+\end{equation}
+
+其中 $\tilde{\theta} \approx \theta$，精度为 $n$ 位。
+
+\subsection{几何解释}
+
+QPE 在 Bloch 球上将相位信息编码到控制量子比特中。通过 QFT 逆变换，将相位信息转换为可测量的计算基态。
+
+%% ============================================================
+\section{代码详解}
+
+\begin{lstlisting}[style=python]
+from quonic import qgate, qshow
+from quonic.gates import H, X
+
+# Prepare eigenstate |1>
+qgate(X, 1)
+
+# Create superposition
+qgate(H, 0)
+
+# Apply controlled-U
+qgate(CU, 0, 1)
+
+# Measure
+qshow()
+\end{lstlisting}
+
+%% ============================================================
+\section{进阶用法}
+
+\subsection{场景 1：多比特 QPE}
+
+\begin{lstlisting}[style=python]
+# Multi-bit QPE for higher precision
+n = 3  # 3 control qubits
+qgate(X, n)  # Prepare eigenstate
+for i in range(n):
+    qgate(H, i)
+    qgate(CU, i, n)
+qshow()
+\end{lstlisting}
+
+\subsection{场景 2：QPE 用于分子模拟}
+
+\begin{lstlisting}[style=python]
+# QPE for molecular simulation
+# Estimate ground state energy
+qgate(X, 3)  # Prepare molecular state
+qgate(H, 0)
+qgate(H, 1)
+qgate(H, 2)
+qgate(CU, 0, 3)
+qgate(CU, 1, 3)
+qgate(CU, 2, 3)
+qshow()
+\end{lstlisting}
+
+%% ============================================================
+\section{适用场景}
+
+\subsection{Shor 算法}
+
+QPE 是 Shor 算法的核心，用于寻找周期。
+
+\subsection{量子化学}
+
+QPE 用于估计分子的基态能量。
+
+\subsection{量子机器学习}
+
+QPE 用于量子核方法中的特征值估计。
+
+%% ============================================================
+\section{常见问题}
+
+\subsection{QPE 的精度是多少？}
+
+QPE 的精度由控制量子比特数 $n$ 决定。$n$ 越大，精度越高。
+
+\subsection{QPE 需要多少量子比特？}
+
+QPE 需要 $n$ 个控制量子比特 + 1 个目标量子比特。
+
+\subsection{QPE 的输出是什么？}
+
+QPE 的输出是相位 $\theta$ 的二进制近似。
+
+%% ============================================================
+\section{学习路径}
+
+\subsection{前置知识}
+\begin{itemize}
+  \item 量子傅里叶变换（QFT）
+  \item 受控门
+  \item 量子测量
+\end{itemize}
+
+\subsection{继续学习}
+\begin{itemize}
+  \item Shor 算法
+  \item 量子化学模拟
+  \item 量子机器学习
+\end{itemize}
+
+%% ============================================================
+\section{完整示例代码}
+
+\subsection{示例 1：基本 QPE}
+
+\begin{lstlisting}[style=python]
+from quonic import qgate, qshow
+from quonic.gates import H, X
+
+qgate(X, 1)
+qgate(H, 0)
+qgate(CU, 0, 1)
+qshow()
+\end{lstlisting}
+
+\end{document}

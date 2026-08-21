@@ -1,0 +1,11 @@
+\documentclass[border=5mm]{standalone}
+\usepackage{tikz}
+\usetikzlibrary{quantikz2}
+\usepackage{xcolor}
+\pagecolor{white}
+\begin{document}
+\begin{quantikz}
+  \lstick{Alice} & \gate{H} & \qw & \meter{} \\
+  \lstick{Bob}   & \qw      & \gate{H} & \meter{}
+\end{quantikz}
+\end{document}

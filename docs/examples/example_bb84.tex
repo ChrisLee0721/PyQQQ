@@ -1,0 +1,216 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage[UTF8]{ctex}
+\usepackage{amsmath,amssymb}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{geometry}
+\usepackage{graphicx}
+\geometry{margin=2.5cm}
+
+\lstdefinestyle{python}{
+  language=Python,
+  basicstyle=\ttfamily\small,
+  keywordstyle=\color{blue}\bfseries,
+  commentstyle=\color{gray},
+  stringstyle=\color{red},
+  showstringspaces=false,
+  breaklines=true,
+  frame=single,
+  backgroundcolor=\color{gray!10}
+}
+
+\title{BB84 Quantum Key Distribution / BB84 量子密钥分发}
+\author{QuoNic}
+\date{}
+
+\begin{document}
+\maketitle
+
+\begin{center}
+\textbf{Communication / 通信} | 难度：中级 | 预计时间：15 分钟
+\end{center}
+
+\tableofcontents
+\newpage
+
+%% ============================================================
+\section{为什么需要？}
+
+BB84 是第一个量子密钥分发协议，利用量子力学原理实现无条件安全的密钥分发。
+
+\subsection{经典局限}
+\begin{itemize}
+  \item 经典加密依赖计算复杂度（如 RSA）
+  \item 量子计算机可以破解经典加密
+  \item 经典密钥分发需要可信信道
+\end{itemize}
+
+\subsection{量子优势}
+\begin{itemize}
+  \item BB84 提供信息论安全性（不依赖计算复杂度）
+  \item 量子不可克隆定理保证窃听可检测
+  \item 是后量子密码学的基础
+\end{itemize}
+
+\subsection{实际应用}
+\begin{itemize}
+  \item 量子密钥分发网络
+  \item 量子安全通信
+  \item 量子互联网
+\end{itemize}
+
+%% ============================================================
+\section{快速上手}
+
+\begin{lstlisting}[style=python]
+from quonic.algorithms import bb84
+
+# Run BB84 protocol
+result = bb84(n_bits=100, noise=0.0)
+print(f"Shared key: {result.key}")
+print(f"Key length: {len(result.key)}")
+\end{lstlisting}
+
+\textbf{预期输出}：
+\begin{verbatim}
+Shared key: 01101001...
+Key length: 50
+\end{verbatim}
+
+%% ============================================================
+\section{原理详解}
+
+\subsection{电路图}
+
+\begin{center}
+\includegraphics[width=0.5\textwidth]{../../images/bb84_circuit.svg}
+\end{center}
+
+\subsection{数学推导}
+
+BB84 协议步骤：
+\begin{enumerate}
+  \item Alice 随机选择比特和基
+  \item Alice 制备量子态并发送给 Bob
+  \item Bob 随机选择基测量
+  \item Alice 和 Bob 公开比较基
+  \item 保留基相同的比特作为密钥
+\end{enumerate}
+
+安全性基于量子不可克隆定理：
+\begin{equation}
+|\psi\rangle \neq |\phi\rangle \Rightarrow \text{无法完美复制}
+\end{equation}
+
+\subsection{几何解释}
+
+在 Bloch 球上，BB84 使用两个正交基：
+\begin{itemize}
+  \item 计算基：$\{|0\rangle, |1\rangle\}$
+  \item Hadamard 基：$\{|+\rangle, |-\rangle\}$
+\end{itemize}
+
+窃听者不知道 Alice 使用的基，测量会引入错误。
+
+%% ============================================================
+\section{代码详解}
+
+\begin{lstlisting}[style=python]
+from quonic.algorithms import bb84
+
+# bb84(n_bits, noise)
+# n_bits: number of bits to generate
+# noise: channel noise rate
+result = bb84(n_bits=100, noise=0.0)
+
+# result.key: shared secret key
+# result.error_rate: quantum bit error rate
+print(f"Shared key: {result.key}")
+print(f"Error rate: {result.error_rate}")
+\end{lstlisting}
+
+%% ============================================================
+\section{进阶用法}
+
+\subsection{场景 1：带噪声的 BB84}
+
+\begin{lstlisting}[style=python]
+# BB84 with channel noise
+result = bb84(n_bits=100, noise=0.05)
+print(f"Error rate: {result.error_rate}")
+# If error rate > 11%, channel may be compromised
+\end{lstlisting}
+
+\subsection{场景 2：窃听检测}
+
+\begin{lstlisting}[style=python]
+# Eavesdropping detection
+result = bb84(n_bits=100, noise=0.0)
+# Check error rate
+if result.error_rate > 0.11:
+    print("Eavesdropper detected!")
+else:
+    print("Channel is secure")
+\end{lstlisting}
+
+%% ============================================================
+\section{适用场景}
+
+\subsection{量子密钥分发网络}
+
+BB84 可以用于构建量子密钥分发网络，实现安全通信。
+
+\subsection{量子安全通信}
+
+BB84 提供信息论安全性，适用于高安全需求的通信。
+
+\subsection{量子互联网}
+
+BB84 是量子互联网的基础协议之一。
+
+%% ============================================================
+\section{常见问题}
+
+\subsection{BB84 为什么是安全的？}
+
+BB84 的安全性基于量子不可克隆定理。窃听者无法完美复制量子态，测量会引入错误。
+
+\subsection{BB84 的密钥生成率是多少？}
+
+理想情况下，BB84 的密钥生成率约为 50\%（基匹配的概率）。
+
+\subsection{BB84 能抵抗量子计算机吗？}
+
+BB84 提供信息论安全性，不依赖计算复杂度，因此可以抵抗量子计算机。
+
+%% ============================================================
+\section{学习路径}
+
+\subsection{前置知识}
+\begin{itemize}
+  \item 量子比特和叠加态
+  \item Hadamard 门和测量
+  \item 量子不可克隆定理
+\end{itemize}
+
+\subsection{继续学习}
+\begin{itemize}
+  \item E91 协议（基于纠缠的 QKD）
+  \item 量子中继
+  \item 量子互联网
+\end{itemize}
+
+%% ============================================================
+\section{完整示例代码}
+
+\subsection{示例 1：基本 BB84}
+
+\begin{lstlisting}[style=python]
+from quonic.algorithms import bb84
+
+result = bb84(n_bits=100, noise=0.0)
+print(f"Shared key: {result.key}")
+\end{lstlisting}
+
+\end{document}
