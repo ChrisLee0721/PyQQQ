@@ -1,0 +1,12 @@
+\documentclass[border=5mm]{standalone}
+\usepackage{tikz}
+\usetikzlibrary{quantikz2}
+\usepackage{xcolor}
+\pagecolor{white}
+\begin{document}
+\begin{quantikz}
+  \lstick{$|0\rangle$}    & \gate{H} & \ctrl{1} & \gate{QFT^\dagger} & \meter{} \\
+  \lstick{$|b\rangle$}    & \qw      & \gate{U} & \qw                & \qw \\
+  \lstick{$|0\rangle^n$}  & \qw      & \qw      & \qw                & \qw
+\end{quantikz}
+\end{document}

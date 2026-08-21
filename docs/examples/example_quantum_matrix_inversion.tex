@@ -1,0 +1,178 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage[UTF8]{ctex}
+\usepackage{amsmath,amssymb}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{geometry}
+\usepackage{graphicx}
+\geometry{margin=2.5cm}
+
+\lstdefinestyle{python}{
+  language=Python,
+  basicstyle=\ttfamily\small,
+  keywordstyle=\color{blue}\bfseries,
+  commentstyle=\color{gray},
+  stringstyle=\color{red},
+  showstringspaces=false,
+  breaklines=true,
+  frame=single,
+  backgroundcolor=\color{gray!10}
+}
+
+\title{Quantum Matrix Inversion / 量子矩阵求逆}
+\author{QuoNic}
+\date{}
+
+\begin{document}
+\maketitle
+
+\begin{center}
+\textbf{Algorithms / 算法} | 难度：高级 | 预计时间：20 分钟
+\end{center}
+
+\tableofcontents
+\newpage
+
+\section{为什么需要？}
+
+量子矩阵求逆是 HHL 算法的核心组件，用于求解线性方程组。
+
+\subsection{经典局限}
+\begin{itemize}
+  \item 经典矩阵求逆需要 $O(N^3)$ 时间
+  \item 对于大规模矩阵，经典方法效率低
+\end{itemize}
+
+\subsection{量子优势}
+\begin{itemize}
+  \item 量子矩阵求逆需要 $O(\text{poly}(\log N))$ 时间
+  \item 对于稀疏矩阵，提供指数加速
+  \item 是量子机器学习的基础
+\end{itemize}
+
+\subsection{实际应用}
+\begin{itemize}
+  \item 线性方程组求解
+  \item 量子机器学习
+  \item 量子模拟
+\end{itemize}
+
+\section{快速上手}
+
+\begin{lstlisting}[style=python]
+from quonic.algorithms import quantum_matrix_inversion
+
+# Invert a matrix
+A = [[1, 0], [0, 2]]
+result = quantum_matrix_inversion(A)
+print(f"Inverse: {result.inverse}")
+\end{lstlisting}
+
+\textbf{预期输出}：
+\begin{verbatim}
+Inverse: [[1.0, 0.0], [0.0, 0.5]]
+\end{verbatim}
+
+\section{原理详解}
+
+\subsection{电路图}
+
+\begin{center}
+\includegraphics[width=0.7\textwidth]{../../images/quantum_matrix_inversion_circuit.svg}
+\end{center}
+
+\subsection{数学推导}
+
+量子矩阵求逆估计 $A^{-1}$：
+\begin{equation}
+A^{-1} = \sum_i \frac{1}{\lambda_i} |v_i\rangle\langle v_i|
+\end{equation}
+
+\textbf{算法步骤}：
+\begin{enumerate}
+  \item 用 QPE 估计 $A$ 的本征值 $\lambda_i$
+  \item 用受控旋转将本征值取倒数 $1/\lambda_i$
+  \item 用逆 QPE 恢复量子态
+\end{enumerate}
+
+\subsection{几何解释}
+
+量子矩阵求逆在量子态空间中操作，通过 QPE 将矩阵对角化，然后取倒数得到逆矩阵。
+
+\section{代码详解}
+
+\begin{lstlisting}[style=python]
+from quonic.algorithms import quantum_matrix_inversion
+
+# quantum_matrix_inversion(A)
+# A: matrix to invert
+result = quantum_matrix_inversion(A)
+
+# result.inverse: inverse matrix
+# result.condition_number: condition number
+print(f"Inverse: {result.inverse}")
+\end{lstlisting}
+
+\section{进阶用法}
+
+\subsection{场景 1：不同矩阵}
+
+\begin{lstlisting}[style=python]
+# Different matrices
+A1 = [[1, 2], [3, 4]]
+result1 = quantum_matrix_inversion(A1)
+
+A2 = [[1, 0, 0], [0, 2, 0], [0, 0, 3]]
+result2 = quantum_matrix_inversion(A2)
+\end{lstlisting}
+
+\section{适用场景}
+
+\subsection{线性方程组求解}
+
+量子矩阵求逆可以高效求解大规模稀疏线性方程组。
+
+\subsection{量子机器学习}
+
+量子矩阵求逆是量子机器学习的基础组件。
+
+\section{常见问题}
+
+\subsection{量子矩阵求逆的加速比是多少？}
+
+指数加速：$O(\text{poly}(\log N))$ vs $O(N^3)$。
+
+\subsection{量子矩阵求逆的局限性是什么？}
+
+需要矩阵是稀疏的，且条件数不能太大。
+
+\section{学习路径}
+
+\subsection{前置知识}
+\begin{itemize}
+  \item HHL 算法
+  \item 量子相位估计
+  \item 线性代数
+\end{itemize}
+
+\subsection{继续学习}
+\begin{itemize}
+  \item 量子机器学习
+  \item 量子模拟
+  \item 量子优化
+\end{itemize}
+
+\section{完整示例代码}
+
+\subsection{示例 1：基本量子矩阵求逆}
+
+\begin{lstlisting}[style=python]
+from quonic.algorithms import quantum_matrix_inversion
+
+A = [[1, 0], [0, 2]]
+result = quantum_matrix_inversion(A)
+print(f"Inverse: {result.inverse}")
+\end{lstlisting}
+
+\end{document}

@@ -1,0 +1,12 @@
+\documentclass[border=5mm]{standalone}
+\usepackage{tikz}
+\usetikzlibrary{quantikz2}
+\usepackage{xcolor}
+\pagecolor{white}
+\begin{document}
+\begin{quantikz}
+  \lstick{$|0\rangle$} & \gate{H} & \ctrl{1} & \qw & \ctrl{1} & \qw & \meter{} \\
+  \lstick{$|0\rangle$} & \qw      & \targ{}  & \ctrl{1} & \targ{} & \qw & \meter{} \\
+  \lstick{$|0\rangle$} & \qw      & \qw      & \targ{}  & \qw & \qw & \meter{}
+\end{quantikz}
+\end{document}
