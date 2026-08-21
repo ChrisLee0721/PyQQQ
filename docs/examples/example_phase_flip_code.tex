@@ -1,0 +1,176 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage[UTF8]{ctex}
+\usepackage{amsmath,amssymb}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{geometry}
+\usepackage{graphicx}
+\geometry{margin=2.5cm}
+
+\lstdefinestyle{python}{
+  language=Python,
+  basicstyle=\ttfamily\small,
+  keywordstyle=\color{blue}\bfseries,
+  commentstyle=\color{gray},
+  stringstyle=\color{red},
+  showstringspaces=false,
+  breaklines=true,
+  frame=single,
+  backgroundcolor=\color{gray!10}
+}
+
+\title{Phase Flip Code / 相位翻转码}
+\author{QuoNic}
+\date{}
+
+\begin{document}
+\maketitle
+
+\begin{center}
+\textbf{Error Correction / 纠错} | 难度：初级 | 预计时间：10 分钟
+\end{center}
+
+\tableofcontents
+\newpage
+
+\section{为什么需要？}
+
+相位翻转码是量子纠错码的一种，专门纠正相位错误。
+
+\subsection{经典局限}
+\begin{itemize}
+  \item 经典纠错码不能纠正相位错误
+  \item 相位错误是量子系统特有的
+  \item 需要专门的量子纠错码
+\end{itemize}
+
+\subsection{量子优势}
+\begin{itemize}
+  \item 相位翻转码用 3 个物理量子比特编码 1 个逻辑量子比特
+  \item 可以检测和纠正单相位翻转错误
+  \item 是 Shor 码的基础
+\end{itemize}
+
+\subsection{实际应用}
+\begin{itemize}
+  \item 量子计算（纠错）
+  \item 量子通信（保护量子态）
+  \item 量子存储（延长相干时间）
+\end{itemize}
+
+\section{快速上手}
+
+\begin{lstlisting}[style=python]
+from quonic.qec import phase_flip_code
+
+# Encode, introduce error, correct
+result = phase_flip_code(error_qubit=1)
+print(f"Original: {result.original}")
+print(f"Corrected: {result.corrected}")
+\end{lstlisting}
+
+\textbf{预期输出}：
+\begin{verbatim}
+Original: |+>
+Corrected: |+>
+\end{verbatim}
+
+\section{原理详解}
+
+\subsection{电路图}
+
+\begin{center}
+\includegraphics[width=0.7\textwidth]{../../images/phase_flip_code_circuit.svg}
+\end{center}
+
+\subsection{数学推导}
+
+\textbf{编码}：
+\begin{equation}
+|+\rangle \to |+++\rangle, \quad |-\rangle \to |---\rangle
+\end{equation}
+
+\textbf{错误}：如果 $q_1$ 发生相位翻转：
+\begin{equation}
+|+++\rangle \to |+-+\rangle
+\end{equation}
+
+\textbf{纠正}：通过 Hadamard 变换和多数投票恢复。
+
+\subsection{几何解释}
+
+相位翻转码在 Hadamard 基中编码，通过 Hadamard 变换将相位错误转换为比特错误，然后用多数投票纠正。
+
+\section{代码详解}
+
+\begin{lstlisting}[style=python]
+from quonic.qec import phase_flip_code
+
+# phase_flip_code(error_qubit)
+# error_qubit: which qubit has the error
+result = phase_flip_code(error_qubit=1)
+
+# result.original: original state
+# result.corrected: corrected state
+print(f"Corrected: {result.corrected}")
+\end{lstlisting}
+
+\section{进阶用法}
+
+\subsection{场景 1：不同错误位置}
+
+\begin{lstlisting}[style=python]
+for i in range(3):
+    result = phase_flip_code(error_qubit=i)
+    print(f"Error on q{i}: {result.corrected}")
+\end{lstlisting}
+
+\section{适用场景}
+
+\subsection{量子计算}
+
+相位翻转码是量子纠错的基础构建块。
+
+\subsection{量子通信}
+
+相位翻转码可以保护量子通信中的相位信息。
+
+\section{常见问题}
+
+\subsection{相位翻转码和比特翻转码有什么区别？}
+
+比特翻转码纠正 $X$ 错误（翻转），相位翻转码纠正 $Z$ 错误（相位）。
+
+\subsection{相位翻转码需要多少量子比特？}
+
+需要 3 个物理量子比特编码 1 个逻辑量子比特。
+
+\section{学习路径}
+
+\subsection{前置知识}
+\begin{itemize}
+  \item 比特翻转码
+  \item Hadamard 门
+  \item 量子测量
+\end{itemize}
+
+\subsection{继续学习}
+\begin{itemize}
+  \item Shor 码（9 量子比特）
+  \item 表面码
+  \item 颜色码
+\end{itemize}
+
+\section{完整示例代码}
+
+\subsection{示例 1：基本相位翻转码}
+
+\begin{lstlisting}[style=python]
+from quonic.qec import phase_flip_code
+
+result = phase_flip_code(error_qubit=1)
+print(f"Corrected: {result.corrected}")
+\end{lstlisting}
+
+\end{document}

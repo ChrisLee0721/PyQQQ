@@ -1,0 +1,12 @@
+\documentclass[border=5mm]{standalone}
+\usepackage{tikz}
+\usetikzlibrary{quantikz2}
+\usepackage{xcolor}
+\pagecolor{white}
+\begin{document}
+\begin{quantikz}
+  \lstick{$|\psi\rangle$} & \ctrl{1} & \ctrl{2} & \qw & \ctrl{1} & \qw \\
+  \lstick{$|0\rangle$}    & \targ{}  & \qw      & \qw & \targ{}  & \qw \\
+  \lstick{$|0\rangle$}    & \qw      & \targ{}  & \qw & \qw      & \qw
+\end{quantikz}
+\end{document}

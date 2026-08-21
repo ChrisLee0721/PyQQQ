@@ -1,0 +1,11 @@
+\documentclass[border=5mm]{standalone}
+\usepackage{tikz}
+\usetikzlibrary{quantikz2}
+\usepackage{xcolor}
+\pagecolor{white}
+\begin{document}
+\begin{quantikz}
+  \lstick{$|+\rangle$} & \gate{R_x(\theta)} & \ctrl{1} & \qw \\
+  \lstick{$|+\rangle$} & \gate{R_x(\theta)} & \targ{}  & \qw
+\end{quantikz}
+\end{document}

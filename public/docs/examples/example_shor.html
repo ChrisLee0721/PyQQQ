@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc 3.10.2" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <meta name="author" content="QuoNic" />
+  <title>shor</title>
+  <style>
+    /* Default styles provided by pandoc.
+    ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+    */
+    html {
+      color: #1a1a1a;
+      background-color: #fdfdfd;
+    }
+    body {
+      margin: 0 auto;
+      max-width: 36em;
+      padding-left: 50px;
+      padding-right: 50px;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      hyphens: auto;
+      overflow-wrap: break-word;
+      text-rendering: optimizeLegibility;
+      font-kerning: normal;
+    }
+    @media (max-width: 600px) {
+      body {
+        font-size: 0.9em;
+        padding: 12px;
+      }
+      h1 {
+        font-size: 1.8em;
+      }
+    }
+    @media print {
+      html {
+        background-color: white;
+      }
+      body {
+        background-color: transparent;
+        color: black;
+      }
+      p, h2, h3 {
+        orphans: 3;
+        widows: 3;
+      }
+      h2, h3, h4 {
+        page-break-after: avoid;
+      }
+    }
+    p {
+      margin: 1em 0;
+    }
+    a {
+      color: #1a1a1a;
+    }
+    a:visited {
+      color: #1a1a1a;
+    }
+    img {
+      max-width: 100%;
+    }
+    svg {
+      height: auto;
+      max-width: 100%;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 1.4em;
+    }
+    h5, h6 {
+      font-size: 1em;
+      font-style: italic;
+    }
+    h6 {
+      font-weight: normal;
+    }
+    ol, ul {
+      padding-left: 1.7em;
+      margin-top: 1em;
+    }
+    li > ol, li > ul {
+      margin-top: 0;
+    }
+    blockquote {
+      margin: 1em 0 1em 1.7em;
+      padding-left: 1em;
+      border-left: 2px solid #e6e6e6;
+      color: #606060;
+    }
+    code {
+      white-space: pre-wrap;
+      font-family: Menlo, Monaco, Consolas, 'Lucida Console', monospace;
+      font-size: 85%;
+      margin: 0;
+      hyphens: manual;
+    }
+    pre {
+      margin: 1em 0;
+      overflow: auto;
+    }
+    pre code {
+      padding: 0;
+      overflow: visible;
+      overflow-wrap: normal;
+    }
+    .sourceCode {
+     background-color: transparent;
+     overflow: visible;
+    }
+    hr {
+      border: none;
+      border-top: 1px solid #1a1a1a;
+      height: 1px;
+      margin: 1em 0;
+    }
+    table {
+      margin: 1em 0;
+      border-collapse: collapse;
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+    table caption {
+      margin-bottom: 0.75em;
+    }
+    tbody {
+      margin-top: 0.5em;
+      border-top: 1px solid #1a1a1a;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    th {
+      border-top: 1px solid #1a1a1a;
+      padding: 0.25em 0.5em 0.25em 0.5em;
+    }
+    td {
+      padding: 0.125em 0.5em 0.25em 0.5em;
+    }
+    header {
+      margin-bottom: 4em;
+      text-align: center;
+    }
+    #TOC li {
+      list-style: none;
+    }
+    #TOC ul {
+      padding-left: 1.3em;
+    }
+    #TOC > ul {
+      padding-left: 0;
+    }
+    #TOC a:not(:hover) {
+      text-decoration: none;
+    }
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: 1.5em;}
+    div.column{flex: auto;}
+    @media screen {
+    div.columns{gap: min(4vw, 1.5em);}
+    div.column{overflow-x: auto;}
+    }
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+  </style>
+  <script defer="" src="" type="text/javascript"></script>
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">shor</h1>
+<p class="author">QuoNic</p>
+</header>
+<div class="center">
+<p><strong>Algorithms / 算法</strong> | 难度：高级 | 预计时间：25
+分钟</p>
+</div>
+<h1 id="为什么需要">为什么需要？</h1>
+<p>Shor 算法可以在多项式时间内分解大整数，威胁 RSA 加密体系。</p>
+<h2 id="经典局限">经典局限</h2>
+<ul>
+<li><p>经典算法（如数域筛法）需要亚指数时间</p></li>
+<li><p>RSA-2048 经典分解需要数千年</p></li>
+<li><p>经典算法无法有效利用量子并行性</p></li>
+</ul>
+<h2 id="量子优势">量子优势</h2>
+<ul>
+<li><p>Shor 算法需要 <span class="math inline">\(O((\log N)^3)\)</span>
+时间</p></li>
+<li><p>RSA-2048 量子分解只需数小时</p></li>
+<li><p>是量子计算最著名的应用之一</p></li>
+</ul>
+<h2 id="实际应用">实际应用</h2>
+<ul>
+<li><p>密码学（破解 RSA）</p></li>
+<li><p>后量子密码学（推动新标准）</p></li>
+<li><p>数论（分解大整数）</p></li>
+</ul>
+<h1 id="快速上手">快速上手</h1>
+<pre style="python"><code>from quonic.algorithms import shor
+
+# Factor N = 15
+result = shor(15)
+print(f&quot;Factors: {result.factors}&quot;)</code></pre>
+<p><strong>预期输出</strong>：</p>
+<pre><code>Factors: [3, 5]</code></pre>
+<h1 id="原理详解">原理详解</h1>
+<h2 id="电路图">电路图</h2>
+<div class="center">
+<p><img src="../../images/shor_circuit.svg" style="width:70.0%"
+alt="image" /></p>
+</div>
+<h2 id="数学推导">数学推导</h2>
+<p>Shor 算法的核心是寻找周期 <span class="math inline">\(r\)</span>：
+<span class="math display">\[\begin{equation}
+a^r \equiv 1 \pmod{N}
+\end{equation}\]</span></p>
+<p><strong>算法步骤</strong>：</p>
+<ol>
+<li><p>选择随机 <span class="math inline">\(a &lt; N\)</span></p></li>
+<li><p>用量子计算寻找 <span class="math inline">\(a^x \mod N\)</span>
+的周期 <span class="math inline">\(r\)</span></p></li>
+<li><p>如果 <span class="math inline">\(r\)</span> 是偶数且 <span
+class="math inline">\(a^{r/2} \not\equiv -1 \pmod{N}\)</span>，则 <span
+class="math inline">\(\gcd(a^{r/2} \pm 1, N)\)</span> 是 <span
+class="math inline">\(N\)</span> 的因子</p></li>
+</ol>
+<h2 id="几何解释">几何解释</h2>
+<p>Shor
+算法利用量子傅里叶变换（QFT）提取周期信息。量子计算机同时计算所有 <span
+class="math inline">\(a^x \mod N\)</span>，然后 QFT 提取周期。</p>
+<h1 id="代码详解">代码详解</h1>
+<pre style="python"><code>from quonic.algorithms import shor
+
+# shor(N)
+# N: integer to factor
+result = shor(15)
+
+# result.factors: list of factors
+# result.period: period found by QFT
+print(f&quot;Factors: {result.factors}&quot;)</code></pre>
+<h1 id="进阶用法">进阶用法</h1>
+<h2 id="场景-1不同整数">场景 1：不同整数</h2>
+<pre style="python"><code># Factor different integers
+result_21 = shor(21)   # [3, 7]
+result_35 = shor(35)   # [5, 7]
+result_77 = shor(77)   # [7, 11]</code></pre>
+<h2 id="场景-2大整数">场景 2：大整数</h2>
+<pre style="python"><code># Larger integers (requires more qubits)
+result = shor(2047)  # [23, 89]</code></pre>
+<h1 id="适用场景">适用场景</h1>
+<h2 id="密码学">密码学</h2>
+<p>Shor 算法威胁 RSA 加密，推动后量子密码学发展。</p>
+<h2 id="数论">数论</h2>
+<p>Shor 算法可以高效分解大整数。</p>
+<h2 id="后量子密码学">后量子密码学</h2>
+<p>Shor 算法推动了新的加密标准（如 CRYSTALS-Kyber）。</p>
+<h1 id="常见问题">常见问题</h1>
+<h2 id="shor-算法能分解多大的数">Shor 算法能分解多大的数？</h2>
+<p>理论上可以分解任意大的数，但需要足够多的量子比特。目前实验上分解了
+15、21 等小整数。</p>
+<h2 id="shor-算法需要多少量子比特">Shor 算法需要多少量子比特？</h2>
+<p>分解 <span class="math inline">\(N\)</span> 需要约 <span
+class="math inline">\(2\log_2 N\)</span> 个量子比特。分解 RSA-2048
+需要约 4000 个逻辑量子比特。</p>
+<h2 id="shor-算法会破解所有加密吗">Shor 算法会破解所有加密吗？</h2>
+<p>Shor 算法只威胁基于大整数分解和离散对数的加密（如
+RSA、ECC）。基于格的加密（如 CRYSTALS-Kyber）是安全的。</p>
+<h1 id="学习路径">学习路径</h1>
+<h2 id="前置知识">前置知识</h2>
+<ul>
+<li><p>量子傅里叶变换（QFT）</p></li>
+<li><p>量子相位估计（QPE）</p></li>
+<li><p>数论基础</p></li>
+</ul>
+<h2 id="继续学习">继续学习</h2>
+<ul>
+<li><p>后量子密码学</p></li>
+<li><p>量子纠错</p></li>
+<li><p>量子网络</p></li>
+</ul>
+<h1 id="完整示例代码">完整示例代码</h1>
+<h2 id="示例-1基本-shor-算法">示例 1：基本 Shor 算法</h2>
+<pre style="python"><code>from quonic.algorithms import shor
+
+result = shor(15)
+print(f&quot;Factors: {result.factors}&quot;)</code></pre>
+</body>
+</html>
