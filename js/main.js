@@ -52,10 +52,9 @@
 
         function loadPresetCode() {
             const selectEl = document.getElementById('preset-select');
-            const editorEl = document.getElementById('python-editor');
-            if (selectEl && editorEl && CODE_PRESETS[selectEl.value]) {
-                editorEl.value = CODE_PRESETS[selectEl.value];
-                runQuantumSimulation();
+            const displayEl = document.getElementById('python-editor-display');
+            if (selectEl && displayEl && CODE_PRESETS[selectEl.value]) {
+                displayEl.textContent = CODE_PRESETS[selectEl.value];
             }
         }
 
@@ -491,9 +490,9 @@
         }
 
         window.onload = function() {
-            const editorEl = document.getElementById('python-editor');
-            if (editorEl) {
-                editorEl.value = CODE_PRESETS.bell;
+            const displayEl = document.getElementById('python-editor-display');
+            if (displayEl) {
+                displayEl.textContent = CODE_PRESETS.bell;
             }
             runQuantumSimulation();
             initBlochSphere();
