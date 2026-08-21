@@ -153,16 +153,45 @@
         }
 
         function toggleLang() {
+            const prevLang = currentLang;
             currentLang = currentLang === 'en' ? 'zh' : 'en';
             localStorage.setItem('quonic-docs-lang', currentLang);
-            applyLang();
 
             const p = new URLSearchParams(window.location.search);
             const f = p.get('file');
-            if (!f) return;
+            if (!f) {
+                window.location.reload();
+                return;
+            }
 
-            // Reload with new language
-            window.location.reload();
+            // Try to find the same page in the other language
+            let newFile = null;
+            if (f.startsWith('docs/zh/') || f.startsWith('docs/en/')) {
+                // Already in a language folder - switch folder
+                const basePath = f.replace(/^docs\/(zh|en)\//, '');
+                const otherFolder = currentLang === 'zh' ? 'zh' : 'en';
+                const candidate = `docs/${otherFolder}/${basePath}`;
+
+                // Check if file exists
+                fetch(candidate, { method: 'HEAD' })
+                    .then(r => {
+                        if (r.ok) {
+                            window.location.search = '?file=' + candidate;
+                        } else {
+                            // File doesn't exist, go to quickstart
+                            const fallback = currentLang === 'zh' ? 'docs/zh/快速开始.md' : 'docs/en/quickstart.md';
+                            window.location.search = '?file=' + fallback;
+                        }
+                    })
+                    .catch(() => {
+                        const fallback = currentLang === 'zh' ? 'docs/zh/快速开始.md' : 'docs/en/quickstart.md';
+                        window.location.search = '?file=' + fallback;
+                    });
+            } else {
+                // Not in a language folder - go to quickstart
+                const fallback = currentLang === 'zh' ? 'docs/zh/快速开始.md' : 'docs/en/quickstart.md';
+                window.location.search = '?file=' + fallback;
+            }
         }
 
         function showLangNotice(f) {

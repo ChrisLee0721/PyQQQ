@@ -8,6 +8,8 @@ docs/en/examples/example_qft.html
 docs/en/examples/example_qpe.html
 docs/en/examples/example_superdense_coding.html
 docs/en/examples/example_teleportation.html
+docs/en/index.md
+docs/en/quickstart.md
 docs/en/tutorials/advanced.md
 docs/en/tutorials/algorithms.md
 docs/en/tutorials/basics.md
