@@ -187,8 +187,10 @@
         function showLangNotice(f) {
             const notice = document.getElementById('lang-notice');
             const text = document.getElementById('lang-notice-text');
-            text.textContent = 'This page is bilingual — Chinese content is included inline. / 本页为双语页面，中文内容已包含在内。';
+            text.textContent = 'No English version available for this page. / 本页没有英文版本。';
             notice.classList.remove('hidden');
+            // Auto-hide after 3 seconds
+            setTimeout(() => notice.classList.add('hidden'), 3000);
         }
 
         // --- Build sidebar from file list ---
