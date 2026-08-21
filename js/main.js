@@ -35,9 +35,9 @@
             currentLang = currentLang === 'zh' ? 'en' : 'zh';
             const elements = document.querySelectorAll('[data-i18n-zh]');
             elements.forEach(el => {
-                const text = el.getAttribute(`data-i18n-${currentLang}`);
-                if (text) {
-                    el.innerHTML = text;
+                const attr = `data-i18n-${currentLang}`;
+                if (el.hasAttribute(attr)) {
+                    el.innerHTML = el.getAttribute(attr);
                 }
             });
 
