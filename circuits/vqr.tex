@@ -1,0 +1,11 @@
+\documentclass[border=5mm]{standalone}
+\usepackage{tikz}
+\usetikzlibrary{quantikz2}
+\usepackage{xcolor}
+\pagecolor{white}
+\begin{document}
+\begin{quantikz}
+  \lstick{$|0\rangle$} & \gate{R_y(\theta_1)} & \ctrl{1} & \gate{R_z(\theta_2)} & \qw \
+  \lstick{$|0\rangle$} & \gate{R_y(\theta_3)} & \targ{}  & \qw                 & \qw
+\end{quantikz}
+\end{document}

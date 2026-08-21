@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc 3.10.2" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <meta name="author" content="QuoNic" />
+  <title>hsp</title>
+  <style>
+    /* Default styles provided by pandoc.
+    ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+    */
+    html {
+      color: #1a1a1a;
+      background-color: #fdfdfd;
+    }
+    body {
+      margin: 0 auto;
+      max-width: 36em;
+      padding-left: 50px;
+      padding-right: 50px;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      hyphens: auto;
+      overflow-wrap: break-word;
+      text-rendering: optimizeLegibility;
+      font-kerning: normal;
+    }
+    @media (max-width: 600px) {
+      body {
+        font-size: 0.9em;
+        padding: 12px;
+      }
+      h1 {
+        font-size: 1.8em;
+      }
+    }
+    @media print {
+      html {
+        background-color: white;
+      }
+      body {
+        background-color: transparent;
+        color: black;
+      }
+      p, h2, h3 {
+        orphans: 3;
+        widows: 3;
+      }
+      h2, h3, h4 {
+        page-break-after: avoid;
+      }
+    }
+    p {
+      margin: 1em 0;
+    }
+    a {
+      color: #1a1a1a;
+    }
+    a:visited {
+      color: #1a1a1a;
+    }
+    img {
+      max-width: 100%;
+    }
+    svg {
+      height: auto;
+      max-width: 100%;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 1.4em;
+    }
+    h5, h6 {
+      font-size: 1em;
+      font-style: italic;
+    }
+    h6 {
+      font-weight: normal;
+    }
+    ol, ul {
+      padding-left: 1.7em;
+      margin-top: 1em;
+    }
+    li > ol, li > ul {
+      margin-top: 0;
+    }
+    blockquote {
+      margin: 1em 0 1em 1.7em;
+      padding-left: 1em;
+      border-left: 2px solid #e6e6e6;
+      color: #606060;
+    }
+    code {
+      white-space: pre-wrap;
+      font-family: Menlo, Monaco, Consolas, 'Lucida Console', monospace;
+      font-size: 85%;
+      margin: 0;
+      hyphens: manual;
+    }
+    pre {
+      margin: 1em 0;
+      overflow: auto;
+    }
+    pre code {
+      padding: 0;
+      overflow: visible;
+      overflow-wrap: normal;
+    }
+    .sourceCode {
+     background-color: transparent;
+     overflow: visible;
+    }
+    hr {
+      border: none;
+      border-top: 1px solid #1a1a1a;
+      height: 1px;
+      margin: 1em 0;
+    }
+    table {
+      margin: 1em 0;
+      border-collapse: collapse;
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+    table caption {
+      margin-bottom: 0.75em;
+    }
+    tbody {
+      margin-top: 0.5em;
+      border-top: 1px solid #1a1a1a;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    th {
+      border-top: 1px solid #1a1a1a;
+      padding: 0.25em 0.5em 0.25em 0.5em;
+    }
+    td {
+      padding: 0.125em 0.5em 0.25em 0.5em;
+    }
+    header {
+      margin-bottom: 4em;
+      text-align: center;
+    }
+    #TOC li {
+      list-style: none;
+    }
+    #TOC ul {
+      padding-left: 1.3em;
+    }
+    #TOC > ul {
+      padding-left: 0;
+    }
+    #TOC a:not(:hover) {
+      text-decoration: none;
+    }
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: 1.5em;}
+    div.column{flex: auto;}
+    @media screen {
+    div.columns{gap: min(4vw, 1.5em);}
+    div.column{overflow-x: auto;}
+    }
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+  </style>
+  <script defer="" src="" type="text/javascript"></script>
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">hsp</h1>
+<p class="author">QuoNic</p>
+</header>
+<div class="center">
+<p><strong>Algorithms / 算法</strong> | 难度：高级 | 预计时间：25
+分钟</p>
+</div>
+<h1 id="为什么需要">为什么需要？</h1>
+<p>隐子群问题是量子计算的统一框架，许多量子算法都是它的特例。</p>
+<h2 id="经典局限">经典局限</h2>
+<ul>
+<li><p>经典算法需要指数时间求解隐子群问题</p></li>
+<li><p>对于大群，经典方法效率低</p></li>
+</ul>
+<h2 id="量子优势">量子优势</h2>
+<ul>
+<li><p>量子算法可以在多项式时间内求解阿贝尔隐子群问题</p></li>
+<li><p>提供指数加速</p></li>
+<li><p>是许多量子算法的统一框架</p></li>
+</ul>
+<h2 id="实际应用">实际应用</h2>
+<ul>
+<li><p>大数分解（Shor 算法）</p></li>
+<li><p>离散对数（Shor 算法）</p></li>
+<li><p>图同构（量子算法）</p></li>
+</ul>
+<h1 id="快速上手">快速上手</h1>
+<pre><code>from quonic.algorithms import hsp
+
+# 隐子群问题
+result = hsp(group=&#39;Z4&#39;, oracle=&#39;period_finding&#39;)
+print(f&#39;Hidden subgroup: {result.subgroup}&#39;)</code></pre>
+<p><strong>预期输出</strong>：</p>
+<pre><code>Hidden subgroup: {0, 2}</code></pre>
+<h1 id="原理详解">原理详解</h1>
+<h2 id="电路图">电路图</h2>
+<div class="center">
+<p><img src="../../images/hsp_circuit.svg" style="width:60.0%"
+alt="image" /></p>
+</div>
+<h2 id="数学推导">数学推导</h2>
+<p>隐子群问题： <span class="math display">\[\begin{equation}
+f: G \to X, \quad f(g) = f(h) \iff gH = hH
+\end{equation}\]</span></p>
+<p>其中 <span class="math inline">\(H\)</span> 是 <span
+class="math inline">\(G\)</span> 的子群，<span
+class="math inline">\(f\)</span> 是周期函数。</p>
+<p><strong>量子算法</strong>：</p>
+<ol>
+<li><p>制备均匀叠加态</p></li>
+<li><p>查询函数 <span class="math inline">\(f\)</span></p></li>
+<li><p>用 QFT 提取子群信息</p></li>
+<li><p>测量得到子群</p></li>
+</ol>
+<h2 id="几何解释">几何解释</h2>
+<p>隐子群问题在群空间中寻找隐藏的子群。量子叠加允许同时探索所有群元素。</p>
+<h1 id="代码详解">代码详解</h1>
+<pre><code>from quonic.algorithms import hsp
+
+# hsp(group, oracle, n_qubits)
+# group: 群类型
+# oracle: 隐函数
+# n_qubits: 量子比特数
+
+result = hsp(
+    group=&#39;Z4&#39;,
+    oracle=&#39;period_finding&#39;,
+    n_qubits=4
+)
+
+# result.subgroup: 隐子群
+# result.generators: 生成元
+# result.circuit: 量子电路
+print(f&#39;Hidden subgroup: {result.subgroup}&#39;)</code></pre>
+<h1 id="进阶用法">进阶用法</h1>
+<h2 id="场景-1不同群">场景 1：不同群</h2>
+<pre><code>from quonic.algorithms import hsp
+
+# 不同群
+result_z4 = hsp(group=&#39;Z4&#39;, oracle=&#39;period_finding&#39;)
+result_z6 = hsp(group=&#39;Z6&#39;, oracle=&#39;period_finding&#39;)
+result_d4 = hsp(group=&#39;D4&#39;, oracle=&#39;hidden_subgroup&#39;)
+
+print(f&#39;Z4 subgroup: {result_z4.subgroup}&#39;)
+print(f&#39;Z6 subgroup: {result_z6.subgroup}&#39;)
+print(f&#39;D4 subgroup: {result_d4.subgroup}&#39;)</code></pre>
+<h2 id="场景-2shor-算法">场景 2：Shor 算法</h2>
+<pre><code>from quonic.algorithms import hsp
+
+# Shor 算法是 HSP 的特例
+result = hsp(group=&#39;Z_N&#39;, oracle=&#39;modular_exponentiation&#39;)
+print(f&#39;Period: {result.period}&#39;)
+print(f&#39;Factors: {result.factors}&#39;)</code></pre>
+<h2 id="场景-3图同构">场景 3：图同构</h2>
+<pre><code>from quonic.algorithms import hsp
+
+# 图同构问题
+result = hsp(group=&#39;S_n&#39;, oracle=&#39;graph_isomorphism&#39;)
+print(f&#39;Isomorphic: {result.is_isomorphic}&#39;)</code></pre>
+<h1 id="适用场景">适用场景</h1>
+<h2 id="大数分解">大数分解</h2>
+<p>隐子群问题是 Shor 算法的基础。Shor 算法用于大数分解，威胁 RSA
+加密。</p>
+<h2 id="离散对数">离散对数</h2>
+<p>隐子群问题是离散对数算法的基础。离散对数是许多密码系统的基础。</p>
+<h2 id="图同构">图同构</h2>
+<p>隐子群问题可以用于图同构问题。图同构是判断两个图是否结构相同的问题。</p>
+<h1 id="常见问题">常见问题</h1>
+<h2 id="隐子群问题和-shor-算法有什么关系">隐子群问题和 Shor
+算法有什么关系？</h2>
+<p>Shor 算法是隐子群问题的特例。Shor
+算法求解的是整数分解问题，可以表示为隐子群问题。</p>
+<h2 id="隐子群问题的难度如何">隐子群问题的难度如何？</h2>
+<p>阿贝尔隐子群问题可以在多项式时间内求解，非阿贝尔隐子群问题仍然是开放问题。</p>
+<h1 id="学习路径">学习路径</h1>
+<h2 id="前置知识">前置知识</h2>
+<ul>
+<li><p>群论</p></li>
+<li><p>量子傅里叶变换</p></li>
+<li><p>量子相位估计</p></li>
+</ul>
+<h2 id="继续学习">继续学习</h2>
+<ul>
+<li><p>Shor 算法</p></li>
+<li><p>离散对数</p></li>
+<li><p>后量子密码学</p></li>
+</ul>
+<h1 id="完整示例代码">完整示例代码</h1>
+<h2 id="示例-1基本隐子群问题">示例 1：基本隐子群问题</h2>
+<pre><code>from quonic.algorithms import hsp
+
+result = hsp(group=&#39;Z4&#39;, oracle=&#39;period_finding&#39;)
+print(f&#39;Hidden subgroup: {result.subgroup}&#39;)</code></pre>
+<h1 id="下载">下载</h1>
+<ul>
+<li><p>(https://github.com/ChrisLee0721/QuoNic/blob/main/examples/hsp/hsp.py)</p></li>
+</ul>
+</body>
+</html>

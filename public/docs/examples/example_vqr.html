@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc 3.10.2" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <meta name="author" content="QuoNic" />
+  <title>vqr</title>
+  <style>
+    /* Default styles provided by pandoc.
+    ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+    */
+    html {
+      color: #1a1a1a;
+      background-color: #fdfdfd;
+    }
+    body {
+      margin: 0 auto;
+      max-width: 36em;
+      padding-left: 50px;
+      padding-right: 50px;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      hyphens: auto;
+      overflow-wrap: break-word;
+      text-rendering: optimizeLegibility;
+      font-kerning: normal;
+    }
+    @media (max-width: 600px) {
+      body {
+        font-size: 0.9em;
+        padding: 12px;
+      }
+      h1 {
+        font-size: 1.8em;
+      }
+    }
+    @media print {
+      html {
+        background-color: white;
+      }
+      body {
+        background-color: transparent;
+        color: black;
+      }
+      p, h2, h3 {
+        orphans: 3;
+        widows: 3;
+      }
+      h2, h3, h4 {
+        page-break-after: avoid;
+      }
+    }
+    p {
+      margin: 1em 0;
+    }
+    a {
+      color: #1a1a1a;
+    }
+    a:visited {
+      color: #1a1a1a;
+    }
+    img {
+      max-width: 100%;
+    }
+    svg {
+      height: auto;
+      max-width: 100%;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 1.4em;
+    }
+    h5, h6 {
+      font-size: 1em;
+      font-style: italic;
+    }
+    h6 {
+      font-weight: normal;
+    }
+    ol, ul {
+      padding-left: 1.7em;
+      margin-top: 1em;
+    }
+    li > ol, li > ul {
+      margin-top: 0;
+    }
+    blockquote {
+      margin: 1em 0 1em 1.7em;
+      padding-left: 1em;
+      border-left: 2px solid #e6e6e6;
+      color: #606060;
+    }
+    code {
+      white-space: pre-wrap;
+      font-family: Menlo, Monaco, Consolas, 'Lucida Console', monospace;
+      font-size: 85%;
+      margin: 0;
+      hyphens: manual;
+    }
+    pre {
+      margin: 1em 0;
+      overflow: auto;
+    }
+    pre code {
+      padding: 0;
+      overflow: visible;
+      overflow-wrap: normal;
+    }
+    .sourceCode {
+     background-color: transparent;
+     overflow: visible;
+    }
+    hr {
+      border: none;
+      border-top: 1px solid #1a1a1a;
+      height: 1px;
+      margin: 1em 0;
+    }
+    table {
+      margin: 1em 0;
+      border-collapse: collapse;
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+    table caption {
+      margin-bottom: 0.75em;
+    }
+    tbody {
+      margin-top: 0.5em;
+      border-top: 1px solid #1a1a1a;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    th {
+      border-top: 1px solid #1a1a1a;
+      padding: 0.25em 0.5em 0.25em 0.5em;
+    }
+    td {
+      padding: 0.125em 0.5em 0.25em 0.5em;
+    }
+    header {
+      margin-bottom: 4em;
+      text-align: center;
+    }
+    #TOC li {
+      list-style: none;
+    }
+    #TOC ul {
+      padding-left: 1.3em;
+    }
+    #TOC > ul {
+      padding-left: 0;
+    }
+    #TOC a:not(:hover) {
+      text-decoration: none;
+    }
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: 1.5em;}
+    div.column{flex: auto;}
+    @media screen {
+    div.columns{gap: min(4vw, 1.5em);}
+    div.column{overflow-x: auto;}
+    }
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+  </style>
+  <script defer="" src="" type="text/javascript"></script>
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">vqr</h1>
+<p class="author">QuoNic</p>
+</header>
+<div class="center">
+<p><strong>ML / 机器学习</strong> | 难度：高级 | 预计时间：20 分钟</p>
+</div>
+<h1 id="为什么需要">为什么需要？</h1>
+<p>变分量子回归器是经典回归器的量子推广，用于在量子环境中进行回归。</p>
+<h2 id="经典局限">经典局限</h2>
+<ul>
+<li><p>经典回归器在高维数据上训练慢</p></li>
+<li><p>对于复杂函数，经典方法效率低</p></li>
+</ul>
+<h2 id="量子优势">量子优势</h2>
+<ul>
+<li><p>变分量子回归器可以利用量子特征映射在高维空间中拟合</p></li>
+<li><p>训练速度更快</p></li>
+<li><p>可以拟合更复杂的函数</p></li>
+</ul>
+<h2 id="实际应用">实际应用</h2>
+<ul>
+<li><p>函数拟合</p></li>
+<li><p>时间序列预测</p></li>
+<li><p>数据建模</p></li>
+</ul>
+<h1 id="快速上手">快速上手</h1>
+<pre><code>from quonic.ml import vqr
+
+# 变分量子回归器
+x = [0, 1, 2, 3]
+y = [0, 1, 4, 9]
+
+result = vqr(x, y, n_layers=2)
+print(f&#39;R² score: {result.r2_score}&#39;)</code></pre>
+<p><strong>预期输出</strong>：</p>
+<pre><code>R² score: 0.99</code></pre>
+<h1 id="原理详解">原理详解</h1>
+<h2 id="电路图">电路图</h2>
+<div class="center">
+<p><img src="../../images/vqr_circuit.svg" style="width:60.0%"
+alt="image" /></p>
+</div>
+<h2 id="数学推导">数学推导</h2>
+<p>变分量子回归器： <span class="math display">\[\begin{equation}
+f(x) = \langle 0|U^\dagger(\theta) M U(\theta)|0\rangle
+\end{equation}\]</span></p>
+<p>其中 <span class="math inline">\(U(\theta)\)</span>
+是参数化量子电路，<span class="math inline">\(M\)</span>
+是测量算子。</p>
+<p><strong>损失函数</strong>： <span
+class="math display">\[\begin{equation}
+L(\theta) = \frac{1}{N} \sum_i (f(x_i) - y_i)^2
+\end{equation}\]</span></p>
+<p><strong>梯度下降</strong>： <span
+class="math display">\[\begin{equation}
+\theta_{t+1} = \theta_t - \eta \nabla L(\theta_t)
+\end{equation}\]</span></p>
+<h2 id="几何解释">几何解释</h2>
+<p>变分量子回归器在量子态空间中拟合函数。量子特征映射将数据映射到高维空间，使得非线性函数可以用线性模型拟合。</p>
+<h1 id="代码详解">代码详解</h1>
+<pre><code>from quonic.ml import vqr
+
+# vqr(x, y, n_layers, learning_rate)
+# x: 自变量
+# y: 因变量
+# n_layers: 量子电路层数
+# learning_rate: 学习率
+
+result = vqr(
+    x=[0, 1, 2, 3],
+    y=[0, 1, 4, 9],
+    n_layers=2,
+    learning_rate=0.01
+)
+
+# result.r2_score: R² 分数
+# result.loss: 损失值
+# result.params: 优化后的参数
+# result predictions: 预测值
+print(f&#39;R² score: {result.r2_score}&#39;)</code></pre>
+<h1 id="进阶用法">进阶用法</h1>
+<h2 id="场景-1不同层数">场景 1：不同层数</h2>
+<pre><code>from quonic.ml import vqr
+
+x = [0, 1, 2, 3]
+y = [0, 1, 4, 9]
+
+for n in [1, 2, 3]:
+    result = vqr(x, y, n_layers=n)
+    print(f&#39;n={n}: R²={result.r2_score}&#39;)</code></pre>
+<h2 id="场景-2不同函数">场景 2：不同函数</h2>
+<pre><code>from quonic.ml import vqr
+import numpy as np
+
+# 不同函数
+x = np.linspace(0, 2*np.pi, 20).tolist()
+
+# 正弦函数
+y_sin = np.sin(x).tolist()
+result_sin = vqr(x, y_sin, n_layers=3)
+print(f&#39;Sin: R²={result_sin.r2_score}&#39;)
+
+# 二次函数
+y_quad = [xi**2 for xi in x]
+result_quad = vqr(x, y_quad, n_layers=3)
+print(f&#39;Quadratic: R²={result_quad.r2_score}&#39;)</code></pre>
+<h2 id="场景-3时间序列预测">场景 3：时间序列预测</h2>
+<pre><code>from quonic.ml import vqr
+import numpy as np
+
+# 时间序列预测
+t = np.arange(0, 10, 0.5).tolist()
+y = np.sin(t).tolist()
+
+result = vqr(t, y, n_layers=3)
+print(f&#39;R² score: {result.r2_score}&#39;)
+
+# 预测未来值
+t_future = np.arange(10, 12, 0.5).tolist()
+predictions = result.predict(t_future)
+print(f&#39;Predictions: {predictions}&#39;)</code></pre>
+<h1 id="适用场景">适用场景</h1>
+<h2 id="函数拟合">函数拟合</h2>
+<p>变分量子回归器可以用于拟合复杂函数。量子特征映射可以表示非线性函数。</p>
+<h2 id="时间序列预测">时间序列预测</h2>
+<p>变分量子回归器可以用于时间序列预测。量子特征映射可以捕捉时间序列的长期依赖关系。</p>
+<h2 id="数据建模">数据建模</h2>
+<p>变分量子回归器可以用于数据建模。量子特征映射可以提取数据的高维特征。</p>
+<h1 id="常见问题">常见问题</h1>
+<h2
+id="变分量子回归器和经典回归器有什么区别">变分量子回归器和经典回归器有什么区别？</h2>
+<p>变分量子回归器使用量子特征映射，可以在更高维的空间中拟合函数。</p>
+<h2 id="变分量子回归器的精度如何">变分量子回归器的精度如何？</h2>
+<p>精度取决于量子电路的深度和数据的质量。</p>
+<h1 id="学习路径">学习路径</h1>
+<h2 id="前置知识">前置知识</h2>
+<ul>
+<li><p>量子神经网络</p></li>
+<li><p>参数化量子电路</p></li>
+<li><p>量子测量</p></li>
+</ul>
+<h2 id="继续学习">继续学习</h2>
+<ul>
+<li><p>量子分类器</p></li>
+<li><p>量子核方法</p></li>
+<li><p>量子机器学习</p></li>
+</ul>
+<h1 id="完整示例代码">完整示例代码</h1>
+<h2 id="示例-1基本变分量子回归器">示例 1：基本变分量子回归器</h2>
+<pre><code>from quonic.ml import vqr
+
+x = [0, 1, 2, 3]
+y = [0, 1, 4, 9]
+
+result = vqr(x, y, n_layers=2)
+print(f&#39;R² score: {result.r2_score}&#39;)</code></pre>
+<h1 id="下载">下载</h1>
+<ul>
+<li><p>(https://github.com/ChrisLee0721/QuoNic/blob/main/examples/vqr/vqr.py)</p></li>
+</ul>
+</body>
+</html>

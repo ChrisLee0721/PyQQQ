@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc 3.10.2" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <meta name="author" content="QuoNic" />
+  <title>qaoa_mis</title>
+  <style>
+    /* Default styles provided by pandoc.
+    ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+    */
+    html {
+      color: #1a1a1a;
+      background-color: #fdfdfd;
+    }
+    body {
+      margin: 0 auto;
+      max-width: 36em;
+      padding-left: 50px;
+      padding-right: 50px;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      hyphens: auto;
+      overflow-wrap: break-word;
+      text-rendering: optimizeLegibility;
+      font-kerning: normal;
+    }
+    @media (max-width: 600px) {
+      body {
+        font-size: 0.9em;
+        padding: 12px;
+      }
+      h1 {
+        font-size: 1.8em;
+      }
+    }
+    @media print {
+      html {
+        background-color: white;
+      }
+      body {
+        background-color: transparent;
+        color: black;
+      }
+      p, h2, h3 {
+        orphans: 3;
+        widows: 3;
+      }
+      h2, h3, h4 {
+        page-break-after: avoid;
+      }
+    }
+    p {
+      margin: 1em 0;
+    }
+    a {
+      color: #1a1a1a;
+    }
+    a:visited {
+      color: #1a1a1a;
+    }
+    img {
+      max-width: 100%;
+    }
+    svg {
+      height: auto;
+      max-width: 100%;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 1.4em;
+    }
+    h5, h6 {
+      font-size: 1em;
+      font-style: italic;
+    }
+    h6 {
+      font-weight: normal;
+    }
+    ol, ul {
+      padding-left: 1.7em;
+      margin-top: 1em;
+    }
+    li > ol, li > ul {
+      margin-top: 0;
+    }
+    blockquote {
+      margin: 1em 0 1em 1.7em;
+      padding-left: 1em;
+      border-left: 2px solid #e6e6e6;
+      color: #606060;
+    }
+    code {
+      white-space: pre-wrap;
+      font-family: Menlo, Monaco, Consolas, 'Lucida Console', monospace;
+      font-size: 85%;
+      margin: 0;
+      hyphens: manual;
+    }
+    pre {
+      margin: 1em 0;
+      overflow: auto;
+    }
+    pre code {
+      padding: 0;
+      overflow: visible;
+      overflow-wrap: normal;
+    }
+    .sourceCode {
+     background-color: transparent;
+     overflow: visible;
+    }
+    hr {
+      border: none;
+      border-top: 1px solid #1a1a1a;
+      height: 1px;
+      margin: 1em 0;
+    }
+    table {
+      margin: 1em 0;
+      border-collapse: collapse;
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+    table caption {
+      margin-bottom: 0.75em;
+    }
+    tbody {
+      margin-top: 0.5em;
+      border-top: 1px solid #1a1a1a;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    th {
+      border-top: 1px solid #1a1a1a;
+      padding: 0.25em 0.5em 0.25em 0.5em;
+    }
+    td {
+      padding: 0.125em 0.5em 0.25em 0.5em;
+    }
+    header {
+      margin-bottom: 4em;
+      text-align: center;
+    }
+    #TOC li {
+      list-style: none;
+    }
+    #TOC ul {
+      padding-left: 1.3em;
+    }
+    #TOC > ul {
+      padding-left: 0;
+    }
+    #TOC a:not(:hover) {
+      text-decoration: none;
+    }
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: 1.5em;}
+    div.column{flex: auto;}
+    @media screen {
+    div.columns{gap: min(4vw, 1.5em);}
+    div.column{overflow-x: auto;}
+    }
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+  </style>
+  <script defer="" src="" type="text/javascript"></script>
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">qaoa_mis</h1>
+<p class="author">QuoNic</p>
+</header>
+<div class="center">
+<p><strong>Algorithms / 算法</strong> | 难度：高级 | 预计时间：20
+分钟</p>
+</div>
+<h1 id="为什么需要">为什么需要？</h1>
+<p>QAOA 最大独立集是 QAOA 在图论中的经典应用。</p>
+<h2 id="经典局限">经典局限</h2>
+<ul>
+<li><p>最大独立集是 NP-hard 问题</p></li>
+<li><p>经典算法需要指数时间</p></li>
+<li><p>对于大规模图，经典方法效率低</p></li>
+</ul>
+<h2 id="量子优势">量子优势</h2>
+<ul>
+<li><p>QAOA 可以提供比经典近似算法更好的解</p></li>
+<li><p>对噪声有鲁棒性</p></li>
+<li><p>理论上可以达到最优解</p></li>
+</ul>
+<h2 id="实际应用">实际应用</h2>
+<ul>
+<li><p>社交网络分析</p></li>
+<li><p>资源分配</p></li>
+<li><p>调度问题</p></li>
+</ul>
+<h1 id="快速上手">快速上手</h1>
+<pre><code>from quonic.algorithms import qaoa_mis
+
+# 最大独立集
+graph = [(0,1), (1,2), (2,3), (3,0)]
+result = qaoa_mis(graph, p=2)
+print(f&#39;MIS size: {result.mis_size}&#39;)
+print(f&#39;MIS nodes: {result.mis_nodes}&#39;)</code></pre>
+<p><strong>预期输出</strong>：</p>
+<pre><code>MIS size: 2
+MIS nodes: [0, 2]</code></pre>
+<h1 id="原理详解">原理详解</h1>
+<h2 id="电路图">电路图</h2>
+<div class="center">
+<p><img src="../../images/qaoa_mis_circuit.svg" style="width:60.0%"
+alt="image" /></p>
+</div>
+<h2 id="数学推导">数学推导</h2>
+<p>最大独立集问题： <span class="math display">\[\begin{equation}
+\max \sum_i x_i \quad \text{s.t.} \quad x_i + x_j \leq 1, \forall (i,j)
+\in E
+\end{equation}\]</span></p>
+<p>QAOA 编码： <span class="math display">\[\begin{equation}
+C(x) = \sum_i x_i - \lambda \sum_{(i,j) \in E} x_i x_j
+\end{equation}\]</span></p>
+<p>其中 <span class="math inline">\(\lambda\)</span> 是惩罚系数。</p>
+<h2 id="几何解释">几何解释</h2>
+<p>QAOA
+最大独立集在参数空间中寻找最大独立集。量子计算机负责制备态和测量，经典优化器负责更新参数。</p>
+<h1 id="代码详解">代码详解</h1>
+<pre><code>from quonic.algorithms import qaoa_mis
+
+# qaoa_mis(graph, p, optimizer)
+# graph: 图的边列表
+# p: QAOA 层数
+# optimizer: 优化器
+
+result = qaoa_mis(
+    graph=[(0,1), (1,2), (2,3), (3,0)],
+    p=2,
+    optimizer=&#39;cobyla&#39;
+)
+
+# result.mis_size: 最大独立集大小
+# result.mis_nodes: 最大独立集节点
+# result.params: 优化后的参数
+print(f&#39;MIS size: {result.mis_size}&#39;)
+print(f&#39;MIS nodes: {result.mis_nodes}&#39;)</code></pre>
+<h1 id="进阶用法">进阶用法</h1>
+<h2 id="场景-1不同层数">场景 1：不同层数</h2>
+<pre><code>from quonic.algorithms import qaoa_mis
+
+graph = [(0,1), (1,2), (2,3), (3,0)]
+
+for p in [1, 2, 4]:
+    result = qaoa_mis(graph, p=p)
+    print(f&#39;p={p}: MIS size={result.mis_size}&#39;)</code></pre>
+<h2 id="场景-2不同图">场景 2：不同图</h2>
+<pre><code>from quonic.algorithms import qaoa_mis
+
+# 不同图
+graph1 = [(0,1), (1,2), (2,0)]  # 三角形
+graph2 = [(0,1), (1,2), (2,3), (3,0)]  # 正方形
+graph3 = [(0,1), (0,2), (0,3), (1,2), (1,3), (2,3)]  # 完全图
+
+for graph in [graph1, graph2, graph3]:
+    result = qaoa_mis(graph, p=2)
+    print(f&#39;MIS size: {result.mis_size}&#39;)</code></pre>
+<h2 id="场景-3大规模图">场景 3：大规模图</h2>
+<pre><code>from quonic.algorithms import qaoa_mis
+import networkx as nx
+
+# 大规模图
+G = nx.erdos_renyi_graph(20, 0.3)
+graph = list(G.edges())
+
+result = qaoa_mis(graph, p=3)
+print(f&#39;MIS size: {result.mis_size}&#39;)</code></pre>
+<h1 id="适用场景">适用场景</h1>
+<h2 id="社交网络分析">社交网络分析</h2>
+<p>QAOA
+最大独立集可以用于社交网络中的社区检测。最大独立集对应社交网络中互不相识的用户群。</p>
+<h2 id="资源分配">资源分配</h2>
+<p>QAOA
+最大独立集可以用于资源分配。例如，在有限资源下选择互不冲突的任务。</p>
+<h1 id="常见问题">常见问题</h1>
+<h2 id="qaoa-最大独立集和经典最大独立集有什么区别">QAOA
+最大独立集和经典最大独立集有什么区别？</h2>
+<p>QAOA 最大独立集使用量子策略，可以利用量子叠加探索更大的解空间。</p>
+<h2 id="qaoa-最大独立集的精度如何">QAOA 最大独立集的精度如何？</h2>
+<p>精度取决于层数和参数优化策略。</p>
+<h1 id="学习路径">学习路径</h1>
+<h2 id="前置知识">前置知识</h2>
+<ul>
+<li><p>QAOA</p></li>
+<li><p>图论</p></li>
+<li><p>独立集</p></li>
+</ul>
+<h2 id="继续学习">继续学习</h2>
+<ul>
+<li><p>QAOA MaxCut</p></li>
+<li><p>QAOA 背包问题</p></li>
+<li><p>量子优化</p></li>
+</ul>
+<h1 id="完整示例代码">完整示例代码</h1>
+<h2 id="示例-1基本-qaoa-最大独立集">示例 1：基本 QAOA 最大独立集</h2>
+<pre><code>from quonic.algorithms import qaoa_mis
+
+graph = [(0,1), (1,2), (2,3), (3,0)]
+result = qaoa_mis(graph, p=2)
+print(f&#39;MIS size: {result.mis_size}&#39;)</code></pre>
+<h1 id="下载">下载</h1>
+<ul>
+<li><p>(https://github.com/ChrisLee0721/QuoNic/blob/main/examples/qaoa_mis/qaoa_mis.py)</p></li>
+</ul>
+</body>
+</html>

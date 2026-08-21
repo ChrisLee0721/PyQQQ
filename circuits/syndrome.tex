@@ -1,0 +1,11 @@
+\documentclass[border=5mm]{standalone}
+\usepackage{tikz}
+\usetikzlibrary{quantikz2}
+\usepackage{xcolor}
+\pagecolor{white}
+\begin{document}
+\begin{quantikz}
+  \lstick{$|\psi\rangle$} & \ctrl{1} & \qw & \qw \
+  \lstick{$|0\rangle$}    & \targ{}  & \qw & \meter{}
+\end{quantikz}
+\end{document}
