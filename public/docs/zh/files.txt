@@ -16,98 +16,98 @@ docs/zh/api/zx.md
 docs/zh/benchmarks.md
 docs/zh/changelog.md
 docs/zh/examples.md
-docs/zh/examples/example_amplitude_amplification.html
-docs/zh/examples/example_amplitude_estimation.html
-docs/zh/examples/example_basic_gates.html
-docs/zh/examples/example_bb84.html
-docs/zh/examples/example_bell.html
-docs/zh/examples/example_bernstein_vazirani.html
-docs/zh/examples/example_bit_flip_code.html
-docs/zh/examples/example_cif.html
-docs/zh/examples/example_color_code.html
-docs/zh/examples/example_compare.html
-docs/zh/examples/example_controlled.html
-docs/zh/examples/example_coupling_map.html
-docs/zh/examples/example_creg_multi.html
-docs/zh/examples/example_cwhile.html
-docs/zh/examples/example_decompose.html
-docs/zh/examples/example_deutsch_jozsa.html
-docs/zh/examples/example_diffusion.html
-docs/zh/examples/example_discrete_log.html
-docs/zh/examples/example_dqaoa.html
-docs/zh/examples/example_dynamics_simulation.html
-docs/zh/examples/example_e91.html
-docs/zh/examples/example_elliptic_curve.html
-docs/zh/examples/example_error_mitigation.html
-docs/zh/examples/example_from_qiskit_nature.html
-docs/zh/examples/example_ft_gate.html
-docs/zh/examples/example_ghz.html
-docs/zh/examples/example_gpu_demo.html
-docs/zh/examples/example_grover.html
-docs/zh/examples/example_groverize.html
-docs/zh/examples/example_hadamard_test.html
-docs/zh/examples/example_hamiltonian_simulation.html
-docs/zh/examples/example_hardware_compile.html
-docs/zh/examples/example_hhl.html
-docs/zh/examples/example_hsp.html
-docs/zh/examples/example_jordan_wigner.html
-docs/zh/examples/example_lattice_svp.html
-docs/zh/examples/example_mark_state.html
-docs/zh/examples/example_molecule_vqe.html
-docs/zh/examples/example_noise.html
-docs/zh/examples/example_noise_model.html
-docs/zh/examples/example_oracle.html
-docs/zh/examples/example_phase_flip_code.html
-docs/zh/examples/example_qaoa.html
-docs/zh/examples/example_qaoa_knapsack.html
-docs/zh/examples/example_qaoa_maxcut.html
-docs/zh/examples/example_qaoa_mis.html
-docs/zh/examples/example_qaoa_tsp.html
-docs/zh/examples/example_qbm.html
-docs/zh/examples/example_qcnn.html
-docs/zh/examples/example_qft.html
-docs/zh/examples/example_qgan.html
-docs/zh/examples/example_qgnn.html
-docs/zh/examples/example_qi.html
-docs/zh/examples/example_qif.html
-docs/zh/examples/example_qint.html
-docs/zh/examples/example_qng.html
-docs/zh/examples/example_qnn.html
-docs/zh/examples/example_qpca.html
-docs/zh/examples/example_qpe.html
-docs/zh/examples/example_qrl.html
-docs/zh/examples/example_qsp.html
-docs/zh/examples/example_qsvm.html
-docs/zh/examples/example_qtda.html
-docs/zh/examples/example_qtransformer.html
-docs/zh/examples/example_quantum_annealing.html
-docs/zh/examples/example_quantum_bayesian.html
-docs/zh/examples/example_quantum_clustering.html
-docs/zh/examples/example_quantum_counting.html
-docs/zh/examples/example_quantum_eigenvalue.html
-docs/zh/examples/example_quantum_fitting.html
-docs/zh/examples/example_quantum_kernel.html
-docs/zh/examples/example_quantum_matrix_inversion.html
-docs/zh/examples/example_quantum_monte_carlo.html
-docs/zh/examples/example_quantum_ode.html
-docs/zh/examples/example_quantum_pde.html
-docs/zh/examples/example_quantum_walk.html
-docs/zh/examples/example_rejection_sampling.html
-docs/zh/examples/example_schedule.html
-docs/zh/examples/example_shor.html
-docs/zh/examples/example_shor_code.html
-docs/zh/examples/example_simon.html
-docs/zh/examples/example_stabilizer.html
-docs/zh/examples/example_steane_code.html
-docs/zh/examples/example_superdense_coding.html
-docs/zh/examples/example_surface_code.html
-docs/zh/examples/example_swap_test.html
-docs/zh/examples/example_syndrome.html
-docs/zh/examples/example_teleportation.html
-docs/zh/examples/example_trotter.html
-docs/zh/examples/example_vqc.html
-docs/zh/examples/example_vqe.html
-docs/zh/examples/example_vqr.html
+docs/zh/examples/BB84 量子密钥分发.html
+docs/zh/examples/Bell 态.html
+docs/zh/examples/Bernstein-Vazirani 算法.html
+docs/zh/examples/Deutsch-Jozsa 算法.html
+docs/zh/examples/E91 量子密钥分发.html
+docs/zh/examples/GHZ 态.html
+docs/zh/examples/GPU 演示.html
+docs/zh/examples/Grover 化.html
+docs/zh/examples/Grover 搜索.html
+docs/zh/examples/HHL 算法.html
+docs/zh/examples/Hadamard 测试.html
+docs/zh/examples/Jordan-Wigner 变换.html
+docs/zh/examples/Oracle 构造.html
+docs/zh/examples/QAOA MaxCut.html
+docs/zh/examples/QAOA 旅行商问题.html
+docs/zh/examples/QAOA 最大独立集.html
+docs/zh/examples/QAOA 背包问题.html
+docs/zh/examples/QAOA.html
+docs/zh/examples/Shor 码.html
+docs/zh/examples/Shor 算法.html
+docs/zh/examples/Simon 算法.html
+docs/zh/examples/Steane 码.html
+docs/zh/examples/Swap 测试.html
+docs/zh/examples/Trotter 分解.html
+docs/zh/examples/从 Qiskit Nature 迁移.html
+docs/zh/examples/伴随子解码.html
+docs/zh/examples/分子 VQE.html
+docs/zh/examples/动力学模拟.html
+docs/zh/examples/动态 QAOA.html
+docs/zh/examples/受控门.html
+docs/zh/examples/变分量子分类器.html
+docs/zh/examples/变分量子回归器.html
+docs/zh/examples/变分量子本征求解器.html
+docs/zh/examples/后端比较.html
+docs/zh/examples/哈密顿量模拟.html
+docs/zh/examples/噪声模型.html
+docs/zh/examples/基本量子门.html
+docs/zh/examples/多经典寄存器.html
+docs/zh/examples/容错门.html
+docs/zh/examples/扩散算子.html
+docs/zh/examples/拒绝采样.html
+docs/zh/examples/振幅估计.html
+docs/zh/examples/振幅放大.html
+docs/zh/examples/标记态.html
+docs/zh/examples/格最短向量问题.html
+docs/zh/examples/椭圆曲线密码学.html
+docs/zh/examples/比特翻转码.html
+docs/zh/examples/相位翻转码.html
+docs/zh/examples/硬件编译.html
+docs/zh/examples/离散对数.html
+docs/zh/examples/稳定子形式.html
+docs/zh/examples/经典循环.html
+docs/zh/examples/经典条件分支.html
+docs/zh/examples/耦合映射.html
+docs/zh/examples/表面码.html
+docs/zh/examples/误差缓解.html
+docs/zh/examples/超密编码.html
+docs/zh/examples/量子 Transformer.html
+docs/zh/examples/量子主成分分析.html
+docs/zh/examples/量子信号处理.html
+docs/zh/examples/量子偏微分方程求解器.html
+docs/zh/examples/量子傅里叶变换.html
+docs/zh/examples/量子卷积神经网络.html
+docs/zh/examples/量子噪声.html
+docs/zh/examples/量子图神经网络.html
+docs/zh/examples/量子常微分方程求解器.html
+docs/zh/examples/量子强化学习.html
+docs/zh/examples/量子拓扑数据分析.html
+docs/zh/examples/量子接口.html
+docs/zh/examples/量子支持向量机.html
+docs/zh/examples/量子整数.html
+docs/zh/examples/量子曲线拟合.html
+docs/zh/examples/量子本征值估计.html
+docs/zh/examples/量子条件分支.html
+docs/zh/examples/量子核方法.html
+docs/zh/examples/量子玻尔兹曼机.html
+docs/zh/examples/量子生成对抗网络.html
+docs/zh/examples/量子相位估计.html
+docs/zh/examples/量子矩阵求逆.html
+docs/zh/examples/量子神经网络.html
+docs/zh/examples/量子聚类.html
+docs/zh/examples/量子自然梯度.html
+docs/zh/examples/量子蒙特卡洛.html
+docs/zh/examples/量子行走.html
+docs/zh/examples/量子计数.html
+docs/zh/examples/量子调度.html
+docs/zh/examples/量子贝叶斯推断.html
+docs/zh/examples/量子退火.html
+docs/zh/examples/量子隐形传态.html
+docs/zh/examples/门分解.html
+docs/zh/examples/隐子群问题.html
+docs/zh/examples/颜色码.html
 docs/zh/gpu-architecture-report.md
 docs/zh/index.md
 docs/zh/optimization-report.md
