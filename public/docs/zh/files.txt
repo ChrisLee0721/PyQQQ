@@ -107,20 +107,10 @@ docs/zh/examples/隐子群问题.html
 docs/zh/examples/颜色码.html
 docs/zh/qgate API.md
 docs/zh/tutorials/GPU 加速.md
-docs/zh/tutorials/GPU 加速（中文）.md
-docs/zh/tutorials/Grover 搜索教程.md
-docs/zh/tutorials/VQE 量子化学教程.md
 docs/zh/tutorials/噪声缓解.md
-docs/zh/tutorials/噪声缓解教程.md
-docs/zh/tutorials/噪声缓解（中文）.md
 docs/zh/tutorials/基础入门.md
-docs/zh/tutorials/基础入门（中文）.md
-docs/zh/tutorials/量子机器学习教程.md
 docs/zh/tutorials/量子算法.md
-docs/zh/tutorials/量子算法（中文）.md
-docs/zh/tutorials/量子纠错教程.md
 docs/zh/tutorials/高级特性.md
-docs/zh/tutorials/高级特性（中文）.md
 docs/zh/优化报告.md
 docs/zh/可视化.md
 docs/zh/基准测试.md

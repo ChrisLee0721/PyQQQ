@@ -1,7 +1,4 @@
-# 04_gpu_acceleration 中文版
-
-参见 [英文版](04_gpu_acceleration.md)
-
+# Tutorial 04: GPU Acceleration
 
 Speed up quantum simulation with GPU backends.
 

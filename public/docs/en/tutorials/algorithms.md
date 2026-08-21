@@ -1,7 +1,4 @@
-# 02_algorithms 中文版
-
-参见 [英文版](02_algorithms.md)
-
+# Tutorial 02: Algorithms
 
 Explore QuoNic's 77 algorithm templates.
 

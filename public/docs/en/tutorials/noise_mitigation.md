@@ -1,7 +1,4 @@
-# 03_noise_mitigation 中文版
-
-参见 [英文版](03_noise_mitigation.md)
-
+# Tutorial 03: Noise Mitigation
 
 Real quantum hardware has noise. QuoNic provides two error mitigation techniques: ZNE and readout calibration.
 

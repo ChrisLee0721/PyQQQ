@@ -1,7 +1,4 @@
-# 05_advanced 中文版
-
-参见 [英文版](05_advanced.md)
-
+# Tutorial 05: Advanced Features
 
 Quantum control flow, multi-bit registers, and circuit optimization.
 

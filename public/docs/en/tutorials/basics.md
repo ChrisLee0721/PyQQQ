@@ -1,7 +1,4 @@
-# 01_basics 中文版
-
-参见 [英文版](01_basics.md)
-
+# Tutorial 01: Basics
 
 Learn the fundamentals of QuoNic: building circuits, running them, and reading results.
 
