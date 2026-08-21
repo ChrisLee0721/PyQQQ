@@ -1,5 +1,5 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="320" height="160" viewBox="-10 0 330 160">
-  <rect x="-15.0" y="-5.0" width="340.0" height="170.0" fill="#fff" stroke="#ccc" stroke-width="1" rx="4"/>
+<svg xmlns="http://www.w3.org/2000/svg" width="320" height="160" viewBox="-40.0 -30.0 390.0 220.0">
+  <rect x="-40.0" y="-30.0" width="390.0" height="220.0" fill="#fff" stroke="#666" stroke-width="1" rx="4"/>
   <style>
     text { font-family: 'Consolas', 'Courier New', monospace; }
     .qubit-label { font-size: 14px; fill: #555; }
@@ -23,7 +23,7 @@
   <line x1="100" y1="60" x2="220" y2="60" class="wire"/>
   <line x1="100" y1="120" x2="220" y2="120" class="wire"/>
 
-  <rect x="120" y="48" width="20" height="24" class="gate-box"/>
+  <rect x="-40.0" y="-30.0" width="390.0" height="220.0" fill="#fff" stroke="#666" stroke-width="1" rx="4"/>
   <text x="130" y="64" text-anchor="middle" class="gate-label" style="font-size: 10px;">H</text>
   <line x1="190" y1="60" x2="190" y2="120" class="conn-line"/>
   <circle cx="190" cy="60" r="3" class="control-dot"/>

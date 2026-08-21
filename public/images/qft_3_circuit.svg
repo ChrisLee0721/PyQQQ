@@ -1,5 +1,5 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="380" height="220" viewBox="-10 0 390 220">
-  <rect x="-15.0" y="-5.0" width="400.0" height="230.0" fill="#fff" stroke="#ccc" stroke-width="1" rx="4"/>
+<svg xmlns="http://www.w3.org/2000/svg" width="380" height="220" viewBox="-40.0 -30.0 450.0 280.0">
+  <rect x="-40.0" y="-30.0" width="450.0" height="280.0" fill="#fff" stroke="#666" stroke-width="1" rx="4"/>
   <style>
     text { font-family: 'Consolas', 'Courier New', monospace; }
     .qubit-label { font-size: 14px; fill: #555; }
@@ -25,10 +25,10 @@
   <line x1="100" y1="120" x2="280" y2="120" class="wire"/>
   <line x1="100" y1="180" x2="280" y2="180" class="wire"/>
 
-  <rect x="120" y="48" width="20" height="24" class="gate-box"/>
+  <rect x="-40.0" y="-30.0" width="450.0" height="280.0" fill="#fff" stroke="#666" stroke-width="1" rx="4"/>
   <text x="130" y="64" text-anchor="middle" class="gate-label" style="font-size: 10px;">H</text>
-  <rect x="180" y="108" width="20" height="24" class="gate-box"/>
+  <rect x="-40.0" y="-30.0" width="450.0" height="280.0" fill="#fff" stroke="#666" stroke-width="1" rx="4"/>
   <text x="190" y="124" text-anchor="middle" class="gate-label" style="font-size: 10px;">H</text>
-  <rect x="240" y="168" width="20" height="24" class="gate-box"/>
+  <rect x="-40.0" y="-30.0" width="450.0" height="280.0" fill="#fff" stroke="#666" stroke-width="1" rx="4"/>
   <text x="250" y="184" text-anchor="middle" class="gate-label" style="font-size: 10px;">H</text>
 </svg>

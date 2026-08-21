@@ -1,5 +1,5 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="560" height="220" viewBox="-10 0 570 220">
-  <rect x="-15.0" y="-5.0" width="580.0" height="230.0" fill="#fff" stroke="#ccc" stroke-width="1" rx="4"/>
+<svg xmlns="http://www.w3.org/2000/svg" width="560" height="220" viewBox="-40.0 -30.0 630.0 280.0">
+  <rect x="-40.0" y="-30.0" width="630.0" height="280.0" fill="#fff" stroke="#666" stroke-width="1" rx="4"/>
   <style>
     text { font-family: 'Consolas', 'Courier New', monospace; }
     .qubit-label { font-size: 14px; fill: #555; }
@@ -25,17 +25,17 @@
   <line x1="100" y1="120" x2="460" y2="120" class="wire"/>
   <line x1="100" y1="180" x2="460" y2="180" class="wire"/>
 
-  <rect x="120" y="48" width="20" height="24" class="gate-box"/>
+  <rect x="-40.0" y="-30.0" width="630.0" height="280.0" fill="#fff" stroke="#666" stroke-width="1" rx="4"/>
   <text x="130" y="64" text-anchor="middle" class="gate-label" style="font-size: 10px;">X</text>
-  <rect x="180" y="108" width="20" height="24" class="gate-box"/>
+  <rect x="-40.0" y="-30.0" width="630.0" height="280.0" fill="#fff" stroke="#666" stroke-width="1" rx="4"/>
   <text x="190" y="124" text-anchor="middle" class="gate-label" style="font-size: 10px;">X</text>
   <line x1="250" y1="60" x2="250" y2="120" class="conn-line"/>
   <circle cx="250" cy="60" r="3" class="control-dot"/>
   <circle cx="250" cy="120" r="3" class="control-dot"/>
-  <rect x="300" y="48" width="20" height="24" class="gate-box"/>
+  <rect x="-40.0" y="-30.0" width="630.0" height="280.0" fill="#fff" stroke="#666" stroke-width="1" rx="4"/>
   <text x="310" y="64" text-anchor="middle" class="gate-label" style="font-size: 10px;">Z</text>
-  <rect x="360" y="168" width="20" height="24" class="gate-box"/>
+  <rect x="-40.0" y="-30.0" width="630.0" height="280.0" fill="#fff" stroke="#666" stroke-width="1" rx="4"/>
   <text x="370" y="184" text-anchor="middle" class="gate-label" style="font-size: 10px;">Y</text>
-  <rect x="418" y="48" width="24" height="24" class="measure-box"/>
+  <rect x="-40.0" y="-30.0" width="630.0" height="280.0" fill="#fff" stroke="#666" stroke-width="1" rx="4"/>
   <text x="430" y="64" text-anchor="middle" class="gate-label" style="font-size: 10px;">M</text>
 </svg>

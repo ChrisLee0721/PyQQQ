@@ -1,5 +1,5 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="680" height="160" viewBox="-10 0 690 160">
-  <rect x="-15.0" y="-5.0" width="700.0" height="170.0" fill="#fff" stroke="#ccc" stroke-width="1" rx="4"/>
+<svg xmlns="http://www.w3.org/2000/svg" width="680" height="160" viewBox="-40.0 -30.0 750.0 220.0">
+  <rect x="-40.0" y="-30.0" width="750.0" height="220.0" fill="#fff" stroke="#666" stroke-width="1" rx="4"/>
   <style>
     text { font-family: 'Consolas', 'Courier New', monospace; }
     .qubit-label { font-size: 14px; fill: #555; }
@@ -23,25 +23,25 @@
   <line x1="100" y1="60" x2="580" y2="60" class="wire"/>
   <line x1="100" y1="120" x2="580" y2="120" class="wire"/>
 
-  <rect x="120" y="48" width="20" height="24" class="gate-box"/>
+  <rect x="-40.0" y="-30.0" width="750.0" height="220.0" fill="#fff" stroke="#666" stroke-width="1" rx="4"/>
   <text x="130" y="64" text-anchor="middle" class="gate-label" style="font-size: 10px;">H</text>
   <line x1="190" y1="60" x2="190" y2="120" class="conn-line"/>
   <circle cx="190" cy="60" r="3" class="control-dot"/>
   <circle cx="190" cy="120" r="11" class="target-circle"/>
   <line x1="179" y1="120" x2="201" y2="120" class="target-plus"/>
   <line x1="190" y1="109" x2="190" y2="131" class="target-plus"/>
-  <rect x="240" y="48" width="20" height="24" class="gate-box"/>
+  <rect x="-40.0" y="-30.0" width="750.0" height="220.0" fill="#fff" stroke="#666" stroke-width="1" rx="4"/>
   <text x="250" y="64" text-anchor="middle" class="gate-label" style="font-size: 10px;">H</text>
   <line x1="310" y1="60" x2="310" y2="120" class="conn-line"/>
   <circle cx="310" cy="60" r="3" class="control-dot"/>
   <circle cx="310" cy="120" r="11" class="target-circle"/>
   <line x1="299" y1="120" x2="321" y2="120" class="target-plus"/>
   <line x1="310" y1="109" x2="310" y2="131" class="target-plus"/>
-  <rect x="360" y="48" width="20" height="24" class="gate-box"/>
+  <rect x="-40.0" y="-30.0" width="750.0" height="220.0" fill="#fff" stroke="#666" stroke-width="1" rx="4"/>
   <text x="370" y="64" text-anchor="middle" class="gate-label" style="font-size: 10px;">H</text>
-  <rect x="420" y="48" width="20" height="24" class="gate-box"/>
+  <rect x="-40.0" y="-30.0" width="750.0" height="220.0" fill="#fff" stroke="#666" stroke-width="1" rx="4"/>
   <text x="430" y="64" text-anchor="middle" class="gate-label" style="font-size: 10px;">H</text>
-  <rect x="480" y="48" width="20" height="24" class="gate-box"/>
+  <rect x="-40.0" y="-30.0" width="750.0" height="220.0" fill="#fff" stroke="#666" stroke-width="1" rx="4"/>
   <text x="490" y="64" text-anchor="middle" class="gate-label" style="font-size: 10px;">H</text>
   <line x1="550" y1="60" x2="550" y2="120" class="conn-line"/>
   <circle cx="550" cy="60" r="3" class="control-dot"/>
