@@ -7,7 +7,7 @@
 \usepackage{graphicx}
 \geometry{margin=2.5cm}
 
-\title{Amplitude Amplification / Amplitude Amplification}
+\title{Amplitude Amplification / 振幅放大}
 \author{QuoNic}
 \date{}
 
@@ -23,19 +23,39 @@
 
 \section{为什么需要？}
 
-Amplitude Amplification 是量子计算中的重要概念。
+振幅放大是 Grover 搜索的推广，用于放大目标态的振幅。
+
+\subsection{经典局限}
+\begin{itemize}
+  \item 经典搜索需要 $O(N)$ 次查询
+  \item 对于大规模问题，经典方法效率低
+\end{itemize}
+
+\subsection{量子优势}
+\begin{itemize}
+  \item 振幅放大只需要 $O(\sqrt{N})$ 次查询
+  \item 提供二次加速
+  \item 是许多量子算法的基础
+\end{itemize}
+
+\subsection{实际应用}
+\begin{itemize}
+  \item 数据库搜索
+  \item 优化问题
+  \item 量子算法设计
+\end{itemize}
 
 \section{快速上手}
 
 \begin{verbatim}
-from quonic import amplitude_amplification
-result = amplitude_amplification()
-print(result)
+from quonic.algorithms import amplitude_amplification
+result = amplitude_amplification(target='11', n_qubits=2)
+print(f'Probability: {result.probability}')
 \end{verbatim}
 
 \textbf{预期输出}：
 \begin{verbatim}
-Result: success
+Probability: 0.99
 \end{verbatim}
 
 \section{原理详解}
@@ -48,66 +68,108 @@ Result: success
 
 \subsection{数学推导}
 
-Amplitude Amplification 的数学原理。
+振幅放大算子：
+\begin{equation}
+Q = -A S_0 A^{-1} S_\chi
+\end{equation}
+
+其中 $S_0$ 翻转初始态的相位，$S_\chi$ 翻转目标态的相位。
+
+\textbf{迭代}：
+\begin{equation}
+|\psi_k\rangle = Q^k |\psi_0\rangle
+\end{equation}
+
+最优迭代次数 $k \approx \pi\sqrt{N}/4$。
 
 \subsection{几何解释}
 
-Amplitude Amplification 的几何解释。
+振幅放大在 Bloch 球上旋转量子态，每次迭代都放大目标态的振幅。
 
 \section{代码详解}
 
 \begin{verbatim}
-from quonic import amplitude_amplification
-result = amplitude_amplification()
-print(result)
+from quonic.algorithms import amplitude_amplification
+
+# amplitude_amplification(target, n_qubits, iterations)
+# target: target bit string
+# n_qubits: number of qubits
+# iterations: number of amplification steps
+result = amplitude_amplification(target='11', n_qubits=2)
+
+# result.probability: probability of target state
+# result.state: final quantum state
+print(f'Probability: {result.probability}')
 \end{verbatim}
 
 \section{进阶用法}
 
-\subsection{场景 1}
+\subsection{场景 1：不同目标态}
 
-Amplitude Amplification 的应用场景。
+\begin{verbatim}
+from quonic.algorithms import amplitude_amplification
+result = amplitude_amplification(target='101', n_qubits=3)
+print(f'Probability: {result.probability}')
+\end{verbatim}
+
+\subsection{场景 2：多次迭代}
+
+\begin{verbatim}
+from quonic.algorithms import amplitude_amplification
+result = amplitude_amplification(target='11', n_qubits=2, iterations=3)
+print(f'Probability: {result.probability}')
+\end{verbatim}
 
 \section{适用场景}
 
-\subsection{应用 1}
+\subsection{数据库搜索}
 
-Amplitude Amplification 的实际应用。
+振幅放大可以用于在无序数据库中搜索目标。
+
+\subsection{优化问题}
+
+振幅放大可以用于寻找最优解。
 
 \section{常见问题}
 
-\subsection{Amplitude Amplification 的常见问题？}
+\subsection{振幅放大和 Grover 搜索有什么区别？}
 
-Amplitude Amplification 的详细解答。
+Grover 搜索是振幅放大在均匀初始态下的特例。振幅放大更通用，支持任意初始态。
+
+\subsection{振幅放大的加速比是多少？}
+
+二次加速：$O(\sqrt{N})$ vs $O(N)$。
 
 \section{学习路径}
 
 \subsection{前置知识}
 \begin{itemize}
-  \item 量子比特
-  \item 量子门
+  \item 量子比特和叠加态
+  \item Hadamard 门
+  \item 量子测量
 \end{itemize}
 
 \subsection{继续学习}
 \begin{itemize}
-  \item 高级量子算法
-  \item 量子应用
+  \item Grover 搜索
+  \item 量子计数
+  \item 量子优化
 \end{itemize}
 
 \section{完整示例代码}
 
-\subsection{示例 1}
+\subsection{示例 1：基本振幅放大}
 
 \begin{verbatim}
-EXAMPLE_from quonic import amplitude_amplification
-result = amplitude_amplification()
-print(result)
+from quonic.algorithms import amplitude_amplification
+result = amplitude_amplification(target='11', n_qubits=2)
+print(f'Probability: {result.probability}')
 \end{verbatim}
 
 \section{下载}
 
 \begin{itemize}
-  \item [amplitude_amplification.py](https://github.com/ChrisLee0721/QuoNic/blob/main/examples/amplitude_amplification/amplitude_amplification.py)
+  \item [amplitude\_amplification.py](https://github.com/ChrisLee0721/QuoNic/blob/main/examples/amplitude_amplification/amplitude_amplification.py)
 \end{itemize}
 
 \end{document}

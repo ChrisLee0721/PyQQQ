@@ -7,7 +7,7 @@
 \usepackage{graphicx}
 \geometry{margin=2.5cm}
 
-\title{Basic Gates / Basic Gates}
+\title{Basic Gates / 基本量子门}
 \author{QuoNic}
 \date{}
 
@@ -15,7 +15,7 @@
 \maketitle
 
 \begin{center}
-\textbf{Algorithms / 算法} | 难度：中级 | 预计时间：15 分钟
+\textbf{Foundational / 基础} | 难度：初级 | 预计时间：10 分钟
 \end{center}
 
 \tableofcontents
@@ -23,19 +23,46 @@
 
 \section{为什么需要？}
 
-Basic Gates 是量子计算中的重要概念。
+基本量子门是量子计算的基础构建块。
+
+\subsection{经典局限}
+\begin{itemize}
+  \item 经典逻辑门（AND、OR、NOT）是不可逆的
+  \item 经典门无法创建叠加态
+\end{itemize}
+
+\subsection{量子优势}
+\begin{itemize}
+  \item 量子门是可逆的
+  \item 可以创建叠加态和纠缠态
+  \item 是量子计算的基础
+\end{itemize}
+
+\subsection{实际应用}
+\begin{itemize}
+  \item 量子计算
+  \item 量子通信
+  \item 量子密码学
+\end{itemize}
 
 \section{快速上手}
 
 \begin{verbatim}
-from quonic import basic_gates
-result = basic_gates()
-print(result)
+from quonic import qgate, qshow
+from quonic.gates import X, H, Z
+
+qgate(X, 0)  # Pauli-X (NOT gate)
+qgate(H, 0)  # Hadamard
+qgate(Z, 0)  # Pauli-Z (phase flip)
+qshow()
 \end{verbatim}
 
 \textbf{预期输出}：
 \begin{verbatim}
-Result: success
+backend: native | shots: 1024
+Result:
+  |0>     512  ( 50.0%)  ####################
+  |1>     512  ( 50.0%)  ####################
 \end{verbatim}
 
 \section{原理详解}
@@ -48,66 +75,125 @@ Result: success
 
 \subsection{数学推导}
 
-Basic Gates 的数学原理。
+\textbf{Pauli-X 门}（NOT 门）：
+\begin{equation}
+X = \begin{pmatrix} 0 & 1 \\ 1 & 0 \end{pmatrix}
+\end{equation}
+\begin{equation}
+X|0\rangle = |1\rangle, \quad X|1\rangle = |0\rangle
+\end{equation}
+
+\textbf{Hadamard 门}：
+\begin{equation}
+H = \frac{1}{\sqrt{2}} \begin{pmatrix} 1 & 1 \\ 1 & -1 \end{pmatrix}
+\end{equation}
+\begin{equation}
+H|0\rangle = \frac{|0\rangle + |1\rangle}{\sqrt{2}}, \quad H|1\rangle = \frac{|0\rangle - |1\rangle}{\sqrt{2}}
+\end{equation}
+
+\textbf{Pauli-Z 门}（相位翻转）：
+\begin{equation}
+Z = \begin{pmatrix} 1 & 0 \\ 0 & -1 \end{pmatrix}
+\end{equation}
+\begin{equation}
+Z|0\rangle = |0\rangle, \quad Z|1\rangle = -|1\rangle
+\end{equation}
 
 \subsection{几何解释}
 
-Basic Gates 的几何解释。
+在 Bloch 球上：
+\begin{itemize}
+  \item X 门：绕 X 轴旋转 $\pi$
+  \item H 门：绕 (X+Z)/$\sqrt{2}$ 轴旋转 $\pi$
+  \item Z 门：绕 Z 轴旋转 $\pi$
+\end{itemize}
 
 \section{代码详解}
 
 \begin{verbatim}
-from quonic import basic_gates
-result = basic_gates()
-print(result)
+from quonic import qgate, qshow
+from quonic.gates import X, H, Z
+
+qgate(X, 0)  # Pauli-X: |0> -> |1>, |1> -> |0>
+qgate(H, 0)  # Hadamard: |0> -> (|0>+|1>)/sqrt(2)
+qgate(Z, 0)  # Pauli-Z: |0> -> |0>, |1> -> -|1>
+qshow()
 \end{verbatim}
 
 \section{进阶用法}
 
-\subsection{场景 1}
+\subsection{场景 1：其他基本门}
 
-Basic Gates 的应用场景。
+\begin{verbatim}
+from quonic.gates import Y, S, T
+
+qgate(Y, 0)  # Pauli-Y
+qgate(S, 0)  # Phase gate (S gate)
+qgate(T, 0)  # T gate (pi/8 gate)
+\end{verbatim}
+
+\subsection{场景 2：受控门}
+
+\begin{verbatim}
+from quonic.gates import CX, CZ
+
+qgate(CX, 0, 1)  # CNOT gate
+qgate(CZ, 0, 1)  # Controlled-Z gate
+\end{verbatim}
 
 \section{适用场景}
 
-\subsection{应用 1}
+\subsection{量子计算}
 
-Basic Gates 的实际应用。
+基本量子门是所有量子算法的基础。
+
+\subsection{量子通信}
+
+量子门用于制备和操作量子态。
 
 \section{常见问题}
 
-\subsection{Basic Gates 的常见问题？}
+\subsection{量子门和经典门有什么区别？}
 
-Basic Gates 的详细解答。
+量子门是可逆的，经典门是不可逆的。量子门可以创建叠加态。
+
+\subsection{哪些门是通用的？}
+
+\{H, T, CNOT\} 构成通用量子门集。
 
 \section{学习路径}
 
 \subsection{前置知识}
 \begin{itemize}
   \item 量子比特
-  \item 量子门
+  \item 量子测量
 \end{itemize}
 
 \subsection{继续学习}
 \begin{itemize}
-  \item 高级量子算法
-  \item 量子应用
+  \item 量子电路
+  \item 量子算法
+  \item 量子纠错
 \end{itemize}
 
 \section{完整示例代码}
 
-\subsection{示例 1}
+\subsection{示例 1：基本量子门}
 
 \begin{verbatim}
-EXAMPLE_from quonic import basic_gates
-result = basic_gates()
-print(result)
+from quonic import qgate, qshow
+from quonic.gates import X, H, Z
+
+qgate(X, 0)
+qgate(H, 0)
+qgate(Z, 0)
+qshow()
 \end{verbatim}
 
 \section{下载}
 
 \begin{itemize}
-  \item [basic_gates.py](https://github.com/ChrisLee0721/QuoNic/blob/main/examples/basic_gates/basic_gates.py)
+  \item [basic\_gates.py](https://github.com/ChrisLee0721/QuoNic/blob/main/examples/basic_gates/basic_gates.py)
 \end{itemize}
 
 \end{document}
