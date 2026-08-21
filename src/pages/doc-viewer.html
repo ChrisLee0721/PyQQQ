@@ -149,7 +149,6 @@
         }
 
         function toggleLang() {
-            const prevLang = currentLang;
             currentLang = currentLang === 'en' ? 'zh' : 'en';
             localStorage.setItem('quonic-docs-lang', currentLang);
             applyLang();
@@ -158,24 +157,8 @@
             const f = p.get('file');
             if (!f) return;
 
-            // .html files are always Chinese
-            if (f.endsWith('.html')) {
-                // If user was on Chinese and switched to English, show notice
-                if (prevLang === 'zh' && currentLang === 'en') {
-                    showLangNotice(f);
-                }
-                // If user was on English and switched to Chinese, do nothing (already Chinese)
-                return;
-            }
-
-            // .md files - check for _zh version
-            if (currentLang === 'zh' && hasZh(f)) {
-                window.location.search = '?file=' + toZhPath(f);
-            } else if (currentLang === 'zh' && !hasZh(f)) {
-                showLangNotice(f);
-            } else if (currentLang === 'en') {
-                window.location.search = '?file=' + toEnPath(f);
-            }
+            // Reload with new language
+            window.location.reload();
         }
 
         function showLangNotice(f) {
@@ -216,14 +199,28 @@
                     const title = name.replace(/\.(md|html)$/, '').replace(/^example_/, '').replace(/_zh$/, '').replace(/_/g, ' ').replace(/-/g, ' ');
                     const a = document.createElement('a');
                     a.dataset.file = file;
-                    // For _zh files, show the base name in the URL but load the _zh version
-                    const displayFile = file.replace('_zh.html', '.html').replace('_zh.md', '.md');
+                    // For example files, use en/ or zh/ folder
+                    let displayFile = file;
+                    if (file.startsWith('docs/examples/') && file.endsWith('.html')) {
+                        const baseName = file.replace('docs/examples/', '');
+                        if (currentLang === 'zh') {
+                            displayFile = 'docs/examples/zh/' + baseName;
+                        } else {
+                            displayFile = 'docs/examples/en/' + baseName;
+                        }
+                    }
                     a.href = `doc-viewer.html?file=${displayFile}`;
-                    a.dataset.zhFile = file; // Store the actual _zh file path
                     a.textContent = title;
                     a.className = 'block px-3 py-1.5 rounded-lg text-doc-dim hover:text-doc-text hover:bg-doc-surface transition-colors';
 
-                    if (file.endsWith('.html')) {
+                    // Show language badge based on folder
+                    if (file.includes('/examples/zh/') || file.includes('/examples/en/')) {
+                        // Example files: show badge based on current language
+                        const badge = document.createElement('span');
+                        badge.className = currentLang === 'zh' ? 'lang-badge zh' : 'lang-badge en';
+                        badge.textContent = currentLang === 'zh' ? '中' : 'EN';
+                        a.appendChild(badge);
+                    } else if (file.endsWith('.html')) {
                         const badge = document.createElement('span');
                         badge.className = 'lang-badge zh';
                         badge.textContent = '中';
@@ -245,11 +242,24 @@
 
         // Filter files based on current language
         function filterFilesByLang(fileList, lang) {
-            if (lang === 'en') {
-                // English mode: hide all _zh files
-                return fileList.filter(f => !f.endsWith('_zh.md') && !f.endsWith('_zh.html'));
-            }
-            // Chinese mode: show all files
+            // For example files, only show the appropriate language folder
+            return fileList.filter(f => {
+                // Skip zh/ and en/ folders - we'll add them back based on language
+                if (f.includes('/examples/zh/') || f.includes('/examples/en/')) {
+                    return false;
+                }
+                // Skip _zh files
+                if (f.endsWith('_zh.md') || f.endsWith('_zh.html')) {
+                    return false;
+                }
+                return true;
+            });
+        }
+
+        // Add example files based on current language
+        function addExampleFiles(fileList, lang) {
+            const exampleDir = lang === 'zh' ? 'docs/examples/zh/' : 'docs/examples/en/';
+            // We'll fetch the example files dynamically
             return fileList;
         }
 
@@ -257,8 +267,29 @@
             .then(r => r.text())
             .then(text => {
                 allFiles = text.trim().split('\n').filter(f => f && !f.endsWith('.json') && !f.endsWith('.pdf'));
-                const files = filterFilesByLang(allFiles, currentLang);
-                buildSidebar(files);
+                let files = filterFilesByLang(allFiles, currentLang);
+
+                // Add example files from the appropriate language folder
+                const exampleDir = currentLang === 'zh' ? 'docs/examples/zh/' : 'docs/examples/en/';
+                fetch(exampleDir)
+                    .then(r => r.text())
+                    .then(html => {
+                        // Parse HTML to get file list
+                        const parser = new DOMParser();
+                        const doc = parser.parseFromString(html, 'text/html');
+                        const links = doc.querySelectorAll('a');
+                        links.forEach(link => {
+                            const href = link.getAttribute('href');
+                            if (href && href.endsWith('.html')) {
+                                files.push(exampleDir + href);
+                            }
+                        });
+                        buildSidebar(files);
+                    })
+                    .catch(() => {
+                        // If fetch fails, just build with what we have
+                        buildSidebar(files);
+                    });
 
                 const zhChecks = files
                     .filter(f => f.endsWith('.md'))
@@ -317,27 +348,17 @@
             // Determine which file to load based on language
             let actualFile = urlFile;
 
-            if (currentLang === 'zh') {
-                // Chinese mode: try to load _zh version
-                if (urlFile.endsWith('.html') && !urlFile.endsWith('_zh.html')) {
-                    const zhFile = urlFile.replace('.html', '_zh.html');
-                    fetch(zhFile, { method: 'HEAD' })
-                        .then(r => { if (r.ok) actualFile = zhFile; })
-                        .catch(() => {})
-                        .finally(() => loadDoc(actualFile));
-                } else if (urlFile.endsWith('.md') && !urlFile.endsWith('_zh.md')) {
-                    const zhFile = urlFile.replace('.md', '_zh.md');
-                    fetch(zhFile, { method: 'HEAD' })
-                        .then(r => { if (r.ok) actualFile = zhFile; })
-                        .catch(() => {})
-                        .finally(() => loadDoc(actualFile));
+            if (urlFile.startsWith('docs/examples/') && urlFile.endsWith('.html')) {
+                // Example files: use en/ or zh/ folder
+                const baseName = urlFile.replace('docs/examples/', '');
+                if (currentLang === 'zh') {
+                    actualFile = 'docs/examples/zh/' + baseName;
                 } else {
-                    loadDoc(actualFile);
+                    actualFile = 'docs/examples/en/' + baseName;
                 }
-            } else {
-                // English mode: load non-_zh version directly
-                loadDoc(actualFile);
             }
+
+            loadDoc(actualFile);
 
             function loadDoc(file) {
             fetch(file)
