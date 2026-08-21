@@ -268,19 +268,82 @@ result = diffusion(n_qubits=2)
 print(f&#39;Operator shape: {result.operator.shape}&#39;)
 print(f&#39;Circuit depth: {result.circuit.depth}&#39;)</code></pre>
 <h1 id="进阶用法">进阶用法</h1>
-<h2 id="场景-1不同量子比特数">场景 1：不同量子比特数</h2>
-<pre><code>from quonic.algorithms import diffusion
+<h2 id="场景-1grover-搜索中的扩散算子">场景 1：Grover
+搜索中的扩散算子</h2>
+<p>扩散算子在 Grover 搜索中的完整应用：</p>
+<pre><code>from quonic.algorithms import diffusion, oracle
+from quonic import qgate, qshow
+from quonic.gates import H
 
-# 不同量子比特数
-for n in [2, 3, 4, 5]:
-    result = diffusion(n_qubits=n)
-    print(f&#39;n={n}: Operator shape {result.operator.shape}&#39;)</code></pre>
-<h2 id="场景-2带噪声的扩散算子">场景 2：带噪声的扩散算子</h2>
-<pre><code>from quonic.algorithms import diffusion
+# 3-qubit Grover 搜索：寻找 |101&gt;
+n_qubits = 3
+target = &#39;101&#39;
 
-# 带噪声
-result = diffusion(n_qubits=2, noise=0.05)
-print(f&#39;Operator: {result.operator}&#39;)</code></pre>
+# 步骤 1：初始化均匀叠加态
+for i in range(n_qubits):
+    qgate(H, i)
+
+# 步骤 2：Grover 迭代
+for _ in range(2):  # 最优迭代次数
+    # Oracle：标记目标态
+    oracle(target, n_qubits)
+
+    # Diffusion：关于平均振幅反射
+    diffusion(n_qubits=n_qubits)
+
+qshow()
+
+# 扩散算子的作用：
+# 1. 计算所有态的平均振幅
+# 2. 关于平均振幅反射
+# 3. 放大目标态的振幅，减小其他态的振幅</code></pre>
+<h2 id="场景-2扩散算子的矩阵分析">场景 2：扩散算子的矩阵分析</h2>
+<p>分析扩散算子的数学性质：</p>
+<pre><code>from quonic.algorithms import diffusion
+import numpy as np
+
+# 创建扩散算子
+result = diffusion(n_qubits=2)
+D = np.array(result.operator)
+
+# 验证性质 1：D 是对称矩阵
+print(f&#39;D is symmetric: {np.allclose(D, D.T)}&#39;)
+
+# 验证性质 2：D 是酉矩阵
+print(f&#39;D is unitary: {np.allclose(D @ D.T, np.eye(4))}&#39;)
+
+# 验证性质 3：D^2 = I
+print(f&#39;D^2 = I: {np.allclose(D @ D, np.eye(4))}&#39;)
+
+# 特征值分析
+eigenvalues = np.linalg.eigvals(D)
+print(f&#39;Eigenvalues: {eigenvalues}&#39;)
+
+# 扩散算子的特征值：
+# 一个特征值为 1（对应均匀叠加态）
+# 其他特征值为 -1（对应正交于均匀叠加态的态）</code></pre>
+<h2 id="场景-3自定义扩散算子">场景 3：自定义扩散算子</h2>
+<p>为特殊问题构造自定义扩散算子：</p>
+<pre><code>from quonic.algorithms import diffusion
+import numpy as np
+
+# 自定义初始态（非均匀叠加）
+# 例如：加权叠加态，某些态的权重更高
+n_qubits = 2
+weights = [0.1, 0.3, 0.3, 0.3]  # 态 |00&gt; 权重较低
+
+# 构造加权扩散算子
+# D = 2|psi&gt;&lt;psi| - I，其中 |psi&gt; 是加权态
+psi = np.sqrt(weights)
+D_weighted = 2 * np.outer(psi, psi) - np.eye(2**n_qubits)
+
+# 应用加权扩散算子
+# 这在某些优化问题中可能更有效
+print(f&#39;Weighted diffusion operator:\n{D_weighted}&#39;)
+
+# 应用场景：
+# - 当某些解更可能时，可以调整初始态权重
+# - 在量子机器学习中，可以编码先验知识</code></pre>
 <h1 id="适用场景">适用场景</h1>
 <h2 id="grover-搜索">Grover 搜索</h2>
 <p>扩散算子是 Grover 搜索的核心组件。</p>

@@ -155,47 +155,88 @@ qshow()
 
 \section{进阶用法}
 
-\subsection{场景 1：受控门}
+\subsection{场景 1：构建 Bell 态（量子纠缠）}
+
+使用基本门构建 Bell 态：
 
 \begin{verbatim}
-from quonic.gates import CX, CZ, CY
+from quonic import qgate, qshow
+from quonic.gates import H, CX
 
-# CNOT gate
-qgate(CX, 0, 1)  # Control: q0, Target: q1
+# Bell 态：(|00> + |11>) / sqrt(2)
+# 步骤 1：对 q0 施加 H 门，创建叠加态
+qgate(H, 0)  # q0 -> (|0> + |1>)/sqrt(2)
 
-# Controlled-Z gate
-qgate(CZ, 0, 1)  # Control: q0, Target: q1
+# 步骤 2：CNOT 门创建纠缠
+qgate(CX, 0, 1)  # 如果 q0=|1>，翻转 q1
 
-# Controlled-Y gate
-qgate(CY, 0, 1)  # Control: q0, Target: q1
+# 结果：|00> 和 |11> 各 50% 概率
+qshow()
+
+# 验证纠缠特性：
+# - 测量 q0=|0> 时，q1 必须是 |0>
+# - 测量 q0=|1> 时，q1 必须是 |1>
+# - 两个量子比特完全关联
 \end{verbatim}
 
-\subsection{场景 2：旋转门}
+\subsection{场景 2：量子相位踢（Phase Kickback）}
+
+受控门的相位踢效应：
 
 \begin{verbatim}
-from quonic.gates import Rx, Ry, Rz
+from quonic import qgate, qshow
+from quonic.gates import H, X, CZ
+
+# 相位踢：将相位从目标比特踢回控制比特
+# 初始态：|01>
+qgate(X, 1)  # q1 = |1>
+
+# 施加 H 门
+qgate(H, 0)  # q0 = (|0> + |1>)/sqrt(2)
+
+# CZ 门：如果 q0=|1> 且 q1=|1>，施加相位
+qgate(CZ, 0, 1)
+
+# 相位踢效果：
+# |01> -> |01> (无相位)
+# |11> -> -|11> (相位翻转)
+# 结果：q0 的相位被修改，即使 CZ 作用在 q1 上
+
+qshow()
+# 测量结果：q0 的概率分布改变
+\end{verbatim}
+
+\subsection{场景 3：构建量子傅里叶变换（QFT）}
+
+使用基本门构建 2-qubit QFT：
+
+\begin{verbatim}
+from quonic import qgate, qshow
+from quonic.gates import H, Rz, SWAP
 import math
 
-# Rx gate: rotation around X axis
-qgate(Rx(math.pi/2), 0)  # Rotate pi/2 around X
+# 2-qubit QFT 电路
+# 输入：|x1 x0>，输出：QFT|x1 x0>
 
-# Ry gate: rotation around Y axis
-qgate(Ry(math.pi/4), 0)  # Rotate pi/4 around Y
+# 步骤 1：对 q0 施加 H 门
+qgate(H, 0)
 
-# Rz gate: rotation around Z axis
-qgate(Rz(math.pi), 0)  # Rotate pi around Z
-\end{verbatim}
+# 步骤 2：受控相位门
+qgate(Rz(math.pi/2), 1)  # Rz(pi/2) on q1
 
-\subsection{场景 3：多量子比特门}
+# 步骤 3：对 q1 施加 H 门
+qgate(H, 1)
 
-\begin{verbatim}
-from quonic.gates import CCX, CSWAP
+# 步骤 4：SWAP 门（交换比特顺序）
+qgate(SWAP, 0, 1)
 
-# Toffoli gate (CCX)
-qgate(CCX, 0, 1, 2)  # Control: q0, q1; Target: q2
+qshow()
 
-# Fredkin gate (CSWAP)
-qgate(CSWAP, 0, 1, 2)  # Control: q0; Swap: q1, q2
+# QFT 的作用：
+# |00> -> (|00> + |01> + |10> + |11>)/2
+# |01> -> (|00> + i|01> - |10> - i|11>)/2
+# |10> -> (|00> - |01> + |10> - |11>)/2
+# |11> -> (|00> - i|01> - |10> + i|11>)/2
 \end{verbatim}
 
 \section{适用场景}

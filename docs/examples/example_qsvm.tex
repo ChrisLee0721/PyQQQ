@@ -159,47 +159,84 @@ print(f'Support vectors: {result.support_vectors}')
 
 \section{进阶用法}
 
-\subsection{场景 1：不同核函数}
+\subsection{场景 1：XOR 问题（量子核的优势）}
+
+XOR 问题是经典线性 SVM 无法解决的，但量子 SVM 可以：
 
 \begin{verbatim}
 from quonic.ml import qsvm
+import numpy as np
 
-# 量子核
-result_q = qsvm(data, labels, kernel='quantum')
+# XOR 数据：线性不可分
+data = [[0, 0], [0, 1], [1, 0], [1, 1]]
+labels = [0, 1, 1, 0]  # XOR 标签
 
-# RBF 核（经典）
-result_r = qsvm(data, labels, kernel='rbf')
+# 经典 RBF 核 SVM（可能失败）
+result_classic = qsvm(data, labels, kernel='rbf')
+print(f'Classic SVM accuracy: {result_classic.accuracy}')
 
-# 多项式核（经典）
-result_p = qsvm(data, labels, kernel='poly')
+# 量子核 SVM（利用高维特征空间）
+result_quantum = qsvm(data, labels, kernel='quantum')
+print(f'Quantum SVM accuracy: {result_quantum.accuracy}')
 
-print(f'Quantum: {result_q.accuracy}')
-print(f'RBF: {result_r.accuracy}')
-print(f'Poly: {result_p.accuracy}')
+# 量子核将数据映射到 4 维 Hilbert 空间
+# 在高维空间中，XOR 数据变得线性可分
 \end{verbatim}
 
-\subsection{场景 2：不同正则化参数}
+\subsection{场景 2：手写数字识别（实际应用）}
 
 \begin{verbatim}
 from quonic.ml import qsvm
+from quonic.datasets import load_digits
 
-# 不同的 C 值
-for C in [0.1, 1.0, 10.0]:
-    result = qsvm(data, labels, C=C)
-    print(f'C={C}: Accuracy={result.accuracy}')
+# 加载手写数字数据集
+digits = load_digits(n_classes=2)  # 二分类：0 vs 1
+X_train, X_test = digits.data[:100], digits.data[100:]
+y_train, y_test = digits.target[:100], digits.target[100:]
+
+# 降维到 4 维（减少量子比特数）
+from sklearn.decomposition import PCA
+pca = PCA(n_components=4)
+X_train_pca = pca.fit_transform(X_train)
+X_test_pca = pca.transform(X_test)
+
+# 训练量子 SVM
+result = qsvm(X_train_pca.tolist(), y_train.tolist(), kernel='quantum')
+
+# 预测
+predictions = result.predict(X_test_pca.tolist())
+accuracy = sum(p == t for p, t in zip(predictions, y_test)) / len(y_test)
+print(f'Test accuracy: {accuracy}')
 \end{verbatim}
 
-\subsection{场景 3：多分类问题}
+\subsection{场景 3：量子核可视化与分析}
 
 \begin{verbatim}
 from quonic.ml import qsvm
+import matplotlib.pyplot as plt
 
-# 三分类问题
-data = [[0, 1], [1, 0], [1, 1], [0, 0], [0.5, 0.5]]
-labels = [0, 1, 2, 0, 1]
+# 生成二维数据
+np.random.seed(42)
+X = np.random.randn(20, 2)
+y = (X[:, 0]**2 + X[:, 1]**2 < 1).astype(int)
 
-result = qsvm(data, labels, kernel='quantum')
-print(f'Accuracy: {result.accuracy}')
+# 计算量子核矩阵
+result = qsvm(X.tolist(), y.tolist(), kernel='quantum')
+K_quantum = result.kernel_matrix
+
+# 可视化核矩阵
+plt.figure(figsize=(8, 6))
+plt.imshow(K_quantum, cmap='viridis')
+plt.colorbar()
+plt.title('Quantum Kernel Matrix')
+plt.xlabel('Sample index')
+plt.ylabel('Sample index')
+plt.savefig('quantum_kernel.png')
+plt.show()
+
+# 分析：量子核矩阵的块结构反映了数据的类别结构
+# 对角块（同类样本）的核值较高
+# 非对角块（不同类样本）的核值较低
 \end{verbatim}
 
 \section{适用场景}

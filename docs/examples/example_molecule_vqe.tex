@@ -142,26 +142,119 @@ print(f'Error: {result.error} Ha')
 
 \section{进阶用法}
 
-\subsection{场景 1：不同分子}
+\subsection{场景 1：分子势能面扫描}
+
+计算分子在不同键长下的能量：
 
 \begin{verbatim}
 from quonic.chemistry import molecule_vqe
+import matplotlib.pyplot as plt
+import numpy as np
 
-# 不同分子
-for mol in ['H2', 'LiH', 'H2O']:
-    result = molecule_vqe(molecule=mol, bond_length=0.74)
-    print(f'{mol}: Energy={result.energy} Ha')
+# H2 分子的势能面
+bond_lengths = np.linspace(0.5, 2.0, 20)
+energies = []
+
+for r in bond_lengths:
+    result = molecule_vqe(molecule='H2', bond_length=r, ansatz='uccsd')
+    energies.append(result.energy)
+    print(f'r={r:.2f} A: E={result.energy:.6f} Ha')
+
+# 绘制势能面
+plt.figure(figsize=(10, 6))
+plt.plot(bond_lengths, energies, 'o-')
+plt.xlabel('Bond Length (Angstrom)')
+plt.ylabel('Energy (Hartree)')
+plt.title('H2 Molecular Potential Energy Surface')
+plt.grid(True)
+plt.savefig('h2_pes.png')
+
+# 分析：
+# - 平衡键长：约 0.74 Angstrom
+# - 解离极限：约 -1.0 Ha（两个独立的 H 原子）
+# - 势能阱深度：约 0.14 Ha
 \end{verbatim}
 
-\subsection{场景 2：不同 ansatz}
+\subsection{场景 2：激发态计算}
+
+计算分子的激发态能量：
 
 \begin{verbatim}
 from quonic.chemistry import molecule_vqe
+import numpy as np
 
-# 不同 ansatz
-for ansatz in ['uccsd', 'hardware_efficient']:
-    result = molecule_vqe(molecule='H2', ansatz=ansatz)
-    print(f'{ansatz}: Energy={result.energy} Ha')
+# H2 分子的基态和激发态
+mol = molecule_vqe(molecule='H2', bond_length=0.74)
+
+# 基态能量
+E0 = mol.energy
+print(f'Ground state energy: {E0:.6f} Ha')
+
+# 激发态计算（使用 VQD - Variational Quantum Deflation）
+# VQD 通过添加惩罚项来激发态
+from quonic.algorithms import vqd
+
+# 第一激发态
+result_vqd = vqd(
+    molecule='H2',
+    bond_length=0.74,
+    n_states=2,
+    penalty=10.0
+)
+
+E1 = result_vqd.energies[1]
+print(f'First excited state energy: {E1:.6f} Ha')
+print(f'Excitation energy: {E1 - E0:.6f} Ha')
+
+# 分析：
+# - 基态：X^1Sigma_g^+（单重态）
+# - 第一激发态：b^3Sigma_u^+（三重态）
+# - 激发能约为 0.5 Ha
+\end{verbatim}
+
+\subsection{场景 3：噪声下的 VQE}
+
+分析噪声对 VQE 精度的影响：
+
+\begin{verbatim}
+from quonic.chemistry import molecule_vqe
+from quonic.noise import noise_model
+import matplotlib.pyplot as plt
+
+# 不同噪声水平下的 VQE
+noise_levels = [0.0, 0.001, 0.01, 0.05, 0.1]
+energies = []
+errors = []
+
+for noise_rate in noise_levels:
+    noise = noise_model(error_rate=noise_rate, noise_type='depolarizing')
+
+    result = molecule_vqe(
+        molecule='H2',
+        bond_length=0.74,
+        ansatz='uccsd',
+        noise_model=noise
+    )
+
+    energies.append(result.energy)
+    errors.append(result.error)
+    print(f'Noise={noise_rate}: E={result.energy:.6f}, Error={result.error:.6f}')
+
+# 绘制噪声影响
+plt.figure(figsize=(10, 6))
+plt.errorbar(noise_levels, energies, yerr=errors, fmt='o-')
+plt.axhline(y=-1.137270, color='r', linestyle='--', label='Exact')
+plt.xlabel('Noise Rate')
+plt.ylabel('Energy (Hartree)')
+plt.title('VQE Accuracy vs Noise Level')
+plt.legend()
+plt.grid(True)
+plt.savefig('vqe_noise.png')
+
+# 分析：
+# - 低噪声：VQE 接近精确值
+# - 高噪声：VQE 误差增大
+# - 可以使用 ZNE 等技术缓解噪声
 \end{verbatim}
 
 \section{适用场景}

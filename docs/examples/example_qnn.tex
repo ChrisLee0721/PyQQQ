@@ -157,39 +157,86 @@ print(f'Loss: {result.loss}')
 
 \section{进阶用法}
 
-\subsection{场景 1：不同层数}
+\subsection{场景 1：量子特征映射与数据编码}
+
+不同的数据编码方式会影响 QNN 的表达能力：
 
 \begin{verbatim}
 from quonic.ml import qnn
+import math
 
-# 不同层数的影响
-for n in [1, 2, 3, 4]:
-    result = qnn(data, labels, n_layers=n)
-    print(f'n={n}: Accuracy={result.accuracy}')
+# 方式 1：角度编码（将数据编码为旋转角度）
+# 适用于：特征值在 [0, 2pi] 范围内
+data_angle = [[math.pi/4, math.pi/2], [math.pi, 3*math.pi/4]]
+
+# 方式 2：振幅编码（将数据编码为量子态振幅）
+# 适用于：高维数据，需要 log2(n) 个量子比特
+data_amplitude = [[0.6, 0.8], [0.8, 0.6]]  # 需要归一化
+
+# 方式 3：基编码（将二进制数据编码为计算基态）
+# 适用于：二进制特征
+data_basis = [[0, 1], [1, 0], [1, 1], [0, 0]]
+
+# 比较不同编码方式的效果
+for name, data in [("Angle", data_angle), ("Amplitude", data_amplitude), ("Basis", data_basis)]:
+    result = qnn(data, [0, 1], n_layers=2)
+    print(f'{name} encoding: Accuracy={result.accuracy}')
 \end{verbatim}
 
-\subsection{场景 2：不同学习率}
+\subsection{场景 2：量子神经网络的表达能力分析}
+
+QNN 的表达能力取决于电路深度和参数数量：
 
 \begin{verbatim}
 from quonic.ml import qnn
+import numpy as np
 
-# 不同学习率的影响
-for lr in [0.001, 0.01, 0.1]:
-    result = qnn(data, labels, learning_rate=lr)
-    print(f'lr={lr}: Accuracy={result.accuracy}')
+# 生成复杂数据集（非线性可分）
+np.random.seed(42)
+X = np.random.randn(50, 2)
+y = ((X[:, 0]**2 + X[:, 1]**2) > 1).astype(int).tolist()
+
+# 测试不同深度的表达能力
+results = []
+for depth in [1, 2, 3, 4, 5]:
+    result = qnn(X.tolist(), y, n_layers=depth, n_epochs=200)
+    results.append((depth, result.accuracy, result.loss))
+    print(f'Depth {depth}: Accuracy={result.accuracy:.3f}, Loss={result.loss:.3f}')
+
+# 分析：深度增加 → 表达能力增强 → 但可能过拟合
+# 最佳深度取决于数据复杂度和噪声水平
 \end{verbatim}
 
-\subsection{场景 3：多分类问题}
+\subsection{场景 3：量子梯度下降与参数优化}
+
+QNN 使用参数平移规则计算梯度：
 
 \begin{verbatim}
 from quonic.ml import qnn
 
-# 三分类问题
-data = [[0, 1], [1, 0], [1, 1], [0, 0], [0.5, 0.5]]
-labels = [0, 1, 2, 0, 1]
+# 自定义优化器和学习率调度
+result = qnn(
+    data=[[0, 1], [1, 0], [1, 1], [0, 0]],
+    labels=[0, 1, 1, 0],
+    n_layers=2,
+    optimizer='parameter_shift',  # 量子梯度下降
+    learning_rate=0.1,
+    lr_schedule='cosine',  # 余弦退火
+    n_epochs=200
+)
 
-result = qnn(data, labels, n_layers=3)
-print(f'Accuracy: {result.accuracy}')
+# 分析训练过程
+import matplotlib.pyplot as plt
+plt.plot(result.history['loss'])
+plt.xlabel('Epoch')
+plt.ylabel('Loss')
+plt.title('QNN Training Loss')
+plt.savefig('qnn_training.png')
+
+# 量子梯度下降的收敛性：
+# - 参数平移规则：精确计算梯度，无需经典近似
+# - 学习率调度：避免陷入局部最优
+# - 早停策略：防止过拟合
 \end{verbatim}
 
 \section{适用场景}

@@ -267,24 +267,103 @@ result = hamiltonian_simulation(
 print(f&#39;Evolution: {result.evolution}&#39;)
 print(f&#39;Eigenvalues: {result.eigenvalues}&#39;)</code></pre>
 <h1 id="进阶用法">进阶用法</h1>
-<h2 id="场景-1不同哈密顿量">场景 1：不同哈密顿量</h2>
+<h2 id="场景-1分子哈密顿量模拟">场景 1：分子哈密顿量模拟</h2>
+<p>模拟 H2 分子的电子结构：</p>
 <pre><code>from quonic.simulation import hamiltonian_simulation
+from quonic.chemistry import molecule_vqe
+import numpy as np
 
-# 不同哈密顿量
-H1 = [[1, 0], [0, -1]]  # 自旋-z
-H2 = [[0, 1], [1, 0]]   # 自旋-x
-H3 = [[0, -1j], [1j, 0]] # 自旋-y
+# 获取 H2 分子哈密顿量
+mol = molecule_vqe(molecule=&#39;H2&#39;, bond_length=0.74)
+H = mol.hamiltonian
 
-for H in [H1, H2, H3]:
-    result = hamiltonian_simulation(H, t=1.0)
-    print(f&#39;Evolution: {result.evolution}&#39;)</code></pre>
-<h2 id="场景-2不同模拟方法">场景 2：不同模拟方法</h2>
+# 模拟不同时间的演化
+times = [0.1, 0.5, 1.0, 2.0]
+for t in times:
+    result = hamiltonian_simulation(H, t=t, method=&#39;trotter&#39;)
+
+    # 计算基态占据概率
+    eigenvalues, eigenvectors = np.linalg.eigh(np.array(H))
+    ground_state = eigenvectors[:, 0]
+
+    prob_ground = abs(ground_state.conj() @ result.evolution @ ground_state)**2
+    print(f&#39;t={t}: Ground state probability = {prob_ground:.4f}&#39;)
+
+# 分析：随着时间增加，系统从基态演化到激发态
+# 这模拟了分子振动的量子动力学</code></pre>
+<h2 id="场景-2量子相位估计qpe">场景 2：量子相位估计（QPE）</h2>
+<p>使用 QPE 估计哈密顿量的本征值：</p>
 <pre><code>from quonic.simulation import hamiltonian_simulation
+import numpy as np
 
-# 不同模拟方法
-for method in [&#39;trotter&#39;, &#39;qpe&#39;, &#39;linear_combination&#39;]:
-    result = hamiltonian_simulation(H=[[1,0],[0,-1]], t=1.0, method=method)
-    print(f&#39;{method}: Evolution={result.evolution}&#39;)</code></pre>
+# 构造测试哈密顿量
+H = [[2, 1], [1, -1]]
+
+# 使用 QPE 估计本征值
+result = hamiltonian_simulation(H, t=1.0, method=&#39;qpe&#39;)
+
+# 精确本征值
+eigenvalues_exact = np.linalg.eigvalsh(H)
+print(f&#39;Exact eigenvalues: {eigenvalues_exact}&#39;)
+
+# QPE 估计的本征值
+eigenvalues_qpe = result.eigenvalues
+print(f&#39;QPE eigenvalues: {eigenvalues_qpe}&#39;)
+
+# 计算误差
+error = np.linalg.norm(np.sort(eigenvalues_exact) - np.sort(eigenvalues_qpe))
+print(f&#39;Estimation error: {error:.6f}&#39;)
+
+# QPE 的精度取决于：
+# 1. 控制量子比特数（更多比特 → 更高精度）
+# 2. 量子门的保真度
+# 3. 测量次数</code></pre>
+<h2 id="场景-3绝热演化模拟">场景 3：绝热演化模拟</h2>
+<p>模拟绝热量子计算中的演化：</p>
+<pre><code>from quonic.simulation import hamiltonian_simulation
+import numpy as np
+
+# 绝热演化：H(t) = (1-s) * H_initial + s * H_problem
+# 其中 s = t/T，T 是总演化时间
+
+n = 2
+T = 10.0  # 总演化时间
+
+# 初始哈密顿量（横向场）
+H_initial = [[0, 1, 0, 0],
+             [1, 0, 1, 0],
+             [0, 1, 0, 1],
+             [0, 0, 1, 0]]
+
+# 问题哈密顿量（对角）
+H_problem = [[-2, 0, 0, 0],
+             [0, 0, 0, 0],
+             [0, 0, 0, 0],
+             [0, 0, 0, -2]]
+
+# 初始态：基态（均匀叠加）
+psi0 = np.ones(2**n) / np.sqrt(2**n)
+
+# 模拟绝热演化
+n_steps = 100
+dt = T / n_steps
+
+for step in range(n_steps):
+    s = step / n_steps
+    H_t = (1-s) * np.array(H_initial) + s * np.array(H_problem)
+
+    result = hamiltonian_simulation(H_t.tolist(), t=dt, method=&#39;trotter&#39;)
+    psi0 = result.evolution @ psi0
+
+# 计算基态占据概率
+eigenvalues, eigenvectors = np.linalg.eigh(H_problem)
+ground_state = eigenvectors[:, 0]
+prob_ground = abs(ground_state.conj() @ psi0)**2
+
+print(f&#39;Adiabatic evolution: Ground state probability = {prob_ground:.4f}&#39;)
+
+# 绝热定理：如果演化足够慢，系统保持在瞬时基态
+# T &gt;&gt; 1/gap^2，其中 gap 是最小能隙</code></pre>
 <h1 id="适用场景">适用场景</h1>
 <h2 id="量子化学">量子化学</h2>
 <p>哈密顿量模拟可以用于模拟分子系统。</p>

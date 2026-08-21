@@ -282,29 +282,76 @@ result = qnn(
 print(f&#39;Accuracy: {result.accuracy}&#39;)
 print(f&#39;Loss: {result.loss}&#39;)</code></pre>
 <h1 id="进阶用法">进阶用法</h1>
-<h2 id="场景-1不同层数">场景 1：不同层数</h2>
+<h2 id="场景-1量子特征映射与数据编码">场景
+1：量子特征映射与数据编码</h2>
+<p>不同的数据编码方式会影响 QNN 的表达能力：</p>
+<pre><code>from quonic.ml import qnn
+import math
+
+# 方式 1：角度编码（将数据编码为旋转角度）
+# 适用于：特征值在 [0, 2pi] 范围内
+data_angle = [[math.pi/4, math.pi/2], [math.pi, 3*math.pi/4]]
+
+# 方式 2：振幅编码（将数据编码为量子态振幅）
+# 适用于：高维数据，需要 log2(n) 个量子比特
+data_amplitude = [[0.6, 0.8], [0.8, 0.6]]  # 需要归一化
+
+# 方式 3：基编码（将二进制数据编码为计算基态）
+# 适用于：二进制特征
+data_basis = [[0, 1], [1, 0], [1, 1], [0, 0]]
+
+# 比较不同编码方式的效果
+for name, data in [(&quot;Angle&quot;, data_angle), (&quot;Amplitude&quot;, data_amplitude), (&quot;Basis&quot;, data_basis)]:
+    result = qnn(data, [0, 1], n_layers=2)
+    print(f&#39;{name} encoding: Accuracy={result.accuracy}&#39;)</code></pre>
+<h2 id="场景-2量子神经网络的表达能力分析">场景
+2：量子神经网络的表达能力分析</h2>
+<p>QNN 的表达能力取决于电路深度和参数数量：</p>
+<pre><code>from quonic.ml import qnn
+import numpy as np
+
+# 生成复杂数据集（非线性可分）
+np.random.seed(42)
+X = np.random.randn(50, 2)
+y = ((X[:, 0]**2 + X[:, 1]**2) &gt; 1).astype(int).tolist()
+
+# 测试不同深度的表达能力
+results = []
+for depth in [1, 2, 3, 4, 5]:
+    result = qnn(X.tolist(), y, n_layers=depth, n_epochs=200)
+    results.append((depth, result.accuracy, result.loss))
+    print(f&#39;Depth {depth}: Accuracy={result.accuracy:.3f}, Loss={result.loss:.3f}&#39;)
+
+# 分析：深度增加 → 表达能力增强 → 但可能过拟合
+# 最佳深度取决于数据复杂度和噪声水平</code></pre>
+<h2 id="场景-3量子梯度下降与参数优化">场景
+3：量子梯度下降与参数优化</h2>
+<p>QNN 使用参数平移规则计算梯度：</p>
 <pre><code>from quonic.ml import qnn
 
-# 不同层数的影响
-for n in [1, 2, 3, 4]:
-    result = qnn(data, labels, n_layers=n)
-    print(f&#39;n={n}: Accuracy={result.accuracy}&#39;)</code></pre>
-<h2 id="场景-2不同学习率">场景 2：不同学习率</h2>
-<pre><code>from quonic.ml import qnn
+# 自定义优化器和学习率调度
+result = qnn(
+    data=[[0, 1], [1, 0], [1, 1], [0, 0]],
+    labels=[0, 1, 1, 0],
+    n_layers=2,
+    optimizer=&#39;parameter_shift&#39;,  # 量子梯度下降
+    learning_rate=0.1,
+    lr_schedule=&#39;cosine&#39;,  # 余弦退火
+    n_epochs=200
+)
 
-# 不同学习率的影响
-for lr in [0.001, 0.01, 0.1]:
-    result = qnn(data, labels, learning_rate=lr)
-    print(f&#39;lr={lr}: Accuracy={result.accuracy}&#39;)</code></pre>
-<h2 id="场景-3多分类问题">场景 3：多分类问题</h2>
-<pre><code>from quonic.ml import qnn
+# 分析训练过程
+import matplotlib.pyplot as plt
+plt.plot(result.history[&#39;loss&#39;])
+plt.xlabel(&#39;Epoch&#39;)
+plt.ylabel(&#39;Loss&#39;)
+plt.title(&#39;QNN Training Loss&#39;)
+plt.savefig(&#39;qnn_training.png&#39;)
 
-# 三分类问题
-data = [[0, 1], [1, 0], [1, 1], [0, 0], [0.5, 0.5]]
-labels = [0, 1, 2, 0, 1]
-
-result = qnn(data, labels, n_layers=3)
-print(f&#39;Accuracy: {result.accuracy}&#39;)</code></pre>
+# 量子梯度下降的收敛性：
+# - 参数平移规则：精确计算梯度，无需经典近似
+# - 学习率调度：避免陷入局部最优
+# - 早停策略：防止过拟合</code></pre>
 <h1 id="适用场景">适用场景</h1>
 <h2 id="图像分类">图像分类</h2>
 <p>量子神经网络可以用于图像分类任务，如手写数字识别、人脸识别等。</p>

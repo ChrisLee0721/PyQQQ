@@ -291,29 +291,80 @@ result = amplitude_amplification(
 print(f&#39;Probability: {result.probability}&#39;)
 print(f&#39;Optimal iterations: {result.optimal_iterations}&#39;)</code></pre>
 <h1 id="进阶用法">进阶用法</h1>
-<h2 id="场景-1不同目标态">场景 1：不同目标态</h2>
+<h2 id="场景-1数据库搜索实际应用">场景 1：数据库搜索（实际应用）</h2>
+<p>在无序数据库中搜索特定记录：</p>
 <pre><code>from quonic.algorithms import amplitude_amplification
+import random
 
-# 搜索 |101&gt;
-result = amplitude_amplification(target=&#39;101&#39;, n_qubits=3)
-print(f&#39;Probability: {result.probability}&#39;)</code></pre>
-<h2 id="场景-2多次迭代">场景 2：多次迭代</h2>
-<pre><code>from quonic.algorithms import amplitude_amplification
+# 模拟数据库：1000 条记录，搜索特定 ID
+database_size = 1000
+target_id = 42  # 要搜索的目标
 
-# 不同迭代次数
-for k in [1, 2, 3, 4]:
-    result = amplitude_amplification(target=&#39;11&#39;, n_qubits=2, iterations=k)
-    print(f&#39;k={k}: Probability={result.probability:.4f}&#39;)</code></pre>
-<h2 id="场景-3带噪声的振幅放大">场景 3：带噪声的振幅放大</h2>
-<pre><code>from quonic.algorithms import amplitude_amplification
+# 经典搜索：需要 O(N) 次查询
+classic_queries = 0
+for i in range(database_size):
+    classic_queries += 1
+    if i == target_id:
+        break
+print(f&#39;Classic search: {classic_queries} queries&#39;)
 
-# 带噪声
+# 量子搜索：只需要 O(sqrt(N)) 次查询
+n_qubits = 10  # 2^10 = 1024 &gt; 1000
+target_binary = format(target_id, f&#39;0{n_qubits}b&#39;)
+
 result = amplitude_amplification(
-    target=&#39;11&#39;,
-    n_qubits=2,
-    noise=0.05
+    target=target_binary,
+    n_qubits=n_qubits,
+    iterations=int(3.14159/4 * (database_size**0.5))  # 最优迭代次数
 )
-print(f&#39;Probability: {result.probability}&#39;)</code></pre>
+print(f&#39;Quantum search: {result.iterations} iterations&#39;)
+print(f&#39;Found with probability: {result.probability:.4f}&#39;)
+
+# 量子加速：从 42 次查询减少到约 25 次迭代</code></pre>
+<h2 id="场景-2多目标搜索">场景 2：多目标搜索</h2>
+<p>同时搜索多个目标：</p>
+<pre><code>from quonic.algorithms import amplitude_amplification
+
+# 搜索多个目标
+targets = [&#39;001&#39;, &#39;010&#39;, &#39;100&#39;]  # 3 个目标
+
+# 方案 1：分别搜索
+for target in targets:
+    result = amplitude_amplification(target=target, n_qubits=3)
+    print(f&#39;Target {target}: Probability={result.probability:.4f}&#39;)
+
+# 方案 2：使用 Grover 算法的多目标变体
+from quonic.algorithms import grover_multi
+result_multi = grover_multi(targets=targets, n_qubits=3)
+print(f&#39;Multi-target search: {result_multi.probability:.4f}&#39;)
+
+# 分析：多目标搜索的成功概率更高
+# 因为目标态的总振幅更大</code></pre>
+<h2 id="场景-3量子计数与振幅估计">场景 3：量子计数与振幅估计</h2>
+<p>结合量子相位估计进行精确计数：</p>
+<pre><code>from quonic.algorithms import amplitude_amplification, amplitude_estimation
+import numpy as np
+
+# 估计数据库中满足条件的记录数
+n_qubits = 6  # 64 条记录
+target = &#39;101010&#39;  # 目标
+
+# 使用振幅估计精确计算目标态概率
+est_result = amplitude_estimation(
+    target=target,
+    n_qubits=n_qubits,
+    precision=4  # 4 位精度
+)
+
+# 计算目标态数量
+total_states = 2**n_qubits
+target_count = int(est_result.estimate * total_states)
+
+print(f&#39;Total states: {total_states}&#39;)
+print(f&#39;Estimated target states: {target_count}&#39;)
+print(f&#39;Estimation error: {est_result.error:.4f}&#39;)
+
+# 应用：量子计数可以用于估计优化问题的解空间大小</code></pre>
 <h1 id="适用场景">适用场景</h1>
 <h2 id="数据库搜索">数据库搜索</h2>
 <p>振幅放大可以用于在无序数据库中搜索目标。</p>

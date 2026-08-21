@@ -140,30 +140,138 @@ print(f'Evolution: {result.evolution}')
 
 \section{进阶用法}
 
-\subsection{场景 1：不同哈密顿量}
+\subsection{场景 1：自旋链动力学}
+
+模拟自旋链的时间演化：
 
 \begin{verbatim}
 from quonic.simulation import dynamics
+import numpy as np
 
-# 不同哈密顿量
-H1 = [[1, 0], [0, -1]]  # 自旋-z
-H2 = [[0, 1], [1, 0]]   # 自旋-x
-H3 = [[0, -1j], [1j, 0]] # 自旋-y
+# 4-qubit 自旋链哈密顿量
+# H = J * sum(Z_i * Z_{i+1}) + h * sum(X_i)
+J = 1.0
+h = 0.5
+n = 4
 
-for H in [H1, H2, H3]:
-    result = dynamics(H, t=1.0, dt=0.1)
-    print(f'Final state: {result.state}')
+# 构造哈密顿量
+H = np.zeros((2**n, 2**n))
+
+# Z_i Z_{i+1} 耦合项
+for i in range(n-1):
+    for j in range(2**n):
+        # 计算 Z_i Z_{i+1} 的本征值
+        bit_i = (j >> (n-1-i)) & 1
+        bit_i1 = (j >> (n-2-i)) & 1
+        H[j, j] += J * ((-1)**bit_i) * ((-1)**bit_i1)
+
+# X_i 横场项
+for i in range(n):
+    for j in range(2**n):
+        # X_i 翻转第 i 个比特
+        j_flipped = j ^ (1 << (n-1-i))
+        H[j, j_flipped] += h
+
+# 初始态：所有自旋向上 |0000>
+psi0 = np.zeros(2**n)
+psi0[0] = 1.0
+
+# 模拟动力学
+result = dynamics(H.tolist(), t=2.0, dt=0.1, initial_state=psi0.tolist())
+
+# 计算磁化强度
+M_z = np.zeros((2**n, 2**n))
+for j in range(2**n):
+    M_z[j, j] = sum(1 - 2*((j >> k) & 1) for k in range(n))
+
+magnetization = np.real(psi0.conj() @ result.evolution @ M_z @ result.evolution.conj().T @ psi0)
+print(f'Final magnetization: {magnetization:.4f}')
 \end{verbatim}
 
-\subsection{场景 2：不同时间步长}
+\subsection{场景 2：量子退相干模拟}
+
+模拟开放量子系统的退相干：
 
 \begin{verbatim}
 from quonic.simulation import dynamics
+from quonic.noise import noise_model
+import numpy as np
 
-# 不同时间步长
-for dt in [0.01, 0.1, 1.0]:
-    result = dynamics(H=[[1,0],[0,-1]], t=1.0, dt=dt)
-    print(f'dt={dt}: Final state={result.state}')
+# 二能级系统（量子比特）
+H = [[1, 0], [0, -1]]  # 自旋-z 哈密顿量
+
+# 纯态演化
+result_pure = dynamics(H, t=1.0, dt=0.01)
+print(f'Pure state evolution: {result_pure.state}')
+
+# 加入退相干噪声
+# T1 过程：能量弛豫
+# T2 过程：相位弛豫
+for T1, T2 in [(1.0, 0.5), (0.5, 0.2), (0.2, 0.1)]:
+    noise = noise_model(
+        error_rate=0.01,
+        noise_type='decoherence',
+        T1=T1,
+        T2=T2
+    )
+
+    result_noisy = dynamics(H, t=1.0, dt=0.01, noise_model=noise)
+
+    # 计算纯度
+    rho = np.outer(result_noisy.state, np.conj(result_noisy.state))
+    purity = np.real(np.trace(rho @ rho))
+
+    print(f'T1={T1}, T2={T2}: Purity={purity:.4f}')
+
+# 分析：T2 < T1 时，相位弛豫比能量弛豫更快
+# 这导致量子叠加态快速退相干
+\end{verbatim}
+
+\subsection{场景 3：量子相变模拟}
+
+模拟量子相变点附近的动力学：
+
+\begin{verbatim}
+from quonic.simulation import dynamics
+import numpy as np
+
+# 横场 Ising 模型
+# H = -J * sum(Z_i * Z_{i+1}) - h * sum(X_i)
+# 当 h/J = 1 时发生量子相变
+
+J = 1.0
+n = 4
+
+# 不同横场强度
+h_values = [0.1, 0.5, 1.0, 2.0, 5.0]
+
+for h in h_values:
+    # 构造哈密顿量
+    H = np.zeros((2**n, 2**n))
+
+    # Z_i Z_{i+1} 项
+    for i in range(n-1):
+        for j in range(2**n):
+            bit_i = (j >> (n-1-i)) & 1
+            bit_i1 = (j >> (n-2-i)) & 1
+            H[j, j] -= J * ((-1)**bit_i) * ((-1)**bit_i1)
+
+    # X_i 项
+    for i in range(n):
+        for j in range(2**n):
+            j_flipped = j ^ (1 << (n-1-i))
+            H[j, j_flipped] -= h
+
+    # 基态能量
+    eigenvalues = np.linalg.eigvalsh(H)
+    E0 = eigenvalues[0]
+    E1 = eigenvalues[1]
+    gap = E1 - E0
+
+    print(f'h/J={h/J:.1f}: E0={E0:.4f}, Gap={gap:.4f}')
+
+# 分析：在相变点 h/J=1，能隙最小
+# 这是量子临界现象的特征
 \end{verbatim}
 
 \section{适用场景}

@@ -274,20 +274,126 @@ print(f&#39;Logical error rate: {result.logical_error_rate}&#39;)
 print(f&#39;Threshold: {result.threshold}&#39;)
 print(f&#39;Qubit count: {result.qubit_count}&#39;)</code></pre>
 <h1 id="进阶用法">进阶用法</h1>
-<h2 id="场景-1不同码距">场景 1：不同码距</h2>
+<h2 id="场景-1阈值行为分析">场景 1：阈值行为分析</h2>
+<p>分析颜色码的阈值行为：</p>
 <pre><code>from quonic.qec import color_code
+import matplotlib.pyplot as plt
+import numpy as np
 
-# 不同码距
-for d in [3, 5, 7, 9]:
-    result = color_code(distance=d, error_rate=0.01)
-    print(f&#39;d={d}: Logical error rate={result.logical_error_rate}&#39;)</code></pre>
-<h2 id="场景-2不同错误率">场景 2：不同错误率</h2>
+# 测试不同物理错误率和码距
+error_rates = np.logspace(-3, -1, 20)
+distances = [3, 5, 7]
+
+plt.figure(figsize=(10, 6))
+
+for d in distances:
+    logical_errors = []
+
+    for p in error_rates:
+        result = color_code(distance=d, error_rate=p)
+        logical_errors.append(result.logical_error_rate)
+
+    plt.loglog(error_rates, logical_errors, &#39;o-&#39;, label=f&#39;d={d}&#39;)
+
+# 绘制阈值线
+plt.axvline(x=0.01, color=&#39;r&#39;, linestyle=&#39;--&#39;, label=&#39;Threshold ~1%&#39;)
+plt.xlabel(&#39;Physical Error Rate&#39;)
+plt.ylabel(&#39;Logical Error Rate&#39;)
+plt.title(&#39;Color Code Threshold Behavior&#39;)
+plt.legend()
+plt.grid(True)
+plt.savefig(&#39;color_code_threshold.png&#39;)
+
+# 分析：
+# - 当 p &lt; 0.01 时，逻辑错误率随码距指数衰减
+# - 当 p &gt; 0.01 时，逻辑错误率反而增加
+# - 阈值约为 1%，这是颜色码的优势</code></pre>
+<h2 id="场景-2错误纠正过程可视化">场景 2：错误纠正过程可视化</h2>
+<p>可视化颜色码的错误检测和纠正过程：</p>
 <pre><code>from quonic.qec import color_code
+import numpy as np
+import matplotlib.pyplot as plt
 
-# 不同错误率
-for p in [0.001, 0.01, 0.1]:
-    result = color_code(distance=3, error_rate=p)
-    print(f&#39;p={p}: Logical error rate={result.logical_error_rate}&#39;)</code></pre>
+# 创建距离为 3 的颜色码
+code = color_code(distance=3)
+
+# 模拟单比特错误
+error_position = 4  # 在第 4 个量子比特上发生错误
+error_type = &#39;X&#39;  # 比特翻转错误
+
+# 注入错误
+result = code.inject_error(error_position, error_type)
+
+# 可视化校验子
+syndrome = result.syndrome
+print(f&#39;Error position: {error_position}&#39;)
+print(f&#39;Error type: {error_type}&#39;)
+print(f&#39;Syndrome: {syndrome}&#39;)
+
+# 可视化格子结构
+fig, axes = plt.subplots(1, 2, figsize=(12, 5))
+
+# 原始状态
+code.visualize(ax=axes[0])
+axes[0].set_title(&#39;Original State&#39;)
+
+# 错误状态
+code.visualize_error(result, ax=axes[1])
+axes[1].set_title(f&#39;After {error_type} error at position {error_position}&#39;)
+
+plt.tight_layout()
+plt.savefig(&#39;color_code_error.png&#39;)
+plt.show()
+
+# 分析：
+# - 错误位置显示为红色
+# - 校验子测量结果显示哪些面检测到错误
+# - 解码算法根据校验子确定纠正操作</code></pre>
+<h2 id="场景-3与表面码的比较">场景 3：与表面码的比较</h2>
+<p>比较颜色码和表面码的性能：</p>
+<pre><code>from quonic.qec import color_code, surface_code
+import matplotlib.pyplot as plt
+import numpy as np
+
+# 比较参数
+distances = [3, 5, 7]
+error_rate = 0.005
+
+results_color = []
+results_surface = []
+
+for d in distances:
+    # 颜色码
+    result_color = color_code(distance=d, error_rate=error_rate)
+    results_color.append(result_color.logical_error_rate)
+
+    # 表面码
+    result_surface = surface_code(distance=d, error_rate=error_rate)
+    results_surface.append(result_surface.logical_error_rate)
+
+# 绘图比较
+plt.figure(figsize=(10, 6))
+
+plt.plot(distances, results_color, &#39;o-&#39;, label=&#39;Color Code&#39;, linewidth=2)
+plt.plot(distances, results_surface, &#39;s-&#39;, label=&#39;Surface Code&#39;, linewidth=2)
+
+plt.yscale(&#39;log&#39;)
+plt.xlabel(&#39;Code Distance&#39;)
+plt.ylabel(&#39;Logical Error Rate&#39;)
+plt.title(&#39;Color Code vs Surface Code&#39;)
+plt.legend()
+plt.grid(True)
+plt.savefig(&#39;color_vs_surface.png&#39;)
+
+# 输出比较结果
+print(&#39;Comparison at p=0.005:&#39;)
+for d, c, s in zip(distances, results_color, results_surface):
+    print(f&#39;  d={d}: Color={c:.6f}, Surface={s:.6f}, Ratio={c/s:.2f}&#39;)
+
+# 分析：
+# - 颜色码通常有更好的阈值
+# - 表面码的实现更简单
+# - 选择取决于具体硬件约束</code></pre>
 <h1 id="适用场景">适用场景</h1>
 <h2 id="量子计算">量子计算</h2>
 <p>颜色码是容错量子计算的基础。</p>

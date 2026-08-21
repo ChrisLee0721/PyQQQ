@@ -141,30 +141,152 @@ print(f'Accuracy: {result.accuracy}')
 
 \section{进阶用法}
 
-\subsection{场景 1：不同注意力头数}
+\subsection{场景 1：序列分类任务}
+
+使用量子 Transformer 进行序列分类：
 
 \begin{verbatim}
 from quonic.ml import qtransformer
+import numpy as np
 
-# 不同注意力头数
-for n in [1, 2, 4, 8]:
-    result = qtransformer(data=[[0,1],[1,0]], n_heads=n)
-    print(f'n={n}: Accuracy={result.accuracy}')
+# 序列分类：判断序列是否包含特定模式
+# 模式：序列中是否有连续的 1
+sequences = [
+    [0, 1, 0, 1, 0],  # 无连续 1
+    [1, 1, 0, 0, 1],  # 有连续 1
+    [0, 0, 1, 1, 0],  # 有连续 1
+    [1, 0, 1, 0, 1],  # 无连续 1
+    [0, 1, 1, 1, 0],  # 有连续 1
+]
+labels = [0, 1, 1, 0, 1]  # 0: 无模式，1: 有模式
+
+# 训练量子 Transformer
+result = qtransformer(
+    data=sequences,
+    labels=labels,
+    n_heads=2,
+    n_layers=2,
+    n_epochs=100
+)
+
+print(f'Sequence classification accuracy: {result.accuracy:.4f}')
+
+# 分析注意力权重
+attention_weights = result.get_attention_weights()
+print(f'Attention shape: {attention_weights.shape}')
+
+# 可视化注意力模式
+import matplotlib.pyplot as plt
+
+plt.figure(figsize=(8, 6))
+plt.imshow(attention_weights[0], cmap='hot', interpolation='nearest')
+plt.colorbar()
+plt.xlabel('Key position')
+plt.ylabel('Query position')
+plt.title('Quantum Attention Weights')
+plt.savefig('qtransformer_attention.png')
+plt.show()
+
+# 分析：量子注意力可以捕捉序列中的长程依赖
 \end{verbatim}
 
-\subsection{场景 2：不同数据}
+\subsection{场景 2：量子自然语言处理}
+
+使用量子 Transformer 处理文本数据：
 
 \begin{verbatim}
 from quonic.ml import qtransformer
+import numpy as np
 
-# 不同数据
-data1 = [[0, 1], [1, 0]]
-data2 = [[0, 1, 0], [1, 0, 1], [1, 1, 0]]
-data3 = [[0, 1, 0, 1], [1, 0, 1, 0], [1, 1, 0, 0]]
+# 简单的文本分类任务
+# 正面评价：[1, 0, 1, 0]（编码为二进制）
+# 负面评价：[0, 1, 0, 1]
 
-for data in [data1, data2, data3]:
-    result = qtransformer(data=data, n_heads=2)
-    print(f'Accuracy: {result.accuracy}')
+# 训练数据
+positive_reviews = [
+    [1, 0, 1, 0],  # "good product"
+    [1, 1, 0, 0],  # "very good"
+    [0, 1, 1, 0],  # "nice quality"
+]
+negative_reviews = [
+    [0, 1, 0, 1],  # "bad product"
+    [0, 0, 1, 1],  # "poor quality"
+    [1, 0, 0, 1],  # "not good"
+]
+
+data = positive_reviews + negative_reviews
+labels = [1, 1, 1, 0, 0, 0]
+
+# 训练量子 Transformer
+result = qtransformer(
+    data=data,
+    labels=labels,
+    n_heads=2,
+    n_layers=2,
+    n_epochs=150
+)
+
+print(f'Text classification accuracy: {result.accuracy:.4f}')
+
+# 测试新评论
+test_review = [1, 0, 0, 0]  # "good"
+prediction = result.predict([test_review])
+print(f'Prediction for "good": {prediction[0]}')
+
+# 量子 Transformer 的优势：
+# 1. 可以处理变长序列
+# 2. 量子注意力可以捕捉复杂的语义关系
+# 3. 对噪声有鲁棒性
+\end{verbatim}
+
+\subsection{场景 3：多头注意力分析}
+
+分析量子多头注意力的特性：
+
+\begin{verbatim}
+from quonic.ml import qtransformer
+import numpy as np
+
+# 创建多头量子 Transformer
+result = qtransformer(
+    data=[[0, 1], [1, 0], [1, 1], [0, 0]],
+    n_heads=4,
+    n_layers=2
+)
+
+# 获取每个头的注意力权重
+heads_attention = result.get_head_attention()
+
+# 分析每个头学习到的模式
+for i, head_attn in enumerate(heads_attention):
+    print(f'Head {i}:')
+    print(f'  Attention shape: {head_attn.shape}')
+
+    # 计算注意力的熵（衡量注意力的集中程度）
+    entropy = -np.sum(head_attn * np.log(head_attn + 1e-10))
+    print(f'  Attention entropy: {entropy:.4f}')
+
+    # 分析注意力模式
+    max_attn = np.max(head_attn, axis=1)
+    print(f'  Max attention: {max_attn.mean():.4f}')
+
+# 可视化不同头的注意力模式
+import matplotlib.pyplot as plt
+
+fig, axes = plt.subplots(2, 2, figsize=(12, 12))
+for i, (head_attn, ax) in enumerate(zip(heads_attention[:4], axes.flat)):
+    im = ax.imshow(head_attn, cmap='viridis')
+    ax.set_title(f'Head {i}')
+    ax.set_xlabel('Key position')
+    ax.set_ylabel('Query position')
+    plt.colorbar(im, ax=ax)
+
+plt.tight_layout()
+plt.savefig('qtransformer_heads.png')
+plt.show()
+
+# 分析：不同的头学习不同的注意力模式
+# 这有助于模型捕捉不同类型的依赖关系
 \end{verbatim}
 
 \section{适用场景}

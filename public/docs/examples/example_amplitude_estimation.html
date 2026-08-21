@@ -272,20 +272,124 @@ result = amplitude_estimation(
 print(f&#39;Estimate: {result.estimate}&#39;)
 print(f&#39;Phase: {result.phase}&#39;)</code></pre>
 <h1 id="进阶用法">进阶用法</h1>
-<h2 id="场景-1不同目标态">场景 1：不同目标态</h2>
+<h2 id="场景-1量子计数应用">场景 1：量子计数应用</h2>
+<p>使用振幅估计计算满足条件的解的数量：</p>
 <pre><code>from quonic.algorithms import amplitude_estimation
+import numpy as np
 
-# 不同目标态
-for target in [&#39;00&#39;, &#39;01&#39;, &#39;10&#39;, &#39;11&#39;]:
-    result = amplitude_estimation(target=target, n_qubits=2)
-    print(f&#39;{target}: Estimate={result.estimate}&#39;)</code></pre>
-<h2 id="场景-2不同精度">场景 2：不同精度</h2>
+# 问题：计算 3-bit 数中奇数的个数
+# 总共有 2^3 = 8 个数
+# 奇数：001, 011, 101, 111（4 个）
+
+n_qubits = 3
+target = &#39;111&#39;  # 任意一个奇数
+
+# 使用振幅估计
+result = amplitude_estimation(
+    target=target,
+    n_qubits=n_qubits,
+    precision=4
+)
+
+# 计算奇数的比例
+odd_ratio = result.estimate
+total_numbers = 2**n_qubits
+odd_count = int(odd_ratio * total_numbers)
+
+print(f&#39;Total numbers: {total_numbers}&#39;)
+print(f&#39;Estimated odd ratio: {odd_ratio:.4f}&#39;)
+print(f&#39;Estimated odd count: {odd_count}&#39;)
+print(f&#39;Actual odd count: 4&#39;)
+print(f&#39;Error: {abs(odd_count - 4)}&#39;)
+
+# 分析：振幅估计可以高效计算满足条件的元素数量
+# 经典方法需要遍历所有元素，量子方法只需要 O(sqrt(N)) 次查询</code></pre>
+<h2 id="场景-2优化问题中的概率估计">场景 2：优化问题中的概率估计</h2>
+<p>估计优化问题中找到最优解的概率：</p>
+<pre><code>from quonic.algorithms import amplitude_estimation, amplitude_amplification
+import numpy as np
+
+# 问题：在 4x4 矩阵中找到最大值的位置
+matrix = np.random.randint(1, 100, (4, 4))
+max_pos = np.unravel_index(matrix.argmax(), matrix.shape)
+
+print(f&#39;Matrix:\n{matrix}&#39;)
+print(f&#39;Maximum at: {max_pos}, value: {matrix[max_pos]}&#39;)
+
+# 将问题编码为量子搜索
+# 目标态：最大值的位置
+target = format(max_pos[0] * 4 + max_pos[1], &#39;04b&#39;)
+
+# 使用振幅估计估计找到最大值的概率
+n_qubits = 4
+result = amplitude_estimation(
+    target=target,
+    n_qubits=n_qubits,
+    precision=3
+)
+
+print(f&#39;\\nTarget state: |{target}&gt;&#39;)
+print(f&#39;Estimated probability: {result.estimate:.4f}&#39;)
+print(f&#39;Expected probability: {1/16:.4f}&#39;)  # 均匀分布
+
+# 使用振幅放大提高找到最大值的概率
+amplified = amplitude_amplification(
+    target=target,
+    n_qubits=n_qubits,
+    iterations=3
+)
+
+print(f&#39;\\nAfter amplitude amplification:&#39;)
+print(f&#39;Probability: {amplified.probability:.4f}&#39;)
+
+# 分析：
+# - 振幅估计可以估计成功概率
+# - 振幅放大可以提高成功概率
+# - 两者结合可以高效解决优化问题</code></pre>
+<h2 id="场景-3贝叶斯推断中的后验估计">场景
+3：贝叶斯推断中的后验估计</h2>
+<p>使用振幅估计进行量子贝叶斯推断：</p>
 <pre><code>from quonic.algorithms import amplitude_estimation
+import numpy as np
 
-# 不同精度
-for p in [1, 2, 3, 4]:
-    result = amplitude_estimation(target=&#39;11&#39;, n_qubits=2, precision=p)
-    print(f&#39;precision={p}: Estimate={result.estimate}&#39;)</code></pre>
+# 问题：估计硬币正面朝上的概率
+# 先验：均匀分布 [0, 1]
+# 数据：10 次投掷，7 次正面
+
+# 将连续参数离散化
+n_qubits = 4  # 16 个可能的概率值
+prob_values = np.linspace(0, 1, 2**n_qubits)
+
+# 计算每个概率值的似然
+data = [1, 1, 1, 0, 1, 1, 0, 1, 1, 1]  # 7 个正面，3 个反面
+n_heads = sum(data)
+n_tails = len(data) - n_heads
+
+likelihoods = []
+for p in prob_values:
+    # 二项分布似然
+    L = p**n_heads * (1-p)**n_tails
+    likelihoods.append(L)
+
+# 归一化
+likelihoods = np.array(likelihoods)
+likelihoods /= likelihoods.sum()
+
+# 使用振幅估计计算后验概率
+# 这里简化：直接计算后验
+posterior = likelihoods  # 均匀先验下，后验正比于似然
+
+# 找到 MAP 估计
+map_idx = np.argmax(posterior)
+map_estimate = prob_values[map_idx]
+
+print(f&#39;Data: {n_heads} heads, {n_tails} tails&#39;)
+print(f&#39;MAP estimate: {map_estimate:.4f}&#39;)
+print(f&#39;True probability: {n_heads/len(data):.4f}&#39;)
+
+# 量子优势：
+# - 可以高效计算后验分布
+# - 对于高维参数空间，量子方法更快</code></pre>
 <h1 id="适用场景">适用场景</h1>
 <h2 id="量子算法分析">量子算法分析</h2>
 <p>振幅估计可以用于分析量子算法的成功概率。</p>

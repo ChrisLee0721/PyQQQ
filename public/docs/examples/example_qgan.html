@@ -267,24 +267,129 @@ result = qgan(
 print(f&#39;Generated: {result.generated}&#39;)
 print(f&#39;Loss: {result.loss}&#39;)</code></pre>
 <h1 id="进阶用法">进阶用法</h1>
-<h2 id="场景-1不同数据">场景 1：不同数据</h2>
+<h2 id="场景-1量子态生成">场景 1：量子态生成</h2>
+<p>使用 QGAN 生成特定量子态：</p>
 <pre><code>from quonic.ml import qgan
+import numpy as np
 
-# 不同数据
-data1 = [[0, 1], [1, 0]]
-data2 = [[0, 1, 0], [1, 0, 1], [1, 1, 0]]
-data3 = [[0, 1, 0, 1], [1, 0, 1, 0], [1, 1, 0, 0]]
+# 目标：生成 Bell 态 |00&gt; + |11&gt; 的样本
+# 训练数据：Bell 态的测量结果
+bell_data = [
+    [0, 0],  # |00&gt;
+    [1, 1],  # |11&gt;
+    [0, 0],
+    [1, 1],
+    [0, 0],
+    [1, 1],
+]
 
-for data in [data1, data2, data3]:
-    result = qgan(data=data, n_epochs=100)
-    print(f&#39;Loss: {result.loss}&#39;)</code></pre>
-<h2 id="场景-2不同训练轮数">场景 2：不同训练轮数</h2>
+# 训练 QGAN
+result = qgan(data=bell_data, n_epochs=200)
+
+# 生成新样本
+generated = result.generate(n_samples=10)
+print(f&#39;Generated samples: {generated}&#39;)
+
+# 分析生成样本的分布
+prob_00 = sum(1 for s in generated if s == [0, 0]) / len(generated)
+prob_11 = sum(1 for s in generated if s == [1, 1]) / len(generated)
+prob_01 = sum(1 for s in generated if s == [0, 1]) / len(generated)
+prob_10 = sum(1 for s in generated if s == [1, 0]) / len(generated)
+
+print(f&#39;P(|00&gt;) = {prob_00:.2f}&#39;)
+print(f&#39;P(|11&gt;) = {prob_11:.2f}&#39;)
+print(f&#39;P(|01&gt;) = {prob_01:.2f}&#39;)
+print(f&#39;P(|10&gt;) = {prob_10:.2f}&#39;)
+
+# 分析：QGAN 学习了 Bell 态的分布
+# 理想情况下，P(|00&gt;) = P(|11&gt;) = 0.5</code></pre>
+<h2 id="场景-2图像生成二值图像">场景 2：图像生成（二值图像）</h2>
+<p>使用 QGAN 生成二值图像：</p>
 <pre><code>from quonic.ml import qgan
+import numpy as np
+import matplotlib.pyplot as plt
 
-# 不同训练轮数
-for n in [10, 50, 100, 200]:
-    result = qgan(data=[[0,1],[1,0]], n_epochs=n)
-    print(f&#39;n={n}: Loss={result.loss}&#39;)</code></pre>
+# 训练数据：简单的 4x4 二值图像
+# 图案：对角线
+diagonal_data = []
+for _ in range(20):
+    img = np.zeros((4, 4))
+    for i in range(4):
+        img[i, i] = 1
+    diagonal_data.append(img.flatten().tolist())
+
+# 训练 QGAN
+result = qgan(data=diagonal_data, n_epochs=200)
+
+# 生成新图像
+generated_images = result.generate(n_samples=5)
+
+# 可视化
+fig, axes = plt.subplots(2, 5, figsize=(15, 6))
+
+# 原始图像
+for i in range(5):
+    axes[0, i].imshow(np.array(diagonal_data[i]).reshape(4, 4), cmap=&#39;gray&#39;)
+    axes[0, i].set_title(&#39;Original&#39;)
+    axes[0, i].axis(&#39;off&#39;)
+
+# 生成图像
+for i in range(5):
+    axes[1, i].imshow(np.array(generated_images[i]).reshape(4, 4), cmap=&#39;gray&#39;)
+    axes[1, i].set_title(&#39;Generated&#39;)
+    axes[1, i].axis(&#39;off&#39;)
+
+plt.tight_layout()
+plt.savefig(&#39;qgan_images.png&#39;)
+plt.show()
+
+# 分析：QGAN 学习了对角线图案的分布
+# 生成的图像应该具有相似的对角线结构</code></pre>
+<h2 id="场景-3训练稳定性分析">场景 3：训练稳定性分析</h2>
+<p>分析 QGAN 的训练稳定性：</p>
+<pre><code>from quonic.ml import qgan
+import matplotlib.pyplot as plt
+
+# 训练数据
+data = [[0, 1], [1, 0], [1, 1], [0, 0]]
+
+# 训练 QGAN 并记录损失
+result = qgan(data=data, n_epochs=500, record_history=True)
+
+# 绘制训练曲线
+plt.figure(figsize=(12, 4))
+
+plt.subplot(1, 2, 1)
+plt.plot(result.history[&#39;generator_loss&#39;], label=&#39;Generator&#39;)
+plt.plot(result.history[&#39;discriminator_loss&#39;], label=&#39;Discriminator&#39;)
+plt.xlabel(&#39;Epoch&#39;)
+plt.ylabel(&#39;Loss&#39;)
+plt.title(&#39;QGAN Training Loss&#39;)
+plt.legend()
+plt.grid(True)
+
+plt.subplot(1, 2, 2)
+plt.plot(result.history[&#39;fidelity&#39;], label=&#39;Fidelity&#39;)
+plt.xlabel(&#39;Epoch&#39;)
+plt.ylabel(&#39;Fidelity&#39;)
+plt.title(&#39;Generated Data Fidelity&#39;)
+plt.legend()
+plt.grid(True)
+
+plt.tight_layout()
+plt.savefig(&#39;qgan_training.png&#39;)
+plt.show()
+
+# 分析 QGAN 的训练稳定性：
+# 1. 生成器和判别器的损失应该收敛
+# 2. 生成数据的保真度应该增加
+# 3. QGAN 比经典 GAN 更稳定（量子纠缠帮助）
+
+# 与经典 GAN 对比
+from quonic.ml import gan
+classic_result = gan(data=data, n_epochs=500)
+print(f&#39;QGAN fidelity: {result.history[&quot;fidelity&quot;][-1]:.4f}&#39;)
+print(f&#39;Classic GAN fidelity: {classic_result.history[&quot;fidelity&quot;][-1]:.4f}&#39;)</code></pre>
 <h1 id="适用场景">适用场景</h1>
 <h2 id="生成模型">生成模型</h2>
 <p>量子 GAN 可以用于生成数据。</p>

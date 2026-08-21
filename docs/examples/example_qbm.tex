@@ -143,30 +143,134 @@ print(f'Loss: {result.loss}')
 
 \section{进阶用法}
 
-\subsection{场景 1：不同隐藏单元数}
+\subsection{场景 1：二值图像生成}
+
+使用 QBM 学习和生成二值图像：
 
 \begin{verbatim}
 from quonic.ml import qbm
+import numpy as np
+import matplotlib.pyplot as plt
 
-# 不同隐藏单元数
-for n in [1, 2, 4, 8]:
-    result = qbm(data=[[0,1],[1,0]], n_hidden=n)
-    print(f'n={n}: Loss={result.loss}')
+# 训练数据：简单的 4x4 二值图像
+# 图案：十字形
+cross_pattern = [
+    [0, 0, 1, 0],
+    [0, 0, 1, 0],
+    [1, 1, 1, 1],
+    [0, 0, 1, 0]
+]
+
+# 展平为 1 维
+data = [np.array(cross_pattern).flatten().tolist()]
+
+# 训练 QBM
+result = qbm(data=data, n_hidden=4, n_epochs=200)
+
+# 生成新样本
+generated_samples = result.sample(n_samples=5)
+
+# 可视化
+fig, axes = plt.subplots(1, 6, figsize=(12, 2))
+axes[0].imshow(cross_pattern, cmap='gray')
+axes[0].set_title('Original')
+axes[0].axis('off')
+
+for i, sample in enumerate(generated_samples):
+    axes[i+1].imshow(np.array(sample).reshape(4, 4), cmap='gray')
+    axes[i+1].set_title(f'Generated {i+1}')
+    axes[i+1].axis('off')
+
+plt.savefig('qbm_generation.png')
+plt.show()
+
+# 分析：QBM 学习了数据的分布，可以生成相似的图案
 \end{verbatim}
 
-\subsection{场景 2：不同数据}
+\subsection{场景 2：异常检测}
+
+使用 QBM 进行异常检测：
 
 \begin{verbatim}
 from quonic.ml import qbm
+import numpy as np
 
-# 不同数据
-data1 = [[0, 1], [1, 0]]
-data2 = [[0, 1, 0], [1, 0, 1], [1, 1, 0]]
-data3 = [[0, 1, 0, 1], [1, 0, 1, 0], [1, 1, 0, 0]]
+# 正常数据：简单的模式
+normal_data = [
+    [1, 0, 1, 0],
+    [0, 1, 0, 1],
+    [1, 1, 0, 0],
+    [0, 0, 1, 1]
+]
 
-for data in [data1, data2, data3]:
-    result = qbm(data=data, n_hidden=2)
-    print(f'Loss: {result.loss}')
+# 训练 QBM 学习正常数据的分布
+qbm_model = qbm(data=normal_data, n_hidden=2, n_epochs=200)
+
+# 测试数据
+test_data = [
+    [1, 0, 1, 0],  # 正常
+    [1, 1, 1, 1],  # 异常（全 1）
+    [0, 1, 0, 1],  # 正常
+    [1, 0, 0, 0],  # 异常（不常见模式）
+]
+
+# 计算每个样本的能量（负对数似然）
+for i, sample in enumerate(test_data):
+    energy = qbm_model.energy(sample)
+    is_anomaly = energy > qbm_model.threshold
+
+    print(f'Sample {i}: Energy={energy:.4f}, Anomaly={is_anomaly}')
+
+# 分析：
+# - 正常样本的能量较低（高概率）
+# - 异常样本的能量较高（低概率）
+# - 可以通过设置阈值来检测异常
+\end{verbatim}
+
+\subsection{场景 3：量子优势分析}
+
+比较量子和经典玻尔兹曼机：
+
+\begin{verbatim}
+from quonic.ml import qbm
+import numpy as np
+import time
+
+# 生成复杂数据
+np.random.seed(42)
+n_samples = 50
+n_features = 8
+
+# 具有复杂相关性的数据
+data = []
+for _ in range(n_samples):
+    # 创建具有非平凡相关性的样本
+    x = np.random.randint(0, 2, n_features)
+    # 添加相关性：如果前 4 位有偶数个 1，后 4 位也应有偶数个 1
+    parity = sum(x[:4]) % 2
+    if parity == 0:
+        x[4:] = [b if b == 0 else 0 for b in x[4:]]
+    data.append(x.tolist())
+
+# 量子玻尔兹曼机
+start_qbm = time.time()
+qbm_result = qbm(data=data, n_hidden=4, n_epochs=100)
+time_qbm = time.time() - start_qbm
+
+# 经典玻尔兹曼机（对比）
+from quonic.ml import rbm
+start_rbm = time.time()
+rbm_result = rbm(data=data, n_hidden=4, n_epochs=100)
+time_rbm = time.time() - start_rbm
+
+print(f'QBM: Loss={qbm_result.loss:.4f}, Time={time_qbm:.2f}s')
+print(f'RBM: Loss={rbm_result.loss:.4f}, Time={time_rbm:.2f}s')
+print(f'QBM vs RBM: {rbm_result.loss/qbm_result.loss:.2f}x better')
+
+# 分析：
+# - QBM 可以学习更复杂的分布（量子纠缠）
+# - 对于具有非平凡相关性的数据，QBM 可能更好
+# - 但 QBM 的训练时间可能更长
 \end{verbatim}
 
 \section{适用场景}

@@ -145,26 +145,107 @@ print(f'Fidelity: {result.fidelity}')
 
 \section{进阶用法}
 
-\subsection{场景 1：不同噪声类型}
+\subsection{场景 1：噪声对 Bell 态的影响}
+
+分析噪声如何破坏量子纠缠：
 
 \begin{verbatim}
 from quonic.noise import noise_model
+from quonic import qgate, qshow
+from quonic.gates import H, CX
+import numpy as np
 
-# 不同噪声类型
-for noise_type in ['depolarizing', 'bit_flip', 'phase_flip', 'decoherence']:
-    result = noise_model(error_rate=0.01, noise_type=noise_type)
-    print(f'{noise_type}: Fidelity={result.fidelity}')
+# 创建 Bell 态
+qgate(H, 0)
+qgate(CX, 0, 1)
+
+# 无噪声测量
+result_clean = qshow(noise=0)
+print(f'Clean Bell state: {result_clean.counts}')
+
+# 不同噪声水平
+for noise_rate in [0.01, 0.05, 0.1, 0.2]:
+    result_noisy = qshow(noise=noise_rate)
+
+    # 计算保真度
+    # 理想 Bell 态：|00> 和 |11> 各 50%
+    ideal_prob = {'00': 0.5, '11': 0.5}
+    fidelity = sum(
+        min(result_noisy.counts.get(s, 0)/1024, ideal_prob.get(s, 0))
+        for s in ['00', '01', '10', '11']
+    )
+
+    print(f'Noise={noise_rate}: Fidelity={fidelity:.4f}')
+
+# 分析：噪声破坏纠缠，使 Bell 态退化为混合态
+# 当噪声率 > 11% 时，Bell 不等式不再被违反
 \end{verbatim}
 
-\subsection{场景 2：不同错误率}
+\subsection{场景 2：噪声缓解技术}
+
+使用零噪声外推（ZNE）缓解噪声：
 
 \begin{verbatim}
 from quonic.noise import noise_model
+from quonic.mitigation import zne
+from quonic import qgate, qshow
+from quonic.gates import H, CX
 
-# 不同错误率
-for p in [0.001, 0.01, 0.1]:
-    result = noise_model(error_rate=p)
-    print(f'p={p}: Fidelity={result.fidelity}')
+# 原始电路
+def bell_circuit():
+    qgate(H, 0)
+    qgate(CX, 0, 1)
+
+# 不同噪声水平下的测量结果
+noise_levels = [0.0, 0.01, 0.02, 0.03]
+expectation_values = []
+
+for noise in noise_levels:
+    result = qshow(noise=noise)
+    # 计算 <Z0 Z1> 期望值
+    prob_00 = result.counts.get('00', 0) / 1024
+    prob_11 = result.counts.get('11', 0) / 1024
+    expectation = prob_00 + prob_11  # |00> 和 |11> 的概率和
+    expectation_values.append(expectation)
+
+# 零噪声外推：拟合并外推到 noise=0
+zne_result = zne(noise_levels, expectation_values)
+print(f'ZNE mitigated value: {zne_result.extrapolated:.4f}')
+print(f'Unmitigated value: {expectation_values[0]:.4f}')
+
+# ZNE 的原理：
+# 1. 在多个噪声水平下测量
+# 2. 拟合噪声-期望值曲线
+# 3. 外推到零噪声极限
+\end{verbatim}
+
+\subsection{场景 3：量子误差校正中的噪声建模}
+
+在量子纠错码中建模噪声：
+
+\begin{verbatim}
+from quonic.noise import noise_model
+from quonic.qec import bit_flip_code
+
+# 比特翻转码的噪声分析
+code = bit_flip_code(distance=3)
+
+# 不同物理错误率
+for p in [0.001, 0.01, 0.05, 0.1]:
+    noise = noise_model(error_rate=p, noise_type='bit_flip')
+
+    # 模拟纠错过程
+    result = code.simulate(noise_model=noise, shots=1000)
+
+    # 计算逻辑错误率
+    logical_error_rate = result.logical_error_rate
+    print(f'Physical error rate: {p}')
+    print(f'Logical error rate: {logical_error_rate:.6f}')
+    print(f'Suppression factor: {p/logical_error_rate:.2f}x')
+
+# 分析：当物理错误率低于阈值时，
+# 逻辑错误率随码距指数衰减
+# 这就是容错量子计算的原理
 \end{verbatim}
 
 \section{适用场景}

@@ -288,39 +288,101 @@ print(f&#39;Evolution: {result.evolution}&#39;)
 print(f&#39;Error: {result.error}&#39;)
 print(f&#39;Circuit depth: {result.circuit_depth}&#39;)</code></pre>
 <h1 id="进阶用法">进阶用法</h1>
-<h2 id="场景-1不同步数">场景 1：不同步数</h2>
+<h2 id="场景-1ising-模型动力学模拟">场景 1：Ising 模型动力学模拟</h2>
+<p>模拟量子自旋链的时间演化：</p>
 <pre><code>from quonic.simulation import trotter
+import numpy as np
 
-H = [[1, 0], [0, -1]]
+# 4-qubit Ising 模型哈密顿量
+# H = J * sum(Z_i * Z_{i+1}) + h * sum(X_i)
+J = 1.0  # 耦合强度
+h = 0.5  # 横场强度
 
-# 不同步数的影响
-for n in [1, 5, 10, 50, 100]:
-    result = trotter(H, t=1.0, n_steps=n)
-    print(f&#39;n={n}: Error={result.error:.6f}&#39;)</code></pre>
-<h2 id="场景-2不同阶数">场景 2：不同阶数</h2>
+# 构造哈密顿量矩阵（4-qubit）
+n = 4
+H = np.zeros((2**n, 2**n))
+
+# Z_i Z_{i+1} 项
+for i in range(n-1):
+    # 构造 Z_i Z_{i+1} 算子
+    ZiZi1 = np.eye(2**n)
+    for j in range(n):
+        if j == i or j == i+1:
+            ZiZi1[j, j] = -1 if j == i else 1
+    H += J * ZiZi1
+
+# X_i 项
+for i in range(n):
+    Xi = np.eye(2**n)
+    Xi[i, i] = 0
+    Xi[i, 2**n-1-i] = 1
+    H += h * Xi
+
+# 模拟时间演化
+result = trotter(H.tolist(), t=2.0, n_steps=50, order=2)
+
+# 计算磁化强度期望值
+M = np.zeros((2**n, 2**n))
+for i in range(n):
+    M += np.diag([(-1)**bin(j).count(&#39;1&#39;) for j in range(2**n)])
+
+magnetization = np.trace(result.evolution @ M @ result.evolution.conj().T).real
+print(f&#39;Magnetization: {magnetization:.4f}&#39;)</code></pre>
+<h2 id="场景-2分子动力学模拟">场景 2：分子动力学模拟</h2>
+<p>模拟 H2 分子的振动动力学：</p>
 <pre><code>from quonic.simulation import trotter
+from quonic.chemistry import molecule_vqe
 
-H = [[1, 0], [0, -1]]
+# 获取 H2 分子哈密顿量
+mol = molecule_vqe(molecule=&#39;H2&#39;, bond_length=0.74)
+H = mol.hamiltonian
 
-# 一阶 vs 二阶
-result_1 = trotter(H, t=1.0, n_steps=10, order=1)
-result_2 = trotter(H, t=1.0, n_steps=10, order=2)
+# 模拟不同时间的演化
+times = [0.1, 0.5, 1.0, 2.0]
+for t in times:
+    result = trotter(H, t=t, n_steps=20, order=2)
 
-print(f&#39;Order 1 error: {result_1.error:.6f}&#39;)
-print(f&#39;Order 2 error: {result_2.error:.6f}&#39;)</code></pre>
-<h2 id="场景-3多体系统">场景 3：多体系统</h2>
+    # 计算基态占据概率
+    ground_state = mol.ground_state
+    prob_ground = abs(ground_state @ result.evolution @ ground_state.conj())**2
+
+    print(f&#39;t={t}: Ground state probability = {prob_ground:.4f}&#39;)
+
+# 分析：随着时间增加，系统从基态演化到激发态
+# 这模拟了分子振动的量子动力学</code></pre>
+<h2 id="场景-3误差分析与收敛性">场景 3：误差分析与收敛性</h2>
+<p>分析 Trotter 分解的误差收敛行为：</p>
 <pre><code>from quonic.simulation import trotter
+import matplotlib.pyplot as plt
 
-# 4-qubit Ising 模型
-H = [
-    [2, 0, 0, 0],
-    [0, -2, 1, 0],
-    [0, 1, -2, 0],
-    [0, 0, 0, 2]
-]
+# 测试哈密顿量
+H = [[2, 1], [1, -1]]
 
-result = trotter(H, t=0.5, n_steps=20)
-print(f&#39;Evolution: {result.evolution}&#39;)</code></pre>
+# 不同步数的误差
+steps = [1, 2, 5, 10, 20, 50, 100]
+errors_1st = []
+errors_2nd = []
+
+for n in steps:
+    result_1 = trotter(H, t=1.0, n_steps=n, order=1)
+    result_2 = trotter(H, t=1.0, n_steps=n, order=2)
+    errors_1st.append(result_1.error)
+    errors_2nd.append(result_2.error)
+
+# 绘制收敛曲线
+plt.figure(figsize=(10, 6))
+plt.loglog(steps, errors_1st, &#39;o-&#39;, label=&#39;1st order&#39;)
+plt.loglog(steps, errors_2nd, &#39;s-&#39;, label=&#39;2nd order&#39;)
+plt.loglog(steps, [1/s**2 for s in steps], &#39;--&#39;, label=&#39;O(1/n^2)&#39;)
+plt.loglog(steps, [1/s**3 for s in steps], &#39;--&#39;, label=&#39;O(1/n^3)&#39;)
+plt.xlabel(&#39;Number of steps (n)&#39;)
+plt.ylabel(&#39;Error&#39;)
+plt.title(&#39;Trotter Error Convergence&#39;)
+plt.legend()
+plt.grid(True)
+plt.savefig(&#39;trotter_convergence.png&#39;)
+
+# 结论：二阶分解收敛更快，适合高精度模拟</code></pre>
 <h1 id="适用场景">适用场景</h1>
 <h2 id="量子化学">量子化学</h2>
 <p>Trotter

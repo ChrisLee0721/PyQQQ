@@ -128,24 +128,114 @@ print(f'Period: {result.period}')
 
 \section{进阶用法}
 
-\subsection{场景 1：不同参数}
+\subsection{场景 1：Diffie-Hellman 密钥交换}
+
+模拟 Diffie-Hellman 密钥交换协议：
 
 \begin{verbatim}
 from quonic.algorithms import discrete_log
 
-# 不同参数
-result = discrete_log(g=3, h=27, p=13)
-print(f'x = {result.x}')
+# Diffie-Hellman 参数
+p = 23  # 素数
+g = 5   # 生成元
+
+# Alice 选择私钥 a，计算公钥 A = g^a mod p
+a = 6
+A = pow(g, a, p)  # A = 5^6 mod 23 = 8
+
+# Bob 选择私钥 b，计算公钥 B = g^b mod p
+b = 15
+B = pow(g, b, p)  # B = 5^15 mod 23 = 19
+
+# 共享密钥计算
+# Alice: s = B^a mod p
+s_alice = pow(B, a, p)
+
+# Bob: s = A^b mod p
+s_bob = pow(A, b, p)
+
+print(f'Alice shared key: {s_alice}')
+print(f'Bob shared key: {s_bob}')
+print(f'Keys match: {s_alice == s_bob}')
+
+# 量子攻击：使用 Shor 算法求解离散对数
+# 从公钥 A 恢复私钥 a
+result = discrete_log(g=g, h=A, p=p)
+print(f'Quantum attack: recovered a = {result.x}')
 \end{verbatim}
 
-\subsection{场景 2：大数}
+\subsection{场景 2：椭圆曲线密码学}
+
+椭圆曲线离散对数问题（ECDLP）：
 
 \begin{verbatim}
 from quonic.algorithms import discrete_log
 
-# 大数
-result = discrete_log(g=2, h=1024, p=1031)
-print(f'x = {result.x}')
+# 椭圆曲线参数（简化示例）
+# y^2 = x^3 + ax + b mod p
+a = 2
+b = 3
+p = 97
+
+# 基点 G = (3, 6)
+Gx, Gy = 3, 6
+
+# Alice 私钥 n_A，公钥 Q_A = n_A * G
+n_A = 7
+# 计算 Q_A = n_A * G（椭圆曲线点乘）
+# 简化：使用标量乘法
+Q_Ax, Q_Ay = (n_A * Gx) % p, (n_A * Gy) % p
+
+# 量子攻击：求解 ECDLP
+# 从 Q_A 恢复 n_A
+# 这比经典攻击快指数倍
+print(f'Public key Q_A: ({Q_Ax}, {Q_Ay})')
+print(f'Private key n_A: {n_A}')
+
+# 经典攻击：需要 O(sqrt(p)) 时间
+# 量子攻击：需要 O(log(p)) 时间
+\end{verbatim}
+
+\subsection{场景 3：数字签名验证}
+
+使用离散对数进行数字签名：
+
+\begin{verbatim}
+from quonic.algorithms import discrete_log
+import hashlib
+
+# DSA 签名参数
+p = 23
+g = 5
+q = 11  # (p-1) 的因子
+
+# 密钥生成
+x = 7  # 私钥
+y = pow(g, x, p)  # 公钥
+
+# 签名过程
+message = "Hello, Quantum World!"
+k = 3  # 随机数
+
+r = pow(g, k, p) % q
+k_inv = pow(k, -1, q)
+hash_msg = int(hashlib.sha256(message.encode()).hexdigest(), 16) % q
+s = (k_inv * (hash_msg + x * r)) % q
+
+print(f'Signature: (r={r}, s={s})')
+
+# 验证过程
+w = pow(s, -1, q)
+u1 = (hash_msg * w) % q
+u2 = (r * w) % q
+v = (pow(g, u1, p) * pow(y, u2, p)) % p % q
+
+print(f'Verification: v={v}, r={r}')
+print(f'Signature valid: {v == r}')
+
+# 量子攻击：可以从公钥 y 恢复私钥 x
+result = discrete_log(g=g, h=y, p=p)
+print(f'Quantum attack: recovered x = {result.x}')
 \end{verbatim}
 
 \section{适用场景}

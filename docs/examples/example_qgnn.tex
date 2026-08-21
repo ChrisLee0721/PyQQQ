@@ -142,31 +142,156 @@ print(f'Accuracy: {result.accuracy}')
 
 \section{进阶用法}
 
-\subsection{场景 1：不同图}
+\subsection{场景 1：分子性质预测}
+
+使用 QGNN 预测分子性质：
 
 \begin{verbatim}
 from quonic.ml import qgnn
+import numpy as np
 
-# 不同图
-graph1 = [(0,1), (1,2), (2,0)]  # 三角形
-graph2 = [(0,1), (1,2), (2,3), (3,0)]  # 正方形
-graph3 = [(0,1), (0,2), (0,3), (1,2), (1,3), (2,3)]  # 完全图
+# 分子图：原子作为节点，化学键作为边
+# H2O 分子
+h2o_graph = [
+    (0, 1),  # O-H 键
+    (0, 2),  # O-H 键
+]
 
-for graph in [graph1, graph2, graph3]:
-    features = [[1,0]] * len(graph)
-    result = qgnn(graph=graph, features=features)
-    print(f'Accuracy: {result.accuracy}')
+# 原子特征：[原子序数, 电负性, 原子半径]
+h2o_features = [
+    [8, 3.44, 0.66],   # O 原子
+    [1, 2.20, 0.31],   # H 原子
+    [1, 2.20, 0.31],   # H 原子
+]
+
+# 训练 QGNN 预测分子性质
+result = qgnn(
+    graph=h2o_graph,
+    features=h2o_features,
+    labels=[0.96],  # 键长
+    n_layers=2,
+    n_epochs=100
+)
+
+print(f'Predicted bond length: {result.prediction[0]:.2f} A')
+print(f'Actual bond length: 0.96 A')
+print(f'Error: {abs(result.prediction[0] - 0.96):.4f} A')
+
+# QGNN 的优势：
+# 1. 可以处理不规则的图结构
+# 2. 量子卷积可以捕捉长程依赖
+# 3. 对分子图的表示更自然
 \end{verbatim}
 
-\subsection{场景 2：不同层数}
+\subsection{场景 2：社交网络分析}
+
+使用 QGNN 进行社交网络节点分类：
 
 \begin{verbatim}
 from quonic.ml import qgnn
+import networkx as nx
+import numpy as np
 
-# 不同层数
-for n in [1, 2, 3, 4]:
-    result = qgnn(graph=[(0,1),(1,2)], features=[[1,0],[0,1]], n_layers=n)
-    print(f'n={n}: Accuracy={result.accuracy}')
+# 创建社交网络图
+G = nx.karate_club_graph()
+
+# 节点特征：度数、聚类系数
+features = []
+for node in G.nodes():
+    degree = G.degree(node)
+    clustering = nx.clustering(G, node)
+    features.append([degree, clustering])
+
+# 节点标签：社区归属
+labels = [0 if G.nodes[node]['club'] == 'Mr. Hi' else 1 for node in G.nodes()]
+
+# 训练 QGNN
+result = qgnn(
+    graph=list(G.edges()),
+    features=features,
+    labels=labels,
+    n_layers=2,
+    n_epochs=100
+)
+
+print(f'Node classification accuracy: {result.accuracy:.4f}')
+
+# 分析节点嵌入
+embeddings = result.get_embeddings()
+
+# 可视化嵌入空间
+import matplotlib.pyplot as plt
+from sklearn.decomposition import PCA
+
+pca = PCA(n_components=2)
+embeddings_2d = pca.fit_transform(embeddings)
+
+plt.figure(figsize=(10, 8))
+scatter = plt.scatter(embeddings_2d[:, 0], embeddings_2d[:, 1],
+                     c=labels, cmap='viridis', s=100)
+plt.colorbar(scatter)
+plt.xlabel('PC1')
+plt.ylabel('PC2')
+plt.title('QGNN Node Embeddings')
+plt.savefig('qgnn_embeddings.png')
+plt.show()
+
+# 分析：QGNN 学习的嵌入应该将不同社区的节点分开
+\end{verbatim}
+
+\subsection{场景 3：图分类任务}
+
+使用 QGNN 进行图分类：
+
+\begin{verbatim}
+from quonic.ml import qgnn
+import numpy as np
+
+# 生成不同类型的图
+# 类型 0：环形图
+# 类型 1：星形图
+graphs = []
+labels = []
+
+for _ in range(10):
+    # 环形图
+    n = np.random.randint(4, 8)
+    edges = [(i, (i+1) % n) for i in range(n)]
+    features = [[1, 0] for _ in range(n)]
+    graphs.append((edges, features))
+    labels.append(0)
+
+    # 星形图
+    n = np.random.randint(4, 8)
+    edges = [(0, i) for i in range(1, n)]
+    features = [[0, 1] for _ in range(n)]
+    graphs.append((edges, features))
+    labels.append(1)
+
+# 训练 QGNN 进行图分类
+accuracies = []
+for i in range(len(graphs)):
+    edges, features = graphs[i]
+
+    # 使用其他图作为训练数据
+    train_graphs = [g for j, g in enumerate(graphs) if j != i]
+    train_labels = [l for j, l in enumerate(labels) if j != i]
+
+    result = qgnn(
+        graph=edges,
+        features=features,
+        train_data=train_graphs,
+        train_labels=train_labels,
+        n_layers=2
+    )
+
+    accuracies.append(result.accuracy)
+
+print(f'Average accuracy: {np.mean(accuracies):.4f}')
+print(f'Std deviation: {np.std(accuracies):.4f}')
+
+# 分析：QGNN 可以学习图的全局特征
+# 环形图和星形图有不同的结构特征
 \end{verbatim}
 
 \section{适用场景}

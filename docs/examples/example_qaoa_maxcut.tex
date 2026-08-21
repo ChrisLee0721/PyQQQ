@@ -145,30 +145,137 @@ print(f'Solution: {result.solution}')
 
 \section{进阶用法}
 
-\subsection{场景 1：不同层数}
+\subsection{场景 1：加权图 MaxCut}
+
+处理加权图的 MaxCut 问题：
 
 \begin{verbatim}
 from quonic.algorithms import qaoa_maxcut
+import numpy as np
 
-# 不同层数
-for p in [1, 2, 4, 8]:
-    result = qaoa_maxcut(graph=[(0,1),(1,2),(2,0)], p=p)
-    print(f'p={p}: MaxCut={result.maxcut_value}')
+# 加权图：边有权重
+# 例如：社交网络中用户之间的关系强度
+weighted_graph = [
+    (0, 1, 2.0),  # 用户 0 和 1 的关系强度
+    (1, 2, 1.5),
+    (2, 3, 3.0),
+    (3, 0, 1.0),
+    (0, 2, 0.5),
+    (1, 3, 2.5)
+]
+
+# QAOA 求解加权 MaxCut
+result = qaoa_maxcut(graph=weighted_graph, p=3)
+
+print(f'MaxCut value: {result.maxcut_value}')
+print(f'Partition: {result.solution}')
+
+# 分析最优分割
+group_0 = [i for i, s in enumerate(result.solution) if s == 0]
+group_1 = [i for i, s in enumerate(result.solution) if s == 1]
+print(f'Group 0: {group_0}')
+print(f'Group 1: {group_1}')
+
+# 计算切割权重
+cut_weight = sum(
+    w for (i, j, w) in weighted_graph
+    if result.solution[i] != result.solution[j]
+)
+print(f'Cut weight: {cut_weight}')
 \end{verbatim}
 
-\subsection{场景 2：不同图}
+\subsection{场景 2：近似比分析}
+
+分析 QAOA 的近似比随层数的变化：
 
 \begin{verbatim}
 from quonic.algorithms import qaoa_maxcut
+import matplotlib.pyplot as plt
+import numpy as np
 
-# 不同图
-graph1 = [(0,1), (1,2), (2,0)]  # 三角形
-graph2 = [(0,1), (1,2), (2,3), (3,0)]  # 正方形
-graph3 = [(0,1), (0,2), (0,3), (1,2), (1,3), (2,3)]  # 完全图
+# 测试图
+graph = [(0,1), (1,2), (2,3), (3,0), (0,2), (1,3)]
 
-for graph in [graph1, graph2, graph3]:
-    result = qaoa_maxcut(graph=graph, p=2)
-    print(f'MaxCut: {result.maxcut_value}')
+# 经典最优解（暴力搜索）
+n = 4
+best_classical = 0
+for mask in range(2**n):
+    cut = sum(
+        1 for (i, j) in graph
+        if ((mask >> i) & 1) != ((mask >> j) & 1)
+    )
+    best_classical = max(best_classical, cut)
+
+print(f'Classical optimal: {best_classical}')
+
+# QAOA 不同层数的近似比
+layers = [1, 2, 3, 4, 5]
+ratios = []
+
+for p in layers:
+    result = qaoa_maxcut(graph=graph, p=p)
+    ratio = result.maxcut_value / best_classical
+    ratios.append(ratio)
+    print(f'p={p}: MaxCut={result.maxcut_value}, Ratio={ratio:.4f}')
+
+# 绘制近似比曲线
+plt.figure(figsize=(10, 6))
+plt.plot(layers, ratios, 'o-')
+plt.axhline(y=1.0, color='r', linestyle='--', label='Optimal')
+plt.axhline(y=0.692, color='g', linestyle='--', label='p=1 limit')
+plt.xlabel('Number of QAOA layers (p)')
+plt.ylabel('Approximation ratio')
+plt.title('QAOA Approximation Ratio vs Layers')
+plt.legend()
+plt.grid(True)
+plt.savefig('qaoa_ratio.png')
+
+# 分析：
+# - p=1 时，近似比约为 0.692（理论极限）
+# - 随着 p 增加，近似比逐渐接近 1
+# - 但参数优化变得更困难
+\end{verbatim}
+
+\subsection{场景 3：组合优化应用}
+
+使用 QAOA 解决实际组合优化问题：
+
+\begin{verbatim}
+from quonic.algorithms import qaoa_maxcut
+import numpy as np
+
+# 问题：任务调度优化
+# 有 4 个任务，需要分配到 2 个处理器
+# 目标：最小化处理器之间的通信
+
+# 任务依赖图（边表示任务之间的通信）
+task_graph = [
+    (0, 1, 10),  # 任务 0 和 1 之间有 10 单位通信
+    (1, 2, 5),
+    (2, 3, 8),
+    (3, 0, 3),
+    (0, 2, 2),
+    (1, 3, 7)
+]
+
+# 将任务调度问题转化为 MaxCut 问题
+# 目标：最大化切割权重（即最小化处理器间通信）
+
+result = qaoa_maxcut(graph=task_graph, p=3)
+
+# 分析结果
+processor_0 = [i for i, s in enumerate(result.solution) if s == 0]
+processor_1 = [i for i, s in enumerate(result.solution) if s == 1]
+
+print(f'Processor 0 tasks: {processor_0}')
+print(f'Processor 1 tasks: {processor_1}')
+print(f'Communication saved: {result.maxcut_value}')
+
+# 计算实际通信量
+total_comm = sum(w for (i, j, w) in task_graph)
+saved_comm = result.maxcut_value
+print(f'Total communication: {total_comm}')
+print(f'Communication ratio: {saved_comm/total_comm:.2%}')
 \end{verbatim}
 
 \section{适用场景}
