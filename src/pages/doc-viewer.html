@@ -204,9 +204,9 @@
                     if (file.startsWith('docs/examples/') && file.endsWith('.html')) {
                         const baseName = file.replace('docs/examples/', '');
                         if (currentLang === 'zh') {
-                            displayFile = 'docs/examples/zh/' + baseName;
+                            displayFile = 'docs/zh/examples/' + baseName;
                         } else {
-                            displayFile = 'docs/examples/en/' + baseName;
+                            displayFile = 'docs/en/examples/' + baseName;
                         }
                     }
                     a.href = `doc-viewer.html?file=${displayFile}`;
@@ -270,7 +270,7 @@
                 let files = filterFilesByLang(allFiles, currentLang);
 
                 // Add example files from the appropriate language folder
-                const exampleDir = currentLang === 'zh' ? 'docs/examples/zh/' : 'docs/examples/en/';
+                const exampleDir = currentLang === 'zh' ? 'docs/zh/examples/' : 'docs/en/examples/';
                 fetch(exampleDir)
                     .then(r => r.text())
                     .then(html => {
@@ -352,9 +352,9 @@
                 // Example files: use en/ or zh/ folder
                 const baseName = urlFile.replace('docs/examples/', '');
                 if (currentLang === 'zh') {
-                    actualFile = 'docs/examples/zh/' + baseName;
+                    actualFile = 'docs/zh/examples/' + baseName;
                 } else {
-                    actualFile = 'docs/examples/en/' + baseName;
+                    actualFile = 'docs/en/examples/' + baseName;
                 }
             }
 
