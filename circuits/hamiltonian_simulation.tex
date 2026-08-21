@@ -1,0 +1,10 @@
+\documentclass[border=5mm]{standalone}
+\usepackage{tikz}
+\usetikzlibrary{quantikz2}
+\usepackage{xcolor}
+\pagecolor{white}
+\begin{document}
+\begin{quantikz}
+  \lstick{$|\psi\rangle$} & \gate{e^{-iH_1 t/n}} & \gate{e^{-iH_2 t/n}} & \qw & \gate{e^{-iH_k t/n}} & \qw
+\end{quantikz}
+\end{document}

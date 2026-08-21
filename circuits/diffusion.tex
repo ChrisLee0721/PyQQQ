@@ -1,0 +1,11 @@
+\documentclass[border=5mm]{standalone}
+\usepackage{tikz}
+\usetikzlibrary{quantikz2}
+\usepackage{xcolor}
+\pagecolor{white}
+\begin{document}
+\begin{quantikz}
+  \lstick{$|0\rangle$} & \gate{H} & \gate{X} & \ctrl{1} & \gate{X} & \gate{H} & \qw \
+  \lstick{$|0\rangle$} & \gate{H} & \gate{X} & \targ{}  & \gate{X} & \gate{H} & \qw
+\end{quantikz}
+\end{document}
