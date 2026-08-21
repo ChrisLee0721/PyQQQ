@@ -321,6 +321,8 @@
                             tex = tex.replace(/\\begin\{align\}/g, '').replace(/\\end\{align\}/g, '');
                             tex = tex.replace(/\\begin\{align\*\}/g, '').replace(/\\end\{align\*\}/g, '');
                             tex = tex.replace(/\\begin\{eqnarray\}/g, '').replace(/\\end\{eqnarray\}/g, '');
+                            // Decode HTML entities (pandoc encodes & as &amp; etc.)
+                            tex = tex.replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"');
                             tex = tex.trim();
                             const display = el.classList.contains('display');
                             try {
