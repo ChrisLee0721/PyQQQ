@@ -198,7 +198,14 @@
 
                 sections[section].sort((a, b) => a.title.localeCompare(b.title)).forEach(item => {
                     const name = item.title;
-                    const title = name.replace(/\.(md|html)$/, '').replace(/^example_/, '').replace(/_zh$/, '').replace(/_/g, ' ').replace(/-/g, ' ');
+                    const baseName = name.replace(/\.(md|html)$/, '').replace(/^example_/, '').replace(/_zh$/, '');
+                    // Use Chinese title if available and in Chinese mode
+                    let title;
+                    if (currentLang === 'zh' && zhTitles[baseName]) {
+                        title = zhTitles[baseName];
+                    } else {
+                        title = baseName.replace(/_/g, ' ').replace(/-/g, ' ');
+                    }
                     const a = document.createElement('a');
                     a.dataset.file = item.file;
                     a.href = `doc-viewer.html?file=${item.file}`;
@@ -211,6 +218,13 @@
         }
 
         let allFiles = [];
+        let zhTitles = {};
+
+        // Load Chinese title mapping
+        fetch('docs/zh/titles.json')
+            .then(r => r.json())
+            .then(data => { zhTitles = data; })
+            .catch(() => {});
 
         // Filter files based on current language
         function filterFilesByLang(fileList, lang) {
