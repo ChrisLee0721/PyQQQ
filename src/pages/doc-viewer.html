@@ -25,6 +25,9 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/prism.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-python.min.js"></script>
     <style>
         body { font-family: 'Inter', sans-serif; background: #1a1b26; color: #c8cad3; line-height: 1.8; }
         code, pre { font-family: 'JetBrains Mono', monospace; }
@@ -320,6 +323,14 @@
                                 console.warn('KaTeX error:', e);
                             }
                         });
+                    }
+
+                    // Syntax highlighting for code blocks
+                    if (typeof Prism !== 'undefined') {
+                        content.querySelectorAll('pre code, pre').forEach(el => {
+                            el.classList.add('language-python');
+                        });
+                        Prism.highlightAllUnder(content);
                     }
 
                     buildTOC();
