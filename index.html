@@ -396,19 +396,19 @@ job = execute(circuit, backend, shots=1024)</pre>
 
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div class="bg-slate-950/80 p-5 rounded-2xl border border-slate-800 space-y-3">
-                    <div class="text-cyan-400 font-mono font-bold text-lg">01. 安装</div>
+                    <div class="text-cyan-400 font-mono font-bold text-lg" data-i18n-zh="01. 安装" data-i18n-en="01. Install">01. 安装</div>
                     <p class="text-xs text-slate-400" data-i18n-zh="使用 pip 安装轻量包，无需繁重的底层编译依赖" data-i18n-en="Install with pip without heavy compiler dependencies">使用 pip 安装轻量包，无需繁重的底层编译依赖</p>
                     <code class="block bg-slate-900 p-2.5 rounded-lg text-xs font-mono text-cyan-300">pip install quonic</code>
                 </div>
 
                 <div class="bg-slate-950/80 p-5 rounded-2xl border border-slate-800 space-y-3">
-                    <div class="text-indigo-400 font-mono font-bold text-lg">02. 编写逻辑</div>
-                    <p class="text-xs text-slate-400" data-i18n-zh="导入模块并利用 intuitive API 构建量子叠加与纠缠" data-i18n-en="Import module and use intuitive API to build entanglement">导入模块并利用 intuitive API 构建量子叠加与纠缠</p>
+                    <div class="text-indigo-400 font-mono font-bold text-lg" data-i18n-zh="02. 编写逻辑" data-i18n-en="02. Write Logic">02. 编写逻辑</div>
+                    <p class="text-xs text-slate-400" data-i18n-zh="导入模块并利用直观 API 构建量子叠加与纠缠" data-i18n-en="Import module and use intuitive API to build quantum superposition and entanglement">导入模块并利用直观 API 构建量子叠加与纠缠</p>
                     <code class="block bg-slate-900 p-2.5 rounded-lg text-xs font-mono text-indigo-300">prog.h(0).cnot(0, 1)</code>
                 </div>
 
                 <div class="bg-slate-950/80 p-5 rounded-2xl border border-slate-800 space-y-3">
-                    <div class="text-purple-400 font-mono font-bold text-lg">03. 执行获取</div>
+                    <div class="text-purple-400 font-mono font-bold text-lg" data-i18n-zh="03. 执行获取" data-i18n-en="03. Run & Get Results">03. 执行获取</div>
                     <p class="text-xs text-slate-400" data-i18n-zh="直接运行获取测量直方图或态矢量概率分布" data-i18n-en="Run to get measurement histograms or state vectors">直接运行获取测量直方图或态矢量概率分布</p>
                     <code class="block bg-slate-900 p-2.5 rounded-lg text-xs font-mono text-purple-300">res = prog.run()</code>
                 </div>
