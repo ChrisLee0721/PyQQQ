@@ -316,11 +316,11 @@
                             // Strip pandoc's delimiters
                             if (tex.startsWith('\\[') && tex.endsWith('\\]')) tex = tex.slice(2, -2);
                             if (tex.startsWith('\\(') && tex.endsWith('\\)')) tex = tex.slice(2, -2);
-                            // Strip LaTeX equation environments (KaTeX doesn't support them)
+                            // Convert LaTeX environments to KaTeX-compatible ones
                             tex = tex.replace(/\\begin\{equation\}/g, '').replace(/\\end\{equation\}/g, '');
-                            tex = tex.replace(/\\begin\{align\}/g, '').replace(/\\end\{align\}/g, '');
-                            tex = tex.replace(/\\begin\{align\*\}/g, '').replace(/\\end\{align\*\}/g, '');
-                            tex = tex.replace(/\\begin\{eqnarray\}/g, '').replace(/\\end\{eqnarray\}/g, '');
+                            tex = tex.replace(/\\begin\{align\}/g, '\\begin{aligned}').replace(/\\end\{align\}/g, '\\end{aligned}');
+                            tex = tex.replace(/\\begin\{align\*\}/g, '\\begin{aligned}').replace(/\\end\{align\*\}/g, '\\end{aligned}');
+                            tex = tex.replace(/\\begin\{eqnarray\}/g, '\\begin{aligned}').replace(/\\end\{eqnarray\}/g, '\\end{aligned}');
                             // Decode HTML entities (pandoc encodes & as &amp; etc.)
                             tex = tex.replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"');
                             tex = tex.trim();
