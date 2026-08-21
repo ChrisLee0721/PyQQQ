@@ -309,7 +309,10 @@
                     // Render KaTeX math (pandoc wraps math in <span class="math display/inline">)
                     if (typeof katex !== 'undefined') {
                         content.querySelectorAll('span.math').forEach(el => {
-                            const tex = el.textContent;
+                            let tex = el.textContent.trim();
+                            // Strip pandoc's delimiters
+                            if (tex.startsWith('\\[') && tex.endsWith('\\]')) tex = tex.slice(2, -2);
+                            if (tex.startsWith('\\(') && tex.endsWith('\\)')) tex = tex.slice(2, -2);
                             const display = el.classList.contains('display');
                             try {
                                 katex.render(tex, el, { displayMode: display, throwOnError: false });
