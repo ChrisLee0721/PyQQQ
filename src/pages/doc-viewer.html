@@ -331,22 +331,16 @@
             // Determine which file to load based on language
             let actualFile = urlFile;
 
-            // Try language-specific path first
-            if (currentLang === 'zh' && urlFile.startsWith('docs/') && !urlFile.startsWith('docs/zh/') && !urlFile.startsWith('docs/en/')) {
-                const zhPath = urlFile.replace('docs/', 'docs/zh/');
-                try {
-                    const resp = await fetch(zhPath, { method: 'HEAD' });
-                    if (resp.ok) actualFile = zhPath;
-                } catch (e) {}
-            } else if (currentLang === 'en' && urlFile.startsWith('docs/') && !urlFile.startsWith('docs/zh/') && !urlFile.startsWith('docs/en/')) {
-                const enPath = urlFile.replace('docs/', 'docs/en/');
-                try {
-                    const resp = await fetch(enPath, { method: 'HEAD' });
-                    if (resp.ok) actualFile = enPath;
-                } catch (e) {}
+            // For non-language-specific paths, try language folder first
+            if (urlFile.startsWith('docs/') && !urlFile.startsWith('docs/zh/') && !urlFile.startsWith('docs/en/')) {
+                const langPath = urlFile.replace('docs/', `docs/${currentLang}/`);
+                fetch(langPath, { method: 'HEAD' })
+                    .then(r => { if (r.ok) actualFile = langPath; })
+                    .catch(() => {})
+                    .finally(() => loadDoc(actualFile));
+            } else {
+                loadDoc(actualFile);
             }
-
-            loadDoc(actualFile);
 
             function loadDoc(file) {
             fetch(file)
