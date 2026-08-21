@@ -40,21 +40,21 @@
 BB84 是第一个量子密钥分发协议，利用量子力学原理实现无条件安全的密钥分发。
 
 \subsection{经典局限}
-\begin{itemize}
+\b\begin{itemize}
   \item 经典加密依赖计算复杂度（如 RSA）
   \item 量子计算机可以破解经典加密
   \item 经典密钥分发需要可信信道
 \end{itemize}
 
 \subsection{量子优势}
-\begin{itemize}
+\b\begin{itemize}
   \item BB84 提供信息论安全性（不依赖计算复杂度）
   \item 量子不可克隆定理保证窃听可检测
   \item 是后量子密码学的基础
 \end{itemize}
 
 \subsection{实际应用}
-\begin{itemize}
+\b\begin{itemize}
   \item 量子密钥分发网络
   \item 量子安全通信
   \item 量子互联网
@@ -106,7 +106,7 @@ BB84 协议步骤：
 \subsection{几何解释}
 
 在 Bloch 球上，BB84 使用两个正交基：
-\begin{itemize}
+\b\begin{itemize}
   \item 计算基：$\{|0\rangle, |1\rangle\}$
   \item Hadamard 基：$\{|+\rangle, |-\rangle\}$
 \end{itemize}
@@ -188,14 +188,14 @@ BB84 提供信息论安全性，不依赖计算复杂度，因此可以抵抗量
 \section{学习路径}
 
 \subsection{前置知识}
-\begin{itemize}
+\b\begin{itemize}
   \item 量子比特和叠加态
   \item Hadamard 门和测量
   \item 量子不可克隆定理
 \end{itemize}
 
 \subsection{继续学习}
-\begin{itemize}
+\b\begin{itemize}
   \item E91 协议（基于纠缠的 QKD）
   \item 量子中继
   \item 量子互联网
@@ -212,5 +212,13 @@ from quonic.algorithms import bb84
 result = bb84(n_bits=100, noise=0.0)
 print(f"Shared key: {result.key}")
 \end{lstlisting}
+
+\
+
+\section{下载}
+
+\begin{itemize}
+  \item [bb84.py](https://github.com/ChrisLee0721/QuoNic/blob/main/examples/bb84/bb84.py)
+\end{itemize}
 
 \end{document}

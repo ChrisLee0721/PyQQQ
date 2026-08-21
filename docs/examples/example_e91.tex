@@ -39,20 +39,20 @@
 E91 是基于纠缠的量子密钥分发协议，比 BB84 更安全。
 
 \subsection{经典局限}
-\begin{itemize}
+\b\begin{itemize}
   \item BB84 需要可信的量子源
   \item BB84 无法检测中间人攻击
 \end{itemize}
 
 \subsection{量子优势}
-\begin{itemize}
+\b\begin{itemize}
   \item E91 使用纠缠态，不需要可信量子源
   \item 可以通过 Bell 不等式检测窃听
   \item 提供无条件安全性
 \end{itemize}
 
 \subsection{实际应用}
-\begin{itemize}
+\b\begin{itemize}
   \item 量子密钥分发网络
   \item 量子安全通信
   \item 量子互联网
@@ -172,14 +172,14 @@ E91 提供无条件安全性，基于量子力学的基本原理。
 \section{学习路径}
 
 \subsection{前置知识}
-\begin{itemize}
+\b\begin{itemize}
   \item Bell 态
   \item Bell 不等式
   \item 量子测量
 \end{itemize}
 
 \subsection{继续学习}
-\begin{itemize}
+\b\begin{itemize}
   \item 量子中继
   \item 量子互联网
   \item 量子密码学
@@ -195,5 +195,13 @@ from quonic.algorithms import e91
 result = e91(n_bits=100, noise=0.0)
 print(f"Key: {result.key}")
 \end{lstlisting}
+
+\
+
+\section{下载}
+
+\begin{itemize}
+  \item [e91.py](https://github.com/ChrisLee0721/QuoNic/blob/main/examples/e91/e91.py)
+\end{itemize}
 
 \end{document}

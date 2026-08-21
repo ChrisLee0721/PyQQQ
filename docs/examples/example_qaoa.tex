@@ -39,21 +39,21 @@
 QAOA 是解决组合优化问题的量子算法，是近期量子设备上最有前景的应用之一。
 
 \subsection{经典局限}
-\begin{itemize}
+\b\begin{itemize}
   \item NP-hard 问题（如 MaxCut）经典算法只能近似求解
   \item 经典近似算法有性能保证的上限
   \item 对于大规模问题，经典方法效率低
 \end{itemize}
 
 \subsection{量子优势}
-\begin{itemize}
+\b\begin{itemize}
   \item QAOA 可以提供比经典近似算法更好的解
   \item 对噪声有鲁棒性，适合近期量子设备
   \item 理论上可以达到最优解
 \end{itemize}
 
 \subsection{实际应用}
-\begin{itemize}
+\b\begin{itemize}
   \item MaxCut 问题
   \item 图着色问题
   \item 旅行商问题
@@ -181,14 +181,14 @@ QAOA 用于组合优化（离散变量），VQE 用于量子化学（连续变�
 \section{学习路径}
 
 \subsection{前置知识}
-\begin{itemize}
+\b\begin{itemize}
   \item 组合优化基础
   \item 量子电路
   \item 变分方法
 \end{itemize}
 
 \subsection{继续学习}
-\begin{itemize}
+\b\begin{itemize}
   \item VQE（量子化学）
   \item 量子退火
   \item 量子机器学习
@@ -205,5 +205,13 @@ graph = [(0,1), (1,2), (2,3), (3,0)]
 result = qaoa(graph, p=2, optimizer="cobyla")
 print(f"MaxCut: {result.maxcut_value}")
 \end{lstlisting}
+
+\
+
+\section{下载}
+
+\begin{itemize}
+  \item [qaoa.py](https://github.com/ChrisLee0721/QuoNic/blob/main/examples/qaoa/qaoa.py)
+\end{itemize}
 
 \end{document}

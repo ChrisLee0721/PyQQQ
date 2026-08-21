@@ -39,20 +39,20 @@
 Swap 测试用于估计两个量子态的重叠度，是量子信息处理的基本工具。
 
 \subsection{经典局限}
-\begin{itemize}
+\b\begin{itemize}
   \item 经典方法需要多次测量才能估计重叠度
   \item 对于未知量子态，经典方法效率低
 \end{itemize}
 
 \subsection{量子优势}
-\begin{itemize}
+\b\begin{itemize}
   \item Swap 测试只需要 1 个辅助量子比特
   \item 可以高效估计 $|\langle\psi|\phi\rangle|^2$
   \item 是量子机器学习的基础
 \end{itemize}
 
 \subsection{实际应用}
-\begin{itemize}
+\b\begin{itemize}
   \item 量子态比较
   \item 量子机器学习（核方法）
   \item 量子通信（态验证）
@@ -161,14 +161,14 @@ Swap 测试需要 1 个辅助量子比特 + 2 个目标量子比特。
 \section{学习路径}
 
 \subsection{前置知识}
-\begin{itemize}
+\b\begin{itemize}
   \item 量子比特和量子门
   \item 受控 Swap 门
   \item 量子测量
 \end{itemize}
 
 \subsection{继续学习}
-\begin{itemize}
+\b\begin{itemize}
   \item 量子核方法
   \item 量子机器学习
   \item 量子态层析
@@ -184,5 +184,13 @@ from quonic.algorithms import swap_test
 result = swap_test(state1="0", state2="0")
 print(f"Overlap: {result.overlap:.3f}")
 \end{lstlisting}
+
+\
+
+\section{下载}
+
+\begin{itemize}
+  \item [swap_test.py](https://github.com/ChrisLee0721/QuoNic/blob/main/examples/swap_test/swap_test.py)
+\end{itemize}
 
 \end{document}

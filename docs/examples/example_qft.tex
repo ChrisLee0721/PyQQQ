@@ -40,20 +40,20 @@
 量子傅里叶变换（QFT）是量子算法的核心组件，是许多量子算法的基础。
 
 \subsection{经典局限}
-\begin{itemize}
+\b\begin{itemize}
   \item 经典 FFT：$O(N \log N)$ 时间复杂度
   \item 对于 $N=2^n$，经典需要 $O(n 2^n)$ 次操作
 \end{itemize}
 
 \subsection{量子优势}
-\begin{itemize}
+\b\begin{itemize}
   \item QFT：$O(n^2)$ 时间复杂度（指数加速）
   \item 是量子相位估计、Shor 算法的核心
   \item 可以高效计算离散傅里叶变换
 \end{itemize}
 
 \subsection{实际应用}
-\begin{itemize}
+\b\begin{itemize}
   \item 量子相位估计（QPE）
   \item Shor 算法（大数分解）
   \item 量子模拟（哈密顿量模拟）
@@ -198,14 +198,14 @@ QFT 的输出是输入态的傅里叶变换，以量子态的形式编码。
 \section{学习路径}
 
 \subsection{前置知识}
-\begin{itemize}
+\b\begin{itemize}
   \item 量子比特和叠加态
   \item Hadamard 门和相位门
   \item 量子测量
 \end{itemize}
 
 \subsection{继续学习}
-\begin{itemize}
+\b\begin{itemize}
   \item 量子相位估计（QPE）
   \item Shor 算法
   \item 量子模拟
@@ -226,5 +226,13 @@ qgate(Rz(math.pi/2), 1)
 qgate(Rz(math.pi/4), 2)
 qshow()
 \end{lstlisting}
+
+\
+
+\section{下载}
+
+\begin{itemize}
+  \item [qft.py](https://github.com/ChrisLee0721/QuoNic/blob/main/examples/qft/qft.py)
+\end{itemize}
 
 \end{document}

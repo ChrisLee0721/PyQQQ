@@ -39,20 +39,20 @@
 HHL 算法用于求解线性方程组 $Ax=b$，提供指数加速。
 
 \subsection{经典局限}
-\begin{itemize}
+\b\begin{itemize}
   \item 经典算法（如高斯消元）需要 $O(N^3)$ 时间
   \item 对于大规模稀疏矩阵，经典方法效率低
 \end{itemize}
 
 \subsection{量子优势}
-\begin{itemize}
+\b\begin{itemize}
   \item HHL 算法需要 $O(\text{poly}(\log N))$ 时间
   \item 对于稀疏矩阵，提供指数加速
   \item 是量子机器学习的基础
 \end{itemize}
 
 \subsection{实际应用}
-\begin{itemize}
+\b\begin{itemize}
   \item 线性方程组求解
   \item 量子机器学习
   \item 量子模拟
@@ -162,14 +162,14 @@ HHL 算法需要矩阵是稀疏的，且条件数不能太大。
 \section{学习路径}
 
 \subsection{前置知识}
-\begin{itemize}
+\b\begin{itemize}
   \item 量子相位估计（QPE）
   \item 量子傅里叶变换（QFT）
   \item 线性代数
 \end{itemize}
 
 \subsection{继续学习}
-\begin{itemize}
+\b\begin{itemize}
   \item 量子机器学习
   \item 量子模拟
   \item 量子优化
@@ -187,5 +187,13 @@ b = [1, 1]
 result = hhl(A, b)
 print(f"Solution: {result.x}")
 \end{lstlisting}
+
+\
+
+\section{下载}
+
+\begin{itemize}
+  \item [hhl.py](https://github.com/ChrisLee0721/QuoNic/blob/main/examples/hhl/hhl.py)
+\end{itemize}
 
 \end{document}

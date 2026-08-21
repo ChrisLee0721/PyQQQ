@@ -39,21 +39,21 @@
 量子比特容易受噪声影响，比特翻转码是最简单的量子纠错码。
 
 \subsection{经典局限}
-\begin{itemize}
+\b\begin{itemize}
   \item 量子比特无法复制（不可克隆定理）
   \item 量子测量会破坏量子态
   \item 经典纠错码不能直接用于量子系统
 \end{itemize}
 
 \subsection{量子优势}
-\begin{itemize}
+\b\begin{itemize}
   \item 比特翻转码用 3 个物理量子比特编码 1 个逻辑量子比特
   \item 可以检测和纠正单比特翻转错误
   \item 是量子纠错的基础
 \end{itemize}
 
 \subsection{实际应用}
-\begin{itemize}
+\b\begin{itemize}
   \item 量子计算（纠错）
   \item 量子通信（保护量子态）
   \item 量子存储（延长相干时间）
@@ -171,14 +171,14 @@ print(f"No error: {result.corrected}")
 \section{学习路径}
 
 \subsection{前置知识}
-\begin{itemize}
+\b\begin{itemize}
   \item 量子比特和量子门
   \item 量子测量
   \item 量子噪声
 \end{itemize}
 
 \subsection{继续学习}
-\begin{itemize}
+\b\begin{itemize}
   \item 相位翻转码
   \item Shor 码（9 量子比特）
   \item 表面码
@@ -194,5 +194,13 @@ from quonic.qec import bit_flip_code
 result = bit_flip_code(error_qubit=1)
 print(f"Corrected: {result.corrected}")
 \end{lstlisting}
+
+\
+
+\section{下载}
+
+\begin{itemize}
+  \item [bit_flip_code.py](https://github.com/ChrisLee0721/QuoNic/blob/main/examples/bit_flip_code/bit_flip_code.py)
+\end{itemize}
 
 \end{document}

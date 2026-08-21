@@ -39,21 +39,21 @@
 Shor 码是第一个完整的量子纠错码，可以同时纠正比特翻转和相位翻转错误。
 
 \subsection{经典局限}
-\begin{itemize}
+\b\begin{itemize}
   \item 比特翻转码只能纠正 $X$ 错误
   \item 相位翻转码只能纠正 $Z$ 错误
   \item 实际量子系统同时存在两种错误
 \end{itemize}
 
 \subsection{量子优势}
-\begin{itemize}
+\b\begin{itemize}
   \item Shor 码用 9 个物理量子比特编码 1 个逻辑量子比特
   \item 可以纠正任意单量子比特错误
   \item 是量子纠错的里程碑
 \end{itemize}
 
 \subsection{实际应用}
-\begin{itemize}
+\b\begin{itemize}
   \item 量子计算（通用纠错）
   \item 量子通信（保护量子态）
   \item 量子存储（延长相干时间）
@@ -179,14 +179,14 @@ Shor 码是级联码，表面码是拓扑码。表面码有更好的容错阈值
 \section{学习路径}
 
 \subsection{前置知识}
-\begin{itemize}
+\b\begin{itemize}
   \item 比特翻转码
   \item 相位翻转码
   \item 量子测量
 \end{itemize}
 
 \subsection{继续学习}
-\begin{itemize}
+\b\begin{itemize}
   \item Steane 码
   \item 表面码
   \item 颜色码
@@ -202,5 +202,13 @@ from quonic.qec import shor_code
 result = shor_code(error_type="X", error_qubit=0)
 print(f"Corrected: {result.corrected}")
 \end{lstlisting}
+
+\
+
+\section{下载}
+
+\begin{itemize}
+  \item [shor_code.py](https://github.com/ChrisLee0721/QuoNic/blob/main/examples/shor_code/shor_code.py)
+\end{itemize}
 
 \end{document}

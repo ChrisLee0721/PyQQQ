@@ -42,20 +42,20 @@
 但在量子世界中，两个量子比特可以进入一种\textbf{纠缠态}：测量其中一个，\textbf{瞬间}确定另一个的状态。
 
 \subsection{经典局限}
-\begin{itemize}
+\b\begin{itemize}
   \item 经典物理无法创建这种"超距关联"
   \item 经典通信需要至少 2 比特才能传输 1 比特量子信息
 \end{itemize}
 
 \subsection{量子优势}
-\begin{itemize}
+\b\begin{itemize}
   \item Bell 态是量子纠缠的最基本形式
   \item 违反 Bell 不等式，证明量子力学是非局域的
   \item 是量子隐形传态、超密编码、量子密钥分发的基础
 \end{itemize}
 
 \subsection{实际应用}
-\begin{itemize}
+\b\begin{itemize}
   \item 量子密钥分发（BB84、E91 协议）
   \item 量子隐形传态（量子网络的基础）
   \item 量子计算中的纠缠资源
@@ -128,7 +128,7 @@ CNOT 门的规则：如果控制比特是 $|1\rangle$，就翻转目标比特。
 \textbf{Step 4: 测量概率}
 
 测量时：
-\begin{itemize}
+\b\begin{itemize}
   \item $P(|00\rangle) = |1/\sqrt{2}|^2 = 0.5$
   \item $P(|11\rangle) = |1/\sqrt{2}|^2 = 0.5$
   \item $P(|01\rangle) = 0$
@@ -138,7 +138,7 @@ CNOT 门的规则：如果控制比特是 $|1\rangle$，就翻转目标比特。
 \subsection{几何解释}
 
 在 Bloch 球上：
-\begin{itemize}
+\b\begin{itemize}
   \item $|0\rangle$ 在北极
   \item $|1\rangle$ 在南极
   \item $H$ 门把 $|0\rangle$ 旋转到赤道上的 $|+\rangle = (|0\rangle+|1\rangle)/\sqrt{2}$
@@ -288,21 +288,21 @@ Bell 态是 2 量子比特纠缠，GHZ 态是 3+ 量子比特纠缠。GHZ 态是
 \section{学习路径}
 
 \subsection{前置知识}
-\begin{itemize}
+\b\begin{itemize}
   \item 量子比特的基本概念（$|0\rangle$ 和 $|1\rangle$）
   \item 叠加态和 Hadamard 门
   \item CNOT 门的作用
 \end{itemize}
 
 \subsection{继续学习}
-\begin{itemize}
+\b\begin{itemize}
   \item 量子隐形传态（使用 Bell 态传输量子态）
   \item 超密编码（使用 Bell 态传输经典信息）
   \item GHZ 态（多量子比特纠缠）
 \end{itemize}
 
 \subsection{难度等级}
-\begin{itemize}
+\b\begin{itemize}
   \item 当前：初级
   \item 下一步：中级
 \end{itemize}
@@ -337,5 +337,13 @@ qshow(noise=0.05)
 \begin{verbatim}
 python examples/bell/bell.py
 \end{verbatim}
+
+\
+
+\section{下载}
+
+\begin{itemize}
+  \item [bell.py](https://github.com/ChrisLee0721/QuoNic/blob/main/examples/bell/bell.py)
+\end{itemize}
 
 \end{document}

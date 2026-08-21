@@ -39,20 +39,20 @@
 量子退火是解决组合优化问题的量子算法，是 D-Wave 量子计算机的核心。
 
 \subsection{经典局限}
-\begin{itemize}
+\b\begin{itemize}
   \item 经典模拟退火容易陷入局部最优
   \item 对于复杂能量景观，经典方法效率低
 \end{itemize}
 
 \subsection{量子优势}
-\begin{itemize}
+\b\begin{itemize}
   \item 量子退火利用量子隧穿效应逃离局部最优
   \item 对于某些问题，量子退火比经典方法更快
   \item 是 D-Wave 量子计算机的核心算法
 \end{itemize}
 
 \subsection{实际应用}
-\begin{itemize}
+\b\begin{itemize}
   \item 组合优化（MaxCut、TSP）
   \item 机器学习（训练玻尔兹曼机）
   \item 金融（投资组合优化）
@@ -175,14 +175,14 @@ result_1000 = quantum_annealing(problem, steps=1000)
 \section{学习路径}
 
 \subsection{前置知识}
-\begin{itemize}
+\b\begin{itemize}
   \item 组合优化基础
   \item 哈密顿量
   \item 绝热定理
 \end{itemize}
 
 \subsection{继续学习}
-\begin{itemize}
+\b\begin{itemize}
   \item QAOA
   \item 量子优化
   \item D-Wave 编程
@@ -199,5 +199,13 @@ problem = {"0-1": -1, "1-2": -1, "2-3": -1}
 result = quantum_annealing(problem, steps=100)
 print(f"Solution: {result.solution}")
 \end{lstlisting}
+
+\
+
+\section{下载}
+
+\begin{itemize}
+  \item [quantum_annealing.py](https://github.com/ChrisLee0721/QuoNic/blob/main/examples/quantum_annealing/quantum_annealing.py)
+\end{itemize}
 
 \end{document}
