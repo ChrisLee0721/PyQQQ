@@ -162,24 +162,41 @@
             const p = new URLSearchParams(window.location.search);
             const f = p.get('file');
             if (f) {
-                // .html files are always Chinese, no switching needed
-                if (f.endsWith('.html')) {
-                    if (currentLang === 'en') {
-                        showLangNotice(f);
+                if (currentLang === 'zh') {
+                    // Switching to Chinese
+                    if (f.endsWith('.html')) {
+                        // Already Chinese, do nothing
+                        return;
                     }
-                    return;
-                }
-
-                let newFile;
-                if (currentLang === 'zh' && hasZh(f)) {
-                    newFile = toZhPath(f);
-                } else if (currentLang === 'zh' && !hasZh(f)) {
-                    showLangNotice(f);
-                    return;
+                    if (f.endsWith('.md')) {
+                        // Check for _zh.md version
+                        const zhPath = toZhPath(f);
+                        if (ZH_FILES.has(zhPath)) {
+                            window.location.search = '?file=' + zhPath;
+                        } else {
+                            showLangNotice(f);
+                        }
+                    }
                 } else {
-                    newFile = toEnPath(f);
+                    // Switching to English
+                    if (f.endsWith('.html')) {
+                        // Chinese HTML, check for English .md
+                        const mdPath = f.replace('.html', '.md');
+                        fetch(mdPath, { method: 'HEAD' })
+                            .then(r => {
+                                if (r.ok) {
+                                    window.location.search = '?file=' + mdPath;
+                                } else {
+                                    showLangNotice(f);
+                                }
+                            })
+                            .catch(() => showLangNotice(f));
+                    } else if (f.endsWith('_zh.md')) {
+                        // Chinese .md, switch to English .md
+                        const enPath = toEnPath(f);
+                        window.location.search = '?file=' + enPath;
+                    }
                 }
-                window.location.search = '?file=' + newFile;
             }
         }
 
