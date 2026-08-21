@@ -122,12 +122,20 @@
             if (file.endsWith('.md') && !file.endsWith('_zh.md')) {
                 return file.replace('.md', '_zh.md');
             }
+            // .html files are already Chinese
+            if (file.endsWith('.html')) {
+                return file;
+            }
             return file;
         }
         function toEnPath(file) {
             return file.replace('_zh.md', '.md');
         }
         function hasZh(file) {
+            // .html files are always Chinese
+            if (file.endsWith('.html')) {
+                return true;
+            }
             return ZH_FILES.has(toZhPath(file));
         }
 
@@ -154,6 +162,14 @@
             const p = new URLSearchParams(window.location.search);
             const f = p.get('file');
             if (f) {
+                // .html files are always Chinese, no switching needed
+                if (f.endsWith('.html')) {
+                    if (currentLang === 'en') {
+                        showLangNotice(f);
+                    }
+                    return;
+                }
+
                 let newFile;
                 if (currentLang === 'zh' && hasZh(f)) {
                     newFile = toZhPath(f);
@@ -207,7 +223,12 @@
                     a.textContent = title;
                     a.className = 'block px-3 py-1.5 rounded-lg text-doc-dim hover:text-doc-text hover:bg-doc-surface transition-colors';
 
-                    if (file.endsWith('.md') && !file.endsWith('_zh.md')) {
+                    if (file.endsWith('.html')) {
+                        const badge = document.createElement('span');
+                        badge.className = 'lang-badge zh';
+                        badge.textContent = '中';
+                        a.appendChild(badge);
+                    } else if (file.endsWith('.md') && !file.endsWith('_zh.md')) {
                         const badge = document.createElement('span');
                         badge.className = 'lang-badge en';
                         badge.textContent = 'EN';
