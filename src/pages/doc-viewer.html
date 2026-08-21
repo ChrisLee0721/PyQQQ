@@ -274,34 +274,6 @@
                     });
             });
 
-                const zhChecks = files
-                    .filter(f => f.endsWith('.md'))
-                    .map(f => fetch(f.replace('.md', '_zh.md'), { method: 'HEAD' }).then(r => { if (r.ok) ZH_FILES.add(f.replace('.md', '_zh.md')); }).catch(() => {}));
-
-                Promise.all(zhChecks).then(() => {
-                    applyLang();
-
-                    const p = new URLSearchParams(window.location.search);
-                    const f = p.get('file');
-                    if (f) {
-                        const normPath = toEnPath(f);
-                        sidebar.querySelectorAll('a[data-file]').forEach(a => {
-                            if (a.dataset.file === normPath) {
-                                a.classList.add('text-doc-accent', 'bg-doc-accent/10', 'font-medium');
-                                a.classList.remove('text-doc-dim');
-                            }
-                        });
-
-                        if (currentLang === 'zh' && !hasZh(f) && f.endsWith('.md')) {
-                            showLangNotice(f);
-                        }
-                    }
-                });
-            })
-            .catch(() => {
-                document.getElementById('sidebar').innerHTML = '<div class="text-doc-dim text-xs">Could not load file list</div>';
-            });
-
         // --- Load and render document ---
         const urlParams = new URLSearchParams(window.location.search);
         const urlFile = urlParams.get('file');
