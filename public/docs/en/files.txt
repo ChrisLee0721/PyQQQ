@@ -1,0 +1,10 @@
+docs/en/examples/example_bb84.html
+docs/en/examples/example_bell.html
+docs/en/examples/example_bernstein_vazirani.html
+docs/en/examples/example_deutsch_jozsa.html
+docs/en/examples/example_ghz.html
+docs/en/examples/example_grover.html
+docs/en/examples/example_qft.html
+docs/en/examples/example_qpe.html
+docs/en/examples/example_superdense_coding.html
+docs/en/examples/example_teleportation.html

@@ -242,54 +242,37 @@
 
         // Filter files based on current language
         function filterFilesByLang(fileList, lang) {
-            // For example files, only show the appropriate language folder
+            // Only show files from the appropriate language folder
             return fileList.filter(f => {
-                // Skip zh/ and en/ folders - we'll add them back based on language
-                if (f.includes('/examples/zh/') || f.includes('/examples/en/')) {
-                    return false;
-                }
-                // Skip _zh files
-                if (f.endsWith('_zh.md') || f.endsWith('_zh.html')) {
+                // Skip zh/ and en/ folders
+                if (f.startsWith('docs/zh/') || f.startsWith('docs/en/')) {
                     return false;
                 }
                 return true;
             });
         }
 
-        // Add example files based on current language
-        function addExampleFiles(fileList, lang) {
-            const exampleDir = lang === 'zh' ? 'docs/examples/zh/' : 'docs/examples/en/';
-            // We'll fetch the example files dynamically
-            return fileList;
-        }
+        // Build file list from language folder
+        const langDir = currentLang === 'zh' ? 'docs/zh' : 'docs/en';
 
-        fetch('docs/files.txt')
+        fetch(`${langDir}/files.txt`)
             .then(r => r.text())
             .then(text => {
-                allFiles = text.trim().split('\n').filter(f => f && !f.endsWith('.json') && !f.endsWith('.pdf'));
-                let files = filterFilesByLang(allFiles, currentLang);
-
-                // Add example files from the appropriate language folder
-                const exampleDir = currentLang === 'zh' ? 'docs/zh/examples/' : 'docs/en/examples/';
-                fetch(exampleDir)
+                const files = text.trim().split('\n').filter(f => f && !f.endsWith('.json') && !f.endsWith('.pdf'));
+                buildSidebar(files);
+            })
+            .catch(() => {
+                // Fallback: try root files.txt
+                fetch('docs/files.txt')
                     .then(r => r.text())
-                    .then(html => {
-                        // Parse HTML to get file list
-                        const parser = new DOMParser();
-                        const doc = parser.parseFromString(html, 'text/html');
-                        const links = doc.querySelectorAll('a');
-                        links.forEach(link => {
-                            const href = link.getAttribute('href');
-                            if (href && href.endsWith('.html')) {
-                                files.push(exampleDir + href);
-                            }
-                        });
+                    .then(text => {
+                        const files = text.trim().split('\n').filter(f => f && !f.endsWith('.json') && !f.endsWith('.pdf'));
                         buildSidebar(files);
                     })
                     .catch(() => {
-                        // If fetch fails, just build with what we have
-                        buildSidebar(files);
+                        document.getElementById('sidebar').innerHTML = '<div class="text-doc-dim text-xs">Could not load file list</div>';
                     });
+            });
 
                 const zhChecks = files
                     .filter(f => f.endsWith('.md'))
@@ -348,14 +331,19 @@
             // Determine which file to load based on language
             let actualFile = urlFile;
 
-            if (urlFile.startsWith('docs/examples/') && urlFile.endsWith('.html')) {
-                // Example files: use en/ or zh/ folder
-                const baseName = urlFile.replace('docs/examples/', '');
-                if (currentLang === 'zh') {
-                    actualFile = 'docs/zh/examples/' + baseName;
-                } else {
-                    actualFile = 'docs/en/examples/' + baseName;
-                }
+            // Try language-specific path first
+            if (currentLang === 'zh' && urlFile.startsWith('docs/') && !urlFile.startsWith('docs/zh/') && !urlFile.startsWith('docs/en/')) {
+                const zhPath = urlFile.replace('docs/', 'docs/zh/');
+                try {
+                    const resp = await fetch(zhPath, { method: 'HEAD' });
+                    if (resp.ok) actualFile = zhPath;
+                } catch (e) {}
+            } else if (currentLang === 'en' && urlFile.startsWith('docs/') && !urlFile.startsWith('docs/zh/') && !urlFile.startsWith('docs/en/')) {
+                const enPath = urlFile.replace('docs/', 'docs/en/');
+                try {
+                    const resp = await fetch(enPath, { method: 'HEAD' });
+                    if (resp.ok) actualFile = enPath;
+                } catch (e) {}
             }
 
             loadDoc(actualFile);
