@@ -216,7 +216,7 @@
 
                 sections[section].sort().forEach(file => {
                     const name = file.split('/').pop();
-                    const title = name.replace(/\.(md|html)$/, '').replace(/^example_/, '').replace(/_/g, ' ').replace(/-/g, ' ');
+                    const title = name.replace(/\.(md|html)$/, '').replace(/^example_/, '').replace(/_zh$/, '').replace(/_/g, ' ').replace(/-/g, ' ');
                     const a = document.createElement('a');
                     a.dataset.file = file;
                     a.href = `doc-viewer.html?file=${file}`;
