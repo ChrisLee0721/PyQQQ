@@ -53,6 +53,10 @@
         .lang-badge { font-size: 0.65rem; padding: 1px 5px; border-radius: 4px; vertical-align: middle; margin-left: 4px; }
         .lang-badge.zh { background: rgba(158,206,106,0.15); color: #9ece6a; }
         .lang-badge.en { background: rgba(122,162,247,0.15); color: #7aa2f7; }
+        /* Active sidebar link */
+        #sidebar a.active { color: #7aa2f7 !important; background: rgba(122,162,247,0.1) !important; font-weight: 500; }
+        /* Active TOC link */
+        #toc a.active { color: #7aa2f7 !important; font-weight: 600; }
     </style>
 </head>
 <body class="antialiased">
@@ -283,6 +287,32 @@
                 };
                 toc.appendChild(link);
             });
+
+            // Scroll-based highlighting for TOC and sidebar
+            const tocLinks = document.querySelectorAll('#toc a');
+            const headings = document.querySelectorAll('#content h2, #content h3');
+
+            function highlightOnScroll() {
+                let current = '';
+                const scrollPos = window.scrollY + 100;
+
+                headings.forEach(h => {
+                    if (h.offsetTop <= scrollPos) {
+                        current = h.id;
+                    }
+                });
+
+                // Highlight TOC link
+                tocLinks.forEach(link => {
+                    link.classList.remove('active');
+                    if (link.getAttribute('href') === '#' + current) {
+                        link.classList.add('active');
+                    }
+                });
+            }
+
+            window.addEventListener('scroll', highlightOnScroll);
+            highlightOnScroll(); // Initial call
         }
 
         if (urlFile) {
@@ -329,6 +359,14 @@
 
                     const h1 = content.querySelector('h1');
                     if (h1) document.title = h1.textContent + ' — QuoNic';
+
+                    // Highlight current document in sidebar
+                    document.querySelectorAll('#sidebar a').forEach(a => {
+                        a.classList.remove('active');
+                        if (a.dataset.file === urlFile || a.href.includes(urlFile)) {
+                            a.classList.add('active');
+                        }
+                    });
 
                     // Render KaTeX math (pandoc wraps math in <span class="math display/inline">)
                     if (typeof katex !== 'undefined') {
