@@ -174,10 +174,12 @@
         function buildSidebar(files) {
             const sections = {};
             files.forEach(f => {
-                const parts = f.replace('docs/', '').split('/');
+                // Strip docs/zh/ or docs/en/ prefix to get the real path
+                let relPath = f.replace(/^docs\/(zh|en)\//, 'docs/').replace(/^docs\//, '');
+                const parts = relPath.split('/');
                 const section = parts.length > 1 ? parts[0] : 'Getting Started';
                 if (!sections[section]) sections[section] = [];
-                sections[section].push(f);
+                sections[section].push({ file: f, title: parts[parts.length - 1] });
             });
 
             const sidebar = document.getElementById('sidebar');
@@ -194,44 +196,14 @@
                 header.textContent = section.replace(/_/g, ' ').replace(/-/g, ' ');
                 div.appendChild(header);
 
-                sections[section].sort().forEach(file => {
-                    const name = file.split('/').pop();
+                sections[section].sort((a, b) => a.title.localeCompare(b.title)).forEach(item => {
+                    const name = item.title;
                     const title = name.replace(/\.(md|html)$/, '').replace(/^example_/, '').replace(/_zh$/, '').replace(/_/g, ' ').replace(/-/g, ' ');
                     const a = document.createElement('a');
-                    a.dataset.file = file;
-                    // For example files, use en/ or zh/ folder
-                    let displayFile = file;
-                    if (file.startsWith('docs/examples/') && file.endsWith('.html')) {
-                        const baseName = file.replace('docs/examples/', '');
-                        if (currentLang === 'zh') {
-                            displayFile = 'docs/zh/examples/' + baseName;
-                        } else {
-                            displayFile = 'docs/en/examples/' + baseName;
-                        }
-                    }
-                    a.href = `doc-viewer.html?file=${displayFile}`;
+                    a.dataset.file = item.file;
+                    a.href = `doc-viewer.html?file=${item.file}`;
                     a.textContent = title;
                     a.className = 'block px-3 py-1.5 rounded-lg text-doc-dim hover:text-doc-text hover:bg-doc-surface transition-colors';
-
-                    // Show language badge based on folder
-                    if (file.includes('/examples/zh/') || file.includes('/examples/en/')) {
-                        // Example files: show badge based on current language
-                        const badge = document.createElement('span');
-                        badge.className = currentLang === 'zh' ? 'lang-badge zh' : 'lang-badge en';
-                        badge.textContent = currentLang === 'zh' ? '中' : 'EN';
-                        a.appendChild(badge);
-                    } else if (file.endsWith('.html')) {
-                        const badge = document.createElement('span');
-                        badge.className = 'lang-badge zh';
-                        badge.textContent = '中';
-                        a.appendChild(badge);
-                    } else if (file.endsWith('.md') && !file.endsWith('_zh.md')) {
-                        const badge = document.createElement('span');
-                        badge.className = 'lang-badge en';
-                        badge.textContent = 'EN';
-                        a.appendChild(badge);
-                    }
-
                     div.appendChild(a);
                 });
                 sidebar.appendChild(div);
