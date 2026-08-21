@@ -7,7 +7,7 @@
 \usepackage{graphicx}
 \geometry{margin=2.5cm}
 
-\title{Discrete Log / Discrete Log}
+\title{Discrete Logarithm / 离散对数}
 \author{QuoNic}
 \date{}
 
@@ -15,7 +15,7 @@
 \maketitle
 
 \begin{center}
-\textbf{Algorithms / 算法} | 难度：中级 | 预计时间：15 分钟
+\textbf{Algorithms / 算法} | 难度：高级 | 预计时间：25 分钟
 \end{center}
 
 \tableofcontents
@@ -23,19 +23,39 @@
 
 \section{为什么需要？}
 
-Discrete Log 是量子计算中的重要概念。
+离散对数问题是密码学的基础，量子算法可以高效求解。
+
+\subsection{经典局限}
+\begin{itemize}
+  \item 经典算法需要指数时间
+  \item 对于大数，经典方法效率低
+\end{itemize}
+
+\subsection{量子优势}
+\begin{itemize}
+  \item 量子算法可以在多项式时间内求解
+  \item 提供指数加速
+  \item 是量子密码学的基础
+\end{itemize}
+
+\subsection{实际应用}
+\begin{itemize}
+  \item 密码学
+  \item 密钥交换
+  \item 数字签名
+\end{itemize}
 
 \section{快速上手}
 
 \begin{verbatim}
-from quonic import discrete_log
-result = discrete_log()
-print(result)
+from quonic.algorithms import discrete_log
+result = discrete_log(g=2, h=8, p=11)
+print(f'x = {result.x}')
 \end{verbatim}
 
 \textbf{预期输出}：
 \begin{verbatim}
-Result: success
+x = 3
 \end{verbatim}
 
 \section{原理详解}
@@ -48,66 +68,91 @@ Result: success
 
 \subsection{数学推导}
 
-Discrete Log 的数学原理。
+离散对数问题：给定 $g, h, p$，求 $x$ 使得 $g^x \equiv h \pmod{p}$。
+
+\textbf{量子算法}：
+\begin{enumerate}
+  \item 用 QPE 估计周期
+  \item 用经典后处理求解
+\end{enumerate}
 
 \subsection{几何解释}
 
-Discrete Log 的几何解释。
+离散对数在有限域上求解，利用量子傅里叶变换提取周期信息。
 
 \section{代码详解}
 
 \begin{verbatim}
-from quonic import discrete_log
-result = discrete_log()
-print(result)
+from quonic.algorithms import discrete_log
+
+# discrete_log(g, h, p)
+# g: generator
+# h: target value
+# p: modulus
+result = discrete_log(g=2, h=8, p=11)
+print(f'x = {result.x}')
 \end{verbatim}
 
 \section{进阶用法}
 
-\subsection{场景 1}
+\subsection{场景 1：不同参数}
 
-Discrete Log 的应用场景。
+\begin{verbatim}
+from quonic.algorithms import discrete_log
+result = discrete_log(g=3, h=27, p=13)
+print(f'x = {result.x}')
+\end{verbatim}
 
 \section{适用场景}
 
-\subsection{应用 1}
+\subsection{密码学}
 
-Discrete Log 的实际应用。
+离散对数是许多密码系统的基础。
+
+\subsection{密钥交换}
+
+Diffie-Hellman 密钥交换基于离散对数问题。
 
 \section{常见问题}
 
-\subsection{Discrete Log 的常见问题？}
+\subsection{离散对数和大数分解有什么关系？}
 
-Discrete Log 的详细解答。
+都基于周期查找问题，可以用 Shor 算法求解。
+
+\subsection{量子算法的加速比是多少？}
+
+指数加速：$O(\text{poly}(\log N))$ vs $O(\exp(\sqrt{\log N}))$。
 
 \section{学习路径}
 
 \subsection{前置知识}
 \begin{itemize}
-  \item 量子比特
-  \item 量子门
+  \item Shor 算法
+  \item 量子傅里叶变换
+  \item 数论
 \end{itemize}
 
 \subsection{继续学习}
 \begin{itemize}
-  \item 高级量子算法
-  \item 量子应用
+  \item 椭圆曲线密码学
+  \item 后量子密码学
+  \item 量子密码学
 \end{itemize}
 
 \section{完整示例代码}
 
-\subsection{示例 1}
+\subsection{示例 1：基本离散对数}
 
 \begin{verbatim}
-EXAMPLE_from quonic import discrete_log
-result = discrete_log()
-print(result)
+from quonic.algorithms import discrete_log
+result = discrete_log(g=2, h=8, p=11)
+print(f'x = {result.x}')
 \end{verbatim}
 
 \section{下载}
 
 \begin{itemize}
-  \item [discrete_log.py](https://github.com/ChrisLee0721/QuoNic/blob/main/examples/discrete_log/discrete_log.py)
+  \item [discrete\_log.py](https://github.com/ChrisLee0721/QuoNic/blob/main/examples/discrete_log/discrete_log.py)
 \end{itemize}
 
 \end{document}

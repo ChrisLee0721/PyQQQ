@@ -173,6 +173,7 @@
       vertical-align: middle;
     }
   </style>
+  <script defer="" src="" type="text/javascript"></script>
 </head>
 <body>
 <header id="title-block-header">
@@ -180,17 +181,33 @@
 <p class="author">QuoNic</p>
 </header>
 <div class="center">
-<p><strong>Algorithms / 算法</strong> | 难度：中级 | 预计时间：15
-分钟</p>
+<p><strong>ML / 机器学习</strong> | 难度：高级 | 预计时间：25 分钟</p>
 </div>
 <h1 id="为什么需要">为什么需要？</h1>
-<p>Qgan 是量子计算中的重要概念。</p>
+<p>量子 GAN 是经典 GAN 的量子推广。</p>
+<h2 id="经典局限">经典局限</h2>
+<ul>
+<li><p>经典 GAN 训练不稳定</p></li>
+<li><p>对于复杂数据，经典方法效率低</p></li>
+</ul>
+<h2 id="量子优势">量子优势</h2>
+<ul>
+<li><p>量子 GAN 可以生成量子态和经典数据</p></li>
+<li><p>训练更稳定</p></li>
+<li><p>可以生成更复杂的数据</p></li>
+</ul>
+<h2 id="实际应用">实际应用</h2>
+<ul>
+<li><p>生成模型</p></li>
+<li><p>数据增强</p></li>
+<li><p>量子机器学习</p></li>
+</ul>
 <h1 id="快速上手">快速上手</h1>
-<pre><code>from quonic import qgan
-result = qgan()
-print(result)</code></pre>
+<pre><code>from quonic.ml import qgan
+result = qgan(data=[[0,1],[1,0]], n_epochs=100)
+print(f&#39;Generated: {result.generated}&#39;)</code></pre>
 <p><strong>预期输出</strong>：</p>
-<pre><code>Result: success</code></pre>
+<pre><code>Generated: [[0.1, 0.9], [0.9, 0.1]]</code></pre>
 <h1 id="原理详解">原理详解</h1>
 <h2 id="电路图">电路图</h2>
 <div class="center">
@@ -198,38 +215,54 @@ print(result)</code></pre>
 alt="image" /></p>
 </div>
 <h2 id="数学推导">数学推导</h2>
-<p>Qgan 的数学原理。</p>
+<p>量子 GAN： <span class="math display">\[\begin{equation}
+\min_G \max_D V(D,G)
+\end{equation}\]</span></p>
+<p>其中 <span class="math inline">\(G\)</span> 是生成器，<span
+class="math inline">\(D\)</span> 是判别器。</p>
 <h2 id="几何解释">几何解释</h2>
-<p>Qgan 的几何解释。</p>
+<p>量子 GAN 在量子态空间中生成数据。</p>
 <h1 id="代码详解">代码详解</h1>
-<pre><code>from quonic import qgan
-result = qgan()
-print(result)</code></pre>
+<pre><code>from quonic.ml import qgan
+
+# qgan(data, n_epochs)
+# data: training data
+# n_epochs: number of training epochs
+result = qgan(data=[[0,1],[1,0]], n_epochs=100)
+print(f&#39;Generated: {result.generated}&#39;)</code></pre>
 <h1 id="进阶用法">进阶用法</h1>
-<h2 id="场景-1">场景 1</h2>
-<p>Qgan 的应用场景。</p>
+<h2 id="场景-1不同数据">场景 1：不同数据</h2>
+<pre><code>from quonic.ml import qgan
+result = qgan(data=[[0,1],[1,0],[1,1]], n_epochs=200)
+print(f&#39;Generated: {result.generated}&#39;)</code></pre>
 <h1 id="适用场景">适用场景</h1>
-<h2 id="应用-1">应用 1</h2>
-<p>Qgan 的实际应用。</p>
+<h2 id="生成模型">生成模型</h2>
+<p>量子 GAN 可以用于生成数据。</p>
+<h2 id="数据增强">数据增强</h2>
+<p>量子 GAN 可以用于数据增强。</p>
 <h1 id="常见问题">常见问题</h1>
-<h2 id="qgan-的常见问题">Qgan 的常见问题？</h2>
-<p>Qgan 的详细解答。</p>
+<h2 id="量子-gan-的优势是什么">量子 GAN 的优势是什么？</h2>
+<p>可以生成量子态和经典数据。</p>
+<h2 id="量子-gan-的训练稳定性如何">量子 GAN 的训练稳定性如何？</h2>
+<p>比经典 GAN 更稳定。</p>
 <h1 id="学习路径">学习路径</h1>
 <h2 id="前置知识">前置知识</h2>
 <ul>
-<li><p>量子比特</p></li>
-<li><p>量子门</p></li>
+<li><p>生成对抗网络</p></li>
+<li><p>量子神经网络</p></li>
+<li><p>量子机器学习</p></li>
 </ul>
 <h2 id="继续学习">继续学习</h2>
 <ul>
-<li><p>高级量子算法</p></li>
-<li><p>量子应用</p></li>
+<li><p>量子数据生成</p></li>
+<li><p>量子态制备</p></li>
+<li><p>量子机器学习</p></li>
 </ul>
 <h1 id="完整示例代码">完整示例代码</h1>
-<h2 id="示例-1">示例 1</h2>
-<pre><code>EXAMPLE_from quonic import qgan
-result = qgan()
-print(result)</code></pre>
+<h2 id="示例-1基本量子-gan">示例 1：基本量子 GAN</h2>
+<pre><code>from quonic.ml import qgan
+result = qgan(data=[[0,1],[1,0]], n_epochs=100)
+print(f&#39;Generated: {result.generated}&#39;)</code></pre>
 <h1 id="下载">下载</h1>
 <ul>
 <li><p>(https://github.com/ChrisLee0721/QuoNic/blob/main/examples/qgan/qgan.py)</p></li>

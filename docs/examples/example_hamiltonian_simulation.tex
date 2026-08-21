@@ -7,7 +7,7 @@
 \usepackage{graphicx}
 \geometry{margin=2.5cm}
 
-\title{Hamiltonian Simulation / Hamiltonian Simulation}
+\title{Hamiltonian Simulation / 哈密顿量模拟}
 \author{QuoNic}
 \date{}
 
@@ -15,7 +15,7 @@
 \maketitle
 
 \begin{center}
-\textbf{Algorithms / 算法} | 难度：中级 | 预计时间：15 分钟
+\textbf{Simulation / 模拟} | 难度：高级 | 预计时间：20 分钟
 \end{center}
 
 \tableofcontents
@@ -23,19 +23,39 @@
 
 \section{为什么需要？}
 
-Hamiltonian Simulation 是量子计算中的重要概念。
+哈密顿量模拟用于模拟量子系统的演化。
+
+\subsection{经典局限}
+\begin{itemize}
+  \item 经典模拟需要指数时间
+  \item 对于大系统，经典方法效率低
+\end{itemize}
+
+\subsection{量子优势}
+\begin{itemize}
+  \item 量子模拟可以在多项式时间内完成
+  \item 提供指数加速
+  \item 是量子化学的基础
+\end{itemize}
+
+\subsection{实际应用}
+\begin{itemize}
+  \item 量子化学
+  \item 材料科学
+  \item 量子物理
+\end{itemize}
 
 \section{快速上手}
 
 \begin{verbatim}
-from quonic import hamiltonian_simulation
-result = hamiltonian_simulation()
-print(result)
+from quonic.simulation import hamiltonian_simulation
+result = hamiltonian_simulation(H=[[1,0],[0,-1]], t=1.0)
+print(f'Evolution: {result.evolution}')
 \end{verbatim}
 
 \textbf{预期输出}：
 \begin{verbatim}
-Result: success
+Evolution: [[0.54+0.84j, 0], [0, 0.54-0.84j]]
 \end{verbatim}
 
 \section{原理详解}
@@ -48,66 +68,92 @@ Result: success
 
 \subsection{数学推导}
 
-Hamiltonian Simulation 的数学原理。
+哈密顿量模拟：
+\begin{equation}
+U(t) = e^{-iHt}
+\end{equation}
+
+\textbf{Trotter 分解}：
+\begin{equation}
+e^{-iHt} \approx \prod_k e^{-iH_k \Delta t}
+\end{equation}
 
 \subsection{几何解释}
 
-Hamiltonian Simulation 的几何解释。
+哈密顿量模拟在量子态空间中演化。
 
 \section{代码详解}
 
 \begin{verbatim}
-from quonic import hamiltonian_simulation
-result = hamiltonian_simulation()
-print(result)
+from quonic.simulation import hamiltonian_simulation
+
+# hamiltonian_simulation(H, t)
+# H: Hamiltonian matrix
+# t: evolution time
+result = hamiltonian_simulation(H=[[1,0],[0,-1]], t=1.0)
+print(f'Evolution: {result.evolution}')
 \end{verbatim}
 
 \section{进阶用法}
 
-\subsection{场景 1}
+\subsection{场景 1：不同哈密顿量}
 
-Hamiltonian Simulation 的应用场景。
+\begin{verbatim}
+from quonic.simulation import hamiltonian_simulation
+result = hamiltonian_simulation(H=[[0,1],[1,0]], t=1.0)
+print(f'Evolution: {result.evolution}')
+\end{verbatim}
 
 \section{适用场景}
 
-\subsection{应用 1}
+\subsection{量子化学}
 
-Hamiltonian Simulation 的实际应用。
+哈密顿量模拟可以用于模拟分子系统。
+
+\subsection{材料科学}
+
+哈密顿量模拟可以用于设计新材料。
 
 \section{常见问题}
 
-\subsection{Hamiltonian Simulation 的常见问题？}
+\subsection{哈密顿量模拟和动力学模拟有什么区别？}
 
-Hamiltonian Simulation 的详细解答。
+哈密顿量模拟关注演化算子，动力学模拟关注态演化。
+
+\subsection{哈密顿量模拟的精度如何？}
+
+取决于 Trotter 分解的阶数。
 
 \section{学习路径}
 
 \subsection{前置知识}
 \begin{itemize}
-  \item 量子比特
-  \item 量子门
+  \item Trotter 分解
+  \item 量子相位估计
+  \item 量子傅里叶变换
 \end{itemize}
 
 \subsection{继续学习}
 \begin{itemize}
-  \item 高级量子算法
-  \item 量子应用
+  \item 量子化学
+  \item 材料科学
+  \item 量子物理
 \end{itemize}
 
 \section{完整示例代码}
 
-\subsection{示例 1}
+\subsection{示例 1：基本哈密顿量模拟}
 
 \begin{verbatim}
-EXAMPLE_from quonic import hamiltonian_simulation
-result = hamiltonian_simulation()
-print(result)
+from quonic.simulation import hamiltonian_simulation
+result = hamiltonian_simulation(H=[[1,0],[0,-1]], t=1.0)
+print(f'Evolution: {result.evolution}')
 \end{verbatim}
 
 \section{下载}
 
 \begin{itemize}
-  \item [hamiltonian_simulation.py](https://github.com/ChrisLee0721/QuoNic/blob/main/examples/hamiltonian_simulation/hamiltonian_simulation.py)
+  \item [hamiltonian\_simulation.py](https://github.com/ChrisLee0721/QuoNic/blob/main/examples/hamiltonian_simulation/hamiltonian_simulation.py)
 \end{itemize}
 
 \end{document}

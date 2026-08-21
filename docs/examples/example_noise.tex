@@ -7,7 +7,7 @@
 \usepackage{graphicx}
 \geometry{margin=2.5cm}
 
-\title{Noise / Noise}
+\title{Quantum Noise / 量子噪声}
 \author{QuoNic}
 \date{}
 
@@ -15,7 +15,7 @@
 \maketitle
 
 \begin{center}
-\textbf{Algorithms / 算法} | 难度：中级 | 预计时间：15 分钟
+\textbf{Noise / 噪声} | 难度：中级 | 预计时间：15 分钟
 \end{center}
 
 \tableofcontents
@@ -23,19 +23,39 @@
 
 \section{为什么需要？}
 
-Noise 是量子计算中的重要概念。
+量子噪声是量子计算的主要挑战之一。
+
+\subsection{经典局限}
+\begin{itemize}
+  \item 经典计算没有量子噪声
+  \item 量子噪声会破坏量子信息
+\end{itemize}
+
+\subsection{量子优势}
+\begin{itemize}
+  \item 理解量子噪声可以设计更好的量子算法
+  \item 量子纠错可以对抗噪声
+  \item 噪声模型可以指导硬件设计
+\end{itemize}
+
+\subsection{实际应用}
+\begin{itemize}
+  \item 量子计算
+  \item 量子通信
+  \item 量子存储
+\end{itemize}
 
 \section{快速上手}
 
 \begin{verbatim}
-from quonic import noise
-result = noise()
-print(result)
+from quonic.noise import noise_model
+result = noise_model(error_rate=0.01)
+print(f'Noise model: {result.model}')
 \end{verbatim}
 
 \textbf{预期输出}：
 \begin{verbatim}
-Result: success
+Noise model: depolarizing(0.01)
 \end{verbatim}
 
 \section{原理详解}
@@ -48,37 +68,63 @@ Result: success
 
 \subsection{数学推导}
 
-Noise 的数学原理。
+量子噪声模型：
+\begin{equation}
+\mathcal{E}(\rho) = (1-p)\rho + p/3 (X\rho X + Y\rho Y + Z\rho Z)
+\end{equation}
+
+\textbf{噪声类型}：
+\begin{itemize}
+  \item 比特翻转（X 错误）
+  \item 相位翻转（Z 错误）
+  \item 退相干
+\end{itemize}
 
 \subsection{几何解释}
 
-Noise 的几何解释。
+量子噪声在 Bloch 球上使量子态退相干。
 
 \section{代码详解}
 
 \begin{verbatim}
-from quonic import noise
-result = noise()
-print(result)
+from quonic.noise import noise_model
+
+# noise_model(error_rate, noise_type)
+# error_rate: probability of error
+# noise_type: type of noise
+result = noise_model(error_rate=0.01)
+print(f'Noise model: {result.model}')
 \end{verbatim}
 
 \section{进阶用法}
 
-\subsection{场景 1}
+\subsection{场景 1：不同噪声类型}
 
-Noise 的应用场景。
+\begin{verbatim}
+from quonic.noise import noise_model
+result = noise_model(error_rate=0.01, noise_type='bit_flip')
+print(f'Noise model: {result.model}')
+\end{verbatim}
 
 \section{适用场景}
 
-\subsection{应用 1}
+\subsection{量子计算}
 
-Noise 的实际应用。
+噪声模型可以指导量子算法设计。
+
+\subsection{量子通信}
+
+噪声模型可以评估通信信道的质量。
 
 \section{常见问题}
 
-\subsection{Noise 的常见问题？}
+\subsection{量子噪声有哪些类型？}
 
-Noise 的详细解答。
+比特翻转、相位翻转、退相干等。
+
+\subsection{如何对抗量子噪声？}
+
+使用量子纠错码或噪声缓解技术。
 
 \section{学习路径}
 
@@ -86,22 +132,24 @@ Noise 的详细解答。
 \begin{itemize}
   \item 量子比特
   \item 量子门
+  \item 量子测量
 \end{itemize}
 
 \subsection{继续学习}
 \begin{itemize}
-  \item 高级量子算法
-  \item 量子应用
+  \item 量子纠错
+  \item 量子误差缓解
+  \item 容错量子计算
 \end{itemize}
 
 \section{完整示例代码}
 
-\subsection{示例 1}
+\subsection{示例 1：基本噪声模型}
 
 \begin{verbatim}
-EXAMPLE_from quonic import noise
-result = noise()
-print(result)
+from quonic.noise import noise_model
+result = noise_model(error_rate=0.01)
+print(f'Noise model: {result.model}')
 \end{verbatim}
 
 \section{下载}

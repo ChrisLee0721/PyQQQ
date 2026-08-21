@@ -7,7 +7,7 @@
 \usepackage{graphicx}
 \geometry{margin=2.5cm}
 
-\title{Qgnn / Qgnn}
+\title{Quantum GNN / 量子图神经网络}
 \author{QuoNic}
 \date{}
 
@@ -15,7 +15,7 @@
 \maketitle
 
 \begin{center}
-\textbf{Algorithms / 算法} | 难度：中级 | 预计时间：15 分钟
+\textbf{ML / 机器学习} | 难度：高级 | 预计时间：20 分钟
 \end{center}
 
 \tableofcontents
@@ -23,19 +23,39 @@
 
 \section{为什么需要？}
 
-Qgnn 是量子计算中的重要概念。
+量子图神经网络是经典 GNN 的量子推广。
+
+\subsection{经典局限}
+\begin{itemize}
+  \item 经典 GNN 训练慢
+  \item 对于大规模图，经典方法效率低
+\end{itemize}
+
+\subsection{量子优势}
+\begin{itemize}
+  \item 量子 GNN 可以处理大规模图数据
+  \item 训练速度更快
+  \item 可以提取更复杂的特征
+\end{itemize}
+
+\subsection{实际应用}
+\begin{itemize}
+  \item 图分类
+  \item 节点分类
+  \item 链接预测
+\end{itemize}
 
 \section{快速上手}
 
 \begin{verbatim}
-from quonic import qgnn
-result = qgnn()
-print(result)
+from quonic.ml import qgnn
+result = qgnn(graph=[(0,1),(1,2)], features=[[1,0],[0,1]])
+print(f'Embedding: {result.embedding}')
 \end{verbatim}
 
 \textbf{预期输出}：
 \begin{verbatim}
-Result: success
+Embedding: [0.5, 0.5]
 \end{verbatim}
 
 \section{原理详解}
@@ -48,60 +68,82 @@ Result: success
 
 \subsection{数学推导}
 
-Qgnn 的数学原理。
+量子图卷积：
+\begin{equation}
+H^{(l+1)} = \sigma(\tilde{D}^{-1/2} \tilde{A} \tilde{D}^{-1/2} H^{(l)} W^{(l)})
+\end{equation}
 
 \subsection{几何解释}
 
-Qgnn 的几何解释。
+量子图神经网络在图结构数据上学习。
 
 \section{代码详解}
 
 \begin{verbatim}
-from quonic import qgnn
-result = qgnn()
-print(result)
+from quonic.ml import qgnn
+
+# qgnn(graph, features, n_layers)
+# graph: list of edges
+# features: node features
+# n_layers: number of layers
+result = qgnn(graph=[(0,1),(1,2)], features=[[1,0],[0,1]])
+print(f'Embedding: {result.embedding}')
 \end{verbatim}
 
 \section{进阶用法}
 
-\subsection{场景 1}
+\subsection{场景 1：不同图}
 
-Qgnn 的应用场景。
+\begin{verbatim}
+from quonic.ml import qgnn
+result = qgnn(graph=[(0,1),(1,2),(2,0)], features=[[1,0],[0,1],[1,1]])
+print(f'Embedding: {result.embedding}')
+\end{verbatim}
 
 \section{适用场景}
 
-\subsection{应用 1}
+\subsection{图分类}
 
-Qgnn 的实际应用。
+量子 GNN 可以用于图分类。
+
+\subsection{节点分类}
+
+量子 GNN 可以用于节点分类。
 
 \section{常见问题}
 
-\subsection{Qgnn 的常见问题？}
+\subsection{量子 GNN 的优势是什么？}
 
-Qgnn 的详细解答。
+可以处理大规模图数据。
+
+\subsection{量子 GNN 需要多少量子比特？}
+
+取决于图的大小。
 
 \section{学习路径}
 
 \subsection{前置知识}
 \begin{itemize}
-  \item 量子比特
-  \item 量子门
+  \item 图神经网络
+  \item 量子机器学习
+  \item 量子态编码
 \end{itemize}
 
 \subsection{继续学习}
 \begin{itemize}
-  \item 高级量子算法
-  \item 量子应用
+  \item 社交网络分析
+  \item 分子性质预测
+  \item 量子机器学习
 \end{itemize}
 
 \section{完整示例代码}
 
-\subsection{示例 1}
+\subsection{示例 1：基本量子 GNN}
 
 \begin{verbatim}
-EXAMPLE_from quonic import qgnn
-result = qgnn()
-print(result)
+from quonic.ml import qgnn
+result = qgnn(graph=[(0,1),(1,2)], features=[[1,0],[0,1]])
+print(f'Embedding: {result.embedding}')
 \end{verbatim}
 
 \section{下载}

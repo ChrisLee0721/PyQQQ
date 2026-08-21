@@ -173,6 +173,7 @@
       vertical-align: middle;
     }
   </style>
+  <script defer="" src="" type="text/javascript"></script>
 </head>
 <body>
 <header id="title-block-header">
@@ -180,17 +181,34 @@
 <p class="author">QuoNic</p>
 </header>
 <div class="center">
-<p><strong>Algorithms / 算法</strong> | 难度：中级 | 预计时间：15
+<p><strong>Simulation / 模拟</strong> | 难度：高级 | 预计时间：15
 分钟</p>
 </div>
 <h1 id="为什么需要">为什么需要？</h1>
-<p>Trotter 是量子计算中的重要概念。</p>
+<p>Trotter 分解用于近似哈密顿量演化。</p>
+<h2 id="经典局限">经典局限</h2>
+<ul>
+<li><p>经典模拟需要指数时间</p></li>
+<li><p>对于大系统，经典方法效率低</p></li>
+</ul>
+<h2 id="量子优势">量子优势</h2>
+<ul>
+<li><p>Trotter 分解可以在量子计算机上实现</p></li>
+<li><p>提供指数加速</p></li>
+<li><p>是量子模拟的基础</p></li>
+</ul>
+<h2 id="实际应用">实际应用</h2>
+<ul>
+<li><p>量子模拟</p></li>
+<li><p>量子化学</p></li>
+<li><p>量子物理</p></li>
+</ul>
 <h1 id="快速上手">快速上手</h1>
-<pre><code>from quonic import trotter
-result = trotter()
-print(result)</code></pre>
+<pre><code>from quonic.simulation import trotter
+result = trotter(H=[[1,0],[0,-1]], t=1.0, n_steps=10)
+print(f&#39;Evolution: {result.evolution}&#39;)</code></pre>
 <p><strong>预期输出</strong>：</p>
-<pre><code>Result: success</code></pre>
+<pre><code>Evolution: [[0.54+0.84j, 0], [0, 0.54-0.84j]]</code></pre>
 <h1 id="原理详解">原理详解</h1>
 <h2 id="电路图">电路图</h2>
 <div class="center">
@@ -198,38 +216,55 @@ print(result)</code></pre>
 alt="image" /></p>
 </div>
 <h2 id="数学推导">数学推导</h2>
-<p>Trotter 的数学原理。</p>
+<p>Trotter 分解： <span class="math display">\[\begin{equation}
+e^{-i(A+B)t} \approx (e^{-iAt/n} e^{-iBt/n})^n
+\end{equation}\]</span></p>
 <h2 id="几何解释">几何解释</h2>
-<p>Trotter 的几何解释。</p>
+<p>Trotter 分解在量子态空间中近似演化。</p>
 <h1 id="代码详解">代码详解</h1>
-<pre><code>from quonic import trotter
-result = trotter()
-print(result)</code></pre>
+<pre><code>from quonic.simulation import trotter
+
+# trotter(H, t, n_steps)
+# H: Hamiltonian matrix
+# t: evolution time
+# n_steps: number of Trotter steps
+result = trotter(H=[[1,0],[0,-1]], t=1.0, n_steps=10)
+print(f&#39;Evolution: {result.evolution}&#39;)</code></pre>
 <h1 id="进阶用法">进阶用法</h1>
-<h2 id="场景-1">场景 1</h2>
-<p>Trotter 的应用场景。</p>
+<h2 id="场景-1不同步数">场景 1：不同步数</h2>
+<pre><code>from quonic.simulation import trotter
+for n in [1, 5, 10, 50]:
+    result = trotter(H=[[1,0],[0,-1]], t=1.0, n_steps=n)
+    print(f&#39;n={n}: {result.evolution[0][0]}&#39;)</code></pre>
 <h1 id="适用场景">适用场景</h1>
-<h2 id="应用-1">应用 1</h2>
-<p>Trotter 的实际应用。</p>
+<h2 id="量子模拟">量子模拟</h2>
+<p>Trotter 分解是量子模拟的基础。</p>
+<h2 id="量子化学">量子化学</h2>
+<p>Trotter 分解可以用于量子化学模拟。</p>
 <h1 id="常见问题">常见问题</h1>
-<h2 id="trotter-的常见问题">Trotter 的常见问题？</h2>
-<p>Trotter 的详细解答。</p>
+<h2 id="trotter-分解的精度如何">Trotter 分解的精度如何？</h2>
+<p>取决于分解的阶数和步数。</p>
+<h2 id="trotter-分解需要多少量子比特">Trotter
+分解需要多少量子比特？</h2>
+<p>取决于系统的大小。</p>
 <h1 id="学习路径">学习路径</h1>
 <h2 id="前置知识">前置知识</h2>
 <ul>
-<li><p>量子比特</p></li>
-<li><p>量子门</p></li>
+<li><p>哈密顿量模拟</p></li>
+<li><p>量子相位估计</p></li>
+<li><p>量子傅里叶变换</p></li>
 </ul>
 <h2 id="继续学习">继续学习</h2>
 <ul>
-<li><p>高级量子算法</p></li>
-<li><p>量子应用</p></li>
+<li><p>量子化学模拟</p></li>
+<li><p>材料科学</p></li>
+<li><p>量子物理</p></li>
 </ul>
 <h1 id="完整示例代码">完整示例代码</h1>
-<h2 id="示例-1">示例 1</h2>
-<pre><code>EXAMPLE_from quonic import trotter
-result = trotter()
-print(result)</code></pre>
+<h2 id="示例-1基本-trotter-分解">示例 1：基本 Trotter 分解</h2>
+<pre><code>from quonic.simulation import trotter
+result = trotter(H=[[1,0],[0,-1]], t=1.0, n_steps=10)
+print(f&#39;Evolution: {result.evolution}&#39;)</code></pre>
 <h1 id="下载">下载</h1>
 <ul>
 <li><p>(https://github.com/ChrisLee0721/QuoNic/blob/main/examples/trotter/trotter.py)</p></li>

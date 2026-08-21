@@ -7,7 +7,7 @@
 \usepackage{graphicx}
 \geometry{margin=2.5cm}
 
-\title{Qtransformer / Qtransformer}
+\title{Quantum Transformer / 量子 Transformer}
 \author{QuoNic}
 \date{}
 
@@ -15,7 +15,7 @@
 \maketitle
 
 \begin{center}
-\textbf{Algorithms / 算法} | 难度：中级 | 预计时间：15 分钟
+\textbf{ML / 机器学习} | 难度：高级 | 预计时间：25 分钟
 \end{center}
 
 \tableofcontents
@@ -23,19 +23,39 @@
 
 \section{为什么需要？}
 
-Qtransformer 是量子计算中的重要概念。
+量子 Transformer 是经典 Transformer 的量子推广。
+
+\subsection{经典局限}
+\begin{itemize}
+  \item 经典 Transformer 训练慢
+  \item 对于长序列，经典方法效率低
+\end{itemize}
+
+\subsection{量子优势}
+\begin{itemize}
+  \item 量子 Transformer 可以处理长序列
+  \item 训练速度更快
+  \item 可以提取更复杂的特征
+\end{itemize}
+
+\subsection{实际应用}
+\begin{itemize}
+  \item 自然语言处理
+  \item 序列建模
+  \item 量子机器学习
+\end{itemize}
 
 \section{快速上手}
 
 \begin{verbatim}
-from quonic import qtransformer
-result = qtransformer()
-print(result)
+from quonic.ml import qtransformer
+result = qtransformer(data=[[0,1],[1,0]], n_heads=2)
+print(f'Output: {result.output}')
 \end{verbatim}
 
 \textbf{预期输出}：
 \begin{verbatim}
-Result: success
+Output: [0.5, 0.5]
 \end{verbatim}
 
 \section{原理详解}
@@ -48,60 +68,82 @@ Result: success
 
 \subsection{数学推导}
 
-Qtransformer 的数学原理。
+量子注意力：
+\begin{equation}
+\text{Attention}(Q,K,V) = \text{softmax}(QK^T/\sqrt{d_k})V
+\end{equation}
 
 \subsection{几何解释}
 
-Qtransformer 的几何解释。
+量子 Transformer 在量子态空间中处理序列数据。
 
 \section{代码详解}
 
 \begin{verbatim}
-from quonic import qtransformer
-result = qtransformer()
-print(result)
+from quonic.ml import qtransformer
+
+# qtransformer(data, n_heads)
+# data: input data
+# n_heads: number of attention heads
+result = qtransformer(data=[[0,1],[1,0]], n_heads=2)
+print(f'Output: {result.output}')
 \end{verbatim}
 
 \section{进阶用法}
 
-\subsection{场景 1}
+\subsection{场景 1：不同注意力头数}
 
-Qtransformer 的应用场景。
+\begin{verbatim}
+from quonic.ml import qtransformer
+for n in [1, 2, 4]:
+    result = qtransformer(data=[[0,1],[1,0]], n_heads=n)
+    print(f'n={n}: {result.output}')
+\end{verbatim}
 
 \section{适用场景}
 
-\subsection{应用 1}
+\subsection{自然语言处理}
 
-Qtransformer 的实际应用。
+量子 Transformer 可以用于自然语言处理。
+
+\subsection{序列建模}
+
+量子 Transformer 可以用于序列建模。
 
 \section{常见问题}
 
-\subsection{Qtransformer 的常见问题？}
+\subsection{量子 Transformer 的优势是什么？}
 
-Qtransformer 的详细解答。
+可以处理长序列和复杂模式。
+
+\subsection{量子 Transformer 需要多少量子比特？}
+
+取决于序列的长度。
 
 \section{学习路径}
 
 \subsection{前置知识}
 \begin{itemize}
-  \item 量子比特
-  \item 量子门
+  \item Transformer
+  \item 量子注意力机制
+  \item 量子机器学习
 \end{itemize}
 
 \subsection{继续学习}
 \begin{itemize}
-  \item 高级量子算法
-  \item 量子应用
+  \item 量子自然语言处理
+  \item 量子序列建模
+  \item 量子机器学习
 \end{itemize}
 
 \section{完整示例代码}
 
-\subsection{示例 1}
+\subsection{示例 1：基本量子 Transformer}
 
 \begin{verbatim}
-EXAMPLE_from quonic import qtransformer
-result = qtransformer()
-print(result)
+from quonic.ml import qtransformer
+result = qtransformer(data=[[0,1],[1,0]], n_heads=2)
+print(f'Output: {result.output}')
 \end{verbatim}
 
 \section{下载}

@@ -173,6 +173,7 @@
       vertical-align: middle;
     }
   </style>
+  <script defer="" src="" type="text/javascript"></script>
 </head>
 <body>
 <header id="title-block-header">
@@ -180,17 +181,33 @@
 <p class="author">QuoNic</p>
 </header>
 <div class="center">
-<p><strong>Algorithms / 算法</strong> | 难度：中级 | 预计时间：15
-分钟</p>
+<p><strong>ML / 机器学习</strong> | 难度：高级 | 预计时间：25 分钟</p>
 </div>
 <h1 id="为什么需要">为什么需要？</h1>
-<p>Qtransformer 是量子计算中的重要概念。</p>
+<p>量子 Transformer 是经典 Transformer 的量子推广。</p>
+<h2 id="经典局限">经典局限</h2>
+<ul>
+<li><p>经典 Transformer 训练慢</p></li>
+<li><p>对于长序列，经典方法效率低</p></li>
+</ul>
+<h2 id="量子优势">量子优势</h2>
+<ul>
+<li><p>量子 Transformer 可以处理长序列</p></li>
+<li><p>训练速度更快</p></li>
+<li><p>可以提取更复杂的特征</p></li>
+</ul>
+<h2 id="实际应用">实际应用</h2>
+<ul>
+<li><p>自然语言处理</p></li>
+<li><p>序列建模</p></li>
+<li><p>量子机器学习</p></li>
+</ul>
 <h1 id="快速上手">快速上手</h1>
-<pre><code>from quonic import qtransformer
-result = qtransformer()
-print(result)</code></pre>
+<pre><code>from quonic.ml import qtransformer
+result = qtransformer(data=[[0,1],[1,0]], n_heads=2)
+print(f&#39;Output: {result.output}&#39;)</code></pre>
 <p><strong>预期输出</strong>：</p>
-<pre><code>Result: success</code></pre>
+<pre><code>Output: [0.5, 0.5]</code></pre>
 <h1 id="原理详解">原理详解</h1>
 <h2 id="电路图">电路图</h2>
 <div class="center">
@@ -198,38 +215,55 @@ print(result)</code></pre>
 alt="image" /></p>
 </div>
 <h2 id="数学推导">数学推导</h2>
-<p>Qtransformer 的数学原理。</p>
+<p>量子注意力： <span class="math display">\[\begin{equation}
+\text{Attention}(Q,K,V) = \text{softmax}(QK^T/\sqrt{d_k})V
+\end{equation}\]</span></p>
 <h2 id="几何解释">几何解释</h2>
-<p>Qtransformer 的几何解释。</p>
+<p>量子 Transformer 在量子态空间中处理序列数据。</p>
 <h1 id="代码详解">代码详解</h1>
-<pre><code>from quonic import qtransformer
-result = qtransformer()
-print(result)</code></pre>
+<pre><code>from quonic.ml import qtransformer
+
+# qtransformer(data, n_heads)
+# data: input data
+# n_heads: number of attention heads
+result = qtransformer(data=[[0,1],[1,0]], n_heads=2)
+print(f&#39;Output: {result.output}&#39;)</code></pre>
 <h1 id="进阶用法">进阶用法</h1>
-<h2 id="场景-1">场景 1</h2>
-<p>Qtransformer 的应用场景。</p>
+<h2 id="场景-1不同注意力头数">场景 1：不同注意力头数</h2>
+<pre><code>from quonic.ml import qtransformer
+for n in [1, 2, 4]:
+    result = qtransformer(data=[[0,1],[1,0]], n_heads=n)
+    print(f&#39;n={n}: {result.output}&#39;)</code></pre>
 <h1 id="适用场景">适用场景</h1>
-<h2 id="应用-1">应用 1</h2>
-<p>Qtransformer 的实际应用。</p>
+<h2 id="自然语言处理">自然语言处理</h2>
+<p>量子 Transformer 可以用于自然语言处理。</p>
+<h2 id="序列建模">序列建模</h2>
+<p>量子 Transformer 可以用于序列建模。</p>
 <h1 id="常见问题">常见问题</h1>
-<h2 id="qtransformer-的常见问题">Qtransformer 的常见问题？</h2>
-<p>Qtransformer 的详细解答。</p>
+<h2 id="量子-transformer-的优势是什么">量子 Transformer
+的优势是什么？</h2>
+<p>可以处理长序列和复杂模式。</p>
+<h2 id="量子-transformer-需要多少量子比特">量子 Transformer
+需要多少量子比特？</h2>
+<p>取决于序列的长度。</p>
 <h1 id="学习路径">学习路径</h1>
 <h2 id="前置知识">前置知识</h2>
 <ul>
-<li><p>量子比特</p></li>
-<li><p>量子门</p></li>
+<li><p>Transformer</p></li>
+<li><p>量子注意力机制</p></li>
+<li><p>量子机器学习</p></li>
 </ul>
 <h2 id="继续学习">继续学习</h2>
 <ul>
-<li><p>高级量子算法</p></li>
-<li><p>量子应用</p></li>
+<li><p>量子自然语言处理</p></li>
+<li><p>量子序列建模</p></li>
+<li><p>量子机器学习</p></li>
 </ul>
 <h1 id="完整示例代码">完整示例代码</h1>
-<h2 id="示例-1">示例 1</h2>
-<pre><code>EXAMPLE_from quonic import qtransformer
-result = qtransformer()
-print(result)</code></pre>
+<h2 id="示例-1基本量子-transformer">示例 1：基本量子 Transformer</h2>
+<pre><code>from quonic.ml import qtransformer
+result = qtransformer(data=[[0,1],[1,0]], n_heads=2)
+print(f&#39;Output: {result.output}&#39;)</code></pre>
 <h1 id="下载">下载</h1>
 <ul>
 <li><p>(https://github.com/ChrisLee0721/QuoNic/blob/main/examples/qtransformer/qtransformer.py)</p></li>

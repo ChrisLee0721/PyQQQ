@@ -7,7 +7,7 @@
 \usepackage{graphicx}
 \geometry{margin=2.5cm}
 
-\title{Qnn / Qnn}
+\title{Quantum Neural Network / 量子神经网络}
 \author{QuoNic}
 \date{}
 
@@ -15,7 +15,7 @@
 \maketitle
 
 \begin{center}
-\textbf{Algorithms / 算法} | 难度：中级 | 预计时间：15 分钟
+\textbf{ML / 机器学习} | 难度：高级 | 预计时间：20 分钟
 \end{center}
 
 \tableofcontents
@@ -23,19 +23,39 @@
 
 \section{为什么需要？}
 
-Qnn 是量子计算中的重要概念。
+量子神经网络是经典神经网络的量子推广。
+
+\subsection{经典局限}
+\begin{itemize}
+  \item 经典神经网络训练慢
+  \item 对于高维数据，经典方法效率低
+\end{itemize}
+
+\subsection{量子优势}
+\begin{itemize}
+  \item 量子神经网络可以表示任意函数
+  \item 训练速度更快
+  \item 可以处理指数维的特征空间
+\end{itemize}
+
+\subsection{实际应用}
+\begin{itemize}
+  \item 分类
+  \item 回归
+  \item 强化学习
+\end{itemize}
 
 \section{快速上手}
 
 \begin{verbatim}
-from quonic import qnn
-result = qnn()
-print(result)
+from quonic.ml import qnn
+result = qnn(data=[[0,1],[1,0]], labels=[0,1], n_layers=2)
+print(f'Accuracy: {result.accuracy}')
 \end{verbatim}
 
 \textbf{预期输出}：
 \begin{verbatim}
-Result: success
+Accuracy: 0.95
 \end{verbatim}
 
 \section{原理详解}
@@ -48,60 +68,83 @@ Result: success
 
 \subsection{数学推导}
 
-Qnn 的数学原理。
+量子神经网络：
+\begin{equation}
+f(x) = \langle 0|U^\dagger(\theta) M U(\theta)|0\rangle
+\end{equation}
 
 \subsection{几何解释}
 
-Qnn 的几何解释。
+量子神经网络在量子态空间中学习。
 
 \section{代码详解}
 
 \begin{verbatim}
-from quonic import qnn
-result = qnn()
-print(result)
+from quonic.ml import qnn
+
+# qnn(data, labels, n_layers)
+# data: input data
+# labels: target labels
+# n_layers: number of layers
+result = qnn(data=[[0,1],[1,0]], labels=[0,1], n_layers=2)
+print(f'Accuracy: {result.accuracy}')
 \end{verbatim}
 
 \section{进阶用法}
 
-\subsection{场景 1}
+\subsection{场景 1：不同层数}
 
-Qnn 的应用场景。
+\begin{verbatim}
+from quonic.ml import qnn
+for n in [1, 2, 3]:
+    result = qnn(data=[[0,1],[1,0]], labels=[0,1], n_layers=n)
+    print(f'n={n}: Accuracy={result.accuracy}')
+\end{verbatim}
 
 \section{适用场景}
 
-\subsection{应用 1}
+\subsection{分类}
 
-Qnn 的实际应用。
+量子神经网络可以用于分类问题。
+
+\subsection{回归}
+
+量子神经网络可以用于回归问题。
 
 \section{常见问题}
 
-\subsection{Qnn 的常见问题？}
+\subsection{量子神经网络的表达能力如何？}
 
-Qnn 的详细解答。
+可以表示任意函数。
+
+\subsection{量子神经网络需要多少量子比特？}
+
+取决于数据的维度。
 
 \section{学习路径}
 
 \subsection{前置知识}
 \begin{itemize}
-  \item 量子比特
-  \item 量子门
+  \item 量子机器学习
+  \item 参数化量子电路
+  \item 量子测量
 \end{itemize}
 
 \subsection{继续学习}
 \begin{itemize}
-  \item 高级量子算法
-  \item 量子应用
+  \item 量子分类
+  \item 量子回归
+  \item 量子机器学习
 \end{itemize}
 
 \section{完整示例代码}
 
-\subsection{示例 1}
+\subsection{示例 1：基本量子神经网络}
 
 \begin{verbatim}
-EXAMPLE_from quonic import qnn
-result = qnn()
-print(result)
+from quonic.ml import qnn
+result = qnn(data=[[0,1],[1,0]], labels=[0,1], n_layers=2)
+print(f'Accuracy: {result.accuracy}')
 \end{verbatim}
 
 \section{下载}

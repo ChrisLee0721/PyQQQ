@@ -7,7 +7,7 @@
 \usepackage{graphicx}
 \geometry{margin=2.5cm}
 
-\title{Trotter / Trotter}
+\title{Trotter Decomposition / Trotter 分解}
 \author{QuoNic}
 \date{}
 
@@ -15,7 +15,7 @@
 \maketitle
 
 \begin{center}
-\textbf{Algorithms / 算法} | 难度：中级 | 预计时间：15 分钟
+\textbf{Simulation / 模拟} | 难度：高级 | 预计时间：15 分钟
 \end{center}
 
 \tableofcontents
@@ -23,19 +23,39 @@
 
 \section{为什么需要？}
 
-Trotter 是量子计算中的重要概念。
+Trotter 分解用于近似哈密顿量演化。
+
+\subsection{经典局限}
+\begin{itemize}
+  \item 经典模拟需要指数时间
+  \item 对于大系统，经典方法效率低
+\end{itemize}
+
+\subsection{量子优势}
+\begin{itemize}
+  \item Trotter 分解可以在量子计算机上实现
+  \item 提供指数加速
+  \item 是量子模拟的基础
+\end{itemize}
+
+\subsection{实际应用}
+\begin{itemize}
+  \item 量子模拟
+  \item 量子化学
+  \item 量子物理
+\end{itemize}
 
 \section{快速上手}
 
 \begin{verbatim}
-from quonic import trotter
-result = trotter()
-print(result)
+from quonic.simulation import trotter
+result = trotter(H=[[1,0],[0,-1]], t=1.0, n_steps=10)
+print(f'Evolution: {result.evolution}')
 \end{verbatim}
 
 \textbf{预期输出}：
 \begin{verbatim}
-Result: success
+Evolution: [[0.54+0.84j, 0], [0, 0.54-0.84j]]
 \end{verbatim}
 
 \section{原理详解}
@@ -48,60 +68,83 @@ Result: success
 
 \subsection{数学推导}
 
-Trotter 的数学原理。
+Trotter 分解：
+\begin{equation}
+e^{-i(A+B)t} \approx (e^{-iAt/n} e^{-iBt/n})^n
+\end{equation}
 
 \subsection{几何解释}
 
-Trotter 的几何解释。
+Trotter 分解在量子态空间中近似演化。
 
 \section{代码详解}
 
 \begin{verbatim}
-from quonic import trotter
-result = trotter()
-print(result)
+from quonic.simulation import trotter
+
+# trotter(H, t, n_steps)
+# H: Hamiltonian matrix
+# t: evolution time
+# n_steps: number of Trotter steps
+result = trotter(H=[[1,0],[0,-1]], t=1.0, n_steps=10)
+print(f'Evolution: {result.evolution}')
 \end{verbatim}
 
 \section{进阶用法}
 
-\subsection{场景 1}
+\subsection{场景 1：不同步数}
 
-Trotter 的应用场景。
+\begin{verbatim}
+from quonic.simulation import trotter
+for n in [1, 5, 10, 50]:
+    result = trotter(H=[[1,0],[0,-1]], t=1.0, n_steps=n)
+    print(f'n={n}: {result.evolution[0][0]}')
+\end{verbatim}
 
 \section{适用场景}
 
-\subsection{应用 1}
+\subsection{量子模拟}
 
-Trotter 的实际应用。
+Trotter 分解是量子模拟的基础。
+
+\subsection{量子化学}
+
+Trotter 分解可以用于量子化学模拟。
 
 \section{常见问题}
 
-\subsection{Trotter 的常见问题？}
+\subsection{Trotter 分解的精度如何？}
 
-Trotter 的详细解答。
+取决于分解的阶数和步数。
+
+\subsection{Trotter 分解需要多少量子比特？}
+
+取决于系统的大小。
 
 \section{学习路径}
 
 \subsection{前置知识}
 \begin{itemize}
-  \item 量子比特
-  \item 量子门
+  \item 哈密顿量模拟
+  \item 量子相位估计
+  \item 量子傅里叶变换
 \end{itemize}
 
 \subsection{继续学习}
 \begin{itemize}
-  \item 高级量子算法
-  \item 量子应用
+  \item 量子化学模拟
+  \item 材料科学
+  \item 量子物理
 \end{itemize}
 
 \section{完整示例代码}
 
-\subsection{示例 1}
+\subsection{示例 1：基本 Trotter 分解}
 
 \begin{verbatim}
-EXAMPLE_from quonic import trotter
-result = trotter()
-print(result)
+from quonic.simulation import trotter
+result = trotter(H=[[1,0],[0,-1]], t=1.0, n_steps=10)
+print(f'Evolution: {result.evolution}')
 \end{verbatim}
 
 \section{下载}

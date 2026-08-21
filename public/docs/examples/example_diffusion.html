@@ -173,6 +173,7 @@
       vertical-align: middle;
     }
   </style>
+  <script defer="" src="" type="text/javascript"></script>
 </head>
 <body>
 <header id="title-block-header">
@@ -180,17 +181,35 @@
 <p class="author">QuoNic</p>
 </header>
 <div class="center">
-<p><strong>Algorithms / 算法</strong> | 难度：中级 | 预计时间：15
+<p><strong>Algorithms / 算法</strong> | 难度：中级 | 预计时间：10
 分钟</p>
 </div>
 <h1 id="为什么需要">为什么需要？</h1>
-<p>Diffusion 是量子计算中的重要概念。</p>
+<p>扩散算子是 Grover 搜索的核心组件。</p>
+<h2 id="经典局限">经典局限</h2>
+<ul>
+<li><p>经典搜索需要 <span class="math inline">\(O(N)\)</span>
+次查询</p></li>
+<li><p>对于大规模问题，经典方法效率低</p></li>
+</ul>
+<h2 id="量子优势">量子优势</h2>
+<ul>
+<li><p>扩散算子可以放大目标态的振幅</p></li>
+<li><p>是 Grover 搜索的核心</p></li>
+<li><p>提供二次加速</p></li>
+</ul>
+<h2 id="实际应用">实际应用</h2>
+<ul>
+<li><p>Grover 搜索</p></li>
+<li><p>振幅放大</p></li>
+<li><p>量子优化</p></li>
+</ul>
 <h1 id="快速上手">快速上手</h1>
-<pre><code>from quonic import diffusion
-result = diffusion()
-print(result)</code></pre>
+<pre><code>from quonic.algorithms import diffusion
+result = diffusion(n_qubits=2)
+print(f&#39;Operator: {result.operator}&#39;)</code></pre>
 <p><strong>预期输出</strong>：</p>
-<pre><code>Result: success</code></pre>
+<pre><code>Operator: [[-0.5, 0.5, 0.5, 0.5], ...]</code></pre>
 <h1 id="原理详解">原理详解</h1>
 <h2 id="电路图">电路图</h2>
 <div class="center">
@@ -198,38 +217,59 @@ print(result)</code></pre>
 alt="image" /></p>
 </div>
 <h2 id="数学推导">数学推导</h2>
-<p>Diffusion 的数学原理。</p>
+<p>扩散算子关于平均振幅反射： <span
+class="math display">\[\begin{equation}
+D = 2|s\rangle\langle s| - I
+\end{equation}\]</span></p>
+<p>其中 <span class="math inline">\(|s\rangle\)</span>
+是均匀叠加态。</p>
+<p><strong>作用</strong>： <span class="math display">\[\begin{equation}
+D|\psi\rangle = 2\langle s|\psi\rangle|s\rangle - |\psi\rangle
+\end{equation}\]</span></p>
 <h2 id="几何解释">几何解释</h2>
-<p>Diffusion 的几何解释。</p>
+<p>扩散算子在 Bloch 球上关于平均振幅反射，放大目标态的振幅。</p>
 <h1 id="代码详解">代码详解</h1>
-<pre><code>from quonic import diffusion
-result = diffusion()
-print(result)</code></pre>
+<pre><code>from quonic.algorithms import diffusion
+
+# diffusion(n_qubits)
+# n_qubits: number of qubits
+result = diffusion(n_qubits=2)
+print(f&#39;Operator: {result.operator}&#39;)</code></pre>
 <h1 id="进阶用法">进阶用法</h1>
-<h2 id="场景-1">场景 1</h2>
-<p>Diffusion 的应用场景。</p>
+<h2 id="场景-1不同量子比特数">场景 1：不同量子比特数</h2>
+<pre><code>from quonic.algorithms import diffusion
+for n in [2, 3, 4]:
+    result = diffusion(n_qubits=n)
+    print(f&#39;n={n}: {result.operator.shape}&#39;)</code></pre>
 <h1 id="适用场景">适用场景</h1>
-<h2 id="应用-1">应用 1</h2>
-<p>Diffusion 的实际应用。</p>
+<h2 id="grover-搜索">Grover 搜索</h2>
+<p>扩散算子是 Grover 搜索的核心组件。</p>
+<h2 id="振幅放大">振幅放大</h2>
+<p>扩散算子用于振幅放大算法。</p>
 <h1 id="常见问题">常见问题</h1>
-<h2 id="diffusion-的常见问题">Diffusion 的常见问题？</h2>
-<p>Diffusion 的详细解答。</p>
+<h2 id="扩散算子的作用是什么">扩散算子的作用是什么？</h2>
+<p>关于平均振幅反射，放大目标态的振幅。</p>
+<h2 id="扩散算子和-oracle-有什么区别">扩散算子和 Oracle
+有什么区别？</h2>
+<p>Oracle 标记目标态，扩散算子放大目标态的振幅。</p>
 <h1 id="学习路径">学习路径</h1>
 <h2 id="前置知识">前置知识</h2>
 <ul>
-<li><p>量子比特</p></li>
-<li><p>量子门</p></li>
+<li><p>Grover 搜索</p></li>
+<li><p>振幅放大</p></li>
+<li><p>量子测量</p></li>
 </ul>
 <h2 id="继续学习">继续学习</h2>
 <ul>
-<li><p>高级量子算法</p></li>
-<li><p>量子应用</p></li>
+<li><p>量子计数</p></li>
+<li><p>量子优化</p></li>
+<li><p>量子算法</p></li>
 </ul>
 <h1 id="完整示例代码">完整示例代码</h1>
-<h2 id="示例-1">示例 1</h2>
-<pre><code>EXAMPLE_from quonic import diffusion
-result = diffusion()
-print(result)</code></pre>
+<h2 id="示例-1基本扩散算子">示例 1：基本扩散算子</h2>
+<pre><code>from quonic.algorithms import diffusion
+result = diffusion(n_qubits=2)
+print(f&#39;Operator: {result.operator}&#39;)</code></pre>
 <h1 id="下载">下载</h1>
 <ul>
 <li><p>(https://github.com/ChrisLee0721/QuoNic/blob/main/examples/diffusion/diffusion.py)</p></li>

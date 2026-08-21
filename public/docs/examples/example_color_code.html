@@ -173,6 +173,7 @@
       vertical-align: middle;
     }
   </style>
+  <script defer="" src="" type="text/javascript"></script>
 </head>
 <body>
 <header id="title-block-header">
@@ -180,17 +181,34 @@
 <p class="author">QuoNic</p>
 </header>
 <div class="center">
-<p><strong>Algorithms / 算法</strong> | 难度：中级 | 预计时间：15
+<p><strong>Error Correction / 纠错</strong> | 难度：高级 | 预计时间：20
 分钟</p>
 </div>
 <h1 id="为什么需要">为什么需要？</h1>
-<p>Color Code 是量子计算中的重要概念。</p>
+<p>颜色码是拓扑量子纠错码，具有高容错阈值。</p>
+<h2 id="经典局限">经典局限</h2>
+<ul>
+<li><p>Shor 码和 Steane 码的容错阈值较低</p></li>
+<li><p>对硬件连接性要求高</p></li>
+</ul>
+<h2 id="量子优势">量子优势</h2>
+<ul>
+<li><p>颜色码有最高的容错阈值（约 1%）</p></li>
+<li><p>只需要最近邻连接</p></li>
+<li><p>适合二维量子处理器</p></li>
+</ul>
+<h2 id="实际应用">实际应用</h2>
+<ul>
+<li><p>量子计算（容错量子计算）</p></li>
+<li><p>量子通信（保护量子态）</p></li>
+<li><p>量子存储（延长相干时间）</p></li>
+</ul>
 <h1 id="快速上手">快速上手</h1>
-<pre><code>from quonic import color_code
-result = color_code()
-print(result)</code></pre>
+<pre><code>from quonic.qec import color_code
+result = color_code(distance=3, error_rate=0.01)
+print(f&#39;Logical error rate: {result.logical_error_rate}&#39;)</code></pre>
 <p><strong>预期输出</strong>：</p>
-<pre><code>Result: success</code></pre>
+<pre><code>Logical error rate: 0.001</code></pre>
 <h1 id="原理详解">原理详解</h1>
 <h2 id="电路图">电路图</h2>
 <div class="center">
@@ -198,38 +216,61 @@ print(result)</code></pre>
 alt="image" /></p>
 </div>
 <h2 id="数学推导">数学推导</h2>
-<p>Color Code 的数学原理。</p>
+<p>颜色码使用三色格子结构进行纠错。</p>
+<p><strong>校验子测量</strong>： <span
+class="math display">\[\begin{equation}
+S_X = \prod_{i \in \text{star}} X_i, \quad S_Z = \prod_{i \in
+\text{plaquette}} Z_i
+\end{equation}\]</span></p>
+<p><strong>容错阈值</strong>： <span
+class="math display">\[\begin{equation}
+p_{\text{threshold}} \approx 1\%
+\end{equation}\]</span></p>
 <h2 id="几何解释">几何解释</h2>
-<p>Color Code 的几何解释。</p>
+<p>颜色码在二维格子上编码量子信息，通过测量局部校验子来检测和纠正错误。</p>
 <h1 id="代码详解">代码详解</h1>
-<pre><code>from quonic import color_code
-result = color_code()
-print(result)</code></pre>
+<pre><code>from quonic.qec import color_code
+
+# color_code(distance, error_rate)
+# distance: code distance
+# error_rate: physical error rate
+result = color_code(distance=3, error_rate=0.01)
+print(f&#39;Logical error rate: {result.logical_error_rate}&#39;)</code></pre>
 <h1 id="进阶用法">进阶用法</h1>
-<h2 id="场景-1">场景 1</h2>
-<p>Color Code 的应用场景。</p>
+<h2 id="场景-1不同距离">场景 1：不同距离</h2>
+<pre><code>from quonic.qec import color_code
+for d in [3, 5, 7]:
+    result = color_code(distance=d, error_rate=0.01)
+    print(f&#39;d={d}: {result.logical_error_rate}&#39;)</code></pre>
 <h1 id="适用场景">适用场景</h1>
-<h2 id="应用-1">应用 1</h2>
-<p>Color Code 的实际应用。</p>
+<h2 id="量子计算">量子计算</h2>
+<p>颜色码是容错量子计算的基础。</p>
+<h2 id="量子通信">量子通信</h2>
+<p>颜色码可以保护量子通信中的量子态。</p>
 <h1 id="常见问题">常见问题</h1>
-<h2 id="color-code-的常见问题">Color Code 的常见问题？</h2>
-<p>Color Code 的详细解答。</p>
+<h2 id="颜色码和表面码有什么区别">颜色码和表面码有什么区别？</h2>
+<p>颜色码使用三色格子，表面码使用方格。颜色码有更好的阈值。</p>
+<h2 id="颜色码需要多少量子比特">颜色码需要多少量子比特？</h2>
+<p>需要 <span class="math inline">\(O(d^2)\)</span> 个量子比特，其中
+<span class="math inline">\(d\)</span> 是码距。</p>
 <h1 id="学习路径">学习路径</h1>
 <h2 id="前置知识">前置知识</h2>
 <ul>
-<li><p>量子比特</p></li>
-<li><p>量子门</p></li>
+<li><p>表面码</p></li>
+<li><p>Steane 码</p></li>
+<li><p>量子测量</p></li>
 </ul>
 <h2 id="继续学习">继续学习</h2>
 <ul>
-<li><p>高级量子算法</p></li>
-<li><p>量子应用</p></li>
+<li><p>拓扑量子计算</p></li>
+<li><p>容错量子计算</p></li>
+<li><p>量子纠错</p></li>
 </ul>
 <h1 id="完整示例代码">完整示例代码</h1>
-<h2 id="示例-1">示例 1</h2>
-<pre><code>EXAMPLE_from quonic import color_code
-result = color_code()
-print(result)</code></pre>
+<h2 id="示例-1基本颜色码">示例 1：基本颜色码</h2>
+<pre><code>from quonic.qec import color_code
+result = color_code(distance=3, error_rate=0.01)
+print(f&#39;Logical error rate: {result.logical_error_rate}&#39;)</code></pre>
 <h1 id="下载">下载</h1>
 <ul>
 <li><p>(https://github.com/ChrisLee0721/QuoNic/blob/main/examples/color_code/color_code.py)</p></li>

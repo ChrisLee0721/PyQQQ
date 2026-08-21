@@ -173,6 +173,7 @@
       vertical-align: middle;
     }
   </style>
+  <script defer="" src="" type="text/javascript"></script>
 </head>
 <body>
 <header id="title-block-header">
@@ -180,17 +181,34 @@
 <p class="author">QuoNic</p>
 </header>
 <div class="center">
-<p><strong>Algorithms / 算法</strong> | 难度：中级 | 预计时间：15
+<p><strong>Algorithms / 算法</strong> | 难度：高级 | 预计时间：20
 分钟</p>
 </div>
 <h1 id="为什么需要">为什么需要？</h1>
-<p>Qaoa Maxcut 是量子计算中的重要概念。</p>
+<p>QAOA MaxCut 是 QAOA 的经典应用。</p>
+<h2 id="经典局限">经典局限</h2>
+<ul>
+<li><p>MaxCut 是 NP-hard 问题</p></li>
+<li><p>经典算法只能近似求解</p></li>
+</ul>
+<h2 id="量子优势">量子优势</h2>
+<ul>
+<li><p>QAOA 可以提供比经典近似算法更好的解</p></li>
+<li><p>对噪声有鲁棒性</p></li>
+<li><p>理论上可以达到最优解</p></li>
+</ul>
+<h2 id="实际应用">实际应用</h2>
+<ul>
+<li><p>组合优化</p></li>
+<li><p>图论</p></li>
+<li><p>网络设计</p></li>
+</ul>
 <h1 id="快速上手">快速上手</h1>
-<pre><code>from quonic import qaoa_maxcut
-result = qaoa_maxcut()
-print(result)</code></pre>
+<pre><code>from quonic.algorithms import qaoa_maxcut
+result = qaoa_maxcut(graph=[(0,1),(1,2),(2,0)], p=2)
+print(f&#39;MaxCut: {result.maxcut_value}&#39;)</code></pre>
 <p><strong>预期输出</strong>：</p>
-<pre><code>Result: success</code></pre>
+<pre><code>MaxCut: 2</code></pre>
 <h1 id="原理详解">原理详解</h1>
 <h2 id="电路图">电路图</h2>
 <div class="center">
@@ -198,38 +216,59 @@ print(result)</code></pre>
 alt="image" /></p>
 </div>
 <h2 id="数学推导">数学推导</h2>
-<p>Qaoa Maxcut 的数学原理。</p>
+<p>QAOA MaxCut 优化： <span class="math display">\[\begin{equation}
+C(z) = \sum_{(i,j) \in E} w_{ij} (1 - z_i z_j)
+\end{equation}\]</span></p>
+<p><strong>QAOA 电路</strong>： <span
+class="math display">\[\begin{equation}
+|\gamma, \beta\rangle = \prod_{l=1}^{p} e^{-i\beta_l B} e^{-i\gamma_l C}
+|+\rangle^{\otimes n}
+\end{equation}\]</span></p>
 <h2 id="几何解释">几何解释</h2>
-<p>Qaoa Maxcut 的几何解释。</p>
+<p>QAOA MaxCut 在参数空间中寻找最优割。</p>
 <h1 id="代码详解">代码详解</h1>
-<pre><code>from quonic import qaoa_maxcut
-result = qaoa_maxcut()
-print(result)</code></pre>
+<pre><code>from quonic.algorithms import qaoa_maxcut
+
+# qaoa_maxcut(graph, p, optimizer)
+# graph: list of edges (i, j)
+# p: number of QAOA layers
+# optimizer: classical optimizer
+result = qaoa_maxcut(graph=[(0,1),(1,2),(2,0)], p=2)
+print(f&#39;MaxCut: {result.maxcut_value}&#39;)</code></pre>
 <h1 id="进阶用法">进阶用法</h1>
-<h2 id="场景-1">场景 1</h2>
-<p>Qaoa Maxcut 的应用场景。</p>
+<h2 id="场景-1不同层数">场景 1：不同层数</h2>
+<pre><code>from quonic.algorithms import qaoa_maxcut
+for p in [1, 2, 4]:
+    result = qaoa_maxcut(graph=[(0,1),(1,2),(2,0)], p=p)
+    print(f&#39;p={p}: MaxCut={result.maxcut_value}&#39;)</code></pre>
 <h1 id="适用场景">适用场景</h1>
-<h2 id="应用-1">应用 1</h2>
-<p>Qaoa Maxcut 的实际应用。</p>
+<h2 id="组合优化">组合优化</h2>
+<p>QAOA MaxCut 可以用于各种组合优化问题。</p>
+<h2 id="图论">图论</h2>
+<p>QAOA MaxCut 可以用于图分割问题。</p>
 <h1 id="常见问题">常见问题</h1>
-<h2 id="qaoa-maxcut-的常见问题">Qaoa Maxcut 的常见问题？</h2>
-<p>Qaoa Maxcut 的详细解答。</p>
+<h2 id="qaoa-maxcut-的近似比是多少">QAOA MaxCut 的近似比是多少？</h2>
+<p>对于 MaxCut，QAOA 的近似比约为 0.692。</p>
+<h2 id="qaoa-maxcut-需要多少层">QAOA MaxCut 需要多少层？</h2>
+<p>层数 <span class="math inline">\(p\)</span> 越大，近似比越好。</p>
 <h1 id="学习路径">学习路径</h1>
 <h2 id="前置知识">前置知识</h2>
 <ul>
-<li><p>量子比特</p></li>
-<li><p>量子门</p></li>
+<li><p>QAOA</p></li>
+<li><p>组合优化</p></li>
+<li><p>图论</p></li>
 </ul>
 <h2 id="继续学习">继续学习</h2>
 <ul>
-<li><p>高级量子算法</p></li>
-<li><p>量子应用</p></li>
+<li><p>图着色</p></li>
+<li><p>旅行商问题</p></li>
+<li><p>量子优化</p></li>
 </ul>
 <h1 id="完整示例代码">完整示例代码</h1>
-<h2 id="示例-1">示例 1</h2>
-<pre><code>EXAMPLE_from quonic import qaoa_maxcut
-result = qaoa_maxcut()
-print(result)</code></pre>
+<h2 id="示例-1基本-qaoa-maxcut">示例 1：基本 QAOA MaxCut</h2>
+<pre><code>from quonic.algorithms import qaoa_maxcut
+result = qaoa_maxcut(graph=[(0,1),(1,2),(2,0)], p=2)
+print(f&#39;MaxCut: {result.maxcut_value}&#39;)</code></pre>
 <h1 id="下载">下载</h1>
 <ul>
 <li><p>(https://github.com/ChrisLee0721/QuoNic/blob/main/examples/qaoa_maxcut/qaoa_maxcut.py)</p></li>

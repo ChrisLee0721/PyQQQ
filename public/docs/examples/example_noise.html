@@ -173,6 +173,7 @@
       vertical-align: middle;
     }
   </style>
+  <script defer="" src="" type="text/javascript"></script>
 </head>
 <body>
 <header id="title-block-header">
@@ -180,17 +181,33 @@
 <p class="author">QuoNic</p>
 </header>
 <div class="center">
-<p><strong>Algorithms / 算法</strong> | 难度：中级 | 预计时间：15
-分钟</p>
+<p><strong>Noise / 噪声</strong> | 难度：中级 | 预计时间：15 分钟</p>
 </div>
 <h1 id="为什么需要">为什么需要？</h1>
-<p>Noise 是量子计算中的重要概念。</p>
+<p>量子噪声是量子计算的主要挑战之一。</p>
+<h2 id="经典局限">经典局限</h2>
+<ul>
+<li><p>经典计算没有量子噪声</p></li>
+<li><p>量子噪声会破坏量子信息</p></li>
+</ul>
+<h2 id="量子优势">量子优势</h2>
+<ul>
+<li><p>理解量子噪声可以设计更好的量子算法</p></li>
+<li><p>量子纠错可以对抗噪声</p></li>
+<li><p>噪声模型可以指导硬件设计</p></li>
+</ul>
+<h2 id="实际应用">实际应用</h2>
+<ul>
+<li><p>量子计算</p></li>
+<li><p>量子通信</p></li>
+<li><p>量子存储</p></li>
+</ul>
 <h1 id="快速上手">快速上手</h1>
-<pre><code>from quonic import noise
-result = noise()
-print(result)</code></pre>
+<pre><code>from quonic.noise import noise_model
+result = noise_model(error_rate=0.01)
+print(f&#39;Noise model: {result.model}&#39;)</code></pre>
 <p><strong>预期输出</strong>：</p>
-<pre><code>Result: success</code></pre>
+<pre><code>Noise model: depolarizing(0.01)</code></pre>
 <h1 id="原理详解">原理详解</h1>
 <h2 id="电路图">电路图</h2>
 <div class="center">
@@ -198,38 +215,58 @@ print(result)</code></pre>
 alt="image" /></p>
 </div>
 <h2 id="数学推导">数学推导</h2>
-<p>Noise 的数学原理。</p>
+<p>量子噪声模型： <span class="math display">\[\begin{equation}
+\mathcal{E}(\rho) = (1-p)\rho + p/3 (X\rho X + Y\rho Y + Z\rho Z)
+\end{equation}\]</span></p>
+<p><strong>噪声类型</strong>：</p>
+<ul>
+<li><p>比特翻转（X 错误）</p></li>
+<li><p>相位翻转（Z 错误）</p></li>
+<li><p>退相干</p></li>
+</ul>
 <h2 id="几何解释">几何解释</h2>
-<p>Noise 的几何解释。</p>
+<p>量子噪声在 Bloch 球上使量子态退相干。</p>
 <h1 id="代码详解">代码详解</h1>
-<pre><code>from quonic import noise
-result = noise()
-print(result)</code></pre>
+<pre><code>from quonic.noise import noise_model
+
+# noise_model(error_rate, noise_type)
+# error_rate: probability of error
+# noise_type: type of noise
+result = noise_model(error_rate=0.01)
+print(f&#39;Noise model: {result.model}&#39;)</code></pre>
 <h1 id="进阶用法">进阶用法</h1>
-<h2 id="场景-1">场景 1</h2>
-<p>Noise 的应用场景。</p>
+<h2 id="场景-1不同噪声类型">场景 1：不同噪声类型</h2>
+<pre><code>from quonic.noise import noise_model
+result = noise_model(error_rate=0.01, noise_type=&#39;bit_flip&#39;)
+print(f&#39;Noise model: {result.model}&#39;)</code></pre>
 <h1 id="适用场景">适用场景</h1>
-<h2 id="应用-1">应用 1</h2>
-<p>Noise 的实际应用。</p>
+<h2 id="量子计算">量子计算</h2>
+<p>噪声模型可以指导量子算法设计。</p>
+<h2 id="量子通信">量子通信</h2>
+<p>噪声模型可以评估通信信道的质量。</p>
 <h1 id="常见问题">常见问题</h1>
-<h2 id="noise-的常见问题">Noise 的常见问题？</h2>
-<p>Noise 的详细解答。</p>
+<h2 id="量子噪声有哪些类型">量子噪声有哪些类型？</h2>
+<p>比特翻转、相位翻转、退相干等。</p>
+<h2 id="如何对抗量子噪声">如何对抗量子噪声？</h2>
+<p>使用量子纠错码或噪声缓解技术。</p>
 <h1 id="学习路径">学习路径</h1>
 <h2 id="前置知识">前置知识</h2>
 <ul>
 <li><p>量子比特</p></li>
 <li><p>量子门</p></li>
+<li><p>量子测量</p></li>
 </ul>
 <h2 id="继续学习">继续学习</h2>
 <ul>
-<li><p>高级量子算法</p></li>
-<li><p>量子应用</p></li>
+<li><p>量子纠错</p></li>
+<li><p>量子误差缓解</p></li>
+<li><p>容错量子计算</p></li>
 </ul>
 <h1 id="完整示例代码">完整示例代码</h1>
-<h2 id="示例-1">示例 1</h2>
-<pre><code>EXAMPLE_from quonic import noise
-result = noise()
-print(result)</code></pre>
+<h2 id="示例-1基本噪声模型">示例 1：基本噪声模型</h2>
+<pre><code>from quonic.noise import noise_model
+result = noise_model(error_rate=0.01)
+print(f&#39;Noise model: {result.model}&#39;)</code></pre>
 <h1 id="下载">下载</h1>
 <ul>
 <li><p>(https://github.com/ChrisLee0721/QuoNic/blob/main/examples/noise/noise.py)</p></li>
