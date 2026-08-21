@@ -312,27 +312,22 @@
             if (urlFile.endsWith('.html') && !urlFile.endsWith('_zh.html')) {
                 const zhFile = urlFile.replace('.html', '_zh.html');
                 // Try to fetch the _zh version first
-                try {
-                    const zhResponse = await fetch(zhFile, { method: 'HEAD' });
-                    if (zhResponse.ok) {
-                        actualFile = zhFile;
-                    }
-                } catch (e) {
-                    // _zh version not available, use original
-                }
+                fetch(zhFile, { method: 'HEAD' })
+                    .then(r => { if (r.ok) actualFile = zhFile; })
+                    .catch(() => {})
+                    .finally(() => loadDoc(actualFile));
             } else if (urlFile.endsWith('.md') && !urlFile.endsWith('_zh.md')) {
                 const zhFile = urlFile.replace('.md', '_zh.md');
-                try {
-                    const zhResponse = await fetch(zhFile, { method: 'HEAD' });
-                    if (zhResponse.ok) {
-                        actualFile = zhFile;
-                    }
-                } catch (e) {
-                    // _zh version not available, use original
-                }
+                fetch(zhFile, { method: 'HEAD' })
+                    .then(r => { if (r.ok) actualFile = zhFile; })
+                    .catch(() => {})
+                    .finally(() => loadDoc(actualFile));
+            } else {
+                loadDoc(actualFile);
             }
 
-            fetch(actualFile)
+            function loadDoc(file) {
+            fetch(file)
                 .then(response => {
                     if (!response.ok) throw new Error('File not found: ' + actualFile);
                     return response.text();
@@ -398,6 +393,7 @@
                 .catch(err => {
                     document.getElementById('loading').textContent = 'Error loading document: ' + err.message;
                 });
+            } // end loadDoc
         } else {
             document.getElementById('loading').innerHTML = 'Select a document from the sidebar to get started.<br><br><a href="doc-viewer.html?file=docs/quickstart.md" style="color:#7aa2f7">← Back to Docs Home</a>';
         }
