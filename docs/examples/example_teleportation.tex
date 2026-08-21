@@ -40,20 +40,20 @@
 量子隐形传态可以在不直接传输量子比特的情况下传输量子态。这是量子通信的核心协议。
 
 \subsection{经典局限}
-\b\begin{itemize}
+\begin{itemize}
   \item 经典通信无法传输量子态（不可克隆定理禁止复制未知量子态）
   \item 直接传输量子比特容易受噪声和退相干影响
 \end{itemize}
 
 \subsection{量子优势}
-\b\begin{itemize}
+\begin{itemize}
   \item 使用纠缠和经典通信传输量子态，不违反不可克隆定理（原始态被销毁）
   \item 保真度可以接近 100\%
   \item 是量子网络和分布式量子计算的基础
 \end{itemize}
 
 \subsection{实际应用}
-\b\begin{itemize}
+\begin{itemize}
   \item 量子网络（量子互联网的基础协议）
   \item 分布式量子计算（在不同量子处理器之间传输态）
   \item 量子密钥分发（E91 协议的基础）
@@ -125,7 +125,7 @@ Alice 对 $q_0$ 和 $q_1$ 执行 CNOT 和 $H$ 门。
 \textbf{Step 4: 测量}
 
 Alice 测量 $q_0$ 和 $q_1$，得到 2 个经典比特 $(a, b)$，有 4 种可能：
-\b\begin{itemize}
+\begin{itemize}
   \item $(0,0)$: $q_2 = |\psi\rangle$（无需校正）
   \item $(0,1)$: $q_2 = X|\psi\rangle$（需施加 $X$ 门）
   \item $(1,0)$: $q_2 = Z|\psi\rangle$（需施加 $Z$ 门）
@@ -244,14 +244,14 @@ qshow(noise=0.20)
 \section{学习路径}
 
 \subsection{前置知识}
-\b\begin{itemize}
+\begin{itemize}
   \item Bell 态（2 量子比特纠缠）
   \item CNOT 门和 Hadamard 门
   \item 量子测量
 \end{itemize}
 
 \subsection{继续学习}
-\b\begin{itemize}
+\begin{itemize}
   \item 超密编码（用 1 个量子比特传输 2 个经典比特）
   \item 量子中继（长距离量子通信）
   \item 量子网络（量子互联网）
