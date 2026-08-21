@@ -141,17 +141,11 @@
 
         function applyLang() {
             document.getElementById('lang-label').textContent = currentLang === 'en' ? 'EN' : '中文';
-            document.querySelectorAll('#sidebar a[data-file]').forEach(a => {
-                const baseFile = a.dataset.file;
-                const badge = a.querySelector('.lang-badge');
-                if (currentLang === 'zh' && hasZh(baseFile)) {
-                    a.href = `doc-viewer.html?file=${toZhPath(baseFile)}`;
-                    if (badge) { badge.textContent = '中'; badge.className = 'lang-badge zh'; }
-                } else {
-                    a.href = `doc-viewer.html?file=${baseFile}`;
-                    if (badge) { badge.textContent = 'EN'; badge.className = 'lang-badge en'; }
-                }
-            });
+            // Rebuild sidebar with language filter
+            if (typeof allFiles !== 'undefined') {
+                const filteredFiles = filterFilesByLang(allFiles, currentLang);
+                buildSidebar(filteredFiles);
+            }
         }
 
         function toggleLang() {
@@ -247,10 +241,23 @@
             });
         }
 
+        let allFiles = [];
+
+        // Filter files based on current language
+        function filterFilesByLang(fileList, lang) {
+            if (lang === 'en') {
+                // English mode: hide all _zh files
+                return fileList.filter(f => !f.endsWith('_zh.md') && !f.endsWith('_zh.html'));
+            }
+            // Chinese mode: show all files
+            return fileList;
+        }
+
         fetch('docs/files.txt')
             .then(r => r.text())
             .then(text => {
-                const files = text.trim().split('\n').filter(f => f && !f.endsWith('.json') && !f.endsWith('.pdf'));
+                allFiles = text.trim().split('\n').filter(f => f && !f.endsWith('.json') && !f.endsWith('.pdf'));
+                const files = filterFilesByLang(allFiles, currentLang);
                 buildSidebar(files);
 
                 const zhChecks = files
