@@ -15,7 +15,7 @@
 <path id='g3-49' d='M2.929016-6.37609C2.929016-6.615193 2.929016-6.635118 2.699875-6.635118C2.082192-5.997509 1.205479-5.997509 .886675-5.997509V-5.688667C1.085928-5.688667 1.673724-5.688667 2.191781-5.947696V-.787049C2.191781-.428394 2.161893-.308842 1.265255-.308842H.946451V0C1.295143-.029888 2.161893-.029888 2.560399-.029888S3.825654-.029888 4.174346 0V-.308842H3.855542C2.958904-.308842 2.929016-.418431 2.929016-.787049V-6.37609Z'/>
 </defs>
 <g id='page1'>
-<rect x='-53.321911' y='-52.328205' width='176.911816' height='50.22671' fill='#fff' stroke='#ccc' stroke-width='1' rx='4'/>
+<rect x='-53.321911' y='-52.328205' width='176.911816' height='50.22671' fill='#fff' stroke='#666' stroke-width='1' rx='4'/>
 <path d='M-24.4922-43.1172H-38.668' stroke='#000' fill='none' stroke-width='.79701' stroke-miterlimit='10' stroke-linecap='round'/>
 <path d='M6.6875-43.1172H-7.4883' stroke='#000' fill='none' stroke-width='.79701' stroke-miterlimit='10' stroke-linecap='round'/>
 <path d='M37.92187-43.1172H23.7461' stroke='#000' fill='none' stroke-width='.79701' stroke-miterlimit='10' stroke-linecap='round'/>
@@ -34,28 +34,28 @@
 <use x='45.029443' y='-27.215249' xlink:href='#g3-48'/>
 <use x='50.010782' y='-27.215249' xlink:href='#g0-105'/>
 </g>
-<path d='M-24.4922-35.72656H-7.4883V-50.5039H-24.4922Z' fill='#fff' stroke='#ccc' stroke-width='1' rx='4'/>
+<path d='M-24.4922-35.72656H-7.4883V-50.5039H-24.4922Z' fill='#fff' stroke='#666' stroke-width='1' rx='4'/>
 <path d='M-24.4922-35.72656H-7.4883V-50.5039H-24.4922Z' stroke='#000' fill='none' stroke-width='.79701' stroke-miterlimit='10'/>
 <g transform='matrix(1 0 0 1 -62.7706 -12.497)'>
 <use x='42.262034' y='-27.215249' xlink:href='#g1-88'/>
 </g>
-<path d='M6.6875-35.72656H23.7461V-50.5039H6.6875Z' fill='#fff' stroke='#ccc' stroke-width='1' rx='4'/>
+<path d='M6.6875-35.72656H23.7461V-50.5039H6.6875Z' fill='#fff' stroke='#666' stroke-width='1' rx='4'/>
 <path d='M6.6875-35.72656H23.7461V-50.5039H6.6875Z' stroke='#000' fill='none' stroke-width='.79701' stroke-miterlimit='10'/>
 <g transform='matrix(1 0 0 1 -31.5913 -12.497)'>
 <use x='42.262034' y='-27.215249' xlink:href='#g1-72'/>
 </g>
-<path d='M37.92187-2.5H57.8594V-51.9297H37.92187Z' fill='#fff' stroke='#ccc' stroke-width='1' rx='4'/>
+<path d='M37.92187-2.5H57.8594V-51.9297H37.92187Z' fill='#fff' stroke='#666' stroke-width='1' rx='4'/>
 <path d='M37.92187-2.5H57.8594V-51.9297H37.92187Z' stroke='#000' fill='none' stroke-width='.79701' stroke-miterlimit='10'/>
 <g transform='matrix(1 0 0 1 -.3567 1.9787)'>
 <use x='42.262034' y='-27.215249' xlink:href='#g1-85'/>
 <use x='49.0643' y='-25.720869' xlink:href='#g2-102'/>
 </g>
-<path d='M72.0312-35.72656H89.0937V-50.5039H72.0312Z' fill='#fff' stroke='#ccc' stroke-width='1' rx='4'/>
+<path d='M72.0312-35.72656H89.0937V-50.5039H72.0312Z' fill='#fff' stroke='#666' stroke-width='1' rx='4'/>
 <path d='M72.0312-35.72656H89.0937V-50.5039H72.0312Z' stroke='#000' fill='none' stroke-width='.79701' stroke-miterlimit='10'/>
 <g transform='matrix(1 0 0 1 33.754 -12.497)'>
 <use x='42.262034' y='-27.215249' xlink:href='#g1-72'/>
 </g>
-<path d='M103.2656-35.64453H123.1914V-50.5898H103.2656Z' fill='#fff' stroke='#ccc' stroke-width='1' rx='4'/>
+<path d='M103.2656-35.64453H123.1914V-50.5898H103.2656Z' fill='#fff' stroke='#666' stroke-width='1' rx='4'/>
 <path d='M106.1016-41.4141C109.6758-45.6758 116.7812-45.6758 120.3555-41.4141' stroke='#000' fill='none' stroke-width='.79701' stroke-miterlimit='10' clip-path='url(#clip1)'/>
 <path d='M113.2266-40.2812L118.0742-46.0625' stroke='#000' fill='none' stroke-width='.79701' stroke-miterlimit='10' clip-path='url(#clip1)'/>
 <path d='M119.312073-47.539082C119.112859-47.398462 118.17536-46.82815 117.468324-46.574244L118.683169-45.554713C118.808173-46.296897 119.206601-47.316431 119.312073-47.539082Z' clip-path='url(#clip1)'/>
@@ -66,7 +66,7 @@
 <use x='45.029443' y='-27.215249' xlink:href='#g3-49'/>
 <use x='50.010782' y='-27.215249' xlink:href='#g0-105'/>
 </g>
-<path d='M6.6875-3.9258H23.7461V-18.70312H6.6875Z' fill='#fff' stroke='#ccc' stroke-width='1' rx='4'/>
+<path d='M6.6875-3.9258H23.7461V-18.70312H6.6875Z' fill='#fff' stroke='#666' stroke-width='1' rx='4'/>
 <path d='M6.6875-3.9258H23.7461V-18.70312H6.6875Z' stroke='#000' fill='none' stroke-width='.79701' stroke-miterlimit='10'/>
 <g transform='matrix(1 0 0 1 -31.5913 19.30489)'>
 <use x='42.262034' y='-27.215249' xlink:href='#g1-72'/>
