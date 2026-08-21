@@ -180,17 +180,8 @@
                 } else {
                     // Switching to English
                     if (f.endsWith('.html')) {
-                        // Chinese HTML, check for English .md
-                        const mdPath = f.replace('.html', '.md');
-                        fetch(mdPath, { method: 'HEAD' })
-                            .then(r => {
-                                if (r.ok) {
-                                    window.location.search = '?file=' + mdPath;
-                                } else {
-                                    showLangNotice(f);
-                                }
-                            })
-                            .catch(() => showLangNotice(f));
+                        // Chinese HTML, no English version available
+                        showLangNotice(f);
                     } else if (f.endsWith('_zh.md')) {
                         // Chinese .md, switch to English .md
                         const enPath = toEnPath(f);
