@@ -222,7 +222,10 @@
                     const title = name.replace(/\.(md|html)$/, '').replace(/^example_/, '').replace(/_zh$/, '').replace(/_/g, ' ').replace(/-/g, ' ');
                     const a = document.createElement('a');
                     a.dataset.file = file;
-                    a.href = `doc-viewer.html?file=${file}`;
+                    // For _zh files, show the base name in the URL but load the _zh version
+                    const displayFile = file.replace('_zh.html', '.html').replace('_zh.md', '.md');
+                    a.href = `doc-viewer.html?file=${displayFile}`;
+                    a.dataset.zhFile = file; // Store the actual _zh file path
                     a.textContent = title;
                     a.className = 'block px-3 py-1.5 rounded-lg text-doc-dim hover:text-doc-text hover:bg-doc-surface transition-colors';
 
@@ -247,7 +250,7 @@
         fetch('docs/files.txt')
             .then(r => r.text())
             .then(text => {
-                const files = text.trim().split('\n').filter(f => f && !f.endsWith('_zh.md') && !f.endsWith('_zh.html') && !f.endsWith('.json') && !f.endsWith('.pdf'));
+                const files = text.trim().split('\n').filter(f => f && !f.endsWith('.json') && !f.endsWith('.pdf'));
                 buildSidebar(files);
 
                 const zhChecks = files
@@ -304,9 +307,34 @@
         }
 
         if (urlFile) {
-            fetch(urlFile)
+            // Check if there's a _zh version available
+            let actualFile = urlFile;
+            if (urlFile.endsWith('.html') && !urlFile.endsWith('_zh.html')) {
+                const zhFile = urlFile.replace('.html', '_zh.html');
+                // Try to fetch the _zh version first
+                try {
+                    const zhResponse = await fetch(zhFile, { method: 'HEAD' });
+                    if (zhResponse.ok) {
+                        actualFile = zhFile;
+                    }
+                } catch (e) {
+                    // _zh version not available, use original
+                }
+            } else if (urlFile.endsWith('.md') && !urlFile.endsWith('_zh.md')) {
+                const zhFile = urlFile.replace('.md', '_zh.md');
+                try {
+                    const zhResponse = await fetch(zhFile, { method: 'HEAD' });
+                    if (zhResponse.ok) {
+                        actualFile = zhFile;
+                    }
+                } catch (e) {
+                    // _zh version not available, use original
+                }
+            }
+
+            fetch(actualFile)
                 .then(response => {
-                    if (!response.ok) throw new Error('File not found: ' + urlFile);
+                    if (!response.ok) throw new Error('File not found: ' + actualFile);
                     return response.text();
                 })
                 .then(text => {
