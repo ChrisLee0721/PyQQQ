@@ -237,10 +237,10 @@
                     if (currentLang === 'zh' && zhTitles[baseName]) {
                         title = zhTitles[baseName];
                     } else {
-                        // Format English title: capitalize words, keep acronyms uppercase
+                        // Format English title: capitalize words, uppercase abbreviations
                         title = baseName.replace(/_/g, ' ').replace(/-/g, ' ')
                             .replace(/\b\w/g, c => c.toUpperCase())
-                            .replace(/\b(Qft|Qpe|Qnn|Qsvm|Qgan|Qgnn|Qbm|Qcnn|Qrl|Qsp|Qtda|Qpca|Qng|Qaoa|Vqe|Vqc|Vqr|Bb84|E91|Hhl|Ghz)\b/gi, m => m.toUpperCase());
+                            .replace(/\b(ir|ml|zx|zne|qec|qft|qpe|qnn|qsvm|qgan|qgnn|qbm|qcnn|qrl|qsp|qtda|qpca|qng|qaoa|vqe|vqc|vqr|bb84|e91|hhl|ghz|viz)\b/gi, m => m.toUpperCase());
                     }
                     const a = document.createElement('a');
                     a.dataset.file = item.file;
