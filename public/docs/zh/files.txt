@@ -1,21 +1,18 @@
-docs/zh/algorithm-report.md
-docs/zh/api/backends.md
-docs/zh/api/compiler.md
-docs/zh/api/distributed.md
-docs/zh/api/gates.md
-docs/zh/api/ir.md
-docs/zh/api/ml.md
-docs/zh/api/noise.md
-docs/zh/api/pulse.md
-docs/zh/api/qec.md
-docs/zh/api/readout.md
-docs/zh/api/scheduler.md
-docs/zh/api/viz.md
-docs/zh/api/zne.md
-docs/zh/api/zx.md
-docs/zh/benchmarks.md
-docs/zh/changelog.md
-docs/zh/examples.md
+docs/zh/GPU 架构报告.md
+docs/zh/api/ZX 演算.md
+docs/zh/api/中间表示.md
+docs/zh/api/分布式.md
+docs/zh/api/可视化.md
+docs/zh/api/后端.md
+docs/zh/api/噪声.md
+docs/zh/api/机器学习.md
+docs/zh/api/编译器.md
+docs/zh/api/脉冲.md
+docs/zh/api/读出.md
+docs/zh/api/调度器.md
+docs/zh/api/量子纠错.md
+docs/zh/api/量子门.md
+docs/zh/api/零噪声外推.md
 docs/zh/examples/BB84 量子密钥分发.html
 docs/zh/examples/Bell 态.html
 docs/zh/examples/Bernstein-Vazirani 算法.html
@@ -108,25 +105,28 @@ docs/zh/examples/量子隐形传态.html
 docs/zh/examples/门分解.html
 docs/zh/examples/隐子群问题.html
 docs/zh/examples/颜色码.html
-docs/zh/gpu-architecture-report.md
-docs/zh/index.md
-docs/zh/optimization-report.md
-docs/zh/qgate.md
-docs/zh/quickstart.md
-docs/zh/roadmap.md
-docs/zh/tutorials/01_basics.md
-docs/zh/tutorials/01_basics_zh.md
-docs/zh/tutorials/02_algorithms.md
-docs/zh/tutorials/02_algorithms_zh.md
-docs/zh/tutorials/03_noise_mitigation.md
-docs/zh/tutorials/03_noise_mitigation_zh.md
-docs/zh/tutorials/04_gpu_acceleration.md
-docs/zh/tutorials/04_gpu_acceleration_zh.md
-docs/zh/tutorials/05_advanced.md
-docs/zh/tutorials/05_advanced_zh.md
-docs/zh/tutorials/06_grover_search.md
-docs/zh/tutorials/07_vqe_chemistry.md
-docs/zh/tutorials/08_error_correction.md
-docs/zh/tutorials/09_noise_mitigation.md
-docs/zh/tutorials/10_quantum_ml.md
-docs/zh/visualization.md
+docs/zh/qgate API.md
+docs/zh/tutorials/GPU 加速.md
+docs/zh/tutorials/GPU 加速（中文）.md
+docs/zh/tutorials/Grover 搜索教程.md
+docs/zh/tutorials/VQE 量子化学教程.md
+docs/zh/tutorials/噪声缓解.md
+docs/zh/tutorials/噪声缓解教程.md
+docs/zh/tutorials/噪声缓解（中文）.md
+docs/zh/tutorials/基础入门.md
+docs/zh/tutorials/基础入门（中文）.md
+docs/zh/tutorials/量子机器学习教程.md
+docs/zh/tutorials/量子算法.md
+docs/zh/tutorials/量子算法（中文）.md
+docs/zh/tutorials/量子纠错教程.md
+docs/zh/tutorials/高级特性.md
+docs/zh/tutorials/高级特性（中文）.md
+docs/zh/优化报告.md
+docs/zh/可视化.md
+docs/zh/基准测试.md
+docs/zh/快速开始.md
+docs/zh/更新日志.md
+docs/zh/示例总览.md
+docs/zh/算法报告.md
+docs/zh/路线图.md
+docs/zh/首页.md
