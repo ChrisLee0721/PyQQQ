@@ -1,0 +1,10 @@
+\documentclass[border=5mm]{standalone}
+\usepackage{tikz}
+\usetikzlibrary{quantikz2}
+\usepackage{xcolor}
+\pagecolor{white}
+\begin{document}
+\begin{quantikz}
+  \lstick{$|0\rangle^n$} & \gate{H^{\otimes n}} & \gate{e^{-iAt}} & \gate{QFT$^\dagger$} & \meter{}
+\end{quantikz}
+\end{document}

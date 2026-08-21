@@ -1,0 +1,164 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage[UTF8]{ctex}
+\usepackage{amsmath,amssymb}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{geometry}
+\usepackage{graphicx}
+\geometry{margin=2.5cm}
+
+\title{Quantum Signal Processing / 量子信号处理}
+\author{QuoNic}
+\date{}
+
+\begin{document}
+\maketitle
+
+\begin{center}
+\textbf{Algorithms / 算法} | 难度：高级 | 预计时间：20 分钟
+\end{center}
+
+\tableofcontents
+\newpage
+
+\section{为什么需要？}
+
+量子信号处理是量子算法设计的通用框架，可以统一描述许多量子算法。
+
+\subsection{经典局限}
+\begin{itemize}
+  \item 经典信号处理受限于有限的变换类型
+  \item 对于高维信号，经典方法效率低
+\end{itemize}
+
+\subsection{量子优势}
+\begin{itemize}
+  \item 量子信号处理可以实现任意多项式变换
+  \item 是许多量子算法的统一框架
+  \item 提供最优的查询复杂度
+\end{itemize}
+
+\subsection{实际应用}
+\begin{itemize}
+  \item 量子算法设计
+  \item 量子模拟
+  \item 量子优化
+\end{itemize}
+
+\section{快速上手}
+
+\begin{verbatim}
+from quonic.algorithms import qsp
+
+# 量子信号处理
+result = qsp(polynomial=[1, 0, -1], n_qubits=2)
+print(f'Result: {result.output}')
+\end{verbatim}
+
+\textbf{预期输出}：
+\begin{verbatim}
+Result: [0.5, 0.5]
+\end{verbatim}
+
+\section{原理详解}
+
+\subsection{电路图}
+
+\begin{center}
+\includegraphics[width=0.6\textwidth]{../../images/qsp_circuit.svg}
+\end{center}
+
+\subsection{数学推导}
+
+量子信号处理：
+\begin{equation}
+U = e^{i\theta_0 Z} \prod_{k=1}^{d} W e^{i\theta_k Z}
+\end{equation}
+
+其中 $W$ 是信号算子，$\theta_k$ 是相位角度。
+
+\subsection{几何解释}
+
+量子信号处理在 Bloch 球上旋转量子态，通过相位角度实现任意多项式变换。
+
+\section{代码详解}
+
+\begin{verbatim}
+from quonic.algorithms import qsp
+
+# qsp(polynomial, n_qubits)
+# polynomial: 多项式系数
+# n_qubits: 量子比特数
+result = qsp(polynomial=[1, 0, -1], n_qubits=2)
+
+# result.output: 输出态
+# result.angles: 相位角度
+print(f'Result: {result.output}')
+\end{verbatim}
+
+\section{进阶用法}
+
+\subsection{场景 1：不同多项式}
+
+\begin{verbatim}
+from quonic.algorithms import qsp
+
+# 不同多项式
+result = qsp(polynomial=[1, 1, 0], n_qubits=2)
+print(f'Result: {result.output}')
+\end{verbatim}
+
+\section{适用场景}
+
+\subsection{量子算法设计}
+
+量子信号处理是许多量子算法的统一框架，如 Grover 搜索、量子计数等。
+
+\subsection{量子模拟}
+
+量子信号处理可以用于模拟量子系统的时间演化。
+
+\section{常见问题}
+
+\subsection{量子信号处理和 QSP 有什么区别？}
+
+QSP 是 Quantum Signal Processing 的缩写，两者是同一个概念。
+
+\subsection{量子信号处理的精度如何？}
+
+精度取决于多项式的阶数。更高的阶数提供更高的精度。
+
+\section{学习路径}
+
+\subsection{前置知识}
+\begin{itemize}
+  \item 量子门
+  \item 量子测量
+  \item 多项式理论
+\end{itemize}
+
+\subsection{继续学习}
+\begin{itemize}
+  \item 量子算法设计
+  \item 量子模拟
+  \item 量子优化
+\end{itemize}
+
+\section{完整示例代码}
+
+\subsection{示例 1：基本量子信号处理}
+
+\begin{verbatim}
+from quonic.algorithms import qsp
+
+result = qsp(polynomial=[1, 0, -1], n_qubits=2)
+print(f'Result: {result.output}')
+\end{verbatim}
+
+\section{下载}
+
+\begin{itemize}
+  \item [qsp.py](https://github.com/ChrisLee0721/QuoNic/blob/main/examples/qsp/qsp.py)
+\end{itemize}
+
+\end{document}

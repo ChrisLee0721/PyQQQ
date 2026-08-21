@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc 3.10.2" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <meta name="author" content="QuoNic" />
+  <title>quantum_bayesian</title>
+  <style>
+    /* Default styles provided by pandoc.
+    ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+    */
+    html {
+      color: #1a1a1a;
+      background-color: #fdfdfd;
+    }
+    body {
+      margin: 0 auto;
+      max-width: 36em;
+      padding-left: 50px;
+      padding-right: 50px;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      hyphens: auto;
+      overflow-wrap: break-word;
+      text-rendering: optimizeLegibility;
+      font-kerning: normal;
+    }
+    @media (max-width: 600px) {
+      body {
+        font-size: 0.9em;
+        padding: 12px;
+      }
+      h1 {
+        font-size: 1.8em;
+      }
+    }
+    @media print {
+      html {
+        background-color: white;
+      }
+      body {
+        background-color: transparent;
+        color: black;
+      }
+      p, h2, h3 {
+        orphans: 3;
+        widows: 3;
+      }
+      h2, h3, h4 {
+        page-break-after: avoid;
+      }
+    }
+    p {
+      margin: 1em 0;
+    }
+    a {
+      color: #1a1a1a;
+    }
+    a:visited {
+      color: #1a1a1a;
+    }
+    img {
+      max-width: 100%;
+    }
+    svg {
+      height: auto;
+      max-width: 100%;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 1.4em;
+    }
+    h5, h6 {
+      font-size: 1em;
+      font-style: italic;
+    }
+    h6 {
+      font-weight: normal;
+    }
+    ol, ul {
+      padding-left: 1.7em;
+      margin-top: 1em;
+    }
+    li > ol, li > ul {
+      margin-top: 0;
+    }
+    blockquote {
+      margin: 1em 0 1em 1.7em;
+      padding-left: 1em;
+      border-left: 2px solid #e6e6e6;
+      color: #606060;
+    }
+    code {
+      white-space: pre-wrap;
+      font-family: Menlo, Monaco, Consolas, 'Lucida Console', monospace;
+      font-size: 85%;
+      margin: 0;
+      hyphens: manual;
+    }
+    pre {
+      margin: 1em 0;
+      overflow: auto;
+    }
+    pre code {
+      padding: 0;
+      overflow: visible;
+      overflow-wrap: normal;
+    }
+    .sourceCode {
+     background-color: transparent;
+     overflow: visible;
+    }
+    hr {
+      border: none;
+      border-top: 1px solid #1a1a1a;
+      height: 1px;
+      margin: 1em 0;
+    }
+    table {
+      margin: 1em 0;
+      border-collapse: collapse;
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+    table caption {
+      margin-bottom: 0.75em;
+    }
+    tbody {
+      margin-top: 0.5em;
+      border-top: 1px solid #1a1a1a;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    th {
+      border-top: 1px solid #1a1a1a;
+      padding: 0.25em 0.5em 0.25em 0.5em;
+    }
+    td {
+      padding: 0.125em 0.5em 0.25em 0.5em;
+    }
+    header {
+      margin-bottom: 4em;
+      text-align: center;
+    }
+    #TOC li {
+      list-style: none;
+    }
+    #TOC ul {
+      padding-left: 1.3em;
+    }
+    #TOC > ul {
+      padding-left: 0;
+    }
+    #TOC a:not(:hover) {
+      text-decoration: none;
+    }
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: 1.5em;}
+    div.column{flex: auto;}
+    @media screen {
+    div.columns{gap: min(4vw, 1.5em);}
+    div.column{overflow-x: auto;}
+    }
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+  </style>
+  <script defer="" src="" type="text/javascript"></script>
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">quantum_bayesian</h1>
+<p class="author">QuoNic</p>
+</header>
+<div class="center">
+<p><strong>ML / 机器学习</strong> | 难度：高级 | 预计时间：20 分钟</p>
+</div>
+<h1 id="为什么需要">为什么需要？</h1>
+<p>量子贝叶斯推断是经典贝叶斯推断的量子推广，用于在量子环境中进行概率推断。</p>
+<h2 id="经典局限">经典局限</h2>
+<ul>
+<li><p>经典贝叶斯推断在高维参数空间中慢</p></li>
+<li><p>对于复杂后验分布，经典方法效率低</p></li>
+</ul>
+<h2 id="量子优势">量子优势</h2>
+<ul>
+<li><p>量子贝叶斯推断可以利用量子叠加探索更大的参数空间</p></li>
+<li><p>推断速度更快</p></li>
+<li><p>可以处理更复杂的后验分布</p></li>
+</ul>
+<h2 id="实际应用">实际应用</h2>
+<ul>
+<li><p>统计推断</p></li>
+<li><p>机器学习</p></li>
+<li><p>量子态层析</p></li>
+</ul>
+<h1 id="快速上手">快速上手</h1>
+<pre><code>from quonic.ml import quantum_bayesian
+
+# 量子贝叶斯推断
+result = quantum_bayesian(data=[1, 0, 1, 1], prior=&#39;uniform&#39;)
+print(f&#39;Posterior: {result.posterior}&#39;)</code></pre>
+<p><strong>预期输出</strong>：</p>
+<pre><code>Posterior: [0.75, 0.25]</code></pre>
+<h1 id="原理详解">原理详解</h1>
+<h2 id="电路图">电路图</h2>
+<div class="center">
+<p><img src="../../images/quantum_bayesian_circuit.svg"
+style="width:60.0%" alt="image" /></p>
+</div>
+<h2 id="数学推导">数学推导</h2>
+<p>量子贝叶斯推断： <span class="math display">\[\begin{equation}
+P(\theta|D) \propto P(D|\theta) P(\theta)
+\end{equation}\]</span></p>
+<p><strong>量子似然</strong>： <span
+class="math display">\[\begin{equation}
+P(D|\theta) = |\langle D|U(\theta)|0\rangle|^2
+\end{equation}\]</span></p>
+<h2 id="几何解释">几何解释</h2>
+<p>量子贝叶斯推断在量子态空间中更新后验分布。量子叠加允许同时探索多个参数值。</p>
+<h1 id="代码详解">代码详解</h1>
+<pre><code>from quonic.ml import quantum_bayesian
+
+# quantum_bayesian(data, prior, n_samples)
+# data: 观测数据
+# prior: 先验分布
+# n_samples: 采样数
+result = quantum_bayesian(data=[1, 0, 1, 1], prior=&#39;uniform&#39;)
+
+# result.posterior: 后验分布
+# result.map: MAP 估计
+# result.samples: 后验采样
+print(f&#39;Posterior: {result.posterior}&#39;)</code></pre>
+<h1 id="进阶用法">进阶用法</h1>
+<h2 id="场景-1参数估计">场景 1：参数估计</h2>
+<pre><code>from quonic.ml import quantum_bayesian
+
+# 参数估计
+result = quantum_bayesian(data=[1, 1, 0, 1], prior=&#39;gaussian&#39;)
+print(f&#39;MAP estimate: {result.map}&#39;)</code></pre>
+<h1 id="适用场景">适用场景</h1>
+<h2 id="统计推断">统计推断</h2>
+<p>量子贝叶斯推断可以用于参数估计、假设检验等统计推断任务。量子叠加可以同时探索多个参数值，加速推断过程。</p>
+<h2 id="量子态层析">量子态层析</h2>
+<p>量子贝叶斯推断可以用于量子态层析，即从测量数据中重建量子态。这在量子通信、量子计算中非常重要。</p>
+<h1 id="常见问题">常见问题</h1>
+<h2
+id="量子贝叶斯推断和经典贝叶斯推断有什么区别">量子贝叶斯推断和经典贝叶斯推断有什么区别？</h2>
+<p>量子贝叶斯推断使用量子策略，可以利用量子叠加探索更大的参数空间。</p>
+<h2 id="量子贝叶斯推断的精度如何">量子贝叶斯推断的精度如何？</h2>
+<p>精度取决于采样数和量子电路的深度。</p>
+<h1 id="学习路径">学习路径</h1>
+<h2 id="前置知识">前置知识</h2>
+<ul>
+<li><p>贝叶斯推断</p></li>
+<li><p>量子测量</p></li>
+<li><p>量子态编码</p></li>
+</ul>
+<h2 id="继续学习">继续学习</h2>
+<ul>
+<li><p>量子态层析</p></li>
+<li><p>量子机器学习</p></li>
+<li><p>量子统计</p></li>
+</ul>
+<h1 id="完整示例代码">完整示例代码</h1>
+<h2 id="示例-1基本量子贝叶斯推断">示例 1：基本量子贝叶斯推断</h2>
+<pre><code>from quonic.ml import quantum_bayesian
+
+result = quantum_bayesian(data=[1, 0, 1, 1], prior=&#39;uniform&#39;)
+print(f&#39;Posterior: {result.posterior}&#39;)</code></pre>
+<h1 id="下载">下载</h1>
+<ul>
+<li><p>(https://github.com/ChrisLee0721/QuoNic/blob/main/examples/quantum_bayesian/quantum_bayesian.py)</p></li>
+</ul>
+</body>
+</html>
