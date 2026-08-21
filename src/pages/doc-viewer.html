@@ -316,6 +316,12 @@
                             // Strip pandoc's delimiters
                             if (tex.startsWith('\\[') && tex.endsWith('\\]')) tex = tex.slice(2, -2);
                             if (tex.startsWith('\\(') && tex.endsWith('\\)')) tex = tex.slice(2, -2);
+                            // Strip LaTeX equation environments (KaTeX doesn't support them)
+                            tex = tex.replace(/\\begin\{equation\}/g, '').replace(/\\end\{equation\}/g, '');
+                            tex = tex.replace(/\\begin\{align\}/g, '').replace(/\\end\{align\}/g, '');
+                            tex = tex.replace(/\\begin\{align\*\}/g, '').replace(/\\end\{align\*\}/g, '');
+                            tex = tex.replace(/\\begin\{eqnarray\}/g, '').replace(/\\end\{eqnarray\}/g, '');
+                            tex = tex.trim();
                             const display = el.classList.contains('display');
                             try {
                                 katex.render(tex, el, { displayMode: display, throwOnError: false });
