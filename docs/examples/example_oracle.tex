@@ -1,0 +1,182 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage[UTF8]{ctex}
+\usepackage{amsmath,amssymb}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{geometry}
+\usepackage{graphicx}
+\geometry{margin=2.5cm}
+
+\title{Oracle Construction / Oracle 构造}
+\author{QuoNic}
+\date{}
+
+\begin{document}
+\maketitle
+
+\begin{center}
+\textbf{Algorithms / 算法} | 难度：中级 | 预计时间：15 分钟
+\end{center}
+
+\tableofcontents
+\newpage
+
+\section{为什么需要？}
+
+Oracle 是量子算法的核心组件，用于标记目标态。
+
+\subsection{经典局限}
+\begin{itemize}
+  \item 手动构造 Oracle 复杂
+  \item 需要理解量子门和量子态
+  \item 容易出错
+\end{itemize}
+
+\subsection{量子优势}
+\begin{itemize}
+  \item Oracle 可以高效标记目标态
+  \item 是 Grover 搜索、振幅放大的基础
+  \item 可以自动从经典函数构造
+\end{itemize}
+
+\subsection{实际应用}
+\begin{itemize}
+  \item Grover 搜索
+  \item 振幅放大
+  \item 量子算法设计
+\end{itemize}
+
+\section{快速上手}
+
+\begin{verbatim}
+from quonic.algorithms import oracle
+
+# 构造 Oracle
+f = lambda x: x == '11'
+O = oracle(f, n_qubits=2)
+print(f'Oracle: {O}')
+\end{verbatim}
+
+\textbf{预期输出}：
+\begin{verbatim}
+Oracle: [[1,0,0,0],[0,1,0,0],[0,0,1,0],[0,0,0,-1]]
+\end{verbatim}
+
+\section{原理详解}
+
+\subsection{电路图}
+
+\begin{center}
+\includegraphics[width=0.6\textwidth]{../../images/oracle_circuit.svg}
+\end{center}
+
+\subsection{数学推导}
+
+Oracle 标记目标态：
+\begin{equation}
+O|x\rangle = (-1)^{f(x)}|x\rangle
+\end{equation}
+
+其中 $f(x) = 1$ 当 $x$ 是目标态。
+
+\textbf{矩阵表示}：
+\begin{equation}
+O = I - 2|t\rangle\langle t|
+\end{equation}
+
+\subsection{几何解释}
+
+Oracle 在 Bloch 球上翻转目标态的相位。这相当于绕 Z 轴旋转 $\pi$。
+
+\section{代码详解}
+
+\begin{verbatim}
+from quonic.algorithms import oracle
+
+# oracle(function, n_qubits)
+# function: 经典函数 f(x) -> {0, 1}
+# n_qubits: 量子比特数
+
+O = oracle(lambda x: x == '11', n_qubits=2)
+
+# O: Oracle 矩阵
+print(f'Oracle: {O}')
+\end{verbatim}
+
+\section{进阶用法}
+
+\subsection{场景 1：不同目标态}
+
+\begin{verbatim}
+from quonic.algorithms import oracle
+
+# 不同目标态
+O1 = oracle(lambda x: x == '00', n_qubits=2)
+O2 = oracle(lambda x: x == '11', n_qubits=2)
+O3 = oracle(lambda x: x in ['01', '10'], n_qubits=2)
+\end{verbatim}
+
+\subsection{场景 2：条件 Oracle}
+
+\begin{verbatim}
+from quonic.algorithms import oracle
+
+# 条件 Oracle
+O = oracle(lambda x: x.count('1') > 1, n_qubits=3)
+print(f'Oracle: {O}')
+\end{verbatim}
+
+\section{适用场景}
+
+\subsection{Grover 搜索}
+
+Oracle 是 Grover 搜索的核心组件。Oracle 标记目标态，Diffusion 算子放大目标态的振幅。
+
+\subsection{量子算法设计}
+
+Oracle 是许多量子算法的基础。例如，振幅放大、量子计数等都需要 Oracle。
+
+\section{常见问题}
+
+\subsection{Oracle 和量子门有什么区别？}
+
+Oracle 是一种特殊的量子门，用于标记目标态。Oracle 通常由经典函数构造。
+
+\subsection{如何构造 Oracle？}
+
+Oracle 可以从经典函数自动构造。QuoNic 提供了 oracle() 函数来自动构造 Oracle。
+
+\section{学习路径}
+
+\subsection{前置知识}
+\begin{itemize}
+  \item 量子门
+  \item 量子态
+  \item 量子测量
+\end{itemize}
+
+\subsection{继续学习}
+\begin{itemize}
+  \item Grover 搜索
+  \item 振幅放大
+  \item 量子算法设计
+\end{itemize}
+
+\section{完整示例代码}
+
+\subsection{示例 1：基本 Oracle}
+
+\begin{verbatim}
+from quonic.algorithms import oracle
+
+O = oracle(lambda x: x == '11', n_qubits=2)
+print(f'Oracle: {O}')
+\end{verbatim}
+
+\section{下载}
+
+\begin{itemize}
+  \item [oracle.py](https://github.com/ChrisLee0721/QuoNic/blob/main/examples/oracle/oracle.py)
+\end{itemize}
+
+\end{document}

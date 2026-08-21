@@ -1,0 +1,174 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage[UTF8]{ctex}
+\usepackage{amsmath,amssymb}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{geometry}
+\usepackage{graphicx}
+\geometry{margin=2.5cm}
+
+\title{Gate Decomposition / 门分解}
+\author{QuoNic}
+\date{}
+
+\begin{document}
+\maketitle
+
+\begin{center}
+\textbf{Compilation / 编译} | 难度：中级 | 预计时间：10 分钟
+\end{center}
+
+\tableofcontents
+\newpage
+
+\section{为什么需要？}
+
+门分解将高级量子门分解为基本量子门。
+
+\subsection{经典局限}
+\begin{itemize}
+  \item 高级量子门无法直接在硬件上执行
+  \item 需要分解为基本门
+\end{itemize}
+
+\subsection{量子优势}
+\begin{itemize}
+  \item 门分解可以将任意量子门分解为基本门
+  \item 适用于不同量子硬件
+  \item 优化量子电路深度
+\end{itemize}
+
+\subsection{实际应用}
+\begin{itemize}
+  \item 量子编译
+  \item 量子硬件优化
+  \item 量子电路优化
+\end{itemize}
+
+\section{快速上手}
+
+\begin{verbatim}
+from quonic.compile import decompose
+
+# 门分解
+gate = [[1, 0], [0, complex(0, 1)]]
+result = decompose(gate, basis=['cx', 'u3'])
+print(f'Decomposed: {result.gates}')
+\end{verbatim}
+
+\textbf{预期输出}：
+\begin{verbatim}
+Decomposed: [('u3', [0, 0, pi/2])]
+\end{verbatim}
+
+\section{原理详解}
+
+\subsection{电路图}
+
+\begin{center}
+\includegraphics[width=0.6\textwidth]{../../images/decompose_circuit.svg}
+\end{center}
+
+\subsection{数学推导}
+
+门分解：
+\begin{equation}
+U = \prod_i U_i
+\end{equation}
+
+其中 $U_i$ 是基本门。
+
+\subsection{几何解释}
+
+门分解在 Bloch 球上将复杂旋转分解为基本旋转的组合。
+
+\section{代码详解}
+
+\begin{verbatim}
+from quonic.compile import decompose
+
+# decompose(gate, basis)
+# gate: 量子门矩阵
+# basis: 基本门集合
+
+result = decompose(
+    gate=[[1, 0], [0, complex(0, 1)]],
+    basis=['cx', 'u3']
+)
+
+# result.gates: 分解后的门序列
+# result.depth: 电路深度
+# result.gate_count: 门数量
+print(f'Decomposed: {result.gates}')
+\end{verbatim}
+
+\section{进阶用法}
+
+\subsection{场景 1：不同基本门}
+
+\begin{verbatim}
+from quonic.compile import decompose
+
+# 不同基本门
+gate = [[1, 0], [0, complex(0, 1)]]
+
+r1 = decompose(gate, basis=['cx', 'u3'])
+r2 = decompose(gate, basis=['cx', 'rz', 'ry'])
+r3 = decompose(gate, basis=['cx', 'h', 't'])
+\end{verbatim}
+
+\section{适用场景}
+
+\subsection{量子编译}
+
+门分解用于量子编译器，将高级量子电路编译为硬件可执行的基本门。
+
+\subsection{量子硬件优化}
+
+门分解用于优化量子电路深度，减少量子门数量。
+
+\section{常见问题}
+
+\subsection{门分解和量子编译有什么区别？}
+
+门分解是量子编译的一个步骤。量子编译还包括电路优化、映射等步骤。
+
+\subsection{门分解的精度如何？}
+
+门分解的精度取决于基本门集合的选择。更丰富的基本门集合可以提供更高的精度。
+
+\section{学习路径}
+
+\subsection{前置知识}
+\begin{itemize}
+  \item 量子门
+  \item 量子电路
+  \item 线性代数
+\end{itemize}
+
+\subsection{继续学习}
+\begin{itemize}
+  \item 量子编译
+  \item 量子硬件
+  \item 量子电路优化
+\end{itemize}
+
+\section{完整示例代码}
+
+\subsection{示例 1：基本门分解}
+
+\begin{verbatim}
+from quonic.compile import decompose
+
+gate = [[1, 0], [0, complex(0, 1)]]
+result = decompose(gate, basis=['cx', 'u3'])
+print(f'Decomposed: {result.gates}')
+\end{verbatim}
+
+\section{下载}
+
+\begin{itemize}
+  \item [decompose.py](https://github.com/ChrisLee0721/QuoNic/blob/main/examples/decompose/decompose.py)
+\end{itemize}
+
+\end{document}

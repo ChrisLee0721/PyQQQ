@@ -1,0 +1,176 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage[UTF8]{ctex}
+\usepackage{amsmath,amssymb}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{geometry}
+\usepackage{graphicx}
+\geometry{margin=2.5cm}
+
+\title{Error Mitigation / 误差缓解}
+\author{QuoNic}
+\date{}
+
+\begin{document}
+\maketitle
+
+\begin{center}
+\textbf{Noise / 噪声} | 难度：高级 | 预计时间：20 分钟
+\end{center}
+
+\tableofcontents
+\newpage
+
+\section{为什么需要？}
+
+误差缓解是近期量子计算的关键技术，用于减少噪声对计算结果的影响。
+
+\subsection{经典局限}
+\begin{itemize}
+  \item 经典计算没有量子噪声
+  \item 量子噪声会破坏计算结果
+\end{itemize}
+
+\subsection{量子优势}
+\begin{itemize}
+  \item 误差缓解可以在不增加量子比特的情况下减少噪声
+  \item 适用于近期量子设备
+  \item 是量子纠错的补充
+\end{itemize}
+
+\subsection{实际应用}
+\begin{itemize}
+  \item 量子化学
+  \item 量子优化
+  \item 量子机器学习
+\end{itemize}
+
+\section{快速上手}
+
+\begin{verbatim}
+from quonic.mitigation import error_mitigation
+
+# 误差缓解
+result = error_mitigation(data, method='zne')
+print(f'Mitigated: {result.mitigated}')
+\end{verbatim}
+
+\textbf{预期输出}：
+\begin{verbatim}
+Mitigated: 0.95
+\end{verbatim}
+
+\section{原理详解}
+
+\subsection{电路图}
+
+\begin{center}
+\includegraphics[width=0.6\textwidth]{../../images/error_mitigation_circuit.svg}
+\end{center}
+
+\subsection{数学推导}
+
+零噪声外推（ZNE）：
+\begin{equation}
+\langle O\rangle_{\text{mitigated}} = \text{extrapolate}(\langle O\rangle_{\lambda_1}, \langle O\rangle_{\lambda_2}, \ldots)
+\end{equation}
+
+其中 $\lambda_i$ 是噪声水平。
+
+\subsection{几何解释}
+
+误差缓解通过在多个噪声水平下测量，拟合并外推到零噪声极限。
+
+\section{代码详解}
+
+\begin{verbatim}
+from quonic.mitigation import error_mitigation
+
+# error_mitigation(data, method)
+# data: 测量数据
+# method: 缓解方法 ('zne', 'pec', 'cdr')
+
+result = error_mitigation(data, method='zne')
+
+# result.mitigated: 缓解后的结果
+# result.raw: 原始结果
+# result.noise_levels: 噪声水平
+print(f'Mitigated: {result.mitigated}')
+\end{verbatim}
+
+\section{进阶用法}
+
+\subsection{场景 1：零噪声外推}
+
+\begin{verbatim}
+from quonic.mitigation import error_mitigation
+
+# ZNE
+result = error_mitigation(data, method='zne')
+print(f'ZNE: {result.mitigated}')
+\end{verbatim}
+
+\subsection{场景 2：概率误差消除}
+
+\begin{verbatim}
+from quonic.mitigation import error_mitigation
+
+# PEC
+result = error_mitigation(data, method='pec')
+print(f'PEC: {result.mitigated}')
+\end{verbatim}
+
+\section{适用场景}
+
+\subsection{量子化学}
+
+误差缓解可以用于量子化学计算，减少噪声对能量计算的影响。
+
+\subsection{量子优化}
+
+误差缓解可以用于量子优化，减少噪声对优化结果的影响。
+
+\section{常见问题}
+
+\subsection{误差缓解和量子纠错有什么区别？}
+
+误差缓解在软件层面减少噪声，量子纠错在硬件层面纠正错误。误差缓解不需要额外的量子比特。
+
+\subsection{误差缓解的精度如何？}
+
+精度取决于噪声水平和缓解方法。ZNE 通常可以将误差减少一个数量级。
+
+\section{学习路径}
+
+\subsection{前置知识}
+\begin{itemize}
+  \item 量子噪声
+  \item 量子测量
+  \item 统计学
+\end{itemize}
+
+\subsection{继续学习}
+\begin{itemize}
+  \item 量子纠错
+  \item 容错量子计算
+  \item 量子硬件
+\end{itemize}
+
+\section{完整示例代码}
+
+\subsection{示例 1：基本误差缓解}
+
+\begin{verbatim}
+from quonic.mitigation import error_mitigation
+
+result = error_mitigation(data, method='zne')
+print(f'Mitigated: {result.mitigated}')
+\end{verbatim}
+
+\section{下载}
+
+\begin{itemize}
+  \item [error\_mitigation.py](https://github.com/ChrisLee0721/QuoNic/blob/main/examples/error_mitigation/error_mitigation.py)
+\end{itemize}
+
+\end{document}
