@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="560" height="220" viewBox="-10 0 570 220">
-  <rect width="100%" height="100%" fill="white" rx="8"/>
+  <rect x="-15.0" y="-5.0" width="580.0" height="230.0" fill="#fff" stroke="#ccc" stroke-width="1" rx="4"/>
   <style>
     text { font-family: 'Consolas', 'Courier New', monospace; }
     .qubit-label { font-size: 14px; fill: #555; }
