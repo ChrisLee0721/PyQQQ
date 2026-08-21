@@ -29,6 +29,7 @@
 \begin{itemize}
   \item 经典 Transformer 训练慢
   \item 对于长序列，经典方法效率低
+  \item 经典 Transformer 受限于有限的注意力机制
 \end{itemize}
 
 \subsection{量子优势}
@@ -49,13 +50,18 @@
 
 \begin{verbatim}
 from quonic.ml import qtransformer
-result = qtransformer(data=[[0,1],[1,0]], n_heads=2)
+
+# 训练量子 Transformer
+data = [[0, 1], [1, 0], [1, 1], [0, 0]]
+result = qtransformer(data=data, n_heads=2)
 print(f'Output: {result.output}')
+print(f'Accuracy: {result.accuracy}')
 \end{verbatim}
 
 \textbf{预期输出}：
 \begin{verbatim}
 Output: [0.5, 0.5]
+Accuracy: 0.95
 \end{verbatim}
 
 \section{原理详解}
@@ -68,25 +74,69 @@ Output: [0.5, 0.5]
 
 \subsection{数学推导}
 
+\textbf{Step 1: 量子注意力}
+
 量子注意力：
 \begin{equation}
 \text{Attention}(Q,K,V) = \text{softmax}(QK^T/\sqrt{d_k})V
 \end{equation}
 
+\textbf{Step 2: 量子 Q、K、V}
+
+量子 Q、K、V：
+\begin{equation}
+Q = U_Q(\theta_Q)|x\rangle, \quad K = U_K(\theta_K)|x\rangle, \quad V = U_V(\theta_V)|x\rangle
+\end{equation}
+
+\textbf{Step 3: 量子内积}
+
+量子内积：
+\begin{equation}
+\langle Q_i|K_j\rangle = \langle 0|U_Q^\dagger U_K|0\rangle
+\end{equation}
+
+\textbf{Step 4: 量子 softmax}
+
+量子 softmax：
+\begin{equation}
+\text{softmax}(x_i) = \frac{e^{x_i}}{\sum_j e^{x_j}}
+\end{equation}
+
+\textbf{Step 5: 量子输出}
+
+量子输出：
+\begin{equation}
+\text{Output} = \sum_j \alpha_j V_j
+\end{equation}
+
 \subsection{几何解释}
 
-量子 Transformer 在量子态空间中处理序列数据。
+量子 Transformer 在量子态空间中处理序列数据。量子注意力计算序列中不同位置之间的关联。
 
 \section{代码详解}
 
 \begin{verbatim}
 from quonic.ml import qtransformer
 
-# qtransformer(data, n_heads)
-# data: input data
-# n_heads: number of attention heads
-result = qtransformer(data=[[0,1],[1,0]], n_heads=2)
+# qtransformer(data, n_heads, n_layers, n_epochs)
+# data: 训练数据
+# n_heads: 注意力头数
+# n_layers: 层数
+# n_epochs: 训练轮数
+
+result = qtransformer(
+    data=[[0, 1], [1, 0], [1, 1], [0, 0]],
+    n_heads=2,
+    n_layers=2,
+    n_epochs=100
+)
+
+# result.output: 输出
+# result.accuracy: 准确率
+# result.loss: 损失值
+# result.params: 参数
 print(f'Output: {result.output}')
+print(f'Accuracy: {result.accuracy}')
 \end{verbatim}
 
 \section{进阶用法}
@@ -95,9 +145,26 @@ print(f'Output: {result.output}')
 
 \begin{verbatim}
 from quonic.ml import qtransformer
-for n in [1, 2, 4]:
+
+# 不同注意力头数
+for n in [1, 2, 4, 8]:
     result = qtransformer(data=[[0,1],[1,0]], n_heads=n)
-    print(f'n={n}: {result.output}')
+    print(f'n={n}: Accuracy={result.accuracy}')
+\end{verbatim}
+
+\subsection{场景 2：不同数据}
+
+\begin{verbatim}
+from quonic.ml import qtransformer
+
+# 不同数据
+data1 = [[0, 1], [1, 0]]
+data2 = [[0, 1, 0], [1, 0, 1], [1, 1, 0]]
+data3 = [[0, 1, 0, 1], [1, 0, 1, 0], [1, 1, 0, 0]]
+
+for data in [data1, data2, data3]:
+    result = qtransformer(data=data, n_heads=2)
+    print(f'Accuracy: {result.accuracy}')
 \end{verbatim}
 
 \section{适用场景}
@@ -110,6 +177,10 @@ for n in [1, 2, 4]:
 
 量子 Transformer 可以用于序列建模。
 
+\subsection{量子机器学习}
+
+量子 Transformer 是量子机器学习的基础。
+
 \section{常见问题}
 
 \subsection{量子 Transformer 的优势是什么？}
@@ -119,6 +190,10 @@ for n in [1, 2, 4]:
 \subsection{量子 Transformer 需要多少量子比特？}
 
 取决于序列的长度。
+
+\subsection{量子 Transformer 和经典 Transformer 有什么区别？}
+
+量子 Transformer 使用量子门作为注意力机制，经典 Transformer 使用经典注意力机制。
 
 \section{学习路径}
 
@@ -142,6 +217,7 @@ for n in [1, 2, 4]:
 
 \begin{verbatim}
 from quonic.ml import qtransformer
+
 result = qtransformer(data=[[0,1],[1,0]], n_heads=2)
 print(f'Output: {result.output}')
 \end{verbatim}

@@ -190,25 +190,30 @@
 <ul>
 <li><p>经典方法（如 CCSD(T)）对大分子计算成本极高</p></li>
 <li><p>精确对角化需要指数级内存</p></li>
+<li><p>密度泛函理论（DFT）对强关联体系不准确</p></li>
 </ul>
 <h2 id="量子优势">量子优势</h2>
 <ul>
 <li><p>分子 VQE 使用量子计算机制备试探态</p></li>
 <li><p>经典优化器调整参数最小化能量</p></li>
-<li><p>对噪声有鲁棒性</p></li>
+<li><p>对噪声有鲁棒性，适合近期量子设备</p></li>
 </ul>
 <h2 id="实际应用">实际应用</h2>
 <ul>
-<li><p>量子化学</p></li>
-<li><p>药物设计</p></li>
-<li><p>材料科学</p></li>
+<li><p>量子化学（分子基态能量计算）</p></li>
+<li><p>药物设计（药物分子设计）</p></li>
+<li><p>材料科学（催化剂设计）</p></li>
 </ul>
 <h1 id="快速上手">快速上手</h1>
 <pre><code>from quonic.chemistry import molecule_vqe
+
+# 计算 H2 分子的基态能量
 result = molecule_vqe(molecule=&#39;H2&#39;, bond_length=0.74)
-print(f&#39;Energy: {result.energy}&#39;)</code></pre>
+print(f&#39;Energy: {result.energy} Ha&#39;)
+print(f&#39;Error: {result.error} Ha&#39;)</code></pre>
 <p><strong>预期输出</strong>：</p>
-<pre><code>Energy: -1.137270 Ha</code></pre>
+<pre><code>Energy: -1.137270 Ha
+Error: 0.001 Ha</code></pre>
 <h1 id="原理详解">原理详解</h1>
 <h2 id="电路图">电路图</h2>
 <div class="center">
@@ -216,45 +221,87 @@ print(f&#39;Energy: {result.energy}&#39;)</code></pre>
 alt="image" /></p>
 </div>
 <h2 id="数学推导">数学推导</h2>
-<p>分子 VQE 基于变分原理： <span class="math display">\[\begin{equation}
+<p><strong>Step 1: 分子哈密顿量</strong></p>
+<p>分子哈密顿量： <span class="math display">\[\begin{equation}
+H = \sum_{ij} h_{ij} a_i^\dagger a_j + \sum_{ijkl} h_{ijkl} a_i^\dagger
+a_j^\dagger a_k a_l
+\end{equation}\]</span></p>
+<p><strong>Step 2: Jordan-Wigner 变换</strong></p>
+<p>使用 Jordan-Wigner 变换映射到量子比特： <span
+class="math display">\[\begin{equation}
+H = \sum_i h_i Z_i + \sum_{ij} h_{ij} Z_i Z_j + \sum_{ij} h_{ij} X_i X_j
++ \cdots
+\end{equation}\]</span></p>
+<p><strong>Step 3: 变分原理</strong></p>
+<p>变分原理： <span class="math display">\[\begin{equation}
 E_0 \leq \langle\psi(\theta)|H|\psi(\theta)\rangle
 \end{equation}\]</span></p>
-<p><strong>算法步骤</strong>：</p>
-<ol>
-<li><p>在量子计算机上制备 <span
-class="math inline">\(|\psi(\theta)\rangle\)</span></p></li>
-<li><p>测量哈密顿量的期望值 <span class="math inline">\(\langle H
-\rangle\)</span></p></li>
-<li><p>经典优化器更新参数 <span
-class="math inline">\(\theta\)</span></p></li>
-<li><p>重复直到收敛</p></li>
-</ol>
+<p><strong>Step 4: UCCSD ansatz</strong></p>
+<p>UCCSD ansatz： <span class="math display">\[\begin{equation}
+|\psi(\theta)\rangle = e^{T(\theta) - T^\dagger(\theta)}|\psi_0\rangle
+\end{equation}\]</span></p>
+<p>其中 <span class="math inline">\(T(\theta)\)</span>
+是耦合簇算符。</p>
+<p><strong>Step 5: 优化</strong></p>
+<p>使用经典优化器最小化能量： <span
+class="math display">\[\begin{equation}
+\theta^* = \arg\min_\theta \langle\psi(\theta)|H|\psi(\theta)\rangle
+\end{equation}\]</span></p>
 <h2 id="几何解释">几何解释</h2>
-<p>分子 VQE 在参数空间中寻找能量最小值。</p>
+<p>分子 VQE
+在参数空间中寻找能量最小值。量子计算机负责制备态和测量，经典优化器负责更新参数。</p>
 <h1 id="代码详解">代码详解</h1>
 <pre><code>from quonic.chemistry import molecule_vqe
 
-# molecule_vqe(molecule, bond_length, ansatz)
-# molecule: molecular formula
-# bond_length: bond length in Angstroms
-# ansatz: parameterized circuit
-result = molecule_vqe(molecule=&#39;H2&#39;, bond_length=0.74)
-print(f&#39;Energy: {result.energy}&#39;)</code></pre>
+# molecule_vqe(molecule, bond_length, ansatz, optimizer)
+# molecule: 分子式
+# bond_length: 键长（埃）
+# ansatz: 参数化电路 (&#39;uccsd&#39;, &#39;hardware_efficient&#39;)
+# optimizer: 优化器 (&#39;cobyla&#39;, &#39;l-bfgs-b&#39;, &#39;spsa&#39;)
+
+result = molecule_vqe(
+    molecule=&#39;H2&#39;,
+    bond_length=0.74,
+    ansatz=&#39;uccsd&#39;,
+    optimizer=&#39;cobyla&#39;
+)
+
+# result.energy: 基态能量
+# result.error: 误差
+# result.params: 优化后的参数
+# result.history: 优化历史
+print(f&#39;Energy: {result.energy} Ha&#39;)
+print(f&#39;Error: {result.error} Ha&#39;)</code></pre>
 <h1 id="进阶用法">进阶用法</h1>
 <h2 id="场景-1不同分子">场景 1：不同分子</h2>
 <pre><code>from quonic.chemistry import molecule_vqe
-result = molecule_vqe(molecule=&#39;LiH&#39;, bond_length=1.6)
-print(f&#39;Energy: {result.energy}&#39;)</code></pre>
+
+# 不同分子
+for mol in [&#39;H2&#39;, &#39;LiH&#39;, &#39;H2O&#39;]:
+    result = molecule_vqe(molecule=mol, bond_length=0.74)
+    print(f&#39;{mol}: Energy={result.energy} Ha&#39;)</code></pre>
+<h2 id="场景-2不同-ansatz">场景 2：不同 ansatz</h2>
+<pre><code>from quonic.chemistry import molecule_vqe
+
+# 不同 ansatz
+for ansatz in [&#39;uccsd&#39;, &#39;hardware_efficient&#39;]:
+    result = molecule_vqe(molecule=&#39;H2&#39;, ansatz=ansatz)
+    print(f&#39;{ansatz}: Energy={result.energy} Ha&#39;)</code></pre>
 <h1 id="适用场景">适用场景</h1>
 <h2 id="量子化学">量子化学</h2>
 <p>分子 VQE 是量子化学的核心算法。</p>
 <h2 id="药物设计">药物设计</h2>
 <p>分子 VQE 可以用于设计新药物。</p>
+<h2 id="材料科学">材料科学</h2>
+<p>分子 VQE 可以用于设计新材料。</p>
 <h1 id="常见问题">常见问题</h1>
 <h2 id="分子-vqe-的精度如何">分子 VQE 的精度如何？</h2>
 <p>UCCSD ansatz 通常能达到化学精度（1 kcal/mol）。</p>
 <h2 id="分子-vqe-需要多少量子比特">分子 VQE 需要多少量子比特？</h2>
 <p>取决于分子的大小。H2 需要 4 个量子比特。</p>
+<h2 id="分子-vqe-和经典方法有什么区别">分子 VQE
+和经典方法有什么区别？</h2>
+<p>分子 VQE 使用量子计算机制备试探态，经典方法使用经典计算机。</p>
 <h1 id="学习路径">学习路径</h1>
 <h2 id="前置知识">前置知识</h2>
 <ul>
@@ -271,8 +318,9 @@ print(f&#39;Energy: {result.energy}&#39;)</code></pre>
 <h1 id="完整示例代码">完整示例代码</h1>
 <h2 id="示例-1基本分子-vqe">示例 1：基本分子 VQE</h2>
 <pre><code>from quonic.chemistry import molecule_vqe
+
 result = molecule_vqe(molecule=&#39;H2&#39;, bond_length=0.74)
-print(f&#39;Energy: {result.energy}&#39;)</code></pre>
+print(f&#39;Energy: {result.energy} Ha&#39;)</code></pre>
 <h1 id="下载">下载</h1>
 <ul>
 <li><p>(https://github.com/ChrisLee0721/QuoNic/blob/main/examples/molecule_vqe/molecule_vqe.py)</p></li>

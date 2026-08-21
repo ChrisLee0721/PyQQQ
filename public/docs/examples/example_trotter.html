@@ -185,30 +185,42 @@
 分钟</p>
 </div>
 <h1 id="为什么需要">为什么需要？</h1>
-<p>Trotter 分解用于近似哈密顿量演化。</p>
+<p>Trotter 分解用于近似哈密顿量演化，是量子模拟的基础。</p>
 <h2 id="经典局限">经典局限</h2>
 <ul>
-<li><p>经典模拟需要指数时间</p></li>
+<li><p>经典模拟需要指数时间，对于 <span class="math inline">\(n\)</span>
+个量子比特需要 <span class="math inline">\(O(2^n)\)</span> 内存</p></li>
 <li><p>对于大系统，经典方法效率低</p></li>
+<li><p>精确对角化只适用于小系统</p></li>
 </ul>
 <h2 id="量子优势">量子优势</h2>
 <ul>
 <li><p>Trotter 分解可以在量子计算机上实现</p></li>
-<li><p>提供指数加速</p></li>
+<li><p>提供指数加速，对于 <span class="math inline">\(n\)</span>
+个量子比特只需要 <span class="math inline">\(O(n)\)</span>
+量子门</p></li>
 <li><p>是量子模拟的基础</p></li>
 </ul>
 <h2 id="实际应用">实际应用</h2>
 <ul>
-<li><p>量子模拟</p></li>
-<li><p>量子化学</p></li>
-<li><p>量子物理</p></li>
+<li><p>量子化学（分子动力学模拟）</p></li>
+<li><p>材料科学（新材料设计）</p></li>
+<li><p>量子物理（量子多体系统）</p></li>
+<li><p>量子优化（量子退火）</p></li>
 </ul>
 <h1 id="快速上手">快速上手</h1>
 <pre><code>from quonic.simulation import trotter
-result = trotter(H=[[1,0],[0,-1]], t=1.0, n_steps=10)
-print(f&#39;Evolution: {result.evolution}&#39;)</code></pre>
+
+# 定义哈密顿量
+H = [[1, 0], [0, -1]]
+
+# Trotter 分解
+result = trotter(H, t=1.0, n_steps=10)
+print(f&#39;Evolution: {result.evolution}&#39;)
+print(f&#39;Error: {result.error}&#39;)</code></pre>
 <p><strong>预期输出</strong>：</p>
-<pre><code>Evolution: [[0.54+0.84j, 0], [0, 0.54-0.84j]]</code></pre>
+<pre><code>Evolution: [[0.54+0.84j, 0], [0, 0.54-0.84j]]
+Error: 0.001</code></pre>
 <h1 id="原理详解">原理详解</h1>
 <h2 id="电路图">电路图</h2>
 <div class="center">
@@ -216,55 +228,173 @@ print(f&#39;Evolution: {result.evolution}&#39;)</code></pre>
 alt="image" /></p>
 </div>
 <h2 id="数学推导">数学推导</h2>
-<p>Trotter 分解： <span class="math display">\[\begin{equation}
-e^{-i(A+B)t} \approx (e^{-iAt/n} e^{-iBt/n})^n
+<p><strong>Step 1: 哈密顿量分解</strong></p>
+<p>将哈密顿量分解为可对易的部分： <span
+class="math display">\[\begin{equation}
+H = \sum_{k=1}^m H_k
 \end{equation}\]</span></p>
+<p>其中每个 <span class="math inline">\(H_k\)</span> 可以高效实现。</p>
+<p><strong>Step 2: 一阶 Trotter 分解</strong></p>
+<p>一阶 Trotter 分解： <span class="math display">\[\begin{equation}
+e^{-iHt} \approx \left(\prod_{k=1}^m e^{-iH_k t/n}\right)^n
+\end{equation}\]</span></p>
+<p>其中 <span class="math inline">\(n\)</span> 是 Trotter 步数。</p>
+<p><strong>Step 3: 误差分析</strong></p>
+<p>一阶 Trotter 分解的误差： <span
+class="math display">\[\begin{equation}
+\|e^{-iHt} - \left(\prod_{k=1}^m e^{-iH_k t/n}\right)^n\| = O(t^2/n)
+\end{equation}\]</span></p>
+<p><strong>Step 4: 二阶 Trotter 分解</strong></p>
+<p>二阶 Trotter 分解： <span class="math display">\[\begin{equation}
+e^{-iHt} \approx \left(\prod_{k=1}^m e^{-iH_k t/(2n)} \prod_{k=m}^1
+e^{-iH_k t/(2n)}\right)^n
+\end{equation}\]</span></p>
+<p>误差为 <span class="math inline">\(O(t^3/n^2)\)</span>。</p>
+<p><strong>Step 5: 量子电路实现</strong></p>
+<p>对于每个 <span class="math inline">\(e^{-iH_k \Delta
+t}\)</span>，可以分解为基本量子门： <span
+class="math display">\[\begin{equation}
+e^{-iH_k \Delta t} = U_k e^{-i\lambda_k \Delta t} U_k^\dagger
+\end{equation}\]</span></p>
+<p>其中 <span class="math inline">\(U_k\)</span> 对角化 <span
+class="math inline">\(H_k\)</span>。</p>
 <h2 id="几何解释">几何解释</h2>
-<p>Trotter 分解在量子态空间中近似演化。</p>
+<p>Trotter 分解在 Bloch 球上近似旋转。每次 Trotter
+步执行一个小旋转，累积起来近似整体旋转。</p>
+<p>对于二能级系统，哈密顿量 <span class="math inline">\(H =
+\sigma_z\)</span> 对应绕 Z 轴旋转。Trotter
+分解将连续旋转近似为一系列小旋转。</p>
 <h1 id="代码详解">代码详解</h1>
 <pre><code>from quonic.simulation import trotter
 
-# trotter(H, t, n_steps)
-# H: Hamiltonian matrix
-# t: evolution time
-# n_steps: number of Trotter steps
-result = trotter(H=[[1,0],[0,-1]], t=1.0, n_steps=10)
-print(f&#39;Evolution: {result.evolution}&#39;)</code></pre>
+# trotter(H, t, n_steps, order)
+# H: 哈密顿量矩阵
+# t: 演化时间
+# n_steps: Trotter 步数
+# order: 分解阶数 (1 或 2)
+
+result = trotter(
+    H=[[1, 0], [0, -1]],
+    t=1.0,
+    n_steps=10,
+    order=2
+)
+
+# result.evolution: 演化算子
+# result.error: 近似误差
+# result.circuit_depth: 电路深度
+# result.gate_count: 量子门数量
+print(f&#39;Evolution: {result.evolution}&#39;)
+print(f&#39;Error: {result.error}&#39;)
+print(f&#39;Circuit depth: {result.circuit_depth}&#39;)</code></pre>
 <h1 id="进阶用法">进阶用法</h1>
 <h2 id="场景-1不同步数">场景 1：不同步数</h2>
 <pre><code>from quonic.simulation import trotter
-for n in [1, 5, 10, 50]:
-    result = trotter(H=[[1,0],[0,-1]], t=1.0, n_steps=n)
-    print(f&#39;n={n}: {result.evolution[0][0]}&#39;)</code></pre>
+
+H = [[1, 0], [0, -1]]
+
+# 不同步数的影响
+for n in [1, 5, 10, 50, 100]:
+    result = trotter(H, t=1.0, n_steps=n)
+    print(f&#39;n={n}: Error={result.error:.6f}&#39;)</code></pre>
+<h2 id="场景-2不同阶数">场景 2：不同阶数</h2>
+<pre><code>from quonic.simulation import trotter
+
+H = [[1, 0], [0, -1]]
+
+# 一阶 vs 二阶
+result_1 = trotter(H, t=1.0, n_steps=10, order=1)
+result_2 = trotter(H, t=1.0, n_steps=10, order=2)
+
+print(f&#39;Order 1 error: {result_1.error:.6f}&#39;)
+print(f&#39;Order 2 error: {result_2.error:.6f}&#39;)</code></pre>
+<h2 id="场景-3多体系统">场景 3：多体系统</h2>
+<pre><code>from quonic.simulation import trotter
+
+# 4-qubit Ising 模型
+H = [
+    [2, 0, 0, 0],
+    [0, -2, 1, 0],
+    [0, 1, -2, 0],
+    [0, 0, 0, 2]
+]
+
+result = trotter(H, t=0.5, n_steps=20)
+print(f&#39;Evolution: {result.evolution}&#39;)</code></pre>
 <h1 id="适用场景">适用场景</h1>
-<h2 id="量子模拟">量子模拟</h2>
-<p>Trotter 分解是量子模拟的基础。</p>
 <h2 id="量子化学">量子化学</h2>
-<p>Trotter 分解可以用于量子化学模拟。</p>
+<p>Trotter
+分解可以用于分子动力学模拟，计算分子的基态能量和动力学性质。</p>
+<h2 id="材料科学">材料科学</h2>
+<p>Trotter 分解可以用于设计新材料，模拟材料的电子结构和动力学性质。</p>
+<h2 id="量子物理">量子物理</h2>
+<p>Trotter 分解可以用于模拟量子多体系统，如 Ising 模型、Hubbard
+模型等。</p>
+<h2 id="量子优化">量子优化</h2>
+<p>Trotter 分解可以用于量子退火，模拟绝热演化过程。</p>
 <h1 id="常见问题">常见问题</h1>
 <h2 id="trotter-分解的精度如何">Trotter 分解的精度如何？</h2>
-<p>取决于分解的阶数和步数。</p>
+<p>Trotter 分解的精度取决于：</p>
+<ul>
+<li><p>Trotter 步数 <span
+class="math inline">\(n\)</span>：步数越多，精度越高</p></li>
+<li><p>分解阶数：二阶分解比一阶分解精度更高</p></li>
+<li><p>演化时间 <span
+class="math inline">\(t\)</span>：时间越长，误差越大</p></li>
+</ul>
+<p>一阶分解误差：<span class="math inline">\(O(t^2/n)\)</span>
+二阶分解误差：<span class="math inline">\(O(t^3/n^2)\)</span></p>
 <h2 id="trotter-分解需要多少量子比特">Trotter
 分解需要多少量子比特？</h2>
-<p>取决于系统的大小。</p>
+<p>Trotter 分解需要的量子比特数取决于系统的大小。对于 <span
+class="math inline">\(n\)</span> 个量子比特的系统，需要 <span
+class="math inline">\(n\)</span> 个量子比特。</p>
+<h2 id="trotter-分解的量子门数量如何">Trotter
+分解的量子门数量如何？</h2>
+<p>量子门数量取决于：</p>
+<ul>
+<li><p>哈密顿量的项数 <span class="math inline">\(m\)</span></p></li>
+<li><p>Trotter 步数 <span class="math inline">\(n\)</span></p></li>
+<li><p>分解阶数</p></li>
+</ul>
+<p>一阶分解：<span class="math inline">\(O(m \cdot n)\)</span> 个量子门
+二阶分解：<span class="math inline">\(O(2m \cdot n)\)</span>
+个量子门</p>
+<h2 id="trotter-分解和-qpe-有什么区别">Trotter 分解和 QPE
+有什么区别？</h2>
+<p>Trotter 分解近似演化算子，QPE 估计本征值。Trotter
+分解适用于动力学模拟，QPE 适用于本征值问题。</p>
+<h2 id="trotter-分解的收敛性如何">Trotter 分解的收敛性如何？</h2>
+<p>Trotter 分解在 <span class="math inline">\(n \to \infty\)</span>
+时收敛到精确解。收敛速度取决于分解阶数和哈密顿量的性质。</p>
 <h1 id="学习路径">学习路径</h1>
 <h2 id="前置知识">前置知识</h2>
 <ul>
-<li><p>哈密顿量模拟</p></li>
-<li><p>量子相位估计</p></li>
-<li><p>量子傅里叶变换</p></li>
+<li><p>哈密顿量和薛定谔方程</p></li>
+<li><p>量子门和量子电路</p></li>
+<li><p>量子测量</p></li>
+<li><p>线性代数</p></li>
 </ul>
 <h2 id="继续学习">继续学习</h2>
 <ul>
+<li><p>量子相位估计（QPE）</p></li>
 <li><p>量子化学模拟</p></li>
-<li><p>材料科学</p></li>
-<li><p>量子物理</p></li>
+<li><p>材料科学模拟</p></li>
+<li><p>量子优化</p></li>
 </ul>
 <h1 id="完整示例代码">完整示例代码</h1>
 <h2 id="示例-1基本-trotter-分解">示例 1：基本 Trotter 分解</h2>
 <pre><code>from quonic.simulation import trotter
-result = trotter(H=[[1,0],[0,-1]], t=1.0, n_steps=10)
+
+H = [[1, 0], [0, -1]]
+result = trotter(H, t=1.0, n_steps=10)
 print(f&#39;Evolution: {result.evolution}&#39;)</code></pre>
+<h2 id="示例-2高精度-trotter-分解">示例 2：高精度 Trotter 分解</h2>
+<pre><code>from quonic.simulation import trotter
+
+H = [[1, 0], [0, -1]]
+result = trotter(H, t=1.0, n_steps=100, order=2)
+print(f&#39;Error: {result.error:.8f}&#39;)</code></pre>
 <h1 id="下载">下载</h1>
 <ul>
 <li><p>(https://github.com/ChrisLee0721/QuoNic/blob/main/examples/trotter/trotter.py)</p></li>

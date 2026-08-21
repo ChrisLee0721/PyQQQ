@@ -191,6 +191,7 @@
 <li><p>经典搜索需要 <span class="math inline">\(O(N)\)</span>
 次查询</p></li>
 <li><p>对于大规模问题，经典方法效率低</p></li>
+<li><p>经典算法无法利用量子并行性</p></li>
 </ul>
 <h2 id="量子优势">量子优势</h2>
 <ul>
@@ -207,6 +208,8 @@
 </ul>
 <h1 id="快速上手">快速上手</h1>
 <pre><code>from quonic.algorithms import amplitude_amplification
+
+# 在 2-qubit 空间中搜索 |11&gt;
 result = amplitude_amplification(target=&#39;11&#39;, n_qubits=2)
 print(f&#39;Probability: {result.probability}&#39;)</code></pre>
 <p><strong>预期输出</strong>：</p>
@@ -218,44 +221,106 @@ print(f&#39;Probability: {result.probability}&#39;)</code></pre>
 style="width:60.0%" alt="image" /></p>
 </div>
 <h2 id="数学推导">数学推导</h2>
-<p>振幅放大算子： <span class="math display">\[\begin{equation}
-Q = -A S_0 A^{-1} S_\chi
+<p><strong>Step 1: 初始态</strong></p>
+<p>对所有量子比特施加 <span class="math inline">\(H\)</span>
+门，创建均匀叠加态： <span class="math display">\[\begin{equation}
+|\psi_0\rangle = H^{\otimes n}|0\rangle^{\otimes n} = \frac{1}{\sqrt{N}}
+\sum_{x=0}^{N-1} |x\rangle
 \end{equation}\]</span></p>
-<p>其中 <span class="math inline">\(S_0\)</span> 翻转初始态的相位，<span
-class="math inline">\(S_\chi\)</span> 翻转目标态的相位。</p>
-<p><strong>迭代</strong>： <span class="math display">\[\begin{equation}
+<p>其中 <span class="math inline">\(N = 2^n\)</span>。</p>
+<p><strong>Step 2: Oracle 算子</strong></p>
+<p>Oracle 算子标记目标态： <span class="math display">\[\begin{equation}
+O|x\rangle = \begin{cases} -|x\rangle &amp; \text{if } x = \text{target}
+\\ |x\rangle &amp; \text{otherwise} \end{cases}
+\end{equation}\]</span></p>
+<p>可以写为： <span class="math display">\[\begin{equation}
+O = I - 2|t\rangle\langle t|
+\end{equation}\]</span></p>
+<p>其中 <span class="math inline">\(|t\rangle\)</span> 是目标态。</p>
+<p><strong>Step 3: 扩散算子</strong></p>
+<p>扩散算子关于平均振幅反射： <span
+class="math display">\[\begin{equation}
+D = 2|\psi_0\rangle\langle\psi_0| - I
+\end{equation}\]</span></p>
+<p>可以分解为： <span class="math display">\[\begin{equation}
+D = H^{\otimes n} (2|0\rangle\langle 0| - I) H^{\otimes n}
+\end{equation}\]</span></p>
+<p><strong>Step 4: 振幅放大算子</strong></p>
+<p>振幅放大算子： <span class="math display">\[\begin{equation}
+Q = D \cdot O
+\end{equation}\]</span></p>
+<p><strong>Step 5: 迭代</strong></p>
+<p>应用 <span class="math inline">\(Q\)</span> 算子 <span
+class="math inline">\(k\)</span> 次： <span
+class="math display">\[\begin{equation}
 |\psi_k\rangle = Q^k |\psi_0\rangle
 \end{equation}\]</span></p>
-<p>最优迭代次数 <span class="math inline">\(k \approx
-\pi\sqrt{N}/4\)</span>。</p>
+<p>最优迭代次数： <span class="math display">\[\begin{equation}
+k \approx \frac{\pi}{4} \sqrt{N}
+\end{equation}\]</span></p>
+<p><strong>Step 6: 测量概率</strong></p>
+<p>测量后目标态的概率： <span class="math display">\[\begin{equation}
+P(t) = \sin^2((2k+1)\theta)
+\end{equation}\]</span></p>
+<p>其中 <span class="math inline">\(\sin\theta =
+1/\sqrt{N}\)</span>。</p>
 <h2 id="几何解释">几何解释</h2>
-<p>振幅放大在 Bloch 球上旋转量子态，每次迭代都放大目标态的振幅。</p>
+<p>振幅放大在 Bloch
+球上旋转量子态。每次迭代都放大目标态的振幅，同时减小其他态的振幅。</p>
+<p>在二维子空间中，初始态 <span
+class="math inline">\(|\psi_0\rangle\)</span> 和目标态 <span
+class="math inline">\(|t\rangle\)</span>
+张成一个平面。振幅放大算子在这个平面上旋转量子态。</p>
 <h1 id="代码详解">代码详解</h1>
 <pre><code>from quonic.algorithms import amplitude_amplification
 
 # amplitude_amplification(target, n_qubits, iterations)
-# target: target bit string
-# n_qubits: number of qubits
-# iterations: number of amplification steps
-result = amplitude_amplification(target=&#39;11&#39;, n_qubits=2)
+# target: 目标态的比特串
+# n_qubits: 量子比特数
+# iterations: 迭代次数
 
-# result.probability: probability of target state
-# result.state: final quantum state
-print(f&#39;Probability: {result.probability}&#39;)</code></pre>
+result = amplitude_amplification(
+    target=&#39;11&#39;,
+    n_qubits=2,
+    iterations=1
+)
+
+# result.probability: 目标态的概率
+# result.state: 最终量子态
+# result.optimal_iterations: 最优迭代次数
+print(f&#39;Probability: {result.probability}&#39;)
+print(f&#39;Optimal iterations: {result.optimal_iterations}&#39;)</code></pre>
 <h1 id="进阶用法">进阶用法</h1>
 <h2 id="场景-1不同目标态">场景 1：不同目标态</h2>
 <pre><code>from quonic.algorithms import amplitude_amplification
+
+# 搜索 |101&gt;
 result = amplitude_amplification(target=&#39;101&#39;, n_qubits=3)
 print(f&#39;Probability: {result.probability}&#39;)</code></pre>
 <h2 id="场景-2多次迭代">场景 2：多次迭代</h2>
 <pre><code>from quonic.algorithms import amplitude_amplification
-result = amplitude_amplification(target=&#39;11&#39;, n_qubits=2, iterations=3)
+
+# 不同迭代次数
+for k in [1, 2, 3, 4]:
+    result = amplitude_amplification(target=&#39;11&#39;, n_qubits=2, iterations=k)
+    print(f&#39;k={k}: Probability={result.probability:.4f}&#39;)</code></pre>
+<h2 id="场景-3带噪声的振幅放大">场景 3：带噪声的振幅放大</h2>
+<pre><code>from quonic.algorithms import amplitude_amplification
+
+# 带噪声
+result = amplitude_amplification(
+    target=&#39;11&#39;,
+    n_qubits=2,
+    noise=0.05
+)
 print(f&#39;Probability: {result.probability}&#39;)</code></pre>
 <h1 id="适用场景">适用场景</h1>
 <h2 id="数据库搜索">数据库搜索</h2>
 <p>振幅放大可以用于在无序数据库中搜索目标。</p>
 <h2 id="优化问题">优化问题</h2>
 <p>振幅放大可以用于寻找最优解。</p>
+<h2 id="量子算法设计">量子算法设计</h2>
+<p>振幅放大是许多量子算法的基础，如 Grover 搜索、量子计数等。</p>
 <h1 id="常见问题">常见问题</h1>
 <h2 id="振幅放大和-grover-搜索有什么区别">振幅放大和 Grover
 搜索有什么区别？</h2>
@@ -264,6 +329,13 @@ print(f&#39;Probability: {result.probability}&#39;)</code></pre>
 <h2 id="振幅放大的加速比是多少">振幅放大的加速比是多少？</h2>
 <p>二次加速：<span class="math inline">\(O(\sqrt{N})\)</span> vs <span
 class="math inline">\(O(N)\)</span>。</p>
+<h2
+id="振幅放大的最优迭代次数是多少">振幅放大的最优迭代次数是多少？</h2>
+<p>最优迭代次数 <span class="math inline">\(k \approx \frac{\pi}{4}
+\sqrt{N}\)</span>。</p>
+<h2 id="振幅放大的精度如何">振幅放大的精度如何？</h2>
+<p>振幅放大的精度取决于迭代次数。最优迭代次数下，目标态的概率接近
+100%。</p>
 <h1 id="学习路径">学习路径</h1>
 <h2 id="前置知识">前置知识</h2>
 <ul>
@@ -280,7 +352,13 @@ class="math inline">\(O(N)\)</span>。</p>
 <h1 id="完整示例代码">完整示例代码</h1>
 <h2 id="示例-1基本振幅放大">示例 1：基本振幅放大</h2>
 <pre><code>from quonic.algorithms import amplitude_amplification
+
 result = amplitude_amplification(target=&#39;11&#39;, n_qubits=2)
+print(f&#39;Probability: {result.probability}&#39;)</code></pre>
+<h2 id="示例-2带噪声的振幅放大">示例 2：带噪声的振幅放大</h2>
+<pre><code>from quonic.algorithms import amplitude_amplification
+
+result = amplitude_amplification(target=&#39;11&#39;, n_qubits=2, noise=0.05)
 print(f&#39;Probability: {result.probability}&#39;)</code></pre>
 <h1 id="下载">下载</h1>
 <ul>

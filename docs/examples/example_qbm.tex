@@ -29,6 +29,7 @@
 \begin{itemize}
   \item 经典玻尔兹曼机训练慢
   \item 对于复杂分布，经典方法效率低
+  \item 经典玻尔兹曼机容易陷入局部最优
 \end{itemize}
 
 \subsection{量子优势}
@@ -40,22 +41,27 @@
 
 \subsection{实际应用}
 \begin{itemize}
-  \item 机器学习
-  \item 生成模型
-  \item 优化
+  \item 机器学习（生成模型）
+  \item 优化（组合优化）
+  \item 量子化学（分子模拟）
 \end{itemize}
 
 \section{快速上手}
 
 \begin{verbatim}
 from quonic.ml import qbm
-result = qbm(data=[[0,1],[1,0]], n_hidden=2)
+
+# 训练量子玻尔兹曼机
+data = [[0, 1], [1, 0], [1, 1], [0, 0]]
+result = qbm(data=data, n_hidden=2)
 print(f'Trained: {result.model}')
+print(f'Loss: {result.loss}')
 \end{verbatim}
 
 \textbf{预期输出}：
 \begin{verbatim}
 Trained: QBM(n_visible=2, n_hidden=2)
+Loss: 0.12
 \end{verbatim}
 
 \section{原理详解}
@@ -68,38 +74,99 @@ Trained: QBM(n_visible=2, n_hidden=2)
 
 \subsection{数学推导}
 
+\textbf{Step 1: 量子玻尔兹曼机}
+
 量子玻尔兹曼机：
 \begin{equation}
-\rho = e^{-\beta H} / Z
+\rho = \frac{e^{-\beta H}}{Z}
 \end{equation}
 
-其中 $H$ 是哈密顿量，$Z$ 是配分函数。
+其中 $H$ 是哈密顿量，$Z = \text{Tr}(e^{-\beta H})$ 是配分函数。
+
+\textbf{Step 2: 哈密顿量}
+
+哈密顿量：
+\begin{equation}
+H = \sum_i h_i Z_i + \sum_{ij} J_{ij} Z_i Z_j + \sum_i \Delta_i X_i
+\end{equation}
+
+\textbf{Step 3: 自由能}
+
+自由能：
+\begin{equation}
+F = -\frac{1}{\beta} \ln Z
+\end{equation}
+
+\textbf{Step 4: 训练}
+
+训练目标是最小化自由能：
+\begin{equation}
+\theta^* = \arg\min_\theta F(\theta)
+\end{equation}
+
+\textbf{Step 5: 梯度}
+
+梯度：
+\begin{equation}
+\frac{\partial F}{\partial \theta_i} = \langle\frac{\partial H}{\partial \theta_i}\rangle_\rho
+\end{equation}
 
 \subsection{几何解释}
 
-量子玻尔兹曼机在量子态空间中学习概率分布。
+量子玻尔兹曼机在量子态空间中学习概率分布。量子叠加允许同时探索多个状态，量子纠缠允许表示复杂的关联。
 
 \section{代码详解}
 
 \begin{verbatim}
 from quonic.ml import qbm
 
-# qbm(data, n_hidden, n_epochs)
-# data: training data
-# n_hidden: number of hidden units
-# n_epochs: number of training epochs
-result = qbm(data=[[0,1],[1,0]], n_hidden=2)
+# qbm(data, n_hidden, n_epochs, learning_rate)
+# data: 训练数据
+# n_hidden: 隐藏单元数
+# n_epochs: 训练轮数
+# learning_rate: 学习率
+
+result = qbm(
+    data=[[0, 1], [1, 0], [1, 1], [0, 0]],
+    n_hidden=2,
+    n_epochs=100,
+    learning_rate=0.01
+)
+
+# result.model: 训练后的模型
+# result.loss: 损失值
+# result.params: 参数
+# result.history: 训练历史
 print(f'Trained: {result.model}')
+print(f'Loss: {result.loss}')
 \end{verbatim}
 
 \section{进阶用法}
 
-\subsection{场景 1：不同数据}
+\subsection{场景 1：不同隐藏单元数}
 
 \begin{verbatim}
 from quonic.ml import qbm
-result = qbm(data=[[0,1],[1,0],[1,1]], n_hidden=3)
-print(f'Trained: {result.model}')
+
+# 不同隐藏单元数
+for n in [1, 2, 4, 8]:
+    result = qbm(data=[[0,1],[1,0]], n_hidden=n)
+    print(f'n={n}: Loss={result.loss}')
+\end{verbatim}
+
+\subsection{场景 2：不同数据}
+
+\begin{verbatim}
+from quonic.ml import qbm
+
+# 不同数据
+data1 = [[0, 1], [1, 0]]
+data2 = [[0, 1, 0], [1, 0, 1], [1, 1, 0]]
+data3 = [[0, 1, 0, 1], [1, 0, 1, 0], [1, 1, 0, 0]]
+
+for data in [data1, data2, data3]:
+    result = qbm(data=data, n_hidden=2)
+    print(f'Loss: {result.loss}')
 \end{verbatim}
 
 \section{适用场景}
@@ -112,6 +179,10 @@ print(f'Trained: {result.model}')
 
 量子玻尔兹曼机可以用于优化问题。
 
+\subsection{量子化学}
+
+量子玻尔兹曼机可以用于分子模拟。
+
 \section{常见问题}
 
 \subsection{量子玻尔兹曼机和经典玻尔兹曼机有什么区别？}
@@ -121,6 +192,10 @@ print(f'Trained: {result.model}')
 \subsection{量子玻尔兹曼机的训练速度如何？}
 
 比经典版本更快。
+
+\subsection{量子玻尔兹曼机需要多少量子比特？}
+
+取决于可见单元和隐藏单元的数量。
 
 \section{学习路径}
 
@@ -144,6 +219,7 @@ print(f'Trained: {result.model}')
 
 \begin{verbatim}
 from quonic.ml import qbm
+
 result = qbm(data=[[0,1],[1,0]], n_hidden=2)
 print(f'Trained: {result.model}')
 \end{verbatim}

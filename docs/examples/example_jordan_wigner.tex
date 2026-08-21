@@ -29,6 +29,7 @@ Jordan-Wigner 变换将费米子算符映射到量子比特算符。
 \begin{itemize}
   \item 经典方法无法高效处理费米子系统
   \item 对于大系统，经典方法效率低
+  \item 费米子统计使得经典模拟困难
 \end{itemize}
 
 \subsection{量子优势}
@@ -40,22 +41,26 @@ Jordan-Wigner 变换将费米子算符映射到量子比特算符。
 
 \subsection{实际应用}
 \begin{itemize}
-  \item 量子化学
-  \item 材料科学
-  \item 量子物理
+  \item 量子化学（分子模拟）
+  \item 材料科学（新材料设计）
+  \item 量子物理（量子多体系统）
 \end{itemize}
 
 \section{快速上手}
 
 \begin{verbatim}
 from quonic.chemistry import jordan_wigner
+
+# 将费米子哈密顿量映射到量子比特
 result = jordan_wigner(hamiltonian=[[1,0],[0,-1]])
 print(f'Qubit Hamiltonian: {result.qubit_hamiltonian}')
+print(f'Fermion Hamiltonian: {result.fermion_hamiltonian}')
 \end{verbatim}
 
 \textbf{预期输出}：
 \begin{verbatim}
 Qubit Hamiltonian: [[1,0],[0,-1]]
+Fermion Hamiltonian: [[1,0],[0,-1]]
 \end{verbatim}
 
 \section{原理详解}
@@ -68,29 +73,62 @@ Qubit Hamiltonian: [[1,0],[0,-1]]
 
 \subsection{数学推导}
 
+\textbf{Step 1: 费米子算符}
+
+费米子产生和湮灭算符：
+\begin{equation}
+\{a_i, a_j^\dagger\} = \delta_{ij}
+\end{equation}
+
+\textbf{Step 2: Jordan-Wigner 变换}
+
 Jordan-Wigner 变换：
 \begin{equation}
 a_j^\dagger \to \frac{X_j - iY_j}{2} \otimes Z_{j-1}
 \end{equation}
 
-\textbf{费米子算符}：
+\textbf{Step 3: 量子比特表示}
+
+费米子哈密顿量：
 \begin{equation}
-\{a_i, a_j^\dagger\} = \delta_{ij}
+H = \sum_{ij} h_{ij} a_i^\dagger a_j + \sum_{ijkl} h_{ijkl} a_i^\dagger a_j^\dagger a_k a_l
+\end{equation}
+
+量子比特表示：
+\begin{equation}
+H = \sum_{ij} h_{ij} \sigma_i^+ \sigma_j^- + \sum_{ijkl} h_{ijkl} \sigma_i^+ \sigma_j^+ \sigma_k^- \sigma_l^-
+\end{equation}
+
+\textbf{Step 4: Pauli 算符}
+
+Pauli 算符：
+\begin{equation}
+\sigma^+ = \frac{X + iY}{2}, \quad \sigma^- = \frac{X - iY}{2}
 \end{equation}
 
 \subsection{几何解释}
 
-Jordan-Wigner 变换在量子比特空间中表示费米子系统。
+Jordan-Wigner 变换在量子比特空间中表示费米子系统。每个费米子对应一个量子比特，费米子统计通过 Z 门实现。
 
 \section{代码详解}
 
 \begin{verbatim}
 from quonic.chemistry import jordan_wigner
 
-# jordan_wigner(hamiltonian)
-# hamiltonian: fermionic Hamiltonian
-result = jordan_wigner(hamiltonian=[[1,0],[0,-1]])
+# jordan_wigner(hamiltonian, n_qubits)
+# hamiltonian: 费米子哈密顿量
+# n_qubits: 量子比特数
+
+result = jordan_wigner(
+    hamiltonian=[[1, 0], [0, -1]],
+    n_qubits=2
+)
+
+# result.qubit_hamiltonian: 量子比特哈密顿量
+# result.fermion_hamiltonian: 费米子哈密顿量
+# result.pauli_decomposition: Pauli 分解
 print(f'Qubit Hamiltonian: {result.qubit_hamiltonian}')
+print(f'Pauli decomposition: {result.pauli_decomposition}')
 \end{verbatim}
 
 \section{进阶用法}
@@ -99,7 +137,31 @@ print(f'Qubit Hamiltonian: {result.qubit_hamiltonian}')
 
 \begin{verbatim}
 from quonic.chemistry import jordan_wigner
-result = jordan_wigner(hamiltonian=[[0,1],[1,0]])
+
+# 不同哈密顿量
+H1 = [[1, 0], [0, -1]]  # 对角
+H2 = [[0, 1], [1, 0]]   # 非对角
+H3 = [[1, 1], [1, -1]]  # 混合
+
+for H in [H1, H2, H3]:
+    result = jordan_wigner(H)
+    print(f'Qubit Hamiltonian: {result.qubit_hamiltonian}')
+\end{verbatim}
+
+\subsection{场景 2：多体系统}
+
+\begin{verbatim}
+from quonic.chemistry import jordan_wigner
+
+# 4-qubit 系统
+H = [
+    [2, 0, 0, 0],
+    [0, -2, 1, 0],
+    [0, 1, -2, 0],
+    [0, 0, 0, 2]
+]
+
+result = jordan_wigner(H, n_qubits=4)
 print(f'Qubit Hamiltonian: {result.qubit_hamiltonian}')
 \end{verbatim}
 
@@ -113,6 +175,10 @@ Jordan-Wigner 变换是量子化学的基础。
 
 Jordan-Wigner 变换可以用于设计新材料。
 
+\subsection{量子物理}
+
+Jordan-Wigner 变换可以用于模拟量子多体系统。
+
 \section{常见问题}
 
 \subsection{Jordan-Wigner 变换的作用是什么？}
@@ -122,6 +188,10 @@ Jordan-Wigner 变换可以用于设计新材料。
 \subsection{Jordan-Wigner 变换的局限性是什么？}
 
 对于大系统，变换后的哈密顿量可能很复杂。
+
+\subsection{Jordan-Wigner 变换和其他变换有什么区别？}
+
+Jordan-Wigner 变换是最简单的变换，其他变换（如 Bravyi-Kitaev）可能更高效。
 
 \section{学习路径}
 
@@ -145,6 +215,7 @@ Jordan-Wigner 变换可以用于设计新材料。
 
 \begin{verbatim}
 from quonic.chemistry import jordan_wigner
+
 result = jordan_wigner(hamiltonian=[[1,0],[0,-1]])
 print(f'Qubit Hamiltonian: {result.qubit_hamiltonian}')
 \end{verbatim}

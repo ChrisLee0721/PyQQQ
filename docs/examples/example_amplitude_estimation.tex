@@ -29,6 +29,7 @@
 \begin{itemize}
   \item 经典方法需要多次采样才能估计概率
   \item 对于小概率事件，经典方法效率低
+  \item 经典方法的精度受限于采样次数
 \end{itemize}
 
 \subsection{量子优势}
@@ -49,13 +50,17 @@
 
 \begin{verbatim}
 from quonic.algorithms import amplitude_estimation
+
+# 估计目标态的概率
 result = amplitude_estimation(target='11', n_qubits=2)
 print(f'Estimate: {result.estimate}')
+print(f'Phase: {result.phase}')
 \end{verbatim}
 
 \textbf{预期输出}：
 \begin{verbatim}
 Estimate: 0.5
+Phase: 0.25
 \end{verbatim}
 
 \section{原理详解}
@@ -68,19 +73,46 @@ Estimate: 0.5
 
 \subsection{数学推导}
 
-振幅估计结合了振幅放大和量子相位估计：
+\textbf{Step 1: 振幅放大算子}
+
+振幅放大算子：
 \begin{equation}
-\theta = \arcsin(\sqrt{p})
+Q = D \cdot O
 \end{equation}
 
-其中 $p$ 是目标态的概率。
+其中 $D$ 是扩散算子，$O$ 是 Oracle。
 
-\textbf{算法步骤}：
-\begin{enumerate}
-  \item 用振幅放大旋转相位
-  \item 用 QPE 估计相位 $\theta$
-  \item 计算概率 $p = \sin^2(\theta)$
-\end{enumerate}
+\textbf{Step 2: 本征值}
+
+$Q$ 的本征值：
+\begin{equation}
+Q|\psi_\pm\rangle = e^{\pm 2i\theta}|\psi_\pm\rangle
+\end{equation}
+
+其中 $\sin\theta = \sqrt{p}$，$p$ 是目标态的概率。
+
+\textbf{Step 3: QPE 估计相位}
+
+使用 QPE 估计相位 $\theta$：
+\begin{equation}
+|0\rangle|\psi\rangle \to |\tilde{\theta}\rangle|\psi\rangle
+\end{equation}
+
+\textbf{Step 4: 计算概率}
+
+计算概率：
+\begin{equation}
+p = \sin^2(\theta)
+\end{equation}
+
+\textbf{Step 5: 精度}
+
+精度：
+\begin{equation}
+\epsilon = O(1/M)
+\end{equation}
+
+其中 $M$ 是控制量子比特数。
 
 \subsection{几何解释}
 
@@ -92,14 +124,21 @@ Estimate: 0.5
 from quonic.algorithms import amplitude_estimation
 
 # amplitude_estimation(target, n_qubits, precision)
-# target: target bit string
-# n_qubits: number of qubits
-# precision: number of precision qubits
-result = amplitude_estimation(target='11', n_qubits=2)
+# target: 目标态
+# n_qubits: 量子比特数
+# precision: 精度量子比特数
 
-# result.estimate: estimated probability
-# result.phase: estimated phase
+result = amplitude_estimation(
+    target='11',
+    n_qubits=2,
+    precision=3
+)
+
+# result.estimate: 估计的概率
+# result.phase: 估计的相位
+# result.circuit: 量子电路
 print(f'Estimate: {result.estimate}')
+print(f'Phase: {result.phase}')
 \end{verbatim}
 
 \section{进阶用法}
@@ -108,8 +147,22 @@ print(f'Estimate: {result.estimate}')
 
 \begin{verbatim}
 from quonic.algorithms import amplitude_estimation
-result = amplitude_estimation(target='101', n_qubits=3)
-print(f'Estimate: {result.estimate}')
+
+# 不同目标态
+for target in ['00', '01', '10', '11']:
+    result = amplitude_estimation(target=target, n_qubits=2)
+    print(f'{target}: Estimate={result.estimate}')
+\end{verbatim}
+
+\subsection{场景 2：不同精度}
+
+\begin{verbatim}
+from quonic.algorithms import amplitude_estimation
+
+# 不同精度
+for p in [1, 2, 3, 4]:
+    result = amplitude_estimation(target='11', n_qubits=2, precision=p)
+    print(f'precision={p}: Estimate={result.estimate}')
 \end{verbatim}
 
 \section{适用场景}
@@ -122,6 +175,10 @@ print(f'Estimate: {result.estimate}')
 
 振幅估计可以用于估计优化问题的最优解概率。
 
+\subsection{量子机器学习}
+
+振幅估计可以用于量子机器学习中的概率估计。
+
 \section{常见问题}
 
 \subsection{振幅估计和振幅放大有什么区别？}
@@ -131,6 +188,10 @@ print(f'Estimate: {result.estimate}')
 \subsection{振幅估计的精度如何？}
 
 精度取决于控制量子比特的数量。更多的控制量子比特提供更高的精度。
+
+\subsection{振幅估计需要多少量子比特？}
+
+需要 $n + m$ 个量子比特，其中 $n$ 是目标量子比特数，$m$ 是精度量子比特数。
 
 \section{学习路径}
 
@@ -154,6 +215,7 @@ print(f'Estimate: {result.estimate}')
 
 \begin{verbatim}
 from quonic.algorithms import amplitude_estimation
+
 result = amplitude_estimation(target='11', n_qubits=2)
 print(f'Estimate: {result.estimate}')
 \end{verbatim}

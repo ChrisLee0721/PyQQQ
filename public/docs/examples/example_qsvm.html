@@ -184,30 +184,42 @@
 <p><strong>ML / 机器学习</strong> | 难度：高级 | 预计时间：20 分钟</p>
 </div>
 <h1 id="为什么需要">为什么需要？</h1>
-<p>量子 SVM 利用量子核函数进行分类。</p>
+<p>量子 SVM 利用量子核函数进行分类，是量子机器学习的核心算法之一。</p>
 <h2 id="经典局限">经典局限</h2>
 <ul>
-<li><p>经典 SVM 核函数计算慢</p></li>
+<li><p>经典 SVM 核函数计算慢，对于 <span
+class="math inline">\(N\)</span> 个样本需要 <span
+class="math inline">\(O(N^2)\)</span> 时间</p></li>
+<li><p>经典核函数受限于多项式核、RBF 核等有限类型</p></li>
 <li><p>对于高维数据，经典方法效率低</p></li>
 </ul>
 <h2 id="量子优势">量子优势</h2>
 <ul>
-<li><p>量子 SVM 可以在高维特征空间中分类</p></li>
-<li><p>核函数计算更快</p></li>
-<li><p>可以处理更复杂的数据</p></li>
+<li><p>量子 SVM 可以在指数维的 Hilbert 空间中计算核函数</p></li>
+<li><p>量子核函数可以表示经典核函数无法表示的复杂模式</p></li>
+<li><p>对于某些问题，量子 SVM 提供指数加速</p></li>
 </ul>
 <h2 id="实际应用">实际应用</h2>
 <ul>
-<li><p>分类</p></li>
-<li><p>模式识别</p></li>
-<li><p>量子机器学习</p></li>
+<li><p>二分类问题（如图像分类、文本分类）</p></li>
+<li><p>多分类问题（如手写数字识别）</p></li>
+<li><p>异常检测（如金融欺诈检测）</p></li>
+<li><p>特征提取（如量子特征映射）</p></li>
 </ul>
 <h1 id="快速上手">快速上手</h1>
 <pre><code>from quonic.ml import qsvm
-result = qsvm(data=[[0,1],[1,0]], labels=[0,1])
-print(f&#39;Accuracy: {result.accuracy}&#39;)</code></pre>
+
+# 准备数据
+data = [[0, 1], [1, 0], [1, 1], [0, 0]]
+labels = [0, 1, 1, 0]
+
+# 训练量子 SVM
+result = qsvm(data, labels)
+print(f&#39;Accuracy: {result.accuracy}&#39;)
+print(f&#39;Support vectors: {result.support_vectors}&#39;)</code></pre>
 <p><strong>预期输出</strong>：</p>
-<pre><code>Accuracy: 1.0</code></pre>
+<pre><code>Accuracy: 1.0
+Support vectors: [[0, 1], [1, 0]]</code></pre>
 <h1 id="原理详解">原理详解</h1>
 <h2 id="电路图">电路图</h2>
 <div class="center">
@@ -215,51 +227,172 @@ print(f&#39;Accuracy: {result.accuracy}&#39;)</code></pre>
 alt="image" /></p>
 </div>
 <h2 id="数学推导">数学推导</h2>
-<p>量子核函数： <span class="math display">\[\begin{equation}
+<p><strong>Step 1: 量子特征映射</strong></p>
+<p>将经典数据 <span class="math inline">\(x\)</span> 映射到量子态：
+<span class="math display">\[\begin{equation}
+|\phi(x)\rangle = U(x)|0\rangle^{\otimes n}
+\end{equation}\]</span></p>
+<p>其中 <span class="math inline">\(U(x)\)</span> 是参数化量子电路。</p>
+<p><strong>Step 2: 量子核函数</strong></p>
+<p>量子核函数定义为两个量子态的内积： <span
+class="math display">\[\begin{equation}
 K(x_i, x_j) = |\langle\phi(x_i)|\phi(x_j)\rangle|^2
 \end{equation}\]</span></p>
+<p>这可以重写为： <span class="math display">\[\begin{equation}
+K(x_i, x_j) = |\langle 0|^{\otimes n} U^\dagger(x_i) U(x_j)
+|0\rangle^{\otimes n}|^2
+\end{equation}\]</span></p>
+<p><strong>Step 3: 核矩阵计算</strong></p>
+<p>对于 <span class="math inline">\(N\)</span> 个样本，计算 <span
+class="math inline">\(N \times N\)</span> 的核矩阵： <span
+class="math display">\[\begin{equation}
+K_{ij} = K(x_i, x_j)
+\end{equation}\]</span></p>
+<p><strong>Step 4: 经典 SVM 求解</strong></p>
+<p>使用经典 SVM 求解优化问题： <span
+class="math display">\[\begin{equation}
+\max_\alpha \sum_i \alpha_i - \frac{1}{2} \sum_{i,j} \alpha_i \alpha_j
+y_i y_j K_{ij}
+\end{equation}\]</span></p>
+<p>约束条件： <span class="math display">\[\begin{equation}
+\sum_i \alpha_i y_i = 0, \quad \alpha_i \geq 0
+\end{equation}\]</span></p>
+<p><strong>Step 5: 预测</strong></p>
+<p>对于新样本 <span class="math inline">\(x\)</span>，预测标签： <span
+class="math display">\[\begin{equation}
+f(x) = \text{sign}\left(\sum_{i \in SV} \alpha_i y_i K(x_i, x) +
+b\right)
+\end{equation}\]</span></p>
 <h2 id="几何解释">几何解释</h2>
-<p>量子 SVM 在量子态空间中分类数据。</p>
+<p>量子 SVM 在量子态空间中找到最大间隔超平面。量子核函数将数据映射到高维
+Hilbert 空间，使得线性不可分的数据变得线性可分。</p>
+<p>在 Bloch
+球上，量子特征映射将经典数据编码为量子态的旋转角度，量子核函数计算两个量子态的重叠度。</p>
 <h1 id="代码详解">代码详解</h1>
 <pre><code>from quonic.ml import qsvm
 
-# qsvm(data, labels)
-# data: input data
-# labels: target labels
-result = qsvm(data=[[0,1],[1,0]], labels=[0,1])
-print(f&#39;Accuracy: {result.accuracy}&#39;)</code></pre>
+# qsvm(data, labels, kernel, C)
+# data: 训练数据，形状为 (n_samples, n_features)
+# labels: 标签，形状为 (n_samples,)
+# kernel: 核函数类型 (&#39;quantum&#39;, &#39;rbf&#39;, &#39;poly&#39;)
+# C: 正则化参数
+
+result = qsvm(
+    data=[[0, 1], [1, 0], [1, 1], [0, 0]],
+    labels=[0, 1, 1, 0],
+    kernel=&#39;quantum&#39;,
+    C=1.0
+)
+
+# result.accuracy: 准确率
+# result.support_vectors: 支持向量
+# result.dual_coef: 对偶系数
+# result.intercept: 截距
+print(f&#39;Accuracy: {result.accuracy}&#39;)
+print(f&#39;Support vectors: {result.support_vectors}&#39;)</code></pre>
 <h1 id="进阶用法">进阶用法</h1>
-<h2 id="场景-1不同数据">场景 1：不同数据</h2>
+<h2 id="场景-1不同核函数">场景 1：不同核函数</h2>
 <pre><code>from quonic.ml import qsvm
-result = qsvm(data=[[0,1],[1,0],[1,1]], labels=[0,1,1])
+
+# 量子核
+result_q = qsvm(data, labels, kernel=&#39;quantum&#39;)
+
+# RBF 核（经典）
+result_r = qsvm(data, labels, kernel=&#39;rbf&#39;)
+
+# 多项式核（经典）
+result_p = qsvm(data, labels, kernel=&#39;poly&#39;)
+
+print(f&#39;Quantum: {result_q.accuracy}&#39;)
+print(f&#39;RBF: {result_r.accuracy}&#39;)
+print(f&#39;Poly: {result_p.accuracy}&#39;)</code></pre>
+<h2 id="场景-2不同正则化参数">场景 2：不同正则化参数</h2>
+<pre><code>from quonic.ml import qsvm
+
+# 不同的 C 值
+for C in [0.1, 1.0, 10.0]:
+    result = qsvm(data, labels, C=C)
+    print(f&#39;C={C}: Accuracy={result.accuracy}&#39;)</code></pre>
+<h2 id="场景-3多分类问题">场景 3：多分类问题</h2>
+<pre><code>from quonic.ml import qsvm
+
+# 三分类问题
+data = [[0, 1], [1, 0], [1, 1], [0, 0], [0.5, 0.5]]
+labels = [0, 1, 2, 0, 1]
+
+result = qsvm(data, labels, kernel=&#39;quantum&#39;)
 print(f&#39;Accuracy: {result.accuracy}&#39;)</code></pre>
 <h1 id="适用场景">适用场景</h1>
-<h2 id="分类">分类</h2>
-<p>量子 SVM 可以用于分类问题。</p>
-<h2 id="模式识别">模式识别</h2>
-<p>量子 SVM 可以用于模式识别。</p>
+<h2 id="图像分类">图像分类</h2>
+<p>量子 SVM 可以用于图像分类任务，如手写数字识别、人脸识别等。</p>
+<h2 id="文本分类">文本分类</h2>
+<p>量子 SVM 可以用于文本分类任务，如垃圾邮件检测、情感分析等。</p>
+<h2 id="异常检测">异常检测</h2>
+<p>量子 SVM 可以用于异常检测任务，如金融欺诈检测、网络入侵检测等。</p>
+<h2 id="特征提取">特征提取</h2>
+<p>量子特征映射可以作为特征提取器，将原始数据映射到高维空间。</p>
 <h1 id="常见问题">常见问题</h1>
 <h2 id="量子-svm-的优势是什么">量子 SVM 的优势是什么？</h2>
-<p>可以在高维特征空间中分类。</p>
+<p>量子 SVM 可以在指数维的 Hilbert
+空间中计算核函数，这是经典核函数无法做到的。对于某些问题，量子 SVM
+提供指数加速。</p>
 <h2 id="量子-svm-的精度如何">量子 SVM 的精度如何？</h2>
-<p>取决于核函数的选择。</p>
+<p>量子 SVM 的精度取决于：</p>
+<ul>
+<li><p>量子特征映射的选择</p></li>
+<li><p>数据的质量和数量</p></li>
+<li><p>正则化参数 C 的选择</p></li>
+</ul>
+<h2 id="量子-svm-需要多少量子比特">量子 SVM 需要多少量子比特？</h2>
+<p>量子 SVM 需要的量子比特数取决于特征维度。对于 <span
+class="math inline">\(d\)</span> 维特征，需要 <span
+class="math inline">\(\lceil \log_2(d) \rceil\)</span> 个量子比特。</p>
+<h2 id="量子-svm-和经典-svm-有什么区别">量子 SVM 和经典 SVM
+有什么区别？</h2>
+<p>量子 SVM 使用量子核函数，可以在更高维的空间中计算核矩阵。经典 SVM
+使用经典核函数（如 RBF 核），受限于有限的核函数类型。</p>
+<h2 id="量子-svm-的训练时间如何">量子 SVM 的训练时间如何？</h2>
+<p>量子 SVM 的训练时间包括：</p>
+<ul>
+<li><p>量子核矩阵计算：<span class="math inline">\(O(N^2 \cdot
+T_{\text{circuit}})\)</span></p></li>
+<li><p>经典 SVM 求解：<span
+class="math inline">\(O(N^3)\)</span></p></li>
+</ul>
+<p>其中 <span class="math inline">\(T_{\text{circuit}}\)</span>
+是量子电路的执行时间。</p>
 <h1 id="学习路径">学习路径</h1>
 <h2 id="前置知识">前置知识</h2>
 <ul>
-<li><p>量子核方法</p></li>
-<li><p>支持向量机</p></li>
-<li><p>量子机器学习</p></li>
+<li><p>支持向量机（SVM）</p></li>
+<li><p>核方法</p></li>
+<li><p>量子比特和量子门</p></li>
+<li><p>量子测量</p></li>
 </ul>
 <h2 id="继续学习">继续学习</h2>
 <ul>
-<li><p>量子分类</p></li>
-<li><p>量子模式识别</p></li>
-<li><p>量子机器学习</p></li>
+<li><p>量子核方法（更一般的框架）</p></li>
+<li><p>量子神经网络（QNN）</p></li>
+<li><p>量子主成分分析（QPCA）</p></li>
+<li><p>量子聚类</p></li>
 </ul>
 <h1 id="完整示例代码">完整示例代码</h1>
 <h2 id="示例-1基本量子-svm">示例 1：基本量子 SVM</h2>
 <pre><code>from quonic.ml import qsvm
-result = qsvm(data=[[0,1],[1,0]], labels=[0,1])
+
+data = [[0, 1], [1, 0], [1, 1], [0, 0]]
+labels = [0, 1, 1, 0]
+
+result = qsvm(data, labels)
+print(f&#39;Accuracy: {result.accuracy}&#39;)</code></pre>
+<h2 id="示例-2带噪声的量子-svm">示例 2：带噪声的量子 SVM</h2>
+<pre><code>from quonic.ml import qsvm
+
+# 添加噪声
+data_noisy = [[0 + 0.1, 1 - 0.1], [1 - 0.1, 0 + 0.1]]
+labels_noisy = [0, 1]
+
+result = qsvm(data_noisy, labels_noisy, noise=0.05)
 print(f&#39;Accuracy: {result.accuracy}&#39;)</code></pre>
 <h1 id="下载">下载</h1>
 <ul>

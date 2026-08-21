@@ -190,6 +190,7 @@
 <ul>
 <li><p>Shor 码和 Steane 码的容错阈值较低</p></li>
 <li><p>对硬件连接性要求高</p></li>
+<li><p>经典纠错码不能直接用于量子系统</p></li>
 </ul>
 <h2 id="量子优势">量子优势</h2>
 <ul>
@@ -205,10 +206,14 @@
 </ul>
 <h1 id="快速上手">快速上手</h1>
 <pre><code>from quonic.qec import color_code
+
+# 创建颜色码
 result = color_code(distance=3, error_rate=0.01)
-print(f&#39;Logical error rate: {result.logical_error_rate}&#39;)</code></pre>
+print(f&#39;Logical error rate: {result.logical_error_rate}&#39;)
+print(f&#39;Threshold: {result.threshold}&#39;)</code></pre>
 <p><strong>预期输出</strong>：</p>
-<pre><code>Logical error rate: 0.001</code></pre>
+<pre><code>Logical error rate: 0.001
+Threshold: 0.01</code></pre>
 <h1 id="原理详解">原理详解</h1>
 <h2 id="电路图">电路图</h2>
 <div class="center">
@@ -216,43 +221,88 @@ print(f&#39;Logical error rate: {result.logical_error_rate}&#39;)</code></pre>
 alt="image" /></p>
 </div>
 <h2 id="数学推导">数学推导</h2>
-<p>颜色码使用三色格子结构进行纠错。</p>
-<p><strong>校验子测量</strong>： <span
-class="math display">\[\begin{equation}
-S_X = \prod_{i \in \text{star}} X_i, \quad S_Z = \prod_{i \in
-\text{plaquette}} Z_i
+<p><strong>Step 1: 三色格子</strong></p>
+<p>颜色码使用三色格子结构：</p>
+<ul>
+<li><p>红色面：X 校验子</p></li>
+<li><p>绿色面：Z 校验子</p></li>
+<li><p>蓝色面：X 校验子</p></li>
+</ul>
+<p><strong>Step 2: 校验子测量</strong></p>
+<p>X 校验子： <span class="math display">\[\begin{equation}
+S_X = \prod_{i \in \text{face}} X_i
 \end{equation}\]</span></p>
-<p><strong>容错阈值</strong>： <span
+<p>Z 校验子： <span class="math display">\[\begin{equation}
+S_Z = \prod_{i \in \text{face}} Z_i
+\end{equation}\]</span></p>
+<p><strong>Step 3: 错误检测</strong></p>
+<p>通过测量校验子检测错误： <span
 class="math display">\[\begin{equation}
+S_X |\psi\rangle = \pm |\psi\rangle
+\end{equation}\]</span></p>
+<p>如果测量结果是 <span
+class="math inline">\(-1\)</span>，说明检测到错误。</p>
+<p><strong>Step 4: 错误纠正</strong></p>
+<p>根据校验子测量结果纠正错误： <span
+class="math display">\[\begin{equation}
+|\psi&#39;\rangle = C \cdot E |\psi\rangle = |\psi\rangle
+\end{equation}\]</span></p>
+<p>其中 <span class="math inline">\(C\)</span> 是纠正算子，<span
+class="math inline">\(E\)</span> 是错误算子。</p>
+<p><strong>Step 5: 容错阈值</strong></p>
+<p>容错阈值： <span class="math display">\[\begin{equation}
 p_{\text{threshold}} \approx 1\%
 \end{equation}\]</span></p>
+<p>当物理错误率低于阈值时，逻辑错误率随码距指数衰减。</p>
 <h2 id="几何解释">几何解释</h2>
 <p>颜色码在二维格子上编码量子信息，通过测量局部校验子来检测和纠正错误。</p>
+<p>三色格子结构允许并行测量校验子，提高了纠错效率。</p>
 <h1 id="代码详解">代码详解</h1>
 <pre><code>from quonic.qec import color_code
 
 # color_code(distance, error_rate)
-# distance: code distance
-# error_rate: physical error rate
+# distance: 码距
+# error_rate: 物理错误率
+
 result = color_code(distance=3, error_rate=0.01)
-print(f&#39;Logical error rate: {result.logical_error_rate}&#39;)</code></pre>
+
+# result.logical_error_rate: 逻辑错误率
+# result.threshold: 容错阈值
+# result.qubit_count: 量子比特数
+# result.syndrome: 校验子
+print(f&#39;Logical error rate: {result.logical_error_rate}&#39;)
+print(f&#39;Threshold: {result.threshold}&#39;)
+print(f&#39;Qubit count: {result.qubit_count}&#39;)</code></pre>
 <h1 id="进阶用法">进阶用法</h1>
-<h2 id="场景-1不同距离">场景 1：不同距离</h2>
+<h2 id="场景-1不同码距">场景 1：不同码距</h2>
 <pre><code>from quonic.qec import color_code
-for d in [3, 5, 7]:
+
+# 不同码距
+for d in [3, 5, 7, 9]:
     result = color_code(distance=d, error_rate=0.01)
-    print(f&#39;d={d}: {result.logical_error_rate}&#39;)</code></pre>
+    print(f&#39;d={d}: Logical error rate={result.logical_error_rate}&#39;)</code></pre>
+<h2 id="场景-2不同错误率">场景 2：不同错误率</h2>
+<pre><code>from quonic.qec import color_code
+
+# 不同错误率
+for p in [0.001, 0.01, 0.1]:
+    result = color_code(distance=3, error_rate=p)
+    print(f&#39;p={p}: Logical error rate={result.logical_error_rate}&#39;)</code></pre>
 <h1 id="适用场景">适用场景</h1>
 <h2 id="量子计算">量子计算</h2>
 <p>颜色码是容错量子计算的基础。</p>
 <h2 id="量子通信">量子通信</h2>
 <p>颜色码可以保护量子通信中的量子态。</p>
+<h2 id="量子存储">量子存储</h2>
+<p>颜色码可以延长量子存储的相干时间。</p>
 <h1 id="常见问题">常见问题</h1>
 <h2 id="颜色码和表面码有什么区别">颜色码和表面码有什么区别？</h2>
 <p>颜色码使用三色格子，表面码使用方格。颜色码有更好的阈值。</p>
 <h2 id="颜色码需要多少量子比特">颜色码需要多少量子比特？</h2>
 <p>需要 <span class="math inline">\(O(d^2)\)</span> 个量子比特，其中
 <span class="math inline">\(d\)</span> 是码距。</p>
+<h2 id="颜色码的容错阈值是多少">颜色码的容错阈值是多少？</h2>
+<p>约 1%，是目前最高的。</p>
 <h1 id="学习路径">学习路径</h1>
 <h2 id="前置知识">前置知识</h2>
 <ul>
@@ -269,6 +319,7 @@ for d in [3, 5, 7]:
 <h1 id="完整示例代码">完整示例代码</h1>
 <h2 id="示例-1基本颜色码">示例 1：基本颜色码</h2>
 <pre><code>from quonic.qec import color_code
+
 result = color_code(distance=3, error_rate=0.01)
 print(f&#39;Logical error rate: {result.logical_error_rate}&#39;)</code></pre>
 <h1 id="下载">下载</h1>

@@ -184,30 +184,40 @@
 <p><strong>ML / 机器学习</strong> | 难度：高级 | 预计时间：20 分钟</p>
 </div>
 <h1 id="为什么需要">为什么需要？</h1>
-<p>量子神经网络是经典神经网络的量子推广。</p>
+<p>量子神经网络是经典神经网络的量子推广，利用量子叠加和纠缠处理高维数据。</p>
 <h2 id="经典局限">经典局限</h2>
 <ul>
-<li><p>经典神经网络训练慢</p></li>
-<li><p>对于高维数据，经典方法效率低</p></li>
+<li><p>经典神经网络训练慢，对于高维数据需要大量参数</p></li>
+<li><p>经典网络受限于有限的激活函数类型</p></li>
+<li><p>对于某些问题，经典网络容易陷入局部最优</p></li>
 </ul>
 <h2 id="量子优势">量子优势</h2>
 <ul>
-<li><p>量子神经网络可以表示任意函数</p></li>
-<li><p>训练速度更快</p></li>
-<li><p>可以处理指数维的特征空间</p></li>
+<li><p>量子神经网络可以表示任意函数（通用逼近定理）</p></li>
+<li><p>量子网络可以利用量子叠加探索更大的参数空间</p></li>
+<li><p>对于某些问题，量子网络提供指数加速</p></li>
 </ul>
 <h2 id="实际应用">实际应用</h2>
 <ul>
-<li><p>分类</p></li>
-<li><p>回归</p></li>
-<li><p>强化学习</p></li>
+<li><p>分类问题（如图像分类、文本分类）</p></li>
+<li><p>回归问题（如函数拟合、时间序列预测）</p></li>
+<li><p>强化学习（如游戏 AI、机器人控制）</p></li>
+<li><p>生成模型（如图像生成、数据增强）</p></li>
 </ul>
 <h1 id="快速上手">快速上手</h1>
 <pre><code>from quonic.ml import qnn
-result = qnn(data=[[0,1],[1,0]], labels=[0,1], n_layers=2)
-print(f&#39;Accuracy: {result.accuracy}&#39;)</code></pre>
+
+# 准备数据
+data = [[0, 1], [1, 0], [1, 1], [0, 0]]
+labels = [0, 1, 1, 0]
+
+# 训练量子神经网络
+result = qnn(data, labels, n_layers=2)
+print(f&#39;Accuracy: {result.accuracy}&#39;)
+print(f&#39;Loss: {result.loss}&#39;)</code></pre>
 <p><strong>预期输出</strong>：</p>
-<pre><code>Accuracy: 0.95</code></pre>
+<pre><code>Accuracy: 0.95
+Loss: 0.12</code></pre>
 <h1 id="原理详解">原理详解</h1>
 <h2 id="电路图">电路图</h2>
 <div class="center">
@@ -215,54 +225,159 @@ print(f&#39;Accuracy: {result.accuracy}&#39;)</code></pre>
 alt="image" /></p>
 </div>
 <h2 id="数学推导">数学推导</h2>
-<p>量子神经网络： <span class="math display">\[\begin{equation}
-f(x) = \langle 0|U^\dagger(\theta) M U(\theta)|0\rangle
+<p><strong>Step 1: 量子态编码</strong></p>
+<p>将经典数据 <span class="math inline">\(x\)</span> 编码为量子态：
+<span class="math display">\[\begin{equation}
+|x\rangle = U_{\text{enc}}(x)|0\rangle^{\otimes n}
 \end{equation}\]</span></p>
+<p>其中 <span class="math inline">\(U_{\text{enc}}\)</span>
+是编码电路。</p>
+<p><strong>Step 2: 参数化量子电路</strong></p>
+<p>应用参数化量子电路： <span class="math display">\[\begin{equation}
+|\psi(\theta)\rangle = U_L(\theta_L) \cdots U_2(\theta_2)
+U_1(\theta_1)|x\rangle
+\end{equation}\]</span></p>
+<p>其中 <span class="math inline">\(U_l(\theta_l)\)</span> 是第 <span
+class="math inline">\(l\)</span> 层的参数化门。</p>
+<p><strong>Step 3: 测量</strong></p>
+<p>测量量子态得到输出： <span class="math display">\[\begin{equation}
+f(x) = \langle\psi(\theta)|M|\psi(\theta)\rangle
+\end{equation}\]</span></p>
+<p>其中 <span class="math inline">\(M\)</span> 是测量算子。</p>
+<p><strong>Step 4: 损失函数</strong></p>
+<p>定义损失函数： <span class="math display">\[\begin{equation}
+L(\theta) = \frac{1}{N} \sum_i (f(x_i) - y_i)^2
+\end{equation}\]</span></p>
+<p><strong>Step 5: 参数更新</strong></p>
+<p>使用梯度下降更新参数： <span class="math display">\[\begin{equation}
+\theta_{t+1} = \theta_t - \eta \nabla L(\theta_t)
+\end{equation}\]</span></p>
+<p>其中 <span class="math inline">\(\eta\)</span> 是学习率。</p>
 <h2 id="几何解释">几何解释</h2>
-<p>量子神经网络在量子态空间中学习。</p>
+<p>量子神经网络在 Bloch
+球上操作量子态。每一层参数化门旋转量子态，最终测量得到输出。</p>
+<p>量子神经网络的参数空间是连续的，可以使用梯度下降优化。量子叠加允许网络同时探索多个参数路径。</p>
 <h1 id="代码详解">代码详解</h1>
 <pre><code>from quonic.ml import qnn
 
-# qnn(data, labels, n_layers)
-# data: input data
-# labels: target labels
-# n_layers: number of layers
-result = qnn(data=[[0,1],[1,0]], labels=[0,1], n_layers=2)
-print(f&#39;Accuracy: {result.accuracy}&#39;)</code></pre>
+# qnn(data, labels, n_layers, learning_rate, epochs)
+# data: 训练数据，形状为 (n_samples, n_features)
+# labels: 标签，形状为 (n_samples,)
+# n_layers: 量子电路层数
+# learning_rate: 学习率
+# epochs: 训练轮数
+
+result = qnn(
+    data=[[0, 1], [1, 0], [1, 1], [0, 0]],
+    labels=[0, 1, 1, 0],
+    n_layers=2,
+    learning_rate=0.01,
+    epochs=100
+)
+
+# result.accuracy: 准确率
+# result.loss: 损失值
+# result.params: 优化后的参数
+# result.history: 训练历史
+print(f&#39;Accuracy: {result.accuracy}&#39;)
+print(f&#39;Loss: {result.loss}&#39;)</code></pre>
 <h1 id="进阶用法">进阶用法</h1>
 <h2 id="场景-1不同层数">场景 1：不同层数</h2>
 <pre><code>from quonic.ml import qnn
-for n in [1, 2, 3]:
-    result = qnn(data=[[0,1],[1,0]], labels=[0,1], n_layers=n)
+
+# 不同层数的影响
+for n in [1, 2, 3, 4]:
+    result = qnn(data, labels, n_layers=n)
     print(f&#39;n={n}: Accuracy={result.accuracy}&#39;)</code></pre>
+<h2 id="场景-2不同学习率">场景 2：不同学习率</h2>
+<pre><code>from quonic.ml import qnn
+
+# 不同学习率的影响
+for lr in [0.001, 0.01, 0.1]:
+    result = qnn(data, labels, learning_rate=lr)
+    print(f&#39;lr={lr}: Accuracy={result.accuracy}&#39;)</code></pre>
+<h2 id="场景-3多分类问题">场景 3：多分类问题</h2>
+<pre><code>from quonic.ml import qnn
+
+# 三分类问题
+data = [[0, 1], [1, 0], [1, 1], [0, 0], [0.5, 0.5]]
+labels = [0, 1, 2, 0, 1]
+
+result = qnn(data, labels, n_layers=3)
+print(f&#39;Accuracy: {result.accuracy}&#39;)</code></pre>
 <h1 id="适用场景">适用场景</h1>
-<h2 id="分类">分类</h2>
-<p>量子神经网络可以用于分类问题。</p>
-<h2 id="回归">回归</h2>
-<p>量子神经网络可以用于回归问题。</p>
+<h2 id="图像分类">图像分类</h2>
+<p>量子神经网络可以用于图像分类任务，如手写数字识别、人脸识别等。</p>
+<h2 id="回归问题">回归问题</h2>
+<p>量子神经网络可以用于回归问题，如函数拟合、时间序列预测等。</p>
+<h2 id="强化学习">强化学习</h2>
+<p>量子神经网络可以用于强化学习，如游戏 AI、机器人控制等。</p>
+<h2 id="生成模型">生成模型</h2>
+<p>量子神经网络可以用于生成模型，如图像生成、数据增强等。</p>
 <h1 id="常见问题">常见问题</h1>
 <h2 id="量子神经网络的表达能力如何">量子神经网络的表达能力如何？</h2>
-<p>可以表示任意函数。</p>
+<p>量子神经网络是通用逼近器，可以表示任意函数。对于 <span
+class="math inline">\(n\)</span> 个量子比特，可以表示 <span
+class="math inline">\(2^n\)</span> 维空间中的任意函数。</p>
 <h2
 id="量子神经网络需要多少量子比特">量子神经网络需要多少量子比特？</h2>
-<p>取决于数据的维度。</p>
+<p>量子神经网络需要的量子比特数取决于特征维度。对于 <span
+class="math inline">\(d\)</span> 维特征，需要 <span
+class="math inline">\(\lceil \log_2(d) \rceil\)</span> 个量子比特。</p>
+<h2 id="量子神经网络的训练时间如何">量子神经网络的训练时间如何？</h2>
+<p>量子神经网络的训练时间包括：</p>
+<ul>
+<li><p>前向传播：<span
+class="math inline">\(O(T_{\text{circuit}})\)</span></p></li>
+<li><p>梯度计算：<span
+class="math inline">\(O(T_{\text{circuit}})\)</span></p></li>
+<li><p>参数更新：<span class="math inline">\(O(1)\)</span></p></li>
+</ul>
+<p>其中 <span class="math inline">\(T_{\text{circuit}}\)</span>
+是量子电路的执行时间。</p>
+<h2
+id="量子神经网络和经典神经网络有什么区别">量子神经网络和经典神经网络有什么区别？</h2>
+<p>量子神经网络使用量子门作为激活函数，可以在更高维的空间中表示函数。经典神经网络使用经典激活函数（如
+ReLU、Sigmoid），受限于有限的函数类型。</p>
+<h2 id="量子神经网络的收敛性如何">量子神经网络的收敛性如何？</h2>
+<p>量子神经网络的收敛性取决于：</p>
+<ul>
+<li><p>学习率的选择</p></li>
+<li><p>量子电路的深度</p></li>
+<li><p>数据的质量</p></li>
+</ul>
 <h1 id="学习路径">学习路径</h1>
 <h2 id="前置知识">前置知识</h2>
 <ul>
-<li><p>量子机器学习</p></li>
-<li><p>参数化量子电路</p></li>
+<li><p>神经网络基础</p></li>
+<li><p>量子比特和量子门</p></li>
 <li><p>量子测量</p></li>
+<li><p>梯度下降</p></li>
 </ul>
 <h2 id="继续学习">继续学习</h2>
 <ul>
-<li><p>量子分类</p></li>
-<li><p>量子回归</p></li>
-<li><p>量子机器学习</p></li>
+<li><p>量子卷积神经网络（QCNN）</p></li>
+<li><p>量子循环神经网络（QRNN）</p></li>
+<li><p>量子生成对抗网络（QGAN）</p></li>
+<li><p>量子强化学习（QRL）</p></li>
 </ul>
 <h1 id="完整示例代码">完整示例代码</h1>
 <h2 id="示例-1基本量子神经网络">示例 1：基本量子神经网络</h2>
 <pre><code>from quonic.ml import qnn
-result = qnn(data=[[0,1],[1,0]], labels=[0,1], n_layers=2)
+
+data = [[0, 1], [1, 0], [1, 1], [0, 0]]
+labels = [0, 1, 1, 0]
+
+result = qnn(data, labels, n_layers=2)
+print(f&#39;Accuracy: {result.accuracy}&#39;)</code></pre>
+<h2 id="示例-2带噪声的量子神经网络">示例 2：带噪声的量子神经网络</h2>
+<pre><code>from quonic.ml import qnn
+
+# 添加噪声
+data_noisy = [[0 + 0.1, 1 - 0.1], [1 - 0.1, 0 + 0.1]]
+labels_noisy = [0, 1]
+
+result = qnn(data_noisy, labels_noisy, n_layers=2, noise=0.05)
 print(f&#39;Accuracy: {result.accuracy}&#39;)</code></pre>
 <h1 id="下载">下载</h1>
 <ul>

@@ -23,39 +23,49 @@
 
 \section{为什么需要？}
 
-量子 SVM 利用量子核函数进行分类。
+量子 SVM 利用量子核函数进行分类，是量子机器学习的核心算法之一。
 
 \subsection{经典局限}
 \begin{itemize}
-  \item 经典 SVM 核函数计算慢
+  \item 经典 SVM 核函数计算慢，对于 $N$ 个样本需要 $O(N^2)$ 时间
+  \item 经典核函数受限于多项式核、RBF 核等有限类型
   \item 对于高维数据，经典方法效率低
 \end{itemize}
 
 \subsection{量子优势}
 \begin{itemize}
-  \item 量子 SVM 可以在高维特征空间中分类
-  \item 核函数计算更快
-  \item 可以处理更复杂的数据
+  \item 量子 SVM 可以在指数维的 Hilbert 空间中计算核函数
+  \item 量子核函数可以表示经典核函数无法表示的复杂模式
+  \item 对于某些问题，量子 SVM 提供指数加速
 \end{itemize}
 
 \subsection{实际应用}
 \begin{itemize}
-  \item 分类
-  \item 模式识别
-  \item 量子机器学习
+  \item 二分类问题（如图像分类、文本分类）
+  \item 多分类问题（如手写数字识别）
+  \item 异常检测（如金融欺诈检测）
+  \item 特征提取（如量子特征映射）
 \end{itemize}
 
 \section{快速上手}
 
 \begin{verbatim}
 from quonic.ml import qsvm
-result = qsvm(data=[[0,1],[1,0]], labels=[0,1])
+
+# 准备数据
+data = [[0, 1], [1, 0], [1, 1], [0, 0]]
+labels = [0, 1, 1, 0]
+
+# 训练量子 SVM
+result = qsvm(data, labels)
 print(f'Accuracy: {result.accuracy}')
+print(f'Support vectors: {result.support_vectors}')
 \end{verbatim}
 
 \textbf{预期输出}：
 \begin{verbatim}
 Accuracy: 1.0
+Support vectors: [[0, 1], [1, 0]]
 \end{verbatim}
 
 \section{原理详解}
@@ -68,71 +78,197 @@ Accuracy: 1.0
 
 \subsection{数学推导}
 
-量子核函数：
+\textbf{Step 1: 量子特征映射}
+
+将经典数据 $x$ 映射到量子态：
+\begin{equation}
+|\phi(x)\rangle = U(x)|0\rangle^{\otimes n}
+\end{equation}
+
+其中 $U(x)$ 是参数化量子电路。
+
+\textbf{Step 2: 量子核函数}
+
+量子核函数定义为两个量子态的内积：
 \begin{equation}
 K(x_i, x_j) = |\langle\phi(x_i)|\phi(x_j)\rangle|^2
 \end{equation}
 
+这可以重写为：
+\begin{equation}
+K(x_i, x_j) = |\langle 0|^{\otimes n} U^\dagger(x_i) U(x_j) |0\rangle^{\otimes n}|^2
+\end{equation}
+
+\textbf{Step 3: 核矩阵计算}
+
+对于 $N$ 个样本，计算 $N \times N$ 的核矩阵：
+\begin{equation}
+K_{ij} = K(x_i, x_j)
+\end{equation}
+
+\textbf{Step 4: 经典 SVM 求解}
+
+使用经典 SVM 求解优化问题：
+\begin{equation}
+\max_\alpha \sum_i \alpha_i - \frac{1}{2} \sum_{i,j} \alpha_i \alpha_j y_i y_j K_{ij}
+\end{equation}
+
+约束条件：
+\begin{equation}
+\sum_i \alpha_i y_i = 0, \quad \alpha_i \geq 0
+\end{equation}
+
+\textbf{Step 5: 预测}
+
+对于新样本 $x$，预测标签：
+\begin{equation}
+f(x) = \text{sign}\left(\sum_{i \in SV} \alpha_i y_i K(x_i, x) + b\right)
+\end{equation}
+
 \subsection{几何解释}
 
-量子 SVM 在量子态空间中分类数据。
+量子 SVM 在量子态空间中找到最大间隔超平面。量子核函数将数据映射到高维 Hilbert 空间，使得线性不可分的数据变得线性可分。
+
+在 Bloch 球上，量子特征映射将经典数据编码为量子态的旋转角度，量子核函数计算两个量子态的重叠度。
 
 \section{代码详解}
 
 \begin{verbatim}
 from quonic.ml import qsvm
 
-# qsvm(data, labels)
-# data: input data
-# labels: target labels
-result = qsvm(data=[[0,1],[1,0]], labels=[0,1])
+# qsvm(data, labels, kernel, C)
+# data: 训练数据，形状为 (n_samples, n_features)
+# labels: 标签，形状为 (n_samples,)
+# kernel: 核函数类型 ('quantum', 'rbf', 'poly')
+# C: 正则化参数
+
+result = qsvm(
+    data=[[0, 1], [1, 0], [1, 1], [0, 0]],
+    labels=[0, 1, 1, 0],
+    kernel='quantum',
+    C=1.0
+)
+
+# result.accuracy: 准确率
+# result.support_vectors: 支持向量
+# result.dual_coef: 对偶系数
+# result.intercept: 截距
 print(f'Accuracy: {result.accuracy}')
+print(f'Support vectors: {result.support_vectors}')
 \end{verbatim}
 
 \section{进阶用法}
 
-\subsection{场景 1：不同数据}
+\subsection{场景 1：不同核函数}
 
 \begin{verbatim}
 from quonic.ml import qsvm
-result = qsvm(data=[[0,1],[1,0],[1,1]], labels=[0,1,1])
+
+# 量子核
+result_q = qsvm(data, labels, kernel='quantum')
+
+# RBF 核（经典）
+result_r = qsvm(data, labels, kernel='rbf')
+
+# 多项式核（经典）
+result_p = qsvm(data, labels, kernel='poly')
+
+print(f'Quantum: {result_q.accuracy}')
+print(f'RBF: {result_r.accuracy}')
+print(f'Poly: {result_p.accuracy}')
+\end{verbatim}
+
+\subsection{场景 2：不同正则化参数}
+
+\begin{verbatim}
+from quonic.ml import qsvm
+
+# 不同的 C 值
+for C in [0.1, 1.0, 10.0]:
+    result = qsvm(data, labels, C=C)
+    print(f'C={C}: Accuracy={result.accuracy}')
+\end{verbatim}
+
+\subsection{场景 3：多分类问题}
+
+\begin{verbatim}
+from quonic.ml import qsvm
+
+# 三分类问题
+data = [[0, 1], [1, 0], [1, 1], [0, 0], [0.5, 0.5]]
+labels = [0, 1, 2, 0, 1]
+
+result = qsvm(data, labels, kernel='quantum')
 print(f'Accuracy: {result.accuracy}')
 \end{verbatim}
 
 \section{适用场景}
 
-\subsection{分类}
+\subsection{图像分类}
 
-量子 SVM 可以用于分类问题。
+量子 SVM 可以用于图像分类任务，如手写数字识别、人脸识别等。
 
-\subsection{模式识别}
+\subsection{文本分类}
 
-量子 SVM 可以用于模式识别。
+量子 SVM 可以用于文本分类任务，如垃圾邮件检测、情感分析等。
+
+\subsection{异常检测}
+
+量子 SVM 可以用于异常检测任务，如金融欺诈检测、网络入侵检测等。
+
+\subsection{特征提取}
+
+量子特征映射可以作为特征提取器，将原始数据映射到高维空间。
 
 \section{常见问题}
 
 \subsection{量子 SVM 的优势是什么？}
 
-可以在高维特征空间中分类。
+量子 SVM 可以在指数维的 Hilbert 空间中计算核函数，这是经典核函数无法做到的。对于某些问题，量子 SVM 提供指数加速。
 
 \subsection{量子 SVM 的精度如何？}
 
-取决于核函数的选择。
+量子 SVM 的精度取决于：
+\begin{itemize}
+  \item 量子特征映射的选择
+  \item 数据的质量和数量
+  \item 正则化参数 C 的选择
+\end{itemize}
+
+\subsection{量子 SVM 需要多少量子比特？}
+
+量子 SVM 需要的量子比特数取决于特征维度。对于 $d$ 维特征，需要 $\lceil \log_2(d) \rceil$ 个量子比特。
+
+\subsection{量子 SVM 和经典 SVM 有什么区别？}
+
+量子 SVM 使用量子核函数，可以在更高维的空间中计算核矩阵。经典 SVM 使用经典核函数（如 RBF 核），受限于有限的核函数类型。
+
+\subsection{量子 SVM 的训练时间如何？}
+
+量子 SVM 的训练时间包括：
+\begin{itemize}
+  \item 量子核矩阵计算：$O(N^2 \cdot T_{\text{circuit}})$
+  \item 经典 SVM 求解：$O(N^3)$
+\end{itemize}
+
+其中 $T_{\text{circuit}}$ 是量子电路的执行时间。
 
 \section{学习路径}
 
 \subsection{前置知识}
 \begin{itemize}
-  \item 量子核方法
-  \item 支持向量机
-  \item 量子机器学习
+  \item 支持向量机（SVM）
+  \item 核方法
+  \item 量子比特和量子门
+  \item 量子测量
 \end{itemize}
 
 \subsection{继续学习}
 \begin{itemize}
-  \item 量子分类
-  \item 量子模式识别
-  \item 量子机器学习
+  \item 量子核方法（更一般的框架）
+  \item 量子神经网络（QNN）
+  \item 量子主成分分析（QPCA）
+  \item 量子聚类
 \end{itemize}
 
 \section{完整示例代码}
@@ -141,7 +277,24 @@ print(f'Accuracy: {result.accuracy}')
 
 \begin{verbatim}
 from quonic.ml import qsvm
-result = qsvm(data=[[0,1],[1,0]], labels=[0,1])
+
+data = [[0, 1], [1, 0], [1, 1], [0, 0]]
+labels = [0, 1, 1, 0]
+
+result = qsvm(data, labels)
+print(f'Accuracy: {result.accuracy}')
+\end{verbatim}
+
+\subsection{示例 2：带噪声的量子 SVM}
+
+\begin{verbatim}
+from quonic.ml import qsvm
+
+# 添加噪声
+data_noisy = [[0 + 0.1, 1 - 0.1], [1 - 0.1, 0 + 0.1]]
+labels_noisy = [0, 1]
+
+result = qsvm(data_noisy, labels_noisy, noise=0.05)
 print(f'Accuracy: {result.accuracy}')
 \end{verbatim}
 

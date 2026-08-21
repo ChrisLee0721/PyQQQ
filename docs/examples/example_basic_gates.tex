@@ -29,6 +29,7 @@
 \begin{itemize}
   \item 经典逻辑门（AND、OR、NOT）是不可逆的
   \item 经典门无法创建叠加态
+  \item 经典门无法创建纠缠态
 \end{itemize}
 
 \subsection{量子优势}
@@ -99,46 +100,102 @@ Z = \begin{pmatrix} 1 & 0 \\ 0 & -1 \end{pmatrix}
 Z|0\rangle = |0\rangle, \quad Z|1\rangle = -|1\rangle
 \end{equation}
 
+\textbf{Pauli-Y 门}：
+\begin{equation}
+Y = \begin{pmatrix} 0 & -i \\ i & 0 \end{pmatrix}
+\end{equation}
+\begin{equation}
+Y|0\rangle = i|1\rangle, \quad Y|1\rangle = -i|0\rangle
+\end{equation}
+
+\textbf{S 门}（相位门）：
+\begin{equation}
+S = \begin{pmatrix} 1 & 0 \\ 0 & i \end{pmatrix}
+\end{equation}
+\begin{equation}
+S|0\rangle = |0\rangle, \quad S|1\rangle = i|1\rangle
+\end{equation}
+
+\textbf{T 门}（$\pi/8$ 门）：
+\begin{equation}
+T = \begin{pmatrix} 1 & 0 \\ 0 & e^{i\pi/4} \end{pmatrix}
+\end{equation}
+\begin{equation}
+T|0\rangle = |0\rangle, \quad T|1\rangle = e^{i\pi/4}|1\rangle
+\end{equation}
+
 \subsection{几何解释}
 
 在 Bloch 球上：
 \begin{itemize}
   \item X 门：绕 X 轴旋转 $\pi$
-  \item H 门：绕 (X+Z)/$\sqrt{2}$ 轴旋转 $\pi$
+  \item Y 门：绕 Y 轴旋转 $\pi$
   \item Z 门：绕 Z 轴旋转 $\pi$
+  \item H 门：绕 (X+Z)/$\sqrt{2}$ 轴旋转 $\pi$
+  \item S 门：绕 Z 轴旋转 $\pi/2$
+  \item T 门：绕 Z 轴旋转 $\pi/4$
 \end{itemize}
 
 \section{代码详解}
 
 \begin{verbatim}
 from quonic import qgate, qshow
-from quonic.gates import X, H, Z
+from quonic.gates import X, H, Z, Y, S, T
 
+# 单量子比特门
 qgate(X, 0)  # Pauli-X: |0> -> |1>, |1> -> |0>
 qgate(H, 0)  # Hadamard: |0> -> (|0>+|1>)/sqrt(2)
 qgate(Z, 0)  # Pauli-Z: |0> -> |0>, |1> -> -|1>
+qgate(Y, 0)  # Pauli-Y: |0> -> i|1>, |1> -> -i|0>
+qgate(S, 0)  # S gate: |0> -> |0>, |1> -> i|1>
+qgate(T, 0)  # T gate: |0> -> |0>, |1> -> e^(i*pi/4)|1>
+
 qshow()
 \end{verbatim}
 
 \section{进阶用法}
 
-\subsection{场景 1：其他基本门}
+\subsection{场景 1：受控门}
 
 \begin{verbatim}
-from quonic.gates import Y, S, T
+from quonic.gates import CX, CZ, CY
 
-qgate(Y, 0)  # Pauli-Y
-qgate(S, 0)  # Phase gate (S gate)
-qgate(T, 0)  # T gate (pi/8 gate)
+# CNOT gate
+qgate(CX, 0, 1)  # Control: q0, Target: q1
+
+# Controlled-Z gate
+qgate(CZ, 0, 1)  # Control: q0, Target: q1
+
+# Controlled-Y gate
+qgate(CY, 0, 1)  # Control: q0, Target: q1
 \end{verbatim}
 
-\subsection{场景 2：受控门}
+\subsection{场景 2：旋转门}
 
 \begin{verbatim}
-from quonic.gates import CX, CZ
+from quonic.gates import Rx, Ry, Rz
+import math
 
-qgate(CX, 0, 1)  # CNOT gate
-qgate(CZ, 0, 1)  # Controlled-Z gate
+# Rx gate: rotation around X axis
+qgate(Rx(math.pi/2), 0)  # Rotate pi/2 around X
+
+# Ry gate: rotation around Y axis
+qgate(Ry(math.pi/4), 0)  # Rotate pi/4 around Y
+
+# Rz gate: rotation around Z axis
+qgate(Rz(math.pi), 0)  # Rotate pi around Z
+\end{verbatim}
+
+\subsection{场景 3：多量子比特门}
+
+\begin{verbatim}
+from quonic.gates import CCX, CSWAP
+
+# Toffoli gate (CCX)
+qgate(CCX, 0, 1, 2)  # Control: q0, q1; Target: q2
+
+# Fredkin gate (CSWAP)
+qgate(CSWAP, 0, 1, 2)  # Control: q0; Swap: q1, q2
 \end{verbatim}
 
 \section{适用场景}
@@ -151,15 +208,23 @@ qgate(CZ, 0, 1)  # Controlled-Z gate
 
 量子门用于制备和操作量子态。
 
+\subsection{量子密码学}
+
+量子门用于量子密钥分发和量子加密。
+
 \section{常见问题}
 
 \subsection{量子门和经典门有什么区别？}
 
-量子门是可逆的，经典门是不可逆的。量子门可以创建叠加态。
+量子门是可逆的，经典门是不可逆的。量子门可以创建叠加态和纠缠态。
 
 \subsection{哪些门是通用的？}
 
-\{H, T, CNOT\} 构成通用量子门集。
+\{H, T, CNOT\} 构成通用量子门集。任何量子电路都可以用这些门近似。
+
+\subsection{量子门的矩阵表示是什么？}
+
+量子门用酉矩阵表示，满足 $U^\dagger U = I$。
 
 \section{学习路径}
 
@@ -187,6 +252,17 @@ from quonic.gates import X, H, Z
 qgate(X, 0)
 qgate(H, 0)
 qgate(Z, 0)
+qshow()
+\end{verbatim}
+
+\subsection{示例 2：受控门}
+
+\begin{verbatim}
+from quonic import qgate, qshow
+from quonic.gates import CX, H
+
+qgate(H, 0)
+qgate(CX, 0, 1)
 qshow()
 \end{verbatim}
 

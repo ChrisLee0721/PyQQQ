@@ -190,6 +190,7 @@
 <ul>
 <li><p>经典逻辑门（AND、OR、NOT）是不可逆的</p></li>
 <li><p>经典门无法创建叠加态</p></li>
+<li><p>经典门无法创建纠缠态</p></li>
 </ul>
 <h2 id="量子优势">量子优势</h2>
 <ul>
@@ -243,46 +244,100 @@ Z = \begin{pmatrix} 1 &amp; 0 \\ 0 &amp; -1 \end{pmatrix}
 \end{equation}\]</span> <span class="math display">\[\begin{equation}
 Z|0\rangle = |0\rangle, \quad Z|1\rangle = -|1\rangle
 \end{equation}\]</span></p>
+<p><strong>Pauli-Y 门</strong>： <span
+class="math display">\[\begin{equation}
+Y = \begin{pmatrix} 0 &amp; -i \\ i &amp; 0 \end{pmatrix}
+\end{equation}\]</span> <span class="math display">\[\begin{equation}
+Y|0\rangle = i|1\rangle, \quad Y|1\rangle = -i|0\rangle
+\end{equation}\]</span></p>
+<p><strong>S 门</strong>（相位门）： <span
+class="math display">\[\begin{equation}
+S = \begin{pmatrix} 1 &amp; 0 \\ 0 &amp; i \end{pmatrix}
+\end{equation}\]</span> <span class="math display">\[\begin{equation}
+S|0\rangle = |0\rangle, \quad S|1\rangle = i|1\rangle
+\end{equation}\]</span></p>
+<p><strong>T 门</strong>（<span class="math inline">\(\pi/8\)</span>
+门）： <span class="math display">\[\begin{equation}
+T = \begin{pmatrix} 1 &amp; 0 \\ 0 &amp; e^{i\pi/4} \end{pmatrix}
+\end{equation}\]</span> <span class="math display">\[\begin{equation}
+T|0\rangle = |0\rangle, \quad T|1\rangle = e^{i\pi/4}|1\rangle
+\end{equation}\]</span></p>
 <h2 id="几何解释">几何解释</h2>
 <p>在 Bloch 球上：</p>
 <ul>
 <li><p>X 门：绕 X 轴旋转 <span
 class="math inline">\(\pi\)</span></p></li>
-<li><p>H 门：绕 (X+Z)/<span class="math inline">\(\sqrt{2}\)</span>
-轴旋转 <span class="math inline">\(\pi\)</span></p></li>
+<li><p>Y 门：绕 Y 轴旋转 <span
+class="math inline">\(\pi\)</span></p></li>
 <li><p>Z 门：绕 Z 轴旋转 <span
 class="math inline">\(\pi\)</span></p></li>
+<li><p>H 门：绕 (X+Z)/<span class="math inline">\(\sqrt{2}\)</span>
+轴旋转 <span class="math inline">\(\pi\)</span></p></li>
+<li><p>S 门：绕 Z 轴旋转 <span
+class="math inline">\(\pi/2\)</span></p></li>
+<li><p>T 门：绕 Z 轴旋转 <span
+class="math inline">\(\pi/4\)</span></p></li>
 </ul>
 <h1 id="代码详解">代码详解</h1>
 <pre><code>from quonic import qgate, qshow
-from quonic.gates import X, H, Z
+from quonic.gates import X, H, Z, Y, S, T
 
+# 单量子比特门
 qgate(X, 0)  # Pauli-X: |0&gt; -&gt; |1&gt;, |1&gt; -&gt; |0&gt;
 qgate(H, 0)  # Hadamard: |0&gt; -&gt; (|0&gt;+|1&gt;)/sqrt(2)
 qgate(Z, 0)  # Pauli-Z: |0&gt; -&gt; |0&gt;, |1&gt; -&gt; -|1&gt;
+qgate(Y, 0)  # Pauli-Y: |0&gt; -&gt; i|1&gt;, |1&gt; -&gt; -i|0&gt;
+qgate(S, 0)  # S gate: |0&gt; -&gt; |0&gt;, |1&gt; -&gt; i|1&gt;
+qgate(T, 0)  # T gate: |0&gt; -&gt; |0&gt;, |1&gt; -&gt; e^(i*pi/4)|1&gt;
+
 qshow()</code></pre>
 <h1 id="进阶用法">进阶用法</h1>
-<h2 id="场景-1其他基本门">场景 1：其他基本门</h2>
-<pre><code>from quonic.gates import Y, S, T
+<h2 id="场景-1受控门">场景 1：受控门</h2>
+<pre><code>from quonic.gates import CX, CZ, CY
 
-qgate(Y, 0)  # Pauli-Y
-qgate(S, 0)  # Phase gate (S gate)
-qgate(T, 0)  # T gate (pi/8 gate)</code></pre>
-<h2 id="场景-2受控门">场景 2：受控门</h2>
-<pre><code>from quonic.gates import CX, CZ
+# CNOT gate
+qgate(CX, 0, 1)  # Control: q0, Target: q1
 
-qgate(CX, 0, 1)  # CNOT gate
-qgate(CZ, 0, 1)  # Controlled-Z gate</code></pre>
+# Controlled-Z gate
+qgate(CZ, 0, 1)  # Control: q0, Target: q1
+
+# Controlled-Y gate
+qgate(CY, 0, 1)  # Control: q0, Target: q1</code></pre>
+<h2 id="场景-2旋转门">场景 2：旋转门</h2>
+<pre><code>from quonic.gates import Rx, Ry, Rz
+import math
+
+# Rx gate: rotation around X axis
+qgate(Rx(math.pi/2), 0)  # Rotate pi/2 around X
+
+# Ry gate: rotation around Y axis
+qgate(Ry(math.pi/4), 0)  # Rotate pi/4 around Y
+
+# Rz gate: rotation around Z axis
+qgate(Rz(math.pi), 0)  # Rotate pi around Z</code></pre>
+<h2 id="场景-3多量子比特门">场景 3：多量子比特门</h2>
+<pre><code>from quonic.gates import CCX, CSWAP
+
+# Toffoli gate (CCX)
+qgate(CCX, 0, 1, 2)  # Control: q0, q1; Target: q2
+
+# Fredkin gate (CSWAP)
+qgate(CSWAP, 0, 1, 2)  # Control: q0; Swap: q1, q2</code></pre>
 <h1 id="适用场景">适用场景</h1>
 <h2 id="量子计算">量子计算</h2>
 <p>基本量子门是所有量子算法的基础。</p>
 <h2 id="量子通信">量子通信</h2>
 <p>量子门用于制备和操作量子态。</p>
+<h2 id="量子密码学">量子密码学</h2>
+<p>量子门用于量子密钥分发和量子加密。</p>
 <h1 id="常见问题">常见问题</h1>
 <h2 id="量子门和经典门有什么区别">量子门和经典门有什么区别？</h2>
-<p>量子门是可逆的，经典门是不可逆的。量子门可以创建叠加态。</p>
+<p>量子门是可逆的，经典门是不可逆的。量子门可以创建叠加态和纠缠态。</p>
 <h2 id="哪些门是通用的">哪些门是通用的？</h2>
-<p>{H, T, CNOT} 构成通用量子门集。</p>
+<p>{H, T, CNOT} 构成通用量子门集。任何量子电路都可以用这些门近似。</p>
+<h2 id="量子门的矩阵表示是什么">量子门的矩阵表示是什么？</h2>
+<p>量子门用酉矩阵表示，满足 <span class="math inline">\(U^\dagger U =
+I\)</span>。</p>
 <h1 id="学习路径">学习路径</h1>
 <h2 id="前置知识">前置知识</h2>
 <ul>
@@ -303,6 +358,13 @@ from quonic.gates import X, H, Z
 qgate(X, 0)
 qgate(H, 0)
 qgate(Z, 0)
+qshow()</code></pre>
+<h2 id="示例-2受控门">示例 2：受控门</h2>
+<pre><code>from quonic import qgate, qshow
+from quonic.gates import CX, H
+
+qgate(H, 0)
+qgate(CX, 0, 1)
 qshow()</code></pre>
 <h1 id="下载">下载</h1>
 <ul>

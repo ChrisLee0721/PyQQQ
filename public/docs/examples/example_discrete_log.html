@@ -188,23 +188,30 @@
 <p>离散对数问题是密码学的基础，量子算法可以高效求解。</p>
 <h2 id="经典局限">经典局限</h2>
 <ul>
-<li><p>经典算法需要指数时间</p></li>
+<li><p>经典算法需要指数时间，对于 <span class="math inline">\(n\)</span>
+位数需要 <span class="math inline">\(O(\exp(\sqrt{n}))\)</span>
+时间</p></li>
 <li><p>对于大数，经典方法效率低</p></li>
+<li><p>经典算法无法利用量子并行性</p></li>
 </ul>
 <h2 id="量子优势">量子优势</h2>
 <ul>
-<li><p>量子算法可以在多项式时间内求解</p></li>
+<li><p>量子算法可以在多项式时间内求解，对于 <span
+class="math inline">\(n\)</span> 位数需要 <span
+class="math inline">\(O(n^3)\)</span> 时间</p></li>
 <li><p>提供指数加速</p></li>
 <li><p>是量子密码学的基础</p></li>
 </ul>
 <h2 id="实际应用">实际应用</h2>
 <ul>
-<li><p>密码学</p></li>
-<li><p>密钥交换</p></li>
-<li><p>数字签名</p></li>
+<li><p>密码学（Diffie-Hellman 密钥交换）</p></li>
+<li><p>数字签名（DSA、ECDSA）</p></li>
+<li><p>椭圆曲线密码学</p></li>
 </ul>
 <h1 id="快速上手">快速上手</h1>
 <pre><code>from quonic.algorithms import discrete_log
+
+# 求解离散对数：2^x ≡ 8 (mod 11)
 result = discrete_log(g=2, h=8, p=11)
 print(f&#39;x = {result.x}&#39;)</code></pre>
 <p><strong>预期输出</strong>：</p>
@@ -216,35 +223,70 @@ print(f&#39;x = {result.x}&#39;)</code></pre>
 alt="image" /></p>
 </div>
 <h2 id="数学推导">数学推导</h2>
-<p>离散对数问题：给定 <span class="math inline">\(g, h, p\)</span>，求
-<span class="math inline">\(x\)</span> 使得 <span
-class="math inline">\(g^x \equiv h \pmod{p}\)</span>。</p>
-<p><strong>量子算法</strong>：</p>
+<p><strong>Step 1: 问题定义</strong></p>
+<p>给定 <span class="math inline">\(g, h, p\)</span>，求 <span
+class="math inline">\(x\)</span> 使得： <span
+class="math display">\[\begin{equation}
+g^x \equiv h \pmod{p}
+\end{equation}\]</span></p>
+<p><strong>Step 2: 量子算法</strong></p>
+<p>使用 Shor 算法的变体：</p>
 <ol>
-<li><p>用 QPE 估计周期</p></li>
-<li><p>用经典后处理求解</p></li>
+<li><p>选择随机 <span class="math inline">\(a\)</span></p></li>
+<li><p>用 QPE 估计 <span class="math inline">\(g^a \mod p\)</span> 的阶
+<span class="math inline">\(r\)</span></p></li>
+<li><p>计算 <span class="math inline">\(x = a \cdot r^{-1} \mod
+(p-1)\)</span></p></li>
 </ol>
+<p><strong>Step 3: QPE 估计阶</strong></p>
+<p>QPE 估计阶 <span class="math inline">\(r\)</span>： <span
+class="math display">\[\begin{equation}
+|0\rangle|1\rangle \to \sum_k |k\rangle|g^k \mod p\rangle
+\end{equation}\]</span></p>
+<p>测量第一个寄存器得到 <span
+class="math inline">\(k\)</span>，用连分数展开求 <span
+class="math inline">\(r\)</span>。</p>
+<p><strong>Step 4: 经典后处理</strong></p>
+<p>计算离散对数： <span class="math display">\[\begin{equation}
+x = a \cdot r^{-1} \mod (p-1)
+\end{equation}\]</span></p>
 <h2 id="几何解释">几何解释</h2>
 <p>离散对数在有限域上求解，利用量子傅里叶变换提取周期信息。</p>
 <h1 id="代码详解">代码详解</h1>
 <pre><code>from quonic.algorithms import discrete_log
 
 # discrete_log(g, h, p)
-# g: generator
-# h: target value
-# p: modulus
+# g: 生成元
+# h: 目标值
+# p: 模数
+
 result = discrete_log(g=2, h=8, p=11)
-print(f&#39;x = {result.x}&#39;)</code></pre>
+
+# result.x: 离散对数
+# result.period: 阶
+# result.circuit: 量子电路
+print(f&#39;x = {result.x}&#39;)
+print(f&#39;Period: {result.period}&#39;)</code></pre>
 <h1 id="进阶用法">进阶用法</h1>
 <h2 id="场景-1不同参数">场景 1：不同参数</h2>
 <pre><code>from quonic.algorithms import discrete_log
+
+# 不同参数
 result = discrete_log(g=3, h=27, p=13)
+print(f&#39;x = {result.x}&#39;)</code></pre>
+<h2 id="场景-2大数">场景 2：大数</h2>
+<pre><code>from quonic.algorithms import discrete_log
+
+# 大数
+result = discrete_log(g=2, h=1024, p=1031)
 print(f&#39;x = {result.x}&#39;)</code></pre>
 <h1 id="适用场景">适用场景</h1>
 <h2 id="密码学">密码学</h2>
-<p>离散对数是许多密码系统的基础。</p>
-<h2 id="密钥交换">密钥交换</h2>
-<p>Diffie-Hellman 密钥交换基于离散对数问题。</p>
+<p>离散对数是许多密码系统的基础，如 Diffie-Hellman 密钥交换。</p>
+<h2 id="数字签名">数字签名</h2>
+<p>DSA 和 ECDSA 基于离散对数问题。</p>
+<h2 id="椭圆曲线密码学">椭圆曲线密码学</h2>
+<p>椭圆曲线离散对数问题是椭圆曲线密码学的基础。</p>
 <h1 id="常见问题">常见问题</h1>
 <h2
 id="离散对数和大数分解有什么关系">离散对数和大数分解有什么关系？</h2>
@@ -252,6 +294,8 @@ id="离散对数和大数分解有什么关系">离散对数和大数分解有�
 <h2 id="量子算法的加速比是多少">量子算法的加速比是多少？</h2>
 <p>指数加速：<span class="math inline">\(O(\text{poly}(\log N))\)</span>
 vs <span class="math inline">\(O(\exp(\sqrt{\log N}))\)</span>。</p>
+<h2 id="离散对数问题的难度如何">离散对数问题的难度如何？</h2>
+<p>离散对数问题是 NP-hard 的，但不是 NP-complete 的。</p>
 <h1 id="学习路径">学习路径</h1>
 <h2 id="前置知识">前置知识</h2>
 <ul>
@@ -268,6 +312,7 @@ vs <span class="math inline">\(O(\exp(\sqrt{\log N}))\)</span>。</p>
 <h1 id="完整示例代码">完整示例代码</h1>
 <h2 id="示例-1基本离散对数">示例 1：基本离散对数</h2>
 <pre><code>from quonic.algorithms import discrete_log
+
 result = discrete_log(g=2, h=8, p=11)
 print(f&#39;x = {result.x}&#39;)</code></pre>
 <h1 id="下载">下载</h1>

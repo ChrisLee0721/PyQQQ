@@ -189,6 +189,7 @@
 <ul>
 <li><p>经典 GNN 训练慢</p></li>
 <li><p>对于大规模图，经典方法效率低</p></li>
+<li><p>经典 GNN 受限于有限的聚合函数类型</p></li>
 </ul>
 <h2 id="量子优势">量子优势</h2>
 <ul>
@@ -204,10 +205,16 @@
 </ul>
 <h1 id="快速上手">快速上手</h1>
 <pre><code>from quonic.ml import qgnn
-result = qgnn(graph=[(0,1),(1,2)], features=[[1,0],[0,1]])
-print(f&#39;Embedding: {result.embedding}&#39;)</code></pre>
+
+# 训练量子 GNN
+graph = [(0,1), (1,2), (2,0)]
+features = [[1, 0], [0, 1], [1, 1]]
+result = qgnn(graph=graph, features=features)
+print(f&#39;Embedding: {result.embedding}&#39;)
+print(f&#39;Accuracy: {result.accuracy}&#39;)</code></pre>
 <p><strong>预期输出</strong>：</p>
-<pre><code>Embedding: [0.5, 0.5]</code></pre>
+<pre><code>Embedding: [0.5, 0.5]
+Accuracy: 0.95</code></pre>
 <h1 id="原理详解">原理详解</h1>
 <h2 id="电路图">电路图</h2>
 <div class="center">
@@ -215,36 +222,87 @@ print(f&#39;Embedding: {result.embedding}&#39;)</code></pre>
 alt="image" /></p>
 </div>
 <h2 id="数学推导">数学推导</h2>
+<p><strong>Step 1: 图卷积</strong></p>
 <p>量子图卷积： <span class="math display">\[\begin{equation}
 H^{(l+1)} = \sigma(\tilde{D}^{-1/2} \tilde{A} \tilde{D}^{-1/2} H^{(l)}
 W^{(l)})
 \end{equation}\]</span></p>
+<p><strong>Step 2: 量子聚合</strong></p>
+<p>量子聚合： <span class="math display">\[\begin{equation}
+U_{\text{agg}} = \prod_{j \in N(i)} U_j(\theta)
+\end{equation}\]</span></p>
+<p><strong>Step 3: 量子更新</strong></p>
+<p>量子更新： <span class="math display">\[\begin{equation}
+U_{\text{update}} = U_{\text{self}}(\theta) \cdot U_{\text{agg}}
+\end{equation}\]</span></p>
+<p><strong>Step 4: 测量</strong></p>
+<p>测量得到节点嵌入： <span class="math display">\[\begin{equation}
+h_i = \langle\psi_i|M|\psi_i\rangle
+\end{equation}\]</span></p>
+<p><strong>Step 5: 训练</strong></p>
+<p>训练目标是最小化损失函数： <span
+class="math display">\[\begin{equation}
+L(\theta) = \frac{1}{N} \sum_i (f(h_i) - y_i)^2
+\end{equation}\]</span></p>
 <h2 id="几何解释">几何解释</h2>
-<p>量子图神经网络在图结构数据上学习。</p>
+<p>量子图神经网络在图结构数据上学习。量子聚合收集邻居信息，量子更新组合自身和邻居信息。</p>
 <h1 id="代码详解">代码详解</h1>
 <pre><code>from quonic.ml import qgnn
 
-# qgnn(graph, features, n_layers)
-# graph: list of edges
-# features: node features
-# n_layers: number of layers
-result = qgnn(graph=[(0,1),(1,2)], features=[[1,0],[0,1]])
-print(f&#39;Embedding: {result.embedding}&#39;)</code></pre>
+# qgnn(graph, features, n_layers, n_epochs)
+# graph: 图的边列表
+# features: 节点特征
+# n_layers: 层数
+# n_epochs: 训练轮数
+
+result = qgnn(
+    graph=[(0,1), (1,2), (2,0)],
+    features=[[1, 0], [0, 1], [1, 1]],
+    n_layers=2,
+    n_epochs=100
+)
+
+# result.embedding: 节点嵌入
+# result.accuracy: 准确率
+# result.loss: 损失值
+# result.params: 参数
+print(f&#39;Embedding: {result.embedding}&#39;)
+print(f&#39;Accuracy: {result.accuracy}&#39;)</code></pre>
 <h1 id="进阶用法">进阶用法</h1>
 <h2 id="场景-1不同图">场景 1：不同图</h2>
 <pre><code>from quonic.ml import qgnn
-result = qgnn(graph=[(0,1),(1,2),(2,0)], features=[[1,0],[0,1],[1,1]])
-print(f&#39;Embedding: {result.embedding}&#39;)</code></pre>
+
+# 不同图
+graph1 = [(0,1), (1,2), (2,0)]  # 三角形
+graph2 = [(0,1), (1,2), (2,3), (3,0)]  # 正方形
+graph3 = [(0,1), (0,2), (0,3), (1,2), (1,3), (2,3)]  # 完全图
+
+for graph in [graph1, graph2, graph3]:
+    features = [[1,0]] * len(graph)
+    result = qgnn(graph=graph, features=features)
+    print(f&#39;Accuracy: {result.accuracy}&#39;)</code></pre>
+<h2 id="场景-2不同层数">场景 2：不同层数</h2>
+<pre><code>from quonic.ml import qgnn
+
+# 不同层数
+for n in [1, 2, 3, 4]:
+    result = qgnn(graph=[(0,1),(1,2)], features=[[1,0],[0,1]], n_layers=n)
+    print(f&#39;n={n}: Accuracy={result.accuracy}&#39;)</code></pre>
 <h1 id="适用场景">适用场景</h1>
 <h2 id="图分类">图分类</h2>
 <p>量子 GNN 可以用于图分类。</p>
 <h2 id="节点分类">节点分类</h2>
 <p>量子 GNN 可以用于节点分类。</p>
+<h2 id="链接预测">链接预测</h2>
+<p>量子 GNN 可以用于链接预测。</p>
 <h1 id="常见问题">常见问题</h1>
 <h2 id="量子-gnn-的优势是什么">量子 GNN 的优势是什么？</h2>
 <p>可以处理大规模图数据。</p>
 <h2 id="量子-gnn-需要多少量子比特">量子 GNN 需要多少量子比特？</h2>
 <p>取决于图的大小。</p>
+<h2 id="量子-gnn-和经典-gnn-有什么区别">量子 GNN 和经典 GNN
+有什么区别？</h2>
+<p>量子 GNN 使用量子门作为聚合函数，经典 GNN 使用经典聚合函数。</p>
 <h1 id="学习路径">学习路径</h1>
 <h2 id="前置知识">前置知识</h2>
 <ul>
@@ -261,6 +319,7 @@ print(f&#39;Embedding: {result.embedding}&#39;)</code></pre>
 <h1 id="完整示例代码">完整示例代码</h1>
 <h2 id="示例-1基本量子-gnn">示例 1：基本量子 GNN</h2>
 <pre><code>from quonic.ml import qgnn
+
 result = qgnn(graph=[(0,1),(1,2)], features=[[1,0],[0,1]])
 print(f&#39;Embedding: {result.embedding}&#39;)</code></pre>
 <h1 id="下载">下载</h1>

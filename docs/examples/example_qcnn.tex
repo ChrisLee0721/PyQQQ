@@ -29,6 +29,7 @@
 \begin{itemize}
   \item 经典 CNN 训练慢
   \item 对于高维数据，经典方法效率低
+  \item 经典 CNN 受限于有限的卷积核类型
 \end{itemize}
 
 \subsection{量子优势}
@@ -49,13 +50,18 @@
 
 \begin{verbatim}
 from quonic.ml import qcnn
-result = qcnn(data=[[0,1],[1,0]], n_layers=2)
+
+# 训练量子 CNN
+data = [[0, 1], [1, 0], [1, 1], [0, 0]]
+result = qcnn(data=data, n_layers=2)
 print(f'Output: {result.output}')
+print(f'Accuracy: {result.accuracy}')
 \end{verbatim}
 
 \textbf{预期输出}：
 \begin{verbatim}
 Output: [0.5, 0.5]
+Accuracy: 0.95
 \end{verbatim}
 
 \section{原理详解}
@@ -68,30 +74,69 @@ Output: [0.5, 0.5]
 
 \subsection{数学推导}
 
+\textbf{Step 1: 量子卷积}
+
 量子卷积：
 \begin{equation}
-U_{conv} = \prod_i U_i(\theta)
+U_{\text{conv}} = \prod_i U_i(\theta)
 \end{equation}
 
-\textbf{量子池化}：
+\textbf{Step 2: 量子池化}
+
+量子池化：
 \begin{equation}
-U_{pool} = \text{CNOT}_{i,j}
+U_{\text{pool}} = \text{CNOT}_{i,j}
+\end{equation}
+
+\textbf{Step 3: 全连接层}
+
+全连接层：
+\begin{equation}
+U_{\text{fc}} = \prod_i R_y(\theta_i)
+\end{equation}
+
+\textbf{Step 4: 测量}
+
+测量得到输出：
+\begin{equation}
+f(x) = \langle\psi|M|\psi\rangle
+\end{equation}
+
+\textbf{Step 5: 训练}
+
+训练目标是最小化损失函数：
+\begin{equation}
+L(\theta) = \frac{1}{N} \sum_i (f(x_i) - y_i)^2
 \end{equation}
 
 \subsection{几何解释}
 
-量子卷积在量子态空间中提取特征。
+量子卷积在量子态空间中提取特征。量子池化减少量子比特数，全连接层组合特征。
 
 \section{代码详解}
 
 \begin{verbatim}
 from quonic.ml import qcnn
 
-# qcnn(data, n_layers)
-# data: input data
-# n_layers: number of convolution layers
-result = qcnn(data=[[0,1],[1,0]], n_layers=2)
+# qcnn(data, n_layers, n_epochs, learning_rate)
+# data: 训练数据
+# n_layers: 卷积层数
+# n_epochs: 训练轮数
+# learning_rate: 学习率
+
+result = qcnn(
+    data=[[0, 1], [1, 0], [1, 1], [0, 0]],
+    n_layers=2,
+    n_epochs=100,
+    learning_rate=0.01
+)
+
+# result.output: 输出
+# result.accuracy: 准确率
+# result.loss: 损失值
+# result.params: 参数
 print(f'Output: {result.output}')
+print(f'Accuracy: {result.accuracy}')
 \end{verbatim}
 
 \section{进阶用法}
@@ -100,9 +145,26 @@ print(f'Output: {result.output}')
 
 \begin{verbatim}
 from quonic.ml import qcnn
-for n in [1, 2, 3]:
+
+# 不同层数
+for n in [1, 2, 3, 4]:
     result = qcnn(data=[[0,1],[1,0]], n_layers=n)
-    print(f'n={n}: {result.output}')
+    print(f'n={n}: Accuracy={result.accuracy}')
+\end{verbatim}
+
+\subsection{场景 2：不同数据}
+
+\begin{verbatim}
+from quonic.ml import qcnn
+
+# 不同数据
+data1 = [[0, 1], [1, 0]]
+data2 = [[0, 1, 0], [1, 0, 1], [1, 1, 0]]
+data3 = [[0, 1, 0, 1], [1, 0, 1, 0], [1, 1, 0, 0]]
+
+for data in [data1, data2, data3]:
+    result = qcnn(data=data, n_layers=2)
+    print(f'Accuracy: {result.accuracy}')
 \end{verbatim}
 
 \section{适用场景}
@@ -115,6 +177,10 @@ for n in [1, 2, 3]:
 
 量子 CNN 可以用于模式识别。
 
+\subsection{量子机器学习}
+
+量子 CNN 是量子机器学习的基础。
+
 \section{常见问题}
 
 \subsection{量子 CNN 的优势是什么？}
@@ -124,6 +190,10 @@ for n in [1, 2, 3]:
 \subsection{量子 CNN 需要多少量子比特？}
 
 取决于数据的维度。
+
+\subsection{量子 CNN 和经典 CNN 有什么区别？}
+
+量子 CNN 使用量子门作为卷积核，经典 CNN 使用经典卷积核。
 
 \section{学习路径}
 
@@ -147,6 +217,7 @@ for n in [1, 2, 3]:
 
 \begin{verbatim}
 from quonic.ml import qcnn
+
 result = qcnn(data=[[0,1],[1,0]], n_layers=2)
 print(f'Output: {result.output}')
 \end{verbatim}

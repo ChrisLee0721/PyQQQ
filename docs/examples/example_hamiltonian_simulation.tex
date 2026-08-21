@@ -27,8 +27,9 @@
 
 \subsection{经典局限}
 \begin{itemize}
-  \item 经典模拟需要指数时间
+  \item 经典模拟需要指数时间，对于 $n$ 个量子比特需要 $O(2^n)$ 内存
   \item 对于大系统，经典方法效率低
+  \item 精确对角化只适用于小系统
 \end{itemize}
 
 \subsection{量子优势}
@@ -40,22 +41,26 @@
 
 \subsection{实际应用}
 \begin{itemize}
-  \item 量子化学
-  \item 材料科学
-  \item 量子物理
+  \item 量子化学（分子模拟）
+  \item 材料科学（新材料设计）
+  \item 量子物理（量子多体系统）
 \end{itemize}
 
 \section{快速上手}
 
 \begin{verbatim}
 from quonic.simulation import hamiltonian_simulation
+
+# 模拟哈密顿量演化
 result = hamiltonian_simulation(H=[[1,0],[0,-1]], t=1.0)
 print(f'Evolution: {result.evolution}')
+print(f'Eigenvalues: {result.eigenvalues}')
 \end{verbatim}
 
 \textbf{预期输出}：
 \begin{verbatim}
 Evolution: [[0.54+0.84j, 0], [0, 0.54-0.84j]]
+Eigenvalues: [1, -1]
 \end{verbatim}
 
 \section{原理详解}
@@ -68,30 +73,67 @@ Evolution: [[0.54+0.84j, 0], [0, 0.54-0.84j]]
 
 \subsection{数学推导}
 
-哈密顿量模拟：
+\textbf{Step 1: 哈密顿量}
+
+哈密顿量描述系统的能量：
+\begin{equation}
+H = \sum_k H_k
+\end{equation}
+
+\textbf{Step 2: 演化算子}
+
+演化算子：
 \begin{equation}
 U(t) = e^{-iHt}
 \end{equation}
 
-\textbf{Trotter 分解}：
+\textbf{Step 3: Trotter 分解}
+
+Trotter 分解：
 \begin{equation}
 e^{-iHt} \approx \prod_k e^{-iH_k \Delta t}
 \end{equation}
 
+\textbf{Step 4: 量子电路实现}
+
+每个 $e^{-iH_k \Delta t}$ 可以用量子门实现：
+\begin{equation}
+e^{-iH_k \Delta t} = U_k e^{-i\lambda_k \Delta t} U_k^\dagger
+\end{equation}
+
+\textbf{Step 5: 测量}
+
+测量量子态得到物理量：
+\begin{equation}
+\langle A \rangle = \langle\psi(t)|A|\psi(t)\rangle
+\end{equation}
+
 \subsection{几何解释}
 
-哈密顿量模拟在量子态空间中演化。
+哈密顿量模拟在量子态空间中演化。哈密顿量决定旋转轴，时间决定旋转角度。
 
 \section{代码详解}
 
 \begin{verbatim}
 from quonic.simulation import hamiltonian_simulation
 
-# hamiltonian_simulation(H, t)
-# H: Hamiltonian matrix
-# t: evolution time
-result = hamiltonian_simulation(H=[[1,0],[0,-1]], t=1.0)
+# hamiltonian_simulation(H, t, method)
+# H: 哈密顿量矩阵
+# t: 演化时间
+# method: 模拟方法 ('trotter', 'qpe', 'linear_combination')
+
+result = hamiltonian_simulation(
+    H=[[1, 0], [0, -1]],
+    t=1.0,
+    method='trotter'
+)
+
+# result.evolution: 演化算子
+# result.eigenvalues: 能量本征值
+# result.eigenvectors: 本征态
+# result.circuit: 量子电路
 print(f'Evolution: {result.evolution}')
+print(f'Eigenvalues: {result.eigenvalues}')
 \end{verbatim}
 
 \section{进阶用法}
@@ -100,8 +142,26 @@ print(f'Evolution: {result.evolution}')
 
 \begin{verbatim}
 from quonic.simulation import hamiltonian_simulation
-result = hamiltonian_simulation(H=[[0,1],[1,0]], t=1.0)
-print(f'Evolution: {result.evolution}')
+
+# 不同哈密顿量
+H1 = [[1, 0], [0, -1]]  # 自旋-z
+H2 = [[0, 1], [1, 0]]   # 自旋-x
+H3 = [[0, -1j], [1j, 0]] # 自旋-y
+
+for H in [H1, H2, H3]:
+    result = hamiltonian_simulation(H, t=1.0)
+    print(f'Evolution: {result.evolution}')
+\end{verbatim}
+
+\subsection{场景 2：不同模拟方法}
+
+\begin{verbatim}
+from quonic.simulation import hamiltonian_simulation
+
+# 不同模拟方法
+for method in ['trotter', 'qpe', 'linear_combination']:
+    result = hamiltonian_simulation(H=[[1,0],[0,-1]], t=1.0, method=method)
+    print(f'{method}: Evolution={result.evolution}')
 \end{verbatim}
 
 \section{适用场景}
@@ -114,6 +174,10 @@ print(f'Evolution: {result.evolution}')
 
 哈密顿量模拟可以用于设计新材料。
 
+\subsection{量子物理}
+
+哈密顿量模拟可以用于模拟量子多体系统。
+
 \section{常见问题}
 
 \subsection{哈密顿量模拟和动力学模拟有什么区别？}
@@ -122,7 +186,11 @@ print(f'Evolution: {result.evolution}')
 
 \subsection{哈密顿量模拟的精度如何？}
 
-取决于 Trotter 分解的阶数。
+取决于 Trotter 分解的阶数和步数。
+
+\subsection{哈密顿量模拟需要多少量子比特？}
+
+取决于系统的大小。
 
 \section{学习路径}
 
@@ -146,6 +214,7 @@ print(f'Evolution: {result.evolution}')
 
 \begin{verbatim}
 from quonic.simulation import hamiltonian_simulation
+
 result = hamiltonian_simulation(H=[[1,0],[0,-1]], t=1.0)
 print(f'Evolution: {result.evolution}')
 \end{verbatim}

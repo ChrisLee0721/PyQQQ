@@ -29,6 +29,7 @@
 \begin{itemize}
   \item 经典 GNN 训练慢
   \item 对于大规模图，经典方法效率低
+  \item 经典 GNN 受限于有限的聚合函数类型
 \end{itemize}
 
 \subsection{量子优势}
@@ -49,13 +50,19 @@
 
 \begin{verbatim}
 from quonic.ml import qgnn
-result = qgnn(graph=[(0,1),(1,2)], features=[[1,0],[0,1]])
+
+# 训练量子 GNN
+graph = [(0,1), (1,2), (2,0)]
+features = [[1, 0], [0, 1], [1, 1]]
+result = qgnn(graph=graph, features=features)
 print(f'Embedding: {result.embedding}')
+print(f'Accuracy: {result.accuracy}')
 \end{verbatim}
 
 \textbf{预期输出}：
 \begin{verbatim}
 Embedding: [0.5, 0.5]
+Accuracy: 0.95
 \end{verbatim}
 
 \section{原理详解}
@@ -68,26 +75,69 @@ Embedding: [0.5, 0.5]
 
 \subsection{数学推导}
 
+\textbf{Step 1: 图卷积}
+
 量子图卷积：
 \begin{equation}
 H^{(l+1)} = \sigma(\tilde{D}^{-1/2} \tilde{A} \tilde{D}^{-1/2} H^{(l)} W^{(l)})
 \end{equation}
 
+\textbf{Step 2: 量子聚合}
+
+量子聚合：
+\begin{equation}
+U_{\text{agg}} = \prod_{j \in N(i)} U_j(\theta)
+\end{equation}
+
+\textbf{Step 3: 量子更新}
+
+量子更新：
+\begin{equation}
+U_{\text{update}} = U_{\text{self}}(\theta) \cdot U_{\text{agg}}
+\end{equation}
+
+\textbf{Step 4: 测量}
+
+测量得到节点嵌入：
+\begin{equation}
+h_i = \langle\psi_i|M|\psi_i\rangle
+\end{equation}
+
+\textbf{Step 5: 训练}
+
+训练目标是最小化损失函数：
+\begin{equation}
+L(\theta) = \frac{1}{N} \sum_i (f(h_i) - y_i)^2
+\end{equation}
+
 \subsection{几何解释}
 
-量子图神经网络在图结构数据上学习。
+量子图神经网络在图结构数据上学习。量子聚合收集邻居信息，量子更新组合自身和邻居信息。
 
 \section{代码详解}
 
 \begin{verbatim}
 from quonic.ml import qgnn
 
-# qgnn(graph, features, n_layers)
-# graph: list of edges
-# features: node features
-# n_layers: number of layers
-result = qgnn(graph=[(0,1),(1,2)], features=[[1,0],[0,1]])
+# qgnn(graph, features, n_layers, n_epochs)
+# graph: 图的边列表
+# features: 节点特征
+# n_layers: 层数
+# n_epochs: 训练轮数
+
+result = qgnn(
+    graph=[(0,1), (1,2), (2,0)],
+    features=[[1, 0], [0, 1], [1, 1]],
+    n_layers=2,
+    n_epochs=100
+)
+
+# result.embedding: 节点嵌入
+# result.accuracy: 准确率
+# result.loss: 损失值
+# result.params: 参数
 print(f'Embedding: {result.embedding}')
+print(f'Accuracy: {result.accuracy}')
 \end{verbatim}
 
 \section{进阶用法}
@@ -96,8 +146,27 @@ print(f'Embedding: {result.embedding}')
 
 \begin{verbatim}
 from quonic.ml import qgnn
-result = qgnn(graph=[(0,1),(1,2),(2,0)], features=[[1,0],[0,1],[1,1]])
-print(f'Embedding: {result.embedding}')
+
+# 不同图
+graph1 = [(0,1), (1,2), (2,0)]  # 三角形
+graph2 = [(0,1), (1,2), (2,3), (3,0)]  # 正方形
+graph3 = [(0,1), (0,2), (0,3), (1,2), (1,3), (2,3)]  # 完全图
+
+for graph in [graph1, graph2, graph3]:
+    features = [[1,0]] * len(graph)
+    result = qgnn(graph=graph, features=features)
+    print(f'Accuracy: {result.accuracy}')
+\end{verbatim}
+
+\subsection{场景 2：不同层数}
+
+\begin{verbatim}
+from quonic.ml import qgnn
+
+# 不同层数
+for n in [1, 2, 3, 4]:
+    result = qgnn(graph=[(0,1),(1,2)], features=[[1,0],[0,1]], n_layers=n)
+    print(f'n={n}: Accuracy={result.accuracy}')
 \end{verbatim}
 
 \section{适用场景}
@@ -110,6 +179,10 @@ print(f'Embedding: {result.embedding}')
 
 量子 GNN 可以用于节点分类。
 
+\subsection{链接预测}
+
+量子 GNN 可以用于链接预测。
+
 \section{常见问题}
 
 \subsection{量子 GNN 的优势是什么？}
@@ -119,6 +192,10 @@ print(f'Embedding: {result.embedding}')
 \subsection{量子 GNN 需要多少量子比特？}
 
 取决于图的大小。
+
+\subsection{量子 GNN 和经典 GNN 有什么区别？}
+
+量子 GNN 使用量子门作为聚合函数，经典 GNN 使用经典聚合函数。
 
 \section{学习路径}
 
@@ -142,6 +219,7 @@ print(f'Embedding: {result.embedding}')
 
 \begin{verbatim}
 from quonic.ml import qgnn
+
 result = qgnn(graph=[(0,1),(1,2)], features=[[1,0],[0,1]])
 print(f'Embedding: {result.embedding}')
 \end{verbatim}

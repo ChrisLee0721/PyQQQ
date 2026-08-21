@@ -29,6 +29,7 @@
 \begin{itemize}
   \item Shor 码和 Steane 码的容错阈值较低
   \item 对硬件连接性要求高
+  \item 经典纠错码不能直接用于量子系统
 \end{itemize}
 
 \subsection{量子优势}
@@ -49,13 +50,17 @@
 
 \begin{verbatim}
 from quonic.qec import color_code
+
+# 创建颜色码
 result = color_code(distance=3, error_rate=0.01)
 print(f'Logical error rate: {result.logical_error_rate}')
+print(f'Threshold: {result.threshold}')
 \end{verbatim}
 
 \textbf{预期输出}：
 \begin{verbatim}
 Logical error rate: 0.001
+Threshold: 0.01
 \end{verbatim}
 
 \section{原理详解}
@@ -68,21 +73,59 @@ Logical error rate: 0.001
 
 \subsection{数学推导}
 
-颜色码使用三色格子结构进行纠错。
+\textbf{Step 1: 三色格子}
 
-\textbf{校验子测量}：
+颜色码使用三色格子结构：
+\begin{itemize}
+  \item 红色面：X 校验子
+  \item 绿色面：Z 校验子
+  \item 蓝色面：X 校验子
+\end{itemize}
+
+\textbf{Step 2: 校验子测量}
+
+X 校验子：
 \begin{equation}
-S_X = \prod_{i \in \text{star}} X_i, \quad S_Z = \prod_{i \in \text{plaquette}} Z_i
+S_X = \prod_{i \in \text{face}} X_i
 \end{equation}
 
-\textbf{容错阈值}：
+Z 校验子：
+\begin{equation}
+S_Z = \prod_{i \in \text{face}} Z_i
+\end{equation}
+
+\textbf{Step 3: 错误检测}
+
+通过测量校验子检测错误：
+\begin{equation}
+S_X |\psi\rangle = \pm |\psi\rangle
+\end{equation}
+
+如果测量结果是 $-1$，说明检测到错误。
+
+\textbf{Step 4: 错误纠正}
+
+根据校验子测量结果纠正错误：
+\begin{equation}
+|\psi'\rangle = C \cdot E |\psi\rangle = |\psi\rangle
+\end{equation}
+
+其中 $C$ 是纠正算子，$E$ 是错误算子。
+
+\textbf{Step 5: 容错阈值}
+
+容错阈值：
 \begin{equation}
 p_{\text{threshold}} \approx 1\%
 \end{equation}
 
+当物理错误率低于阈值时，逻辑错误率随码距指数衰减。
+
 \subsection{几何解释}
 
 颜色码在二维格子上编码量子信息，通过测量局部校验子来检测和纠正错误。
+
+三色格子结构允许并行测量校验子，提高了纠错效率。
 
 \section{代码详解}
 
@@ -90,21 +133,42 @@ p_{\text{threshold}} \approx 1\%
 from quonic.qec import color_code
 
 # color_code(distance, error_rate)
-# distance: code distance
-# error_rate: physical error rate
+# distance: 码距
+# error_rate: 物理错误率
+
 result = color_code(distance=3, error_rate=0.01)
+
+# result.logical_error_rate: 逻辑错误率
+# result.threshold: 容错阈值
+# result.qubit_count: 量子比特数
+# result.syndrome: 校验子
 print(f'Logical error rate: {result.logical_error_rate}')
+print(f'Threshold: {result.threshold}')
+print(f'Qubit count: {result.qubit_count}')
 \end{verbatim}
 
 \section{进阶用法}
 
-\subsection{场景 1：不同距离}
+\subsection{场景 1：不同码距}
 
 \begin{verbatim}
 from quonic.qec import color_code
-for d in [3, 5, 7]:
+
+# 不同码距
+for d in [3, 5, 7, 9]:
     result = color_code(distance=d, error_rate=0.01)
-    print(f'd={d}: {result.logical_error_rate}')
+    print(f'd={d}: Logical error rate={result.logical_error_rate}')
+\end{verbatim}
+
+\subsection{场景 2：不同错误率}
+
+\begin{verbatim}
+from quonic.qec import color_code
+
+# 不同错误率
+for p in [0.001, 0.01, 0.1]:
+    result = color_code(distance=3, error_rate=p)
+    print(f'p={p}: Logical error rate={result.logical_error_rate}')
 \end{verbatim}
 
 \section{适用场景}
@@ -117,6 +181,10 @@ for d in [3, 5, 7]:
 
 颜色码可以保护量子通信中的量子态。
 
+\subsection{量子存储}
+
+颜色码可以延长量子存储的相干时间。
+
 \section{常见问题}
 
 \subsection{颜色码和表面码有什么区别？}
@@ -126,6 +194,10 @@ for d in [3, 5, 7]:
 \subsection{颜色码需要多少量子比特？}
 
 需要 $O(d^2)$ 个量子比特，其中 $d$ 是码距。
+
+\subsection{颜色码的容错阈值是多少？}
+
+约 1\%，是目前最高的。
 
 \section{学习路径}
 
@@ -149,6 +221,7 @@ for d in [3, 5, 7]:
 
 \begin{verbatim}
 from quonic.qec import color_code
+
 result = color_code(distance=3, error_rate=0.01)
 print(f'Logical error rate: {result.logical_error_rate}')
 \end{verbatim}

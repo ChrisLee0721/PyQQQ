@@ -29,6 +29,7 @@ QAOA MaxCut 是 QAOA 的经典应用。
 \begin{itemize}
   \item MaxCut 是 NP-hard 问题
   \item 经典算法只能近似求解
+  \item 经典近似算法有性能保证的上限
 \end{itemize}
 
 \subsection{量子优势}
@@ -49,13 +50,18 @@ QAOA MaxCut 是 QAOA 的经典应用。
 
 \begin{verbatim}
 from quonic.algorithms import qaoa_maxcut
-result = qaoa_maxcut(graph=[(0,1),(1,2),(2,0)], p=2)
+
+# 求解 MaxCut 问题
+graph = [(0,1), (1,2), (2,0)]
+result = qaoa_maxcut(graph=graph, p=2)
 print(f'MaxCut: {result.maxcut_value}')
+print(f'Solution: {result.solution}')
 \end{verbatim}
 
 \textbf{预期输出}：
 \begin{verbatim}
 MaxCut: 2
+Solution: [1, 0, 1]
 \end{verbatim}
 
 \section{原理详解}
@@ -68,19 +74,50 @@ MaxCut: 2
 
 \subsection{数学推导}
 
-QAOA MaxCut 优化：
+\textbf{Step 1: MaxCut 问题}
+
+MaxCut 问题：将图的顶点分为两组，使得连接两组的边数最大。
+
+目标函数：
 \begin{equation}
 C(z) = \sum_{(i,j) \in E} w_{ij} (1 - z_i z_j)
 \end{equation}
 
-\textbf{QAOA 电路}：
+\textbf{Step 2: QAOA 电路}
+
+QAOA 电路：
 \begin{equation}
 |\gamma, \beta\rangle = \prod_{l=1}^{p} e^{-i\beta_l B} e^{-i\gamma_l C} |+\rangle^{\otimes n}
 \end{equation}
 
+其中 $B = \sum_i X_i$ 是混合算子，$C$ 是问题算子。
+
+\textbf{Step 3: 期望值}
+
+期望值：
+\begin{equation}
+F_p(\gamma, \beta) = \langle\gamma, \beta|C|\gamma, \beta\rangle
+\end{equation}
+
+\textbf{Step 4: 优化}
+
+使用经典优化器最大化期望值：
+\begin{equation}
+\gamma^*, \beta^* = \arg\max_{\gamma, \beta} F_p(\gamma, \beta)
+\end{equation}
+
+\textbf{Step 5: 近似比}
+
+近似比：
+\begin{equation}
+r = \frac{F_p(\gamma^*, \beta^*)}{C_{\text{max}}}
+\end{equation}
+
+对于 MaxCut，QAOA 的近似比约为 0.692。
+
 \subsection{几何解释}
 
-QAOA MaxCut 在参数空间中寻找最优割。
+QAOA MaxCut 在参数空间中寻找最优割。量子计算机负责制备态和测量，经典优化器负责更新参数。
 
 \section{代码详解}
 
@@ -88,11 +125,22 @@ QAOA MaxCut 在参数空间中寻找最优割。
 from quonic.algorithms import qaoa_maxcut
 
 # qaoa_maxcut(graph, p, optimizer)
-# graph: list of edges (i, j)
-# p: number of QAOA layers
-# optimizer: classical optimizer
-result = qaoa_maxcut(graph=[(0,1),(1,2),(2,0)], p=2)
+# graph: 图的边列表
+# p: QAOA 层数
+# optimizer: 优化器
+
+result = qaoa_maxcut(
+    graph=[(0,1), (1,2), (2,0)],
+    p=2,
+    optimizer='cobyla'
+)
+
+# result.maxcut_value: MaxCut 值
+# result.solution: 最优解
+# result.params: 优化后的参数
+# result.history: 优化历史
 print(f'MaxCut: {result.maxcut_value}')
+print(f'Solution: {result.solution}')
 \end{verbatim}
 
 \section{进阶用法}
@@ -101,9 +149,26 @@ print(f'MaxCut: {result.maxcut_value}')
 
 \begin{verbatim}
 from quonic.algorithms import qaoa_maxcut
-for p in [1, 2, 4]:
+
+# 不同层数
+for p in [1, 2, 4, 8]:
     result = qaoa_maxcut(graph=[(0,1),(1,2),(2,0)], p=p)
     print(f'p={p}: MaxCut={result.maxcut_value}')
+\end{verbatim}
+
+\subsection{场景 2：不同图}
+
+\begin{verbatim}
+from quonic.algorithms import qaoa_maxcut
+
+# 不同图
+graph1 = [(0,1), (1,2), (2,0)]  # 三角形
+graph2 = [(0,1), (1,2), (2,3), (3,0)]  # 正方形
+graph3 = [(0,1), (0,2), (0,3), (1,2), (1,3), (2,3)]  # 完全图
+
+for graph in [graph1, graph2, graph3]:
+    result = qaoa_maxcut(graph=graph, p=2)
+    print(f'MaxCut: {result.maxcut_value}')
 \end{verbatim}
 
 \section{适用场景}
@@ -116,6 +181,10 @@ QAOA MaxCut 可以用于各种组合优化问题。
 
 QAOA MaxCut 可以用于图分割问题。
 
+\subsection{网络设计}
+
+QAOA MaxCut 可以用于网络设计问题。
+
 \section{常见问题}
 
 \subsection{QAOA MaxCut 的近似比是多少？}
@@ -124,7 +193,11 @@ QAOA MaxCut 可以用于图分割问题。
 
 \subsection{QAOA MaxCut 需要多少层？}
 
-层数 $p$ 越大，近似比越好。
+层数 $p$ 越大，近似比越好。但更多的层意味着更多的参数需要优化。
+
+\subsection{QAOA MaxCut 和经典方法有什么区别？}
+
+QAOA 使用量子计算机制备态和测量，经典方法使用经典计算机。
 
 \section{学习路径}
 
@@ -148,6 +221,7 @@ QAOA MaxCut 可以用于图分割问题。
 
 \begin{verbatim}
 from quonic.algorithms import qaoa_maxcut
+
 result = qaoa_maxcut(graph=[(0,1),(1,2),(2,0)], p=2)
 print(f'MaxCut: {result.maxcut_value}')
 \end{verbatim}

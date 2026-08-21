@@ -189,6 +189,7 @@
 <ul>
 <li><p>经典计算没有量子噪声</p></li>
 <li><p>量子噪声会破坏量子信息</p></li>
+<li><p>量子噪声限制了量子计算的规模</p></li>
 </ul>
 <h2 id="量子优势">量子优势</h2>
 <ul>
@@ -204,10 +205,14 @@
 </ul>
 <h1 id="快速上手">快速上手</h1>
 <pre><code>from quonic.noise import noise_model
+
+# 创建噪声模型
 result = noise_model(error_rate=0.01)
-print(f&#39;Noise model: {result.model}&#39;)</code></pre>
+print(f&#39;Noise model: {result.model}&#39;)
+print(f&#39;Fidelity: {result.fidelity}&#39;)</code></pre>
 <p><strong>预期输出</strong>：</p>
-<pre><code>Noise model: depolarizing(0.01)</code></pre>
+<pre><code>Noise model: depolarizing(0.01)
+Fidelity: 0.99</code></pre>
 <h1 id="原理详解">原理详解</h1>
 <h2 id="电路图">电路图</h2>
 <div class="center">
@@ -215,40 +220,86 @@ print(f&#39;Noise model: {result.model}&#39;)</code></pre>
 alt="image" /></p>
 </div>
 <h2 id="数学推导">数学推导</h2>
-<p>量子噪声模型： <span class="math display">\[\begin{equation}
-\mathcal{E}(\rho) = (1-p)\rho + p/3 (X\rho X + Y\rho Y + Z\rho Z)
+<p><strong>Step 1: 噪声模型</strong></p>
+<p>量子噪声可以用量子通道描述： <span
+class="math display">\[\begin{equation}
+\mathcal{E}(\rho) = \sum_k E_k \rho E_k^\dagger
 \end{equation}\]</span></p>
-<p><strong>噪声类型</strong>：</p>
-<ul>
-<li><p>比特翻转（X 错误）</p></li>
-<li><p>相位翻转（Z 错误）</p></li>
-<li><p>退相干</p></li>
-</ul>
+<p>其中 <span class="math inline">\(E_k\)</span> 是 Kraus 算子，满足
+<span class="math inline">\(\sum_k E_k^\dagger E_k = I\)</span>。</p>
+<p><strong>Step 2: 比特翻转噪声</strong></p>
+<p>比特翻转噪声： <span class="math display">\[\begin{equation}
+E_0 = \sqrt{1-p} I, \quad E_1 = \sqrt{p} X
+\end{equation}\]</span></p>
+<p><span class="math display">\[\begin{equation}
+\mathcal{E}_{\text{bf}}(\rho) = (1-p)\rho + p X\rho X
+\end{equation}\]</span></p>
+<p><strong>Step 3: 相位翻转噪声</strong></p>
+<p>相位翻转噪声： <span class="math display">\[\begin{equation}
+E_0 = \sqrt{1-p} I, \quad E_1 = \sqrt{p} Z
+\end{equation}\]</span></p>
+<p><span class="math display">\[\begin{equation}
+\mathcal{E}_{\text{pf}}(\rho) = (1-p)\rho + p Z\rho Z
+\end{equation}\]</span></p>
+<p><strong>Step 4: 退极化噪声</strong></p>
+<p>退极化噪声： <span class="math display">\[\begin{equation}
+\mathcal{E}_{\text{dep}}(\rho) = (1-p)\rho + \frac{p}{3}(X\rho X + Y\rho
+Y + Z\rho Z)
+\end{equation}\]</span></p>
+<p><strong>Step 5: 退相干噪声</strong></p>
+<p>退相干噪声： <span class="math display">\[\begin{equation}
+\mathcal{E}_{\text{dc}}(\rho) = (1-p)\rho + p|0\rangle\langle
+0|\rho|0\rangle\langle 0|
+\end{equation}\]</span></p>
 <h2 id="几何解释">几何解释</h2>
-<p>量子噪声在 Bloch 球上使量子态退相干。</p>
+<p>量子噪声在 Bloch 球上使量子态退相干。比特翻转噪声绕 X
+轴旋转，相位翻转噪声绕 Z 轴旋转，退极化噪声使量子态趋向混合态。</p>
 <h1 id="代码详解">代码详解</h1>
 <pre><code>from quonic.noise import noise_model
 
 # noise_model(error_rate, noise_type)
-# error_rate: probability of error
-# noise_type: type of noise
-result = noise_model(error_rate=0.01)
-print(f&#39;Noise model: {result.model}&#39;)</code></pre>
+# error_rate: 错误概率
+# noise_type: 噪声类型 (&#39;depolarizing&#39;, &#39;bit_flip&#39;, &#39;phase_flip&#39;, &#39;decoherence&#39;)
+
+result = noise_model(
+    error_rate=0.01,
+    noise_type=&#39;depolarizing&#39;
+)
+
+# result.model: 噪声模型
+# result.fidelity: 保真度
+# result.kraus_operators: Kraus 算子
+print(f&#39;Noise model: {result.model}&#39;)
+print(f&#39;Fidelity: {result.fidelity}&#39;)</code></pre>
 <h1 id="进阶用法">进阶用法</h1>
 <h2 id="场景-1不同噪声类型">场景 1：不同噪声类型</h2>
 <pre><code>from quonic.noise import noise_model
-result = noise_model(error_rate=0.01, noise_type=&#39;bit_flip&#39;)
-print(f&#39;Noise model: {result.model}&#39;)</code></pre>
+
+# 不同噪声类型
+for noise_type in [&#39;depolarizing&#39;, &#39;bit_flip&#39;, &#39;phase_flip&#39;, &#39;decoherence&#39;]:
+    result = noise_model(error_rate=0.01, noise_type=noise_type)
+    print(f&#39;{noise_type}: Fidelity={result.fidelity}&#39;)</code></pre>
+<h2 id="场景-2不同错误率">场景 2：不同错误率</h2>
+<pre><code>from quonic.noise import noise_model
+
+# 不同错误率
+for p in [0.001, 0.01, 0.1]:
+    result = noise_model(error_rate=p)
+    print(f&#39;p={p}: Fidelity={result.fidelity}&#39;)</code></pre>
 <h1 id="适用场景">适用场景</h1>
 <h2 id="量子计算">量子计算</h2>
 <p>噪声模型可以指导量子算法设计。</p>
 <h2 id="量子通信">量子通信</h2>
 <p>噪声模型可以评估通信信道的质量。</p>
+<h2 id="量子存储">量子存储</h2>
+<p>噪声模型可以评估量子存储的保真度。</p>
 <h1 id="常见问题">常见问题</h1>
 <h2 id="量子噪声有哪些类型">量子噪声有哪些类型？</h2>
-<p>比特翻转、相位翻转、退相干等。</p>
+<p>比特翻转、相位翻转、退极化、退相干等。</p>
 <h2 id="如何对抗量子噪声">如何对抗量子噪声？</h2>
 <p>使用量子纠错码或噪声缓解技术。</p>
+<h2 id="量子噪声的来源是什么">量子噪声的来源是什么？</h2>
+<p>量子噪声来自环境干扰、门误差、测量误差等。</p>
 <h1 id="学习路径">学习路径</h1>
 <h2 id="前置知识">前置知识</h2>
 <ul>
@@ -265,6 +316,7 @@ print(f&#39;Noise model: {result.model}&#39;)</code></pre>
 <h1 id="完整示例代码">完整示例代码</h1>
 <h2 id="示例-1基本噪声模型">示例 1：基本噪声模型</h2>
 <pre><code>from quonic.noise import noise_model
+
 result = noise_model(error_rate=0.01)
 print(f&#39;Noise model: {result.model}&#39;)</code></pre>
 <h1 id="下载">下载</h1>

@@ -29,33 +29,38 @@
 \begin{itemize}
   \item 经典方法（如 CCSD(T)）对大分子计算成本极高
   \item 精确对角化需要指数级内存
+  \item 密度泛函理论（DFT）对强关联体系不准确
 \end{itemize}
 
 \subsection{量子优势}
 \begin{itemize}
   \item 分子 VQE 使用量子计算机制备试探态
   \item 经典优化器调整参数最小化能量
-  \item 对噪声有鲁棒性
+  \item 对噪声有鲁棒性，适合近期量子设备
 \end{itemize}
 
 \subsection{实际应用}
 \begin{itemize}
-  \item 量子化学
-  \item 药物设计
-  \item 材料科学
+  \item 量子化学（分子基态能量计算）
+  \item 药物设计（药物分子设计）
+  \item 材料科学（催化剂设计）
 \end{itemize}
 
 \section{快速上手}
 
 \begin{verbatim}
 from quonic.chemistry import molecule_vqe
+
+# 计算 H2 分子的基态能量
 result = molecule_vqe(molecule='H2', bond_length=0.74)
-print(f'Energy: {result.energy}')
+print(f'Energy: {result.energy} Ha')
+print(f'Error: {result.error} Ha')
 \end{verbatim}
 
 \textbf{预期输出}：
 \begin{verbatim}
 Energy: -1.137270 Ha
+Error: 0.001 Ha
 \end{verbatim}
 
 \section{原理详解}
@@ -68,34 +73,71 @@ Energy: -1.137270 Ha
 
 \subsection{数学推导}
 
-分子 VQE 基于变分原理：
+\textbf{Step 1: 分子哈密顿量}
+
+分子哈密顿量：
+\begin{equation}
+H = \sum_{ij} h_{ij} a_i^\dagger a_j + \sum_{ijkl} h_{ijkl} a_i^\dagger a_j^\dagger a_k a_l
+\end{equation}
+
+\textbf{Step 2: Jordan-Wigner 变换}
+
+使用 Jordan-Wigner 变换映射到量子比特：
+\begin{equation}
+H = \sum_i h_i Z_i + \sum_{ij} h_{ij} Z_i Z_j + \sum_{ij} h_{ij} X_i X_j + \cdots
+\end{equation}
+
+\textbf{Step 3: 变分原理}
+
+变分原理：
 \begin{equation}
 E_0 \leq \langle\psi(\theta)|H|\psi(\theta)\rangle
 \end{equation}
 
-\textbf{算法步骤}：
-\begin{enumerate}
-  \item 在量子计算机上制备 $|\psi(\theta)\rangle$
-  \item 测量哈密顿量的期望值 $\langle H \rangle$
-  \item 经典优化器更新参数 $\theta$
-  \item 重复直到收敛
-\end{enumerate}
+\textbf{Step 4: UCCSD ansatz}
+
+UCCSD ansatz：
+\begin{equation}
+|\psi(\theta)\rangle = e^{T(\theta) - T^\dagger(\theta)}|\psi_0\rangle
+\end{equation}
+
+其中 $T(\theta)$ 是耦合簇算符。
+
+\textbf{Step 5: 优化}
+
+使用经典优化器最小化能量：
+\begin{equation}
+\theta^* = \arg\min_\theta \langle\psi(\theta)|H|\psi(\theta)\rangle
+\end{equation}
 
 \subsection{几何解释}
 
-分子 VQE 在参数空间中寻找能量最小值。
+分子 VQE 在参数空间中寻找能量最小值。量子计算机负责制备态和测量，经典优化器负责更新参数。
 
 \section{代码详解}
 
 \begin{verbatim}
 from quonic.chemistry import molecule_vqe
 
-# molecule_vqe(molecule, bond_length, ansatz)
-# molecule: molecular formula
-# bond_length: bond length in Angstroms
-# ansatz: parameterized circuit
-result = molecule_vqe(molecule='H2', bond_length=0.74)
-print(f'Energy: {result.energy}')
+# molecule_vqe(molecule, bond_length, ansatz, optimizer)
+# molecule: 分子式
+# bond_length: 键长（埃）
+# ansatz: 参数化电路 ('uccsd', 'hardware_efficient')
+# optimizer: 优化器 ('cobyla', 'l-bfgs-b', 'spsa')
+
+result = molecule_vqe(
+    molecule='H2',
+    bond_length=0.74,
+    ansatz='uccsd',
+    optimizer='cobyla'
+)
+
+# result.energy: 基态能量
+# result.error: 误差
+# result.params: 优化后的参数
+# result.history: 优化历史
+print(f'Energy: {result.energy} Ha')
+print(f'Error: {result.error} Ha')
 \end{verbatim}
 
 \section{进阶用法}
@@ -104,8 +146,22 @@ print(f'Energy: {result.energy}')
 
 \begin{verbatim}
 from quonic.chemistry import molecule_vqe
-result = molecule_vqe(molecule='LiH', bond_length=1.6)
-print(f'Energy: {result.energy}')
+
+# 不同分子
+for mol in ['H2', 'LiH', 'H2O']:
+    result = molecule_vqe(molecule=mol, bond_length=0.74)
+    print(f'{mol}: Energy={result.energy} Ha')
+\end{verbatim}
+
+\subsection{场景 2：不同 ansatz}
+
+\begin{verbatim}
+from quonic.chemistry import molecule_vqe
+
+# 不同 ansatz
+for ansatz in ['uccsd', 'hardware_efficient']:
+    result = molecule_vqe(molecule='H2', ansatz=ansatz)
+    print(f'{ansatz}: Energy={result.energy} Ha')
 \end{verbatim}
 
 \section{适用场景}
@@ -118,6 +174,10 @@ print(f'Energy: {result.energy}')
 
 分子 VQE 可以用于设计新药物。
 
+\subsection{材料科学}
+
+分子 VQE 可以用于设计新材料。
+
 \section{常见问题}
 
 \subsection{分子 VQE 的精度如何？}
@@ -127,6 +187,10 @@ UCCSD ansatz 通常能达到化学精度（1 kcal/mol）。
 \subsection{分子 VQE 需要多少量子比特？}
 
 取决于分子的大小。H2 需要 4 个量子比特。
+
+\subsection{分子 VQE 和经典方法有什么区别？}
+
+分子 VQE 使用量子计算机制备试探态，经典方法使用经典计算机。
 
 \section{学习路径}
 
@@ -150,8 +214,9 @@ UCCSD ansatz 通常能达到化学精度（1 kcal/mol）。
 
 \begin{verbatim}
 from quonic.chemistry import molecule_vqe
+
 result = molecule_vqe(molecule='H2', bond_length=0.74)
-print(f'Energy: {result.energy}')
+print(f'Energy: {result.energy} Ha')
 \end{verbatim}
 
 \section{下载}

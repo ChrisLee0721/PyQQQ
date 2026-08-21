@@ -29,6 +29,7 @@
 \begin{itemize}
   \item 经典搜索需要 $O(N)$ 次查询
   \item 对于大规模问题，经典方法效率低
+  \item 经典算法无法利用量子并行性
 \end{itemize}
 
 \subsection{量子优势}
@@ -49,13 +50,18 @@
 
 \begin{verbatim}
 from quonic.algorithms import diffusion
+
+# 创建 2-qubit 扩散算子
 result = diffusion(n_qubits=2)
 print(f'Operator: {result.operator}')
 \end{verbatim}
 
 \textbf{预期输出}：
 \begin{verbatim}
-Operator: [[-0.5, 0.5, 0.5, 0.5], ...]
+Operator: [[-0.5, 0.5, 0.5, 0.5],
+           [ 0.5,-0.5, 0.5, 0.5],
+           [ 0.5, 0.5,-0.5, 0.5],
+           [ 0.5, 0.5, 0.5,-0.5]]
 \end{verbatim}
 
 \section{原理详解}
@@ -68,21 +74,53 @@ Operator: [[-0.5, 0.5, 0.5, 0.5], ...]
 
 \subsection{数学推导}
 
-扩散算子关于平均振幅反射：
+\textbf{Step 1: 均匀叠加态}
+
+均匀叠加态：
+\begin{equation}
+|s\rangle = H^{\otimes n}|0\rangle^{\otimes n} = \frac{1}{\sqrt{N}} \sum_{x=0}^{N-1} |x\rangle
+\end{equation}
+
+\textbf{Step 2: 扩散算子定义}
+
+扩散算子：
 \begin{equation}
 D = 2|s\rangle\langle s| - I
 \end{equation}
 
-其中 $|s\rangle$ 是均匀叠加态。
+\textbf{Step 3: 矩阵表示}
 
-\textbf{作用}：
+在计算基下：
+\begin{equation}
+D_{ij} = \begin{cases} \frac{2}{N} - 1 & \text{if } i = j \\ \frac{2}{N} & \text{if } i \neq j \end{cases}
+\end{equation}
+
+\textbf{Step 4: 量子电路实现}
+
+扩散算子可以分解为：
+\begin{equation}
+D = H^{\otimes n} (2|0\rangle\langle 0| - I) H^{\otimes n}
+\end{equation}
+
+其中：
+\begin{equation}
+2|0\rangle\langle 0| - I = \text{diag}(1, -1, -1, \ldots, -1)
+\end{equation}
+
+\textbf{Step 5: 作用}
+
+扩散算子作用在量子态上：
 \begin{equation}
 D|\psi\rangle = 2\langle s|\psi\rangle|s\rangle - |\psi\rangle
 \end{equation}
 
+这相当于关于平均振幅反射。
+
 \subsection{几何解释}
 
-扩散算子在 Bloch 球上关于平均振幅反射，放大目标态的振幅。
+扩散算子在 Bloch 球上关于平均振幅反射。如果目标态的振幅高于平均，反射后振幅被放大；如果低于平均，振幅被减小。
+
+在二维子空间中，扩散算子是关于 $|s\rangle$ 的反射。
 
 \section{代码详解}
 
@@ -90,9 +128,14 @@ D|\psi\rangle = 2\langle s|\psi\rangle|s\rangle - |\psi\rangle
 from quonic.algorithms import diffusion
 
 # diffusion(n_qubits)
-# n_qubits: number of qubits
+# n_qubits: 量子比特数
+
 result = diffusion(n_qubits=2)
-print(f'Operator: {result.operator}')
+
+# result.operator: 扩散算子矩阵
+# result.circuit: 量子电路
+print(f'Operator shape: {result.operator.shape}')
+print(f'Circuit depth: {result.circuit.depth}')
 \end{verbatim}
 
 \section{进阶用法}
@@ -101,9 +144,21 @@ print(f'Operator: {result.operator}')
 
 \begin{verbatim}
 from quonic.algorithms import diffusion
-for n in [2, 3, 4]:
+
+# 不同量子比特数
+for n in [2, 3, 4, 5]:
     result = diffusion(n_qubits=n)
-    print(f'n={n}: {result.operator.shape}')
+    print(f'n={n}: Operator shape {result.operator.shape}')
+\end{verbatim}
+
+\subsection{场景 2：带噪声的扩散算子}
+
+\begin{verbatim}
+from quonic.algorithms import diffusion
+
+# 带噪声
+result = diffusion(n_qubits=2, noise=0.05)
+print(f'Operator: {result.operator}')
 \end{verbatim}
 
 \section{适用场景}
@@ -116,6 +171,10 @@ for n in [2, 3, 4]:
 
 扩散算子用于振幅放大算法。
 
+\subsection{量子优化}
+
+扩散算子可以用于量子优化算法。
+
 \section{常见问题}
 
 \subsection{扩散算子的作用是什么？}
@@ -125,6 +184,10 @@ for n in [2, 3, 4]:
 \subsection{扩散算子和 Oracle 有什么区别？}
 
 Oracle 标记目标态，扩散算子放大目标态的振幅。
+
+\subsection{扩散算子的矩阵是什么？}
+
+$D = 2|s\rangle\langle s| - I$，其中 $|s\rangle$ 是均匀叠加态。
 
 \section{学习路径}
 
@@ -148,6 +211,7 @@ Oracle 标记目标态，扩散算子放大目标态的振幅。
 
 \begin{verbatim}
 from quonic.algorithms import diffusion
+
 result = diffusion(n_qubits=2)
 print(f'Operator: {result.operator}')
 \end{verbatim}

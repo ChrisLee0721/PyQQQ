@@ -191,6 +191,7 @@
 <li><p>经典搜索需要 <span class="math inline">\(O(N)\)</span>
 次查询</p></li>
 <li><p>对于大规模问题，经典方法效率低</p></li>
+<li><p>经典算法无法利用量子并行性</p></li>
 </ul>
 <h2 id="量子优势">量子优势</h2>
 <ul>
@@ -206,10 +207,15 @@
 </ul>
 <h1 id="快速上手">快速上手</h1>
 <pre><code>from quonic.algorithms import diffusion
+
+# 创建 2-qubit 扩散算子
 result = diffusion(n_qubits=2)
 print(f&#39;Operator: {result.operator}&#39;)</code></pre>
 <p><strong>预期输出</strong>：</p>
-<pre><code>Operator: [[-0.5, 0.5, 0.5, 0.5], ...]</code></pre>
+<pre><code>Operator: [[-0.5, 0.5, 0.5, 0.5],
+           [ 0.5,-0.5, 0.5, 0.5],
+           [ 0.5, 0.5,-0.5, 0.5],
+           [ 0.5, 0.5, 0.5,-0.5]]</code></pre>
 <h1 id="原理详解">原理详解</h1>
 <h2 id="电路图">电路图</h2>
 <div class="center">
@@ -217,41 +223,81 @@ print(f&#39;Operator: {result.operator}&#39;)</code></pre>
 alt="image" /></p>
 </div>
 <h2 id="数学推导">数学推导</h2>
-<p>扩散算子关于平均振幅反射： <span
-class="math display">\[\begin{equation}
+<p><strong>Step 1: 均匀叠加态</strong></p>
+<p>均匀叠加态： <span class="math display">\[\begin{equation}
+|s\rangle = H^{\otimes n}|0\rangle^{\otimes n} = \frac{1}{\sqrt{N}}
+\sum_{x=0}^{N-1} |x\rangle
+\end{equation}\]</span></p>
+<p><strong>Step 2: 扩散算子定义</strong></p>
+<p>扩散算子： <span class="math display">\[\begin{equation}
 D = 2|s\rangle\langle s| - I
 \end{equation}\]</span></p>
-<p>其中 <span class="math inline">\(|s\rangle\)</span>
-是均匀叠加态。</p>
-<p><strong>作用</strong>： <span class="math display">\[\begin{equation}
+<p><strong>Step 3: 矩阵表示</strong></p>
+<p>在计算基下： <span class="math display">\[\begin{equation}
+D_{ij} = \begin{cases} \frac{2}{N} - 1 &amp; \text{if } i = j \\
+\frac{2}{N} &amp; \text{if } i \neq j \end{cases}
+\end{equation}\]</span></p>
+<p><strong>Step 4: 量子电路实现</strong></p>
+<p>扩散算子可以分解为： <span class="math display">\[\begin{equation}
+D = H^{\otimes n} (2|0\rangle\langle 0| - I) H^{\otimes n}
+\end{equation}\]</span></p>
+<p>其中： <span class="math display">\[\begin{equation}
+2|0\rangle\langle 0| - I = \text{diag}(1, -1, -1, \ldots, -1)
+\end{equation}\]</span></p>
+<p><strong>Step 5: 作用</strong></p>
+<p>扩散算子作用在量子态上： <span
+class="math display">\[\begin{equation}
 D|\psi\rangle = 2\langle s|\psi\rangle|s\rangle - |\psi\rangle
 \end{equation}\]</span></p>
+<p>这相当于关于平均振幅反射。</p>
 <h2 id="几何解释">几何解释</h2>
-<p>扩散算子在 Bloch 球上关于平均振幅反射，放大目标态的振幅。</p>
+<p>扩散算子在 Bloch
+球上关于平均振幅反射。如果目标态的振幅高于平均，反射后振幅被放大；如果低于平均，振幅被减小。</p>
+<p>在二维子空间中，扩散算子是关于 <span
+class="math inline">\(|s\rangle\)</span> 的反射。</p>
 <h1 id="代码详解">代码详解</h1>
 <pre><code>from quonic.algorithms import diffusion
 
 # diffusion(n_qubits)
-# n_qubits: number of qubits
+# n_qubits: 量子比特数
+
 result = diffusion(n_qubits=2)
-print(f&#39;Operator: {result.operator}&#39;)</code></pre>
+
+# result.operator: 扩散算子矩阵
+# result.circuit: 量子电路
+print(f&#39;Operator shape: {result.operator.shape}&#39;)
+print(f&#39;Circuit depth: {result.circuit.depth}&#39;)</code></pre>
 <h1 id="进阶用法">进阶用法</h1>
 <h2 id="场景-1不同量子比特数">场景 1：不同量子比特数</h2>
 <pre><code>from quonic.algorithms import diffusion
-for n in [2, 3, 4]:
+
+# 不同量子比特数
+for n in [2, 3, 4, 5]:
     result = diffusion(n_qubits=n)
-    print(f&#39;n={n}: {result.operator.shape}&#39;)</code></pre>
+    print(f&#39;n={n}: Operator shape {result.operator.shape}&#39;)</code></pre>
+<h2 id="场景-2带噪声的扩散算子">场景 2：带噪声的扩散算子</h2>
+<pre><code>from quonic.algorithms import diffusion
+
+# 带噪声
+result = diffusion(n_qubits=2, noise=0.05)
+print(f&#39;Operator: {result.operator}&#39;)</code></pre>
 <h1 id="适用场景">适用场景</h1>
 <h2 id="grover-搜索">Grover 搜索</h2>
 <p>扩散算子是 Grover 搜索的核心组件。</p>
 <h2 id="振幅放大">振幅放大</h2>
 <p>扩散算子用于振幅放大算法。</p>
+<h2 id="量子优化">量子优化</h2>
+<p>扩散算子可以用于量子优化算法。</p>
 <h1 id="常见问题">常见问题</h1>
 <h2 id="扩散算子的作用是什么">扩散算子的作用是什么？</h2>
 <p>关于平均振幅反射，放大目标态的振幅。</p>
 <h2 id="扩散算子和-oracle-有什么区别">扩散算子和 Oracle
 有什么区别？</h2>
 <p>Oracle 标记目标态，扩散算子放大目标态的振幅。</p>
+<h2 id="扩散算子的矩阵是什么">扩散算子的矩阵是什么？</h2>
+<p><span class="math inline">\(D = 2|s\rangle\langle s| -
+I\)</span>，其中 <span class="math inline">\(|s\rangle\)</span>
+是均匀叠加态。</p>
 <h1 id="学习路径">学习路径</h1>
 <h2 id="前置知识">前置知识</h2>
 <ul>
@@ -268,6 +314,7 @@ for n in [2, 3, 4]:
 <h1 id="完整示例代码">完整示例代码</h1>
 <h2 id="示例-1基本扩散算子">示例 1：基本扩散算子</h2>
 <pre><code>from quonic.algorithms import diffusion
+
 result = diffusion(n_qubits=2)
 print(f&#39;Operator: {result.operator}&#39;)</code></pre>
 <h1 id="下载">下载</h1>
