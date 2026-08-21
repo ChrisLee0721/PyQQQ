@@ -1,0 +1,231 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage[UTF8]{ctex}
+\usepackage{amsmath,amssymb}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{geometry}
+\usepackage{graphicx}
+\geometry{margin=2.5cm}
+
+\title{Grover Search}
+\author{QuoNic}
+\date{}
+
+\begin{document}
+\maketitle
+
+\begin{center}
+\textbf{Algorithms} | Difficulty: Intermediate | Time: 10 min
+\end{center}
+
+\tableofcontents
+\newpage
+
+\section{Why do we need it?}
+
+Finding a target in an unsorted database requires $O(N)$ queries classically, but Grover's algorithm only needs $O(\sqrt{N})$.
+
+\subsection{Classical Limitations}
+\begin{itemize}
+  \item Classical search: worst case requires traversing all $N$ elements
+  \item For $N=10^6$, classical needs $10^6$ queries, quantum only $10^3$
+\end{itemize}
+
+\subsection{Quantum Advantages}
+\begin{itemize}
+  \item Quadratic speedup: $O(\sqrt{N})$ vs $O(N)$
+  \item Significant speedup for large-scale search problems
+  \item Foundation for many quantum algorithms (amplitude amplification, quantum counting)
+\end{itemize}
+
+\subsection{Real-world Applications}
+\begin{itemize}
+  \item Database search
+  \item Cryptography (searching key space)
+  \item Optimization problems (finding optimal solutions)
+  \item SAT solving
+\end{itemize}
+
+\section{Quick Start}
+
+\begin{verbatim}
+from quonic.algorithms import grover
+
+# Search for |11> in 2-qubit space
+result = grover("11", 2, shots=1024)
+print(result.counts)
+\end{verbatim}
+
+\textbf{Expected Output}:
+\begin{verbatim}
+{'11': 1008, '00': 6, '01': 5, '10': 5}
+\end{verbatim}
+
+\section{Theory Deep Dive}
+
+\subsection{Circuit Diagram}
+
+\begin{center}
+\includegraphics[width=0.6\textwidth]{../../images/grover_circuit.svg}
+\end{center}
+
+\subsection{Mathematical Derivation}
+
+\textbf{Step 1: Initialization}
+
+Apply $H$ gate to all qubits, creating uniform superposition:
+\begin{equation}
+|\psi_0\rangle = \frac{|00\rangle + |01\rangle + |10\rangle + |11\rangle}{2}
+\end{equation}
+
+\textbf{Step 2: Oracle Marking}
+
+Oracle flips the phase of target state $|11\rangle$:
+\begin{equation}
+|\psi_1\rangle = \frac{|00\rangle + |01\rangle + |10\rangle - |11\rangle}{2}
+\end{equation}
+
+\textbf{Step 3: Diffusion Operator}
+
+Diffusion operator reflects about the mean amplitude:
+\begin{itemize}
+  \item Mean amplitude = $(1/4 + 1/4 + 1/4 - 1/4)/4 = 1/8$
+  \item After reflection: $|11\rangle$ amplitude is amplified
+\end{itemize}
+
+\textbf{Step 4: Iteration}
+
+Repeat Oracle + Diffusion, each iteration amplifies target state amplitude.
+
+\textbf{Step 5: Measurement}
+
+Optimal iterations $\approx \pi\sqrt{N}/4$, target state probability $\approx 100\%$.
+
+\subsection{Geometric Interpretation}
+
+Grover's algorithm in Bloch sphere: each iteration rotates the quantum state, amplifying the target state amplitude.
+
+Like swinging on a swing — each push increases the amplitude.
+
+\section{Code Walkthrough}
+
+\begin{verbatim}
+from quonic.algorithms import grover  # Import Grover algorithm
+
+# grover(target, n_qubits, shots)
+# target: target bit string
+# n_qubits: number of qubits
+# shots: number of measurements
+result = grover("11", 2, shots=1024)
+
+# result.counts: measurement statistics
+# e.g.: {'11': 1008, '00': 6, '01': 5, '10': 5}
+print(result.counts)
+\end{verbatim}
+
+\section{Advanced Usage}
+
+\subsection{Scenario 1: Multi-qubit Search}
+
+\begin{verbatim}
+# Search for |101> in 3-qubit space
+result = grover("101", 3, shots=1024)
+print(result.counts)
+\end{verbatim}
+
+\subsection{Scenario 2: Multi-target Search}
+
+\begin{verbatim}
+# Search for multiple targets
+from quonic.algorithms import grover_multi
+result = grover_multi(["00", "11"], 2, shots=1024)
+print(result.counts)
+\end{verbatim}
+
+\subsection{Scenario 3: Grover for Optimization}
+
+\begin{verbatim}
+# Grover search for optimization
+result = grover("11", 2, shots=1024)
+# |11> corresponds to optimal solution
+\end{verbatim}
+
+\section{Use Cases}
+
+\subsection{Database Search}
+
+Finding a target in an unsorted database: classical $O(N)$, quantum $O(\sqrt{N})$.
+
+\subsection{Cryptography}
+
+Searching key space can accelerate brute-force attacks.
+
+\subsection{Optimization Problems}
+
+Finding optimal solutions can accelerate combinatorial optimization.
+
+\section{FAQ}
+
+\subsection{What is the speedup of Grover search?}
+
+Quadratic speedup: $O(\sqrt{N})$ vs $O(N)$. For $N=10^6$, classical needs $10^6$ queries, quantum only $10^3$.
+
+\subsection{How many iterations does Grover search need?}
+
+Optimal iterations $\approx \pi\sqrt{N}/4$. For $N=4$ (2 qubits), only 1 iteration needed.
+
+\subsection{Can Grover search find all targets?}
+
+Grover search finds one target. To find all targets, multiple runs are needed.
+
+\subsection{What are the limitations of Grover search?}
+
+1) Need target state description; 2) Only finds one target; 3) For small problems, classical may be faster.
+
+\subsection{What's the difference between Grover search and amplitude amplification?}
+
+Grover search is amplitude amplification with uniform initial state. Amplitude amplification is more general, supports arbitrary initial states.
+
+\section{Learning Path}
+
+\subsection{Prerequisites}
+\begin{itemize}
+  \item Qubits and superposition
+  \item Hadamard gate and CNOT gate
+  \item Quantum measurement
+\end{itemize}
+
+\subsection{Next Steps}
+\begin{itemize}
+  \item Amplitude Amplification (generalization of Grover)
+  \item Quantum Counting (counting number of targets)
+  \item Quantum Optimization algorithms
+\end{itemize}
+
+\section{Complete Examples}
+
+\subsection{Example 1: Basic Grover Search}
+
+\begin{verbatim}
+from quonic.algorithms import grover
+
+result = grover("11", 2, shots=1024)
+print(result.counts)
+\end{verbatim}
+
+\subsection{Example 2: 3-qubit Grover Search}
+
+\begin{verbatim}
+from quonic.algorithms import grover
+
+result = grover("101", 3, shots=1024)
+print(result.counts)
+\end{verbatim}
+
+\section{Download}
+
+\begin{itemize}
+  \item [grover.py](https://github.com/ChrisLee0721/QuoNic/blob/main/examples/grover/grover.py)
+\end{itemize}
+
+\end{document}

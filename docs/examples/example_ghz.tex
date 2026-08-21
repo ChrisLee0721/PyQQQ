@@ -1,0 +1,237 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage[UTF8]{ctex}
+\usepackage{amsmath,amssymb}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{geometry}
+\usepackage{graphicx}
+\geometry{margin=2.5cm}
+
+\title{GHZ State}
+\author{QuoNic}
+\date{}
+
+\begin{document}
+\maketitle
+
+\begin{center}
+\textbf{Foundational} | Difficulty: Intermediate | Time: 10 min
+\end{center}
+
+\tableofcontents
+\newpage
+
+\section{Why do we need it?}
+
+GHZ state is a multi-qubit generalization of Bell state, another important form of quantum entanglement.
+
+\subsection{Classical Limitations}
+\begin{itemize}
+  \item Classical physics cannot create perfect correlations of three or more particles
+  \item Classical communication cannot implement multi-party quantum protocols
+\end{itemize}
+
+\subsection{Quantum Advantages}
+\begin{itemize}
+  \item GHZ state is the foundation for quantum error correction
+  \item Used in multi-party quantum communication and quantum secret sharing
+  \item Common entangled state in quantum computing
+\end{itemize}
+
+\subsection{Real-world Applications}
+\begin{itemize}
+  \item Quantum Error Correction (surface codes, color codes)
+  \item Quantum Secret Sharing (multi-party protocols)
+  \item Quantum Computing Testing (multi-qubit entanglement verification)
+\end{itemize}
+
+\section{Quick Start}
+
+\begin{verbatim}
+from quonic import qgate, qshow
+from quonic.gates import CX, H
+
+# Create GHZ state: (|000>+|111>)/sqrt(2)
+qgate(H, 0)
+qgate(CX, 0, 1)
+qgate(CX, 1, 2)
+qshow()
+\end{verbatim}
+
+\textbf{Expected Output}:
+\begin{verbatim}
+backend: native | shots: 1024
+Result:
+  |000>    512  ( 50.0%)  ####################
+  |111>    512  ( 50.0%)  ####################
+\end{verbatim}
+
+\section{Theory Deep Dive}
+
+\subsection{Circuit Diagram}
+
+\begin{center}
+\includegraphics[width=0.7\textwidth]{../../images/ghz_circuit.svg}
+\end{center}
+
+\subsection{Mathematical Derivation}
+
+\textbf{Step 1: Initial State}
+
+Three qubits start from $|0\rangle$:
+\begin{equation}
+|\psi_0\rangle = |000\rangle
+\end{equation}
+
+\textbf{Step 2: Hadamard Gate}
+
+Apply $H$ gate to $q_0$:
+\begin{equation}
+|\psi_1\rangle = \frac{|0\rangle + |1\rangle}{\sqrt{2}} \otimes |00\rangle = \frac{|000\rangle + |100\rangle}{\sqrt{2}}
+\end{equation}
+
+\textbf{Step 3: CNOT Chain}
+
+CNOT$(q_0, q_1)$ and CNOT$(q_1, q_2)$ create three-qubit entanglement:
+\begin{equation}
+|\psi_2\rangle = \frac{|000\rangle + |111\rangle}{\sqrt{2}}
+\end{equation}
+
+\textbf{Step 4: Measurement Probabilities}
+
+\begin{itemize}
+  \item $P(|000\rangle) = 0.5$
+  \item $P(|111\rangle) = 0.5$
+  \item All other states have probability 0
+\end{itemize}
+
+\subsection{Geometric Interpretation}
+
+GHZ state is a maximally entangled state of three qubits. On the Bloch sphere, the three qubits are fully correlated — measuring one instantly determines the other two.
+
+\section{Code Walkthrough}
+
+\begin{verbatim}
+from quonic import qgate, qshow
+from quonic.gates import CX, H
+
+qgate(H, 0)       # H gate on q0: create superposition
+qgate(CX, 0, 1)   # CNOT: entangle q0 and q1
+qgate(CX, 1, 2)   # CNOT: entangle q1 and q2
+qshow()            # Measure and display
+\end{verbatim}
+
+\section{Advanced Usage}
+
+\subsection{Scenario 1: N-qubit GHZ State}
+
+\begin{verbatim}
+# N-qubit GHZ state
+n = 5
+qgate(H, 0)
+for i in range(n - 1):
+    qgate(CX, i, i + 1)
+qshow()
+\end{verbatim}
+
+\subsection{Scenario 2: GHZ State Fidelity Test}
+
+\begin{verbatim}
+# Fidelity test with noise
+qgate(H, 0)
+qgate(CX, 0, 1)
+qgate(CX, 1, 2)
+qshow(noise=0.05)
+\end{verbatim}
+
+\subsection{Scenario 3: GHZ State for Quantum Error Correction}
+
+\begin{verbatim}
+# GHZ state for error correction
+# Encode logical qubit in GHZ state
+qgate(H, 0)
+qgate(CX, 0, 1)
+qgate(CX, 1, 2)
+# Syndrome measurement
+qgate(CX, 0, 3)
+qgate(CX, 1, 3)
+qshow()
+\end{verbatim}
+
+\section{Use Cases}
+
+\subsection{Quantum Error Correction}
+
+GHZ state is the foundation for quantum error correction codes. Surface codes and color codes use multi-qubit entanglement to protect quantum information.
+
+\subsection{Quantum Secret Sharing}
+
+In quantum secret sharing protocols, GHZ state is used to distribute secrets to multiple parties. Only all parties together can recover the secret.
+
+\subsection{Quantum Computing Testing}
+
+GHZ state is the standard benchmark for testing multi-qubit entanglement capabilities of quantum hardware.
+
+\section{FAQ}
+
+\subsection{What's the difference between GHZ state and Bell state?}
+
+Bell state is 2-qubit entanglement, GHZ state is 3+ qubit entanglement. GHZ state is a generalization of Bell state.
+
+\subsection{Why does GHZ state only have |000> and |111>?}
+
+Because the CNOT chain propagates the state of $q_0$ to all qubits. If $q_0$ is $|0\rangle$, all qubits are $|0\rangle$; if $q_0$ is $|1\rangle$, all qubits are $|1\rangle$.
+
+\subsection{What are the entanglement properties of GHZ state?}
+
+GHZ state is a maximally entangled state — measuring one qubit instantly determines all other qubits.
+
+\section{Learning Path}
+
+\subsection{Prerequisites}
+\begin{itemize}
+  \item Bell state (2-qubit entanglement)
+  \item CNOT gate and Hadamard gate
+  \item Quantum measurement
+\end{itemize}
+
+\subsection{Next Steps}
+\begin{itemize}
+  \item Quantum Error Correction (surface codes, color codes)
+  \item Quantum Secret Sharing
+  \item Multi-qubit entanglement verification
+\end{itemize}
+
+\section{Complete Examples}
+
+\subsection{Example 1: Basic GHZ State}
+
+\begin{verbatim}
+from quonic import qgate, qshow
+from quonic.gates import CX, H
+
+qgate(H, 0)
+qgate(CX, 0, 1)
+qgate(CX, 1, 2)
+qshow()
+\end{verbatim}
+
+\subsection{Example 2: Noisy GHZ State}
+
+\begin{verbatim}
+from quonic import qgate, qshow
+from quonic.gates import CX, H
+
+qgate(H, 0)
+qgate(CX, 0, 1)
+qgate(CX, 1, 2)
+qshow(noise=0.05)
+\end{verbatim}
+
+\section{Download}
+
+\begin{itemize}
+  \item [ghz.py](https://github.com/ChrisLee0721/QuoNic/blob/main/examples/ghz/ghz.py)
+\end{itemize}
+
+\end{document}

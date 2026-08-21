@@ -1,0 +1,299 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage[UTF8]{ctex}
+\usepackage{amsmath,amssymb}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{geometry}
+\usepackage{graphicx}
+\geometry{margin=2.5cm}
+
+\title{Bell State}
+\author{QuoNic}
+\date{}
+
+\begin{document}
+\maketitle
+
+\begin{center}
+\textbf{Foundational} | Difficulty: Beginner | Time: 5 min
+\end{center}
+
+\tableofcontents
+\newpage
+
+\section{Why do we need it?}
+
+In classical physics, two objects have independent states — measuring one does not affect the other. But in the quantum world, two qubits can enter an \textbf{entangled state}: measuring one \textbf{instantly} determines the state of the other.
+
+\subsection{Classical Limitations}
+\begin{itemize}
+  \item Classical physics cannot create such ``spooky action at a distance''
+  \item Classical communication requires at least 2 bits to transmit 1 bit of quantum information
+\end{itemize}
+
+\subsection{Quantum Advantages}
+\begin{itemize}
+  \item Bell state is the most basic form of quantum entanglement
+  \item Violates Bell inequalities, proving quantum mechanics is non-local
+  \item Foundation for quantum teleportation, superdense coding, and QKD
+\end{itemize}
+
+\subsection{Real-world Applications}
+\begin{itemize}
+  \item Quantum Key Distribution (BB84, E91 protocols)
+  \item Quantum Teleportation (foundation of quantum networks)
+  \item Quantum Computing (entanglement resource)
+\end{itemize}
+
+\section{Quick Start}
+
+\begin{verbatim}
+from quonic import qgate, qshow
+from quonic.gates import CX, H
+
+# Create Bell state
+qgate(H, 0)      # Hadamard gate: create superposition
+qgate(CX, 0, 1)  # CNOT gate: create entanglement
+qshow()           # Measure and display results
+\end{verbatim}
+
+\textbf{Expected Output}:
+\begin{verbatim}
+backend: native | shots: 1024
+Result:
+  |00>     512  ( 50.0%)  ####################
+  |11>     512  ( 50.0%)  ####################
+\end{verbatim}
+
+\section{Theory Deep Dive}
+
+\subsection{Circuit Diagram}
+
+\begin{center}
+\includegraphics[width=0.6\textwidth]{../../images/bell_circuit_new.svg}
+\end{center}
+
+\subsection{Mathematical Derivation}
+
+\textbf{Step 1: Initial State}
+
+Both qubits start from $|0\rangle$:
+\begin{equation}
+|\psi_0\rangle = |00\rangle
+\end{equation}
+
+\textbf{Step 2: Hadamard Gate}
+
+Apply $H$ gate to $q_0$:
+\begin{equation}
+H|0\rangle = \frac{|0\rangle + |1\rangle}{\sqrt{2}}
+\end{equation}
+
+State becomes:
+\begin{equation}
+|\psi_1\rangle = \frac{|0\rangle + |1\rangle}{\sqrt{2}} \otimes |0\rangle = \frac{|00\rangle + |10\rangle}{\sqrt{2}}
+\end{equation}
+
+\textbf{Step 3: CNOT Gate}
+
+CNOT gate rule: if control qubit is $|1\rangle$, flip target qubit.
+\begin{align}
+\text{CNOT}|00\rangle &= |00\rangle \\
+\text{CNOT}|10\rangle &= |11\rangle
+\end{align}
+
+Final state:
+\begin{equation}
+|\psi_2\rangle = \frac{|00\rangle + |11\rangle}{\sqrt{2}}
+\end{equation}
+
+\textbf{Step 4: Measurement Probabilities}
+
+\begin{itemize}
+  \item $P(|00\rangle) = |1/\sqrt{2}|^2 = 0.5$
+  \item $P(|11\rangle) = |1/\sqrt{2}|^2 = 0.5$
+  \item $P(|01\rangle) = 0$
+  \item $P(|10\rangle) = 0$
+\end{itemize}
+
+\subsection{Geometric Interpretation}
+
+On the Bloch sphere:
+\begin{itemize}
+  \item $|0\rangle$ at the north pole
+  \item $|1\rangle$ at the south pole
+  \item $H$ gate rotates $|0\rangle$ to the equator: $|+\rangle = (|0\rangle+|1\rangle)/\sqrt{2}$
+\end{itemize}
+
+After CNOT creates entanglement, the two qubits can no longer be described by individual Bloch spheres — they become one entity. This is the geometric meaning of entanglement.
+
+\section{Code Walkthrough}
+
+\begin{verbatim}
+from quonic import qgate, qshow  # Import core API
+from quonic.gates import CX, H   # Import gate definitions
+
+# qgate(gate, qubit) - Apply gate to specified qubit
+qgate(H, 0)      # Apply H gate to q0
+                  # H gate: |0> -> (|0>+|1>)/sqrt(2)
+                  # Effect: create superposition
+
+# qgate(gate, control, target) - Apply controlled gate
+qgate(CX, 0, 1)  # CNOT gate: control=q0, target=q1
+                  # Effect: if q0 is |1>, flip q1
+                  # Create entangled state (|00>+|11>)/sqrt(2)
+
+# qshow() - Run circuit and display results
+qshow()           # Auto-select best backend
+                  # Execute 1024 measurements
+                  # Display measurement statistics
+\end{verbatim}
+
+\subsection{API Reference}
+
+\begin{center}
+\begin{tabular}{|l|l|l|}
+\hline
+\textbf{API} & \textbf{Parameters} & \textbf{Description} \\
+\hline
+\texttt{qgate(H, 0)} & H: Hadamard gate, 0: qubit index & Apply H gate to q0 \\
+\hline
+\texttt{qgate(CX, 0, 1)} & CX: CNOT gate, 0: control, 1: target & Create entanglement \\
+\hline
+\texttt{qshow()} & None & Run circuit and display results \\
+\hline
+\end{tabular}
+\end{center}
+
+\section{Advanced Usage}
+
+\subsection{Scenario 1: Different Bell States}
+
+\begin{verbatim}
+# Phi+ = (|00>+|11>)/sqrt(2)
+qgate(H, 0)
+qgate(CX, 0, 1)
+
+# Phi- = (|00>-|11>)/sqrt(2)
+qgate(H, 0)
+qgate(X, 0)  # Phase flip
+qgate(CX, 0, 1)
+
+# Psi+ = (|01>+|10>)/sqrt(2)
+qgate(H, 0)
+qgate(CX, 0, 1)
+qgate(X, 1)  # Flip q1
+
+# Psi- = (|01>-|10>)/sqrt(2)
+qgate(H, 0)
+qgate(X, 0)
+qgate(CX, 0, 1)
+qgate(X, 1)
+\end{verbatim}
+
+\subsection{Scenario 2: Multi-qubit GHZ State}
+
+\begin{verbatim}
+# GHZ state: (|000>+|111>)/sqrt(2)
+qgate(H, 0)
+qgate(CX, 0, 1)
+qgate(CX, 1, 2)
+qshow()
+\end{verbatim}
+
+\subsection{Scenario 3: Noisy Bell State}
+
+\begin{verbatim}
+# No noise
+qshow(noise=0)
+
+# 5% noise
+qshow(noise=0.05)
+
+# 20% noise
+qshow(noise=0.20)
+\end{verbatim}
+
+\section{Use Cases}
+
+\subsection{Quantum Key Distribution}
+
+BB84 and E91 protocols use Bell states to detect eavesdropping. If someone tries to measure the quantum state, it destroys the entanglement, and both parties can detect it.
+
+\subsection{Quantum Teleportation}
+
+Quantum teleportation uses Bell states as a quantum channel to transfer quantum states without directly transmitting qubits.
+
+\subsection{Quantum Computing Testing}
+
+Bell states are the gold standard for testing quantum hardware quality. If hardware cannot correctly prepare Bell states, it indicates noise or calibration issues.
+
+\section{FAQ}
+
+\subsection{Why is my result not exactly 50/50?}
+
+Quantum measurements have inherent randomness. Even with theoretical 50/50 probabilities, finite measurements (e.g., 1024 shots) will have statistical fluctuations. Increasing the number of shots gets closer to theoretical values.
+
+\subsection{Why did I see |01> or |10>?}
+
+Possible causes: 1) Noise (check if noise parameter is set); 2) Code error (verify H gate comes before CNOT); 3) Backend issue (try backend='native').
+
+\subsection{What's the difference between Bell state and GHZ state?}
+
+Bell state is 2-qubit entanglement, GHZ state is 3+ qubit entanglement. GHZ state is a generalization of Bell state for multi-party quantum communication and quantum error correction.
+
+\subsection{How to verify I prepared a Bell state?}
+
+Check measurement results: 1) Only |00> and |11>; 2) Both probabilities close to 50\%; 3) No |01> or |10>. If all three conditions are met, it's a Bell state.
+
+\subsection{What does Bell inequality violation mean?}
+
+In classical physics, two particles have a correlation limit (Bell inequality). Quantum mechanics predictions exceed this limit, and experiments confirm quantum mechanics. This means no local hidden variable theory can explain quantum correlations.
+
+\section{Learning Path}
+
+\subsection{Prerequisites}
+\begin{itemize}
+  \item Basic qubit concepts ($|0\rangle$ and $|1\rangle$)
+  \item Superposition and Hadamard gate
+  \item CNOT gate
+\end{itemize}
+
+\subsection{Next Steps}
+\begin{itemize}
+  \item Quantum Teleportation (transfer quantum states using Bell states)
+  \item Superdense Coding (transfer classical info using Bell states)
+  \item GHZ State (multi-qubit entanglement)
+\end{itemize}
+
+\section{Complete Examples}
+
+\subsection{Example 1: Basic Bell State}
+
+\begin{verbatim}
+from quonic import qgate, qshow
+from quonic.gates import CX, H
+
+qgate(H, 0)
+qgate(CX, 0, 1)
+qshow()
+\end{verbatim}
+
+\subsection{Example 2: Noisy Bell State}
+
+\begin{verbatim}
+from quonic import qgate, qshow
+from quonic.gates import CX, H
+
+qgate(H, 0)
+qgate(CX, 0, 1)
+qshow(noise=0.05)
+\end{verbatim}
+
+\section{Download}
+
+\begin{itemize}
+  \item [bell.py](https://github.com/ChrisLee0721/QuoNic/blob/main/examples/bell/bell.py)
+\end{itemize}
+
+\end{document}

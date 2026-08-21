@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc 3.10.2" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <meta name="author" content="QuoNic" />
+  <title>bernstein_vazirani</title>
+  <style>
+    /* Default styles provided by pandoc.
+    ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+    */
+    html {
+      color: #1a1a1a;
+      background-color: #fdfdfd;
+    }
+    body {
+      margin: 0 auto;
+      max-width: 36em;
+      padding-left: 50px;
+      padding-right: 50px;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      hyphens: auto;
+      overflow-wrap: break-word;
+      text-rendering: optimizeLegibility;
+      font-kerning: normal;
+    }
+    @media (max-width: 600px) {
+      body {
+        font-size: 0.9em;
+        padding: 12px;
+      }
+      h1 {
+        font-size: 1.8em;
+      }
+    }
+    @media print {
+      html {
+        background-color: white;
+      }
+      body {
+        background-color: transparent;
+        color: black;
+      }
+      p, h2, h3 {
+        orphans: 3;
+        widows: 3;
+      }
+      h2, h3, h4 {
+        page-break-after: avoid;
+      }
+    }
+    p {
+      margin: 1em 0;
+    }
+    a {
+      color: #1a1a1a;
+    }
+    a:visited {
+      color: #1a1a1a;
+    }
+    img {
+      max-width: 100%;
+    }
+    svg {
+      height: auto;
+      max-width: 100%;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 1.4em;
+    }
+    h5, h6 {
+      font-size: 1em;
+      font-style: italic;
+    }
+    h6 {
+      font-weight: normal;
+    }
+    ol, ul {
+      padding-left: 1.7em;
+      margin-top: 1em;
+    }
+    li > ol, li > ul {
+      margin-top: 0;
+    }
+    blockquote {
+      margin: 1em 0 1em 1.7em;
+      padding-left: 1em;
+      border-left: 2px solid #e6e6e6;
+      color: #606060;
+    }
+    code {
+      white-space: pre-wrap;
+      font-family: Menlo, Monaco, Consolas, 'Lucida Console', monospace;
+      font-size: 85%;
+      margin: 0;
+      hyphens: manual;
+    }
+    pre {
+      margin: 1em 0;
+      overflow: auto;
+    }
+    pre code {
+      padding: 0;
+      overflow: visible;
+      overflow-wrap: normal;
+    }
+    .sourceCode {
+     background-color: transparent;
+     overflow: visible;
+    }
+    hr {
+      border: none;
+      border-top: 1px solid #1a1a1a;
+      height: 1px;
+      margin: 1em 0;
+    }
+    table {
+      margin: 1em 0;
+      border-collapse: collapse;
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+    table caption {
+      margin-bottom: 0.75em;
+    }
+    tbody {
+      margin-top: 0.5em;
+      border-top: 1px solid #1a1a1a;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    th {
+      border-top: 1px solid #1a1a1a;
+      padding: 0.25em 0.5em 0.25em 0.5em;
+    }
+    td {
+      padding: 0.125em 0.5em 0.25em 0.5em;
+    }
+    header {
+      margin-bottom: 4em;
+      text-align: center;
+    }
+    #TOC li {
+      list-style: none;
+    }
+    #TOC ul {
+      padding-left: 1.3em;
+    }
+    #TOC > ul {
+      padding-left: 0;
+    }
+    #TOC a:not(:hover) {
+      text-decoration: none;
+    }
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: 1.5em;}
+    div.column{flex: auto;}
+    @media screen {
+    div.columns{gap: min(4vw, 1.5em);}
+    div.column{overflow-x: auto;}
+    }
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+  </style>
+  <script defer="" src="" type="text/javascript"></script>
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">bernstein_vazirani</h1>
+<p class="author">QuoNic</p>
+</header>
+<div class="center">
+<p><strong>Algorithms</strong> | Difficulty: Intermediate | Time: 10
+min</p>
+</div>
+<h1 id="why-do-we-need-it">Why do we need it?</h1>
+<p>Bernstein-Vazirani algorithm is a generalization of Deutsch-Jozsa,
+used to find hidden bit strings.</p>
+<h2 id="classical-limitations">Classical Limitations</h2>
+<ul>
+<li><p>Classical algorithm needs <span class="math inline">\(n\)</span>
+queries to find hidden bit string</p></li>
+<li><p>Each query only yields 1 bit of information</p></li>
+</ul>
+<h2 id="quantum-advantages">Quantum Advantages</h2>
+<ul>
+<li><p>Bernstein-Vazirani only needs 1 query</p></li>
+<li><p>Provides linear speedup</p></li>
+<li><p>Paradigm for quantum algorithm design</p></li>
+</ul>
+<h2 id="real-world-applications">Real-world Applications</h2>
+<ul>
+<li><p>Quantum algorithm teaching</p></li>
+<li><p>Quantum advantage verification</p></li>
+<li><p>Quantum computing theory</p></li>
+</ul>
+<h1 id="quick-start">Quick Start</h1>
+<pre><code>from quonic.algorithms import bernstein_vazirani
+
+# Find hidden bit string
+result = bernstein_vazirani(&quot;101&quot;, n_qubits=3)
+print(f&quot;Hidden string: {result.hidden_string}&quot;)</code></pre>
+<p><strong>Expected Output</strong>:</p>
+<pre><code>Hidden string: 101</code></pre>
+<h1 id="theory-deep-dive">Theory Deep Dive</h1>
+<h2 id="circuit-diagram">Circuit Diagram</h2>
+<div class="center">
+<p><img src="../../images/bernstein_vazirani_circuit.svg"
+style="width:60.0%" alt="image" /></p>
+</div>
+<h2 id="mathematical-derivation">Mathematical Derivation</h2>
+<p>Bernstein-Vazirani finds hidden bit string <span
+class="math inline">\(s\)</span>, such that <span
+class="math inline">\(f(x) = s \cdot x \mod 2\)</span>.</p>
+<p><strong>Step 1: Initialization</strong> <span
+class="math display">\[\begin{equation}
+|\psi_0\rangle = |0\rangle^{\otimes n}|1\rangle
+\end{equation}\]</span></p>
+<p><strong>Step 2: Hadamard Gates</strong> <span
+class="math display">\[\begin{equation}
+|\psi_1\rangle = \frac{1}{\sqrt{2^n}} \sum_{x=0}^{2^n-1} |x\rangle \cdot
+\frac{|0\rangle - |1\rangle}{\sqrt{2}}
+\end{equation}\]</span></p>
+<p><strong>Step 3: Oracle Query</strong> <span
+class="math display">\[\begin{equation}
+|\psi_2\rangle = \frac{1}{\sqrt{2^n}} \sum_{x=0}^{2^n-1} (-1)^{s \cdot
+x} |x\rangle \cdot \frac{|0\rangle - |1\rangle}{\sqrt{2}}
+\end{equation}\]</span></p>
+<p><strong>Step 4: Hadamard and Measurement</strong></p>
+<p>Measurement result is hidden bit string <span
+class="math inline">\(s\)</span>.</p>
+<h2 id="geometric-interpretation">Geometric Interpretation</h2>
+<p>Bernstein-Vazirani uses quantum superposition to query all inputs
+simultaneously, using interference to extract hidden bit string.</p>
+<h1 id="code-walkthrough">Code Walkthrough</h1>
+<pre><code>from quonic.algorithms import bernstein_vazirani
+
+# bernstein_vazirani(hidden_string, n_qubits)
+# hidden_string: the hidden bit string to find
+# n_qubits: number of qubits
+result = bernstein_vazirani(&quot;101&quot;, n_qubits=3)
+
+# result.hidden_string: the found hidden string
+print(f&quot;Hidden string: {result.hidden_string}&quot;)</code></pre>
+<h1 id="advanced-usage">Advanced Usage</h1>
+<h2 id="scenario-1-different-hidden-strings">Scenario 1: Different
+Hidden Strings</h2>
+<pre><code>from quonic.algorithms import bernstein_vazirani
+
+# Find different hidden strings
+result = bernstein_vazirani(&quot;110&quot;, n_qubits=3)
+print(f&quot;Hidden string: {result.hidden_string}&quot;)
+# Output: 110</code></pre>
+<h2 id="scenario-2-multi-qubit">Scenario 2: Multi-qubit</h2>
+<pre><code>from quonic.algorithms import bernstein_vazirani
+
+# More qubits for longer strings
+result = bernstein_vazirani(&quot;10110&quot;, n_qubits=5)
+print(f&quot;Hidden string: {result.hidden_string}&quot;)
+# Output: 10110</code></pre>
+<h1 id="use-cases">Use Cases</h1>
+<h2 id="quantum-algorithm-teaching">Quantum Algorithm Teaching</h2>
+<p>Bernstein-Vazirani is a classic introductory quantum algorithm.</p>
+<h2 id="quantum-advantage-verification">Quantum Advantage
+Verification</h2>
+<p>Bernstein-Vazirani is one of the algorithms proving quantum
+computational advantage.</p>
+<h2 id="quantum-computing-theory">Quantum Computing Theory</h2>
+<p>Bernstein-Vazirani is a paradigm for quantum algorithm design.</p>
+<h1 id="faq">FAQ</h1>
+<h2 id="what-is-the-speedup-of-bernstein-vazirani">What is the speedup
+of Bernstein-Vazirani?</h2>
+<p>Linear speedup: classical needs <span
+class="math inline">\(n\)</span> queries, quantum only 1.</p>
+<h2 id="what-are-the-practical-applications-of-bernstein-vazirani">What
+are the practical applications of Bernstein-Vazirani?</h2>
+<p>Bernstein-Vazirani is mainly used for teaching and theoretical
+research, with limited practical applications.</p>
+<h2
+id="whats-the-difference-between-bernstein-vazirani-and-deutsch-jozsa">What’s
+the difference between Bernstein-Vazirani and Deutsch-Jozsa?</h2>
+<p>Deutsch-Jozsa determines function type, Bernstein-Vazirani finds
+hidden bit string.</p>
+<h1 id="learning-path">Learning Path</h1>
+<h2 id="prerequisites">Prerequisites</h2>
+<ul>
+<li><p>Deutsch-Jozsa Algorithm</p></li>
+<li><p>Qubits and superposition</p></li>
+<li><p>Hadamard gate and CNOT gate</p></li>
+</ul>
+<h2 id="next-steps">Next Steps</h2>
+<ul>
+<li><p>Simon’s Algorithm</p></li>
+<li><p>Shor’s Algorithm</p></li>
+<li><p>Quantum Algorithm Design</p></li>
+</ul>
+<h1 id="complete-examples">Complete Examples</h1>
+<h2 id="example-1-basic-bernstein-vazirani">Example 1: Basic
+Bernstein-Vazirani</h2>
+<pre><code>from quonic.algorithms import bernstein_vazirani
+
+result = bernstein_vazirani(&quot;101&quot;, n_qubits=3)
+print(f&quot;Hidden string: {result.hidden_string}&quot;)</code></pre>
+<h1 id="download">Download</h1>
+<ul>
+<li><p>(https://github.com/ChrisLee0721/QuoNic/blob/main/examples/bernstein_vazirani/bernstein_vazirani.py)</p></li>
+</ul>
+</body>
+</html>

@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc 3.10.2" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <meta name="author" content="QuoNic" />
+  <title>superdense_coding</title>
+  <style>
+    /* Default styles provided by pandoc.
+    ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+    */
+    html {
+      color: #1a1a1a;
+      background-color: #fdfdfd;
+    }
+    body {
+      margin: 0 auto;
+      max-width: 36em;
+      padding-left: 50px;
+      padding-right: 50px;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      hyphens: auto;
+      overflow-wrap: break-word;
+      text-rendering: optimizeLegibility;
+      font-kerning: normal;
+    }
+    @media (max-width: 600px) {
+      body {
+        font-size: 0.9em;
+        padding: 12px;
+      }
+      h1 {
+        font-size: 1.8em;
+      }
+    }
+    @media print {
+      html {
+        background-color: white;
+      }
+      body {
+        background-color: transparent;
+        color: black;
+      }
+      p, h2, h3 {
+        orphans: 3;
+        widows: 3;
+      }
+      h2, h3, h4 {
+        page-break-after: avoid;
+      }
+    }
+    p {
+      margin: 1em 0;
+    }
+    a {
+      color: #1a1a1a;
+    }
+    a:visited {
+      color: #1a1a1a;
+    }
+    img {
+      max-width: 100%;
+    }
+    svg {
+      height: auto;
+      max-width: 100%;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 1.4em;
+    }
+    h5, h6 {
+      font-size: 1em;
+      font-style: italic;
+    }
+    h6 {
+      font-weight: normal;
+    }
+    ol, ul {
+      padding-left: 1.7em;
+      margin-top: 1em;
+    }
+    li > ol, li > ul {
+      margin-top: 0;
+    }
+    blockquote {
+      margin: 1em 0 1em 1.7em;
+      padding-left: 1em;
+      border-left: 2px solid #e6e6e6;
+      color: #606060;
+    }
+    code {
+      white-space: pre-wrap;
+      font-family: Menlo, Monaco, Consolas, 'Lucida Console', monospace;
+      font-size: 85%;
+      margin: 0;
+      hyphens: manual;
+    }
+    pre {
+      margin: 1em 0;
+      overflow: auto;
+    }
+    pre code {
+      padding: 0;
+      overflow: visible;
+      overflow-wrap: normal;
+    }
+    .sourceCode {
+     background-color: transparent;
+     overflow: visible;
+    }
+    hr {
+      border: none;
+      border-top: 1px solid #1a1a1a;
+      height: 1px;
+      margin: 1em 0;
+    }
+    table {
+      margin: 1em 0;
+      border-collapse: collapse;
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+    table caption {
+      margin-bottom: 0.75em;
+    }
+    tbody {
+      margin-top: 0.5em;
+      border-top: 1px solid #1a1a1a;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    th {
+      border-top: 1px solid #1a1a1a;
+      padding: 0.25em 0.5em 0.25em 0.5em;
+    }
+    td {
+      padding: 0.125em 0.5em 0.25em 0.5em;
+    }
+    header {
+      margin-bottom: 4em;
+      text-align: center;
+    }
+    #TOC li {
+      list-style: none;
+    }
+    #TOC ul {
+      padding-left: 1.3em;
+    }
+    #TOC > ul {
+      padding-left: 0;
+    }
+    #TOC a:not(:hover) {
+      text-decoration: none;
+    }
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: 1.5em;}
+    div.column{flex: auto;}
+    @media screen {
+    div.columns{gap: min(4vw, 1.5em);}
+    div.column{overflow-x: auto;}
+    }
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+  </style>
+  <script defer="" src="" type="text/javascript"></script>
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">superdense_coding</h1>
+<p class="author">QuoNic</p>
+</header>
+<div class="center">
+<p><strong>Communication</strong> | Difficulty: Intermediate | Time: 10
+min</p>
+</div>
+<h1 id="why-do-we-need-it">Why do we need it?</h1>
+<p>Superdense coding uses 1 qubit to transmit 2 classical bits, an
+important quantum communication protocol.</p>
+<h2 id="classical-limitations">Classical Limitations</h2>
+<ul>
+<li><p>Classical communication: 1 qubit can only transmit 1 classical
+bit</p></li>
+<li><p>Classical communication needs 2 channels to transmit 2
+bits</p></li>
+</ul>
+<h2 id="quantum-advantages">Quantum Advantages</h2>
+<ul>
+<li><p>Superdense coding: 1 qubit transmits 2 classical bits</p></li>
+<li><p>Uses entanglement for information compression</p></li>
+<li><p>Foundation for quantum communication</p></li>
+</ul>
+<h2 id="real-world-applications">Real-world Applications</h2>
+<ul>
+<li><p>Quantum Communication (efficient information transfer)</p></li>
+<li><p>Quantum Networks (quantum internet)</p></li>
+<li><p>Quantum Cryptography (quantum key distribution)</p></li>
+</ul>
+<h1 id="quick-start">Quick Start</h1>
+<pre><code>from quonic.algorithms import superdense_coding
+
+# Send 2 classical bits using 1 qubit
+result = superdense_coding(&quot;10&quot;)
+print(f&quot;Sent: {result.sent}&quot;)
+print(f&quot;Received: {result.received}&quot;)</code></pre>
+<p><strong>Expected Output</strong>:</p>
+<pre><code>Sent: 10
+Received: 10</code></pre>
+<h1 id="theory-deep-dive">Theory Deep Dive</h1>
+<h2 id="circuit-diagram">Circuit Diagram</h2>
+<div class="center">
+<p><img src="../../images/superdense_coding_circuit.svg"
+style="width:60.0%" alt="image" /></p>
+</div>
+<h2 id="mathematical-derivation">Mathematical Derivation</h2>
+<p>Superdense coding protocol:</p>
+<ol>
+<li><p>Alice and Bob share Bell pair <span
+class="math inline">\(|\Phi^+\rangle = (|00\rangle +
+|11\rangle)/\sqrt{2}\)</span></p></li>
+<li><p>Alice encodes 2-bit message:</p>
+<ul>
+<li><p>00: no operation</p></li>
+<li><p>01: apply <span class="math inline">\(X\)</span> gate</p></li>
+<li><p>10: apply <span class="math inline">\(Z\)</span> gate</p></li>
+<li><p>11: apply <span class="math inline">\(ZX\)</span> gate</p></li>
+</ul></li>
+<li><p>Alice sends her qubit to Bob</p></li>
+<li><p>Bob decodes to get 2-bit message</p></li>
+</ol>
+<h2 id="geometric-interpretation">Geometric Interpretation</h2>
+<p>Superdense coding uses entanglement as a quantum channel. Alice’s
+operations change the entanglement structure of the Bell pair, and Bob
+decodes to recover information.</p>
+<h1 id="code-walkthrough">Code Walkthrough</h1>
+<pre><code>from quonic.algorithms import superdense_coding
+
+# superdense_coding(message)
+# message: 2-bit string to send
+result = superdense_coding(&quot;10&quot;)
+
+# result.sent: original message
+# result.received: decoded message
+print(f&quot;Sent: {result.sent}&quot;)
+print(f&quot;Received: {result.received}&quot;)</code></pre>
+<h1 id="advanced-usage">Advanced Usage</h1>
+<h2 id="scenario-1-different-messages">Scenario 1: Different
+Messages</h2>
+<pre><code>from quonic.algorithms import superdense_coding
+
+# Send different messages
+for msg in [&quot;00&quot;, &quot;01&quot;, &quot;10&quot;, &quot;11&quot;]:
+    result = superdense_coding(msg)
+    print(f&quot;Sent: {msg}, Received: {result.received}&quot;)</code></pre>
+<h2 id="scenario-2-noisy-superdense-coding">Scenario 2: Noisy Superdense
+Coding</h2>
+<pre><code>from quonic.algorithms import superdense_coding
+
+# Superdense coding with noise
+result = superdense_coding(&quot;10&quot;, noise=0.05)
+print(f&quot;Error rate: {result.error_rate}&quot;)</code></pre>
+<h1 id="use-cases">Use Cases</h1>
+<h2 id="quantum-communication">Quantum Communication</h2>
+<p>Superdense coding can improve quantum communication efficiency.</p>
+<h2 id="quantum-networks">Quantum Networks</h2>
+<p>Superdense coding is one of the foundational protocols for quantum
+networks.</p>
+<h2 id="quantum-cryptography">Quantum Cryptography</h2>
+<p>Superdense coding can be used for quantum key distribution.</p>
+<h1 id="faq">FAQ</h1>
+<h2 id="why-can-superdense-coding-transmit-2-bits">Why can superdense
+coding transmit 2 bits?</h2>
+<p>Superdense coding uses entanglement as a quantum channel. Alice’s
+operations change the Bell pair’s entanglement structure, and Bob
+decodes to recover 2 bits of information.</p>
+<h2
+id="whats-the-difference-between-superdense-coding-and-teleportation">What’s
+the difference between superdense coding and teleportation?</h2>
+<p>Superdense coding: 1 qubit transmits 2 classical bits. Teleportation:
+2 classical bits transmit 1 qubit.</p>
+<h2 id="how-many-qubits-does-superdense-coding-need">How many qubits
+does superdense coding need?</h2>
+<p>Superdense coding needs 2 qubits: 1 for Alice, 1 for Bob (shared Bell
+pair).</p>
+<h1 id="learning-path">Learning Path</h1>
+<h2 id="prerequisites">Prerequisites</h2>
+<ul>
+<li><p>Bell state (2-qubit entanglement)</p></li>
+<li><p>CNOT gate and Hadamard gate</p></li>
+<li><p>Quantum measurement</p></li>
+</ul>
+<h2 id="next-steps">Next Steps</h2>
+<ul>
+<li><p>Quantum Teleportation</p></li>
+<li><p>Quantum Key Distribution</p></li>
+<li><p>Quantum Networks</p></li>
+</ul>
+<h1 id="complete-examples">Complete Examples</h1>
+<h2 id="example-1-basic-superdense-coding">Example 1: Basic Superdense
+Coding</h2>
+<pre><code>from quonic.algorithms import superdense_coding
+
+result = superdense_coding(&quot;10&quot;)
+print(f&quot;Sent: {result.sent}&quot;)
+print(f&quot;Received: {result.received}&quot;)</code></pre>
+<h1 id="download">Download</h1>
+<ul>
+<li><p>(https://github.com/ChrisLee0721/QuoNic/blob/main/examples/superdense_coding/superdense_coding.py)</p></li>
+</ul>
+</body>
+</html>

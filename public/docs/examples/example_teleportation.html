@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc 3.10.2" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <meta name="author" content="QuoNic" />
+  <title>teleportation</title>
+  <style>
+    /* Default styles provided by pandoc.
+    ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+    */
+    html {
+      color: #1a1a1a;
+      background-color: #fdfdfd;
+    }
+    body {
+      margin: 0 auto;
+      max-width: 36em;
+      padding-left: 50px;
+      padding-right: 50px;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      hyphens: auto;
+      overflow-wrap: break-word;
+      text-rendering: optimizeLegibility;
+      font-kerning: normal;
+    }
+    @media (max-width: 600px) {
+      body {
+        font-size: 0.9em;
+        padding: 12px;
+      }
+      h1 {
+        font-size: 1.8em;
+      }
+    }
+    @media print {
+      html {
+        background-color: white;
+      }
+      body {
+        background-color: transparent;
+        color: black;
+      }
+      p, h2, h3 {
+        orphans: 3;
+        widows: 3;
+      }
+      h2, h3, h4 {
+        page-break-after: avoid;
+      }
+    }
+    p {
+      margin: 1em 0;
+    }
+    a {
+      color: #1a1a1a;
+    }
+    a:visited {
+      color: #1a1a1a;
+    }
+    img {
+      max-width: 100%;
+    }
+    svg {
+      height: auto;
+      max-width: 100%;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 1.4em;
+    }
+    h5, h6 {
+      font-size: 1em;
+      font-style: italic;
+    }
+    h6 {
+      font-weight: normal;
+    }
+    ol, ul {
+      padding-left: 1.7em;
+      margin-top: 1em;
+    }
+    li > ol, li > ul {
+      margin-top: 0;
+    }
+    blockquote {
+      margin: 1em 0 1em 1.7em;
+      padding-left: 1em;
+      border-left: 2px solid #e6e6e6;
+      color: #606060;
+    }
+    code {
+      white-space: pre-wrap;
+      font-family: Menlo, Monaco, Consolas, 'Lucida Console', monospace;
+      font-size: 85%;
+      margin: 0;
+      hyphens: manual;
+    }
+    pre {
+      margin: 1em 0;
+      overflow: auto;
+    }
+    pre code {
+      padding: 0;
+      overflow: visible;
+      overflow-wrap: normal;
+    }
+    .sourceCode {
+     background-color: transparent;
+     overflow: visible;
+    }
+    hr {
+      border: none;
+      border-top: 1px solid #1a1a1a;
+      height: 1px;
+      margin: 1em 0;
+    }
+    table {
+      margin: 1em 0;
+      border-collapse: collapse;
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+    table caption {
+      margin-bottom: 0.75em;
+    }
+    tbody {
+      margin-top: 0.5em;
+      border-top: 1px solid #1a1a1a;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    th {
+      border-top: 1px solid #1a1a1a;
+      padding: 0.25em 0.5em 0.25em 0.5em;
+    }
+    td {
+      padding: 0.125em 0.5em 0.25em 0.5em;
+    }
+    header {
+      margin-bottom: 4em;
+      text-align: center;
+    }
+    #TOC li {
+      list-style: none;
+    }
+    #TOC ul {
+      padding-left: 1.3em;
+    }
+    #TOC > ul {
+      padding-left: 0;
+    }
+    #TOC a:not(:hover) {
+      text-decoration: none;
+    }
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: 1.5em;}
+    div.column{flex: auto;}
+    @media screen {
+    div.columns{gap: min(4vw, 1.5em);}
+    div.column{overflow-x: auto;}
+    }
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+  </style>
+  <script defer="" src="" type="text/javascript"></script>
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">teleportation</h1>
+<p class="author">QuoNic</p>
+</header>
+<div class="center">
+<p><strong>Communication</strong> | Difficulty: Intermediate | Time: 10
+min</p>
+</div>
+<h1 id="why-do-we-need-it">Why do we need it?</h1>
+<p>Quantum teleportation can transfer quantum states without directly
+transmitting qubits. This is the core protocol of quantum
+communication.</p>
+<h2 id="classical-limitations">Classical Limitations</h2>
+<ul>
+<li><p>Classical communication cannot transmit quantum states
+(no-cloning theorem)</p></li>
+<li><p>Direct qubit transmission is vulnerable to noise and
+decoherence</p></li>
+</ul>
+<h2 id="quantum-advantages">Quantum Advantages</h2>
+<ul>
+<li><p>Uses entanglement and classical communication to transfer quantum
+states</p></li>
+<li><p>Does not violate no-cloning theorem (original state is
+destroyed)</p></li>
+<li><p>Foundation for quantum networks</p></li>
+</ul>
+<h2 id="real-world-applications">Real-world Applications</h2>
+<ul>
+<li><p>Quantum Networks (quantum internet)</p></li>
+<li><p>Distributed Quantum Computing</p></li>
+<li><p>Quantum Key Distribution</p></li>
+</ul>
+<h1 id="quick-start">Quick Start</h1>
+<pre><code>import math
+from quonic import qgate, qshow
+from quonic.gates import CX, CZ, H, Ry
+
+# Prepare state to teleport
+qgate(Ry(math.pi / 3), 0)
+
+# Create Bell pair
+qgate(H, 1)
+qgate(CX, 1, 2)
+
+# Alice&#39;s operations
+qgate(CX, 0, 1)
+qgate(H, 0)
+
+# Bob&#39;s corrections
+qgate(CX, 1, 2)
+qgate(CX, 0, 2)
+qgate(CZ, 0, 2)
+
+qshow()</code></pre>
+<p><strong>Expected Output</strong>:</p>
+<pre><code>backend: native | shots: 1024
+Result:
+  |000&gt;    256  ( 25.0%)  ##########
+  |010&gt;    256  ( 25.0%)  ##########
+  |100&gt;    256  ( 25.0%)  ##########
+  |110&gt;    256  ( 25.0%)  ##########</code></pre>
+<h1 id="theory-deep-dive">Theory Deep Dive</h1>
+<h2 id="circuit-diagram">Circuit Diagram</h2>
+<div class="center">
+<p><img src="../../images/teleportation_circuit.svg" style="width:70.0%"
+alt="image" /></p>
+</div>
+<h2 id="mathematical-derivation">Mathematical Derivation</h2>
+<p><strong>Step 1: Prepare State</strong></p>
+<p>Alice has <span class="math inline">\(q_0\)</span> in state <span
+class="math inline">\(|\psi\rangle = \cos(\pi/6)|0\rangle +
+\sin(\pi/6)|1\rangle\)</span></p>
+<p><strong>Step 2: Create Bell Pair</strong></p>
+<p>Alice and Bob share Bell pair: <span
+class="math display">\[\begin{equation}
+|\Phi^+\rangle_{12} = \frac{|00\rangle + |11\rangle}{\sqrt{2}}
+\end{equation}\]</span></p>
+<p><strong>Step 3: Alice’s Operations</strong></p>
+<p>Alice applies CNOT and <span class="math inline">\(H\)</span> gates
+to <span class="math inline">\(q_0\)</span> and <span
+class="math inline">\(q_1\)</span>.</p>
+<p><strong>Step 4: Measurement</strong></p>
+<p>Alice measures <span class="math inline">\(q_0\)</span> and <span
+class="math inline">\(q_1\)</span>, getting 2 classical bits <span
+class="math inline">\((a, b)\)</span>:</p>
+<ul>
+<li><p><span class="math inline">\((0,0)\)</span>: <span
+class="math inline">\(q_2 = |\psi\rangle\)</span> (no correction
+needed)</p></li>
+<li><p><span class="math inline">\((0,1)\)</span>: <span
+class="math inline">\(q_2 = X|\psi\rangle\)</span> (apply <span
+class="math inline">\(X\)</span> gate)</p></li>
+<li><p><span class="math inline">\((1,0)\)</span>: <span
+class="math inline">\(q_2 = Z|\psi\rangle\)</span> (apply <span
+class="math inline">\(Z\)</span> gate)</p></li>
+<li><p><span class="math inline">\((1,1)\)</span>: <span
+class="math inline">\(q_2 = XZ|\psi\rangle\)</span> (apply <span
+class="math inline">\(X\)</span> and <span
+class="math inline">\(Z\)</span> gates)</p></li>
+</ul>
+<p><strong>Step 5: Bob’s Correction</strong></p>
+<p>Bob corrects <span class="math inline">\(q_2\)</span> based on
+Alice’s measurement results.</p>
+<p><strong>Step 6: Result</strong></p>
+<p><span class="math inline">\(q_2\)</span> is now in state <span
+class="math inline">\(|\psi\rangle\)</span>, completing quantum state
+transfer.</p>
+<h2 id="geometric-interpretation">Geometric Interpretation</h2>
+<p>Quantum teleportation uses entanglement as a quantum channel to
+transfer quantum states without directly transmitting qubits.</p>
+<h1 id="code-walkthrough">Code Walkthrough</h1>
+<pre><code>import math
+from quonic import qgate, qshow
+from quonic.gates import CX, CZ, H, Ry
+
+# Step 1: Prepare state to teleport
+qgate(Ry(math.pi / 3), 0)  # q0 = cos(pi/6)|0&gt; + sin(pi/6)|1&gt;
+
+# Step 2: Create Bell pair
+qgate(H, 1)      # q1 -&gt; (|0&gt;+|1&gt;)/sqrt(2)
+qgate(CX, 1, 2)  # q1,q2 -&gt; (|00&gt;+|11&gt;)/sqrt(2)
+
+# Step 3: Alice&#39;s operations
+qgate(CX, 0, 1)  # CNOT(q0, q1)
+qgate(H, 0)       # H(q0)
+
+# Step 4: Bob&#39;s corrections
+qgate(CX, 1, 2)  # CNOT(q1, q2)
+qgate(CX, 0, 2)  # CNOT(q0, q2)
+qgate(CZ, 0, 2)  # CZ(q0, q2)
+
+qshow()</code></pre>
+<h1 id="advanced-usage">Advanced Usage</h1>
+<h2 id="scenario-1-teleport-different-states">Scenario 1: Teleport
+Different States</h2>
+<pre><code># Teleport |0&gt;
+qgate(Ry(0), 0)
+# ... teleportation protocol ...
+
+# Teleport |1&gt;
+qgate(Ry(math.pi), 0)
+# ... teleportation protocol ...
+
+# Teleport |+&gt;
+qgate(H, 0)
+# ... teleportation protocol ...</code></pre>
+<h2 id="scenario-2-noisy-teleportation">Scenario 2: Noisy
+Teleportation</h2>
+<pre><code># No noise
+qshow(noise=0)
+
+# 5% noise
+qshow(noise=0.05)
+
+# 20% noise
+qshow(noise=0.20)</code></pre>
+<h1 id="use-cases">Use Cases</h1>
+<h2 id="quantum-networks">Quantum Networks</h2>
+<p>Quantum teleportation is the foundation of quantum networks, enabling
+quantum state transfer between nodes.</p>
+<h2 id="distributed-quantum-computing">Distributed Quantum
+Computing</h2>
+<p>In distributed quantum computing, teleportation transfers quantum
+states between different quantum processors.</p>
+<h2 id="quantum-key-distribution">Quantum Key Distribution</h2>
+<p>Teleportation can be used for quantum key distribution, enabling
+secure key transfer.</p>
+<h1 id="faq">FAQ</h1>
+<h2 id="can-teleportation-enable-faster-than-light-communication">Can
+teleportation enable faster-than-light communication?</h2>
+<p>No. Teleportation requires classical communication to transmit
+measurement results, which is limited by the speed of light.</p>
+<h2 id="does-teleportation-violate-the-no-cloning-theorem">Does
+teleportation violate the no-cloning theorem?</h2>
+<p>No. Teleportation destroys the original state, so it does not violate
+the no-cloning theorem.</p>
+<h2 id="how-many-qubits-does-teleportation-need">How many qubits does
+teleportation need?</h2>
+<p>3 qubits: 1 state to teleport + 2 Bell pair qubits.</p>
+<h2 id="what-is-the-fidelity-of-teleportation">What is the fidelity of
+teleportation?</h2>
+<p>Ideally 1. In practice, noise reduces fidelity.</p>
+<h2
+id="whats-the-relationship-between-teleportation-and-quantum-repeaters">What’s
+the relationship between teleportation and quantum repeaters?</h2>
+<p>Quantum repeaters use teleportation and entanglement swapping for
+long-distance quantum communication.</p>
+<h1 id="learning-path">Learning Path</h1>
+<h2 id="prerequisites">Prerequisites</h2>
+<ul>
+<li><p>Bell state (2-qubit entanglement)</p></li>
+<li><p>CNOT gate and Hadamard gate</p></li>
+<li><p>Quantum measurement</p></li>
+</ul>
+<h2 id="next-steps">Next Steps</h2>
+<ul>
+<li><p>Superdense Coding (transfer classical info using Bell
+states)</p></li>
+<li><p>Quantum Repeaters (long-distance quantum communication)</p></li>
+<li><p>Quantum Networks (quantum internet)</p></li>
+</ul>
+<h1 id="complete-examples">Complete Examples</h1>
+<h2 id="example-1-basic-teleportation">Example 1: Basic
+Teleportation</h2>
+<pre><code>import math
+from quonic import qgate, qshow
+from quonic.gates import CX, CZ, H, Ry
+
+qgate(Ry(math.pi / 3), 0)
+qgate(H, 1)
+qgate(CX, 1, 2)
+qgate(CX, 0, 1)
+qgate(H, 0)
+qgate(CX, 1, 2)
+qgate(CX, 0, 2)
+qgate(CZ, 0, 2)
+qshow()</code></pre>
+<h1 id="download">Download</h1>
+<ul>
+<li><p>(https://github.com/ChrisLee0721/QuoNic/blob/main/examples/teleportation/teleportation.py)</p></li>
+</ul>
+</body>
+</html>

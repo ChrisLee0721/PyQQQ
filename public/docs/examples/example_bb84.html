@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc 3.10.2" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <meta name="author" content="QuoNic" />
+  <title>bb84</title>
+  <style>
+    /* Default styles provided by pandoc.
+    ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+    */
+    html {
+      color: #1a1a1a;
+      background-color: #fdfdfd;
+    }
+    body {
+      margin: 0 auto;
+      max-width: 36em;
+      padding-left: 50px;
+      padding-right: 50px;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      hyphens: auto;
+      overflow-wrap: break-word;
+      text-rendering: optimizeLegibility;
+      font-kerning: normal;
+    }
+    @media (max-width: 600px) {
+      body {
+        font-size: 0.9em;
+        padding: 12px;
+      }
+      h1 {
+        font-size: 1.8em;
+      }
+    }
+    @media print {
+      html {
+        background-color: white;
+      }
+      body {
+        background-color: transparent;
+        color: black;
+      }
+      p, h2, h3 {
+        orphans: 3;
+        widows: 3;
+      }
+      h2, h3, h4 {
+        page-break-after: avoid;
+      }
+    }
+    p {
+      margin: 1em 0;
+    }
+    a {
+      color: #1a1a1a;
+    }
+    a:visited {
+      color: #1a1a1a;
+    }
+    img {
+      max-width: 100%;
+    }
+    svg {
+      height: auto;
+      max-width: 100%;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 1.4em;
+    }
+    h5, h6 {
+      font-size: 1em;
+      font-style: italic;
+    }
+    h6 {
+      font-weight: normal;
+    }
+    ol, ul {
+      padding-left: 1.7em;
+      margin-top: 1em;
+    }
+    li > ol, li > ul {
+      margin-top: 0;
+    }
+    blockquote {
+      margin: 1em 0 1em 1.7em;
+      padding-left: 1em;
+      border-left: 2px solid #e6e6e6;
+      color: #606060;
+    }
+    code {
+      white-space: pre-wrap;
+      font-family: Menlo, Monaco, Consolas, 'Lucida Console', monospace;
+      font-size: 85%;
+      margin: 0;
+      hyphens: manual;
+    }
+    pre {
+      margin: 1em 0;
+      overflow: auto;
+    }
+    pre code {
+      padding: 0;
+      overflow: visible;
+      overflow-wrap: normal;
+    }
+    .sourceCode {
+     background-color: transparent;
+     overflow: visible;
+    }
+    hr {
+      border: none;
+      border-top: 1px solid #1a1a1a;
+      height: 1px;
+      margin: 1em 0;
+    }
+    table {
+      margin: 1em 0;
+      border-collapse: collapse;
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+    table caption {
+      margin-bottom: 0.75em;
+    }
+    tbody {
+      margin-top: 0.5em;
+      border-top: 1px solid #1a1a1a;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    th {
+      border-top: 1px solid #1a1a1a;
+      padding: 0.25em 0.5em 0.25em 0.5em;
+    }
+    td {
+      padding: 0.125em 0.5em 0.25em 0.5em;
+    }
+    header {
+      margin-bottom: 4em;
+      text-align: center;
+    }
+    #TOC li {
+      list-style: none;
+    }
+    #TOC ul {
+      padding-left: 1.3em;
+    }
+    #TOC > ul {
+      padding-left: 0;
+    }
+    #TOC a:not(:hover) {
+      text-decoration: none;
+    }
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: 1.5em;}
+    div.column{flex: auto;}
+    @media screen {
+    div.columns{gap: min(4vw, 1.5em);}
+    div.column{overflow-x: auto;}
+    }
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+  </style>
+  <script defer="" src="" type="text/javascript"></script>
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">bb84</h1>
+<p class="author">QuoNic</p>
+</header>
+<div class="center">
+<p><strong>Communication</strong> | Difficulty: Intermediate | Time: 15
+min</p>
+</div>
+<h1 id="why-do-we-need-it">Why do we need it?</h1>
+<p>BB84 is the first quantum key distribution protocol, using quantum
+mechanics for unconditionally secure key distribution.</p>
+<h2 id="classical-limitations">Classical Limitations</h2>
+<ul>
+<li><p>Classical encryption relies on computational complexity (e.g.,
+RSA)</p></li>
+<li><p>Quantum computers can break classical encryption</p></li>
+<li><p>Classical key distribution requires trusted channel</p></li>
+</ul>
+<h2 id="quantum-advantages">Quantum Advantages</h2>
+<ul>
+<li><p>BB84 provides information-theoretic security (no computational
+complexity)</p></li>
+<li><p>No-cloning theorem ensures eavesdropping detection</p></li>
+<li><p>Foundation for post-quantum cryptography</p></li>
+</ul>
+<h2 id="real-world-applications">Real-world Applications</h2>
+<ul>
+<li><p>Quantum Key Distribution networks</p></li>
+<li><p>Quantum secure communication</p></li>
+<li><p>Quantum internet</p></li>
+</ul>
+<h1 id="quick-start">Quick Start</h1>
+<pre><code>from quonic.algorithms import bb84
+
+# Run BB84 protocol
+result = bb84(n_bits=100, noise=0.0)
+print(f&quot;Shared key: {result.key}&quot;)
+print(f&quot;Key length: {len(result.key)}&quot;)</code></pre>
+<p><strong>Expected Output</strong>:</p>
+<pre><code>Shared key: 01101001...
+Key length: 50</code></pre>
+<h1 id="theory-deep-dive">Theory Deep Dive</h1>
+<h2 id="circuit-diagram">Circuit Diagram</h2>
+<div class="center">
+<p><img src="../../images/bb84_circuit.svg" style="width:50.0%"
+alt="image" /></p>
+</div>
+<h2 id="mathematical-derivation">Mathematical Derivation</h2>
+<p>BB84 protocol steps:</p>
+<ol>
+<li><p>Alice randomly chooses bits and bases</p></li>
+<li><p>Alice prepares quantum states and sends to Bob</p></li>
+<li><p>Bob randomly chooses bases to measure</p></li>
+<li><p>Alice and Bob publicly compare bases</p></li>
+<li><p>Keep bits where bases match as key</p></li>
+</ol>
+<p>Security based on no-cloning theorem: <span
+class="math display">\[\begin{equation}
+|\psi\rangle \neq |\phi\rangle \Rightarrow \text{cannot perfectly clone}
+\end{equation}\]</span></p>
+<h2 id="geometric-interpretation">Geometric Interpretation</h2>
+<p>On the Bloch sphere, BB84 uses two orthogonal bases:</p>
+<ul>
+<li><p>Computational basis: <span class="math inline">\(\{|0\rangle,
+|1\rangle\}\)</span></p></li>
+<li><p>Hadamard basis: <span class="math inline">\(\{|+\rangle,
+|-\rangle\}\)</span></p></li>
+</ul>
+<p>Eavesdropper doesn’t know Alice’s basis, measurement introduces
+errors.</p>
+<h1 id="code-walkthrough">Code Walkthrough</h1>
+<pre><code>from quonic.algorithms import bb84
+
+# bb84(n_bits, noise)
+# n_bits: number of bits to generate
+# noise: channel noise rate
+result = bb84(n_bits=100, noise=0.0)
+
+# result.key: shared secret key
+# result.error_rate: quantum bit error rate
+print(f&quot;Key: {result.key}&quot;)
+print(f&quot;Error rate: {result.error_rate}&quot;)</code></pre>
+<h1 id="advanced-usage">Advanced Usage</h1>
+<h2 id="scenario-1-noisy-bb84">Scenario 1: Noisy BB84</h2>
+<pre><code># BB84 with channel noise
+result = bb84(n_bits=100, noise=0.05)
+print(f&quot;Error rate: {result.error_rate}&quot;)
+# If error rate &gt; 11%, channel may be compromised</code></pre>
+<h2 id="scenario-2-eavesdropping-detection">Scenario 2: Eavesdropping
+Detection</h2>
+<pre><code># Eavesdropping detection
+result = bb84(n_bits=100, noise=0.0)
+if result.error_rate &gt; 0.11:
+    print(&quot;Eavesdropper detected!&quot;)
+else:
+    print(&quot;Channel is secure&quot;)</code></pre>
+<h1 id="use-cases">Use Cases</h1>
+<h2 id="quantum-key-distribution-networks">Quantum Key Distribution
+Networks</h2>
+<p>BB84 can be used to build quantum key distribution networks for
+secure communication.</p>
+<h2 id="quantum-secure-communication">Quantum Secure Communication</h2>
+<p>BB84 provides information-theoretic security for high-security
+communication needs.</p>
+<h2 id="quantum-internet">Quantum Internet</h2>
+<p>BB84 is one of the foundational protocols for the quantum
+internet.</p>
+<h1 id="faq">FAQ</h1>
+<h2 id="why-is-bb84-secure">Why is BB84 secure?</h2>
+<p>BB84 security is based on the no-cloning theorem. Eavesdroppers
+cannot perfectly clone quantum states, and measurement introduces
+errors.</p>
+<h2 id="what-is-the-key-generation-rate-of-bb84">What is the key
+generation rate of BB84?</h2>
+<p>Ideally, BB84 key generation rate is about 50% (probability of basis
+matching).</p>
+<h2 id="can-bb84-resist-quantum-computers">Can BB84 resist quantum
+computers?</h2>
+<p>BB84 provides information-theoretic security, not relying on
+computational complexity, so it can resist quantum computers.</p>
+<h1 id="learning-path">Learning Path</h1>
+<h2 id="prerequisites">Prerequisites</h2>
+<ul>
+<li><p>Qubits and superposition</p></li>
+<li><p>Hadamard gate and measurement</p></li>
+<li><p>No-cloning theorem</p></li>
+</ul>
+<h2 id="next-steps">Next Steps</h2>
+<ul>
+<li><p>E91 Protocol (entanglement-based QKD)</p></li>
+<li><p>Quantum Repeaters</p></li>
+<li><p>Quantum Internet</p></li>
+</ul>
+<h1 id="complete-examples">Complete Examples</h1>
+<h2 id="example-1-basic-bb84">Example 1: Basic BB84</h2>
+<pre><code>from quonic.algorithms import bb84
+
+result = bb84(n_bits=100, noise=0.0)
+print(f&quot;Key: {result.key}&quot;)</code></pre>
+<h1 id="download">Download</h1>
+<ul>
+<li><p>(https://github.com/ChrisLee0721/QuoNic/blob/main/examples/bb84/bb84.py)</p></li>
+</ul>
+</body>
+</html>

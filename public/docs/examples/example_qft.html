@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc 3.10.2" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <meta name="author" content="QuoNic" />
+  <title>qft</title>
+  <style>
+    /* Default styles provided by pandoc.
+    ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+    */
+    html {
+      color: #1a1a1a;
+      background-color: #fdfdfd;
+    }
+    body {
+      margin: 0 auto;
+      max-width: 36em;
+      padding-left: 50px;
+      padding-right: 50px;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      hyphens: auto;
+      overflow-wrap: break-word;
+      text-rendering: optimizeLegibility;
+      font-kerning: normal;
+    }
+    @media (max-width: 600px) {
+      body {
+        font-size: 0.9em;
+        padding: 12px;
+      }
+      h1 {
+        font-size: 1.8em;
+      }
+    }
+    @media print {
+      html {
+        background-color: white;
+      }
+      body {
+        background-color: transparent;
+        color: black;
+      }
+      p, h2, h3 {
+        orphans: 3;
+        widows: 3;
+      }
+      h2, h3, h4 {
+        page-break-after: avoid;
+      }
+    }
+    p {
+      margin: 1em 0;
+    }
+    a {
+      color: #1a1a1a;
+    }
+    a:visited {
+      color: #1a1a1a;
+    }
+    img {
+      max-width: 100%;
+    }
+    svg {
+      height: auto;
+      max-width: 100%;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 1.4em;
+    }
+    h5, h6 {
+      font-size: 1em;
+      font-style: italic;
+    }
+    h6 {
+      font-weight: normal;
+    }
+    ol, ul {
+      padding-left: 1.7em;
+      margin-top: 1em;
+    }
+    li > ol, li > ul {
+      margin-top: 0;
+    }
+    blockquote {
+      margin: 1em 0 1em 1.7em;
+      padding-left: 1em;
+      border-left: 2px solid #e6e6e6;
+      color: #606060;
+    }
+    code {
+      white-space: pre-wrap;
+      font-family: Menlo, Monaco, Consolas, 'Lucida Console', monospace;
+      font-size: 85%;
+      margin: 0;
+      hyphens: manual;
+    }
+    pre {
+      margin: 1em 0;
+      overflow: auto;
+    }
+    pre code {
+      padding: 0;
+      overflow: visible;
+      overflow-wrap: normal;
+    }
+    .sourceCode {
+     background-color: transparent;
+     overflow: visible;
+    }
+    hr {
+      border: none;
+      border-top: 1px solid #1a1a1a;
+      height: 1px;
+      margin: 1em 0;
+    }
+    table {
+      margin: 1em 0;
+      border-collapse: collapse;
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+    table caption {
+      margin-bottom: 0.75em;
+    }
+    tbody {
+      margin-top: 0.5em;
+      border-top: 1px solid #1a1a1a;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    th {
+      border-top: 1px solid #1a1a1a;
+      padding: 0.25em 0.5em 0.25em 0.5em;
+    }
+    td {
+      padding: 0.125em 0.5em 0.25em 0.5em;
+    }
+    header {
+      margin-bottom: 4em;
+      text-align: center;
+    }
+    #TOC li {
+      list-style: none;
+    }
+    #TOC ul {
+      padding-left: 1.3em;
+    }
+    #TOC > ul {
+      padding-left: 0;
+    }
+    #TOC a:not(:hover) {
+      text-decoration: none;
+    }
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: 1.5em;}
+    div.column{flex: auto;}
+    @media screen {
+    div.columns{gap: min(4vw, 1.5em);}
+    div.column{overflow-x: auto;}
+    }
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+  </style>
+  <script defer="" src="" type="text/javascript"></script>
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">qft</h1>
+<p class="author">QuoNic</p>
+</header>
+<div class="center">
+<p><strong>Algorithms</strong> | Difficulty: Intermediate | Time: 15
+min</p>
+</div>
+<h1 id="why-do-we-need-it">Why do we need it?</h1>
+<p>Quantum Fourier Transform (QFT) is the core component of quantum
+algorithms.</p>
+<h2 id="classical-limitations">Classical Limitations</h2>
+<ul>
+<li><p>Classical FFT: <span class="math inline">\(O(N \log N)\)</span>
+time complexity</p></li>
+<li><p>For <span class="math inline">\(N=2^n\)</span>, classical needs
+<span class="math inline">\(O(n 2^n)\)</span> operations</p></li>
+</ul>
+<h2 id="quantum-advantages">Quantum Advantages</h2>
+<ul>
+<li><p>QFT: <span class="math inline">\(O(n^2)\)</span> time complexity
+(exponential speedup)</p></li>
+<li><p>Core of quantum phase estimation, Shor’s algorithm</p></li>
+<li><p>Can efficiently compute discrete Fourier transform</p></li>
+</ul>
+<h2 id="real-world-applications">Real-world Applications</h2>
+<ul>
+<li><p>Quantum Phase Estimation (QPE)</p></li>
+<li><p>Shor’s Algorithm (factoring)</p></li>
+<li><p>Quantum Simulation (Hamiltonian simulation)</p></li>
+</ul>
+<h1 id="quick-start">Quick Start</h1>
+<pre><code>from quonic import qgate, qshow
+from quonic.gates import H, Rz
+import math
+
+# 3-qubit QFT
+qgate(H, 0)
+qgate(Rz(math.pi/2), 1)
+qgate(Rz(math.pi/4), 2)
+qshow()</code></pre>
+<p><strong>Expected Output</strong>:</p>
+<pre><code>backend: native | shots: 1024
+Result:
+  |000&gt;    128  ( 12.5%)  ####
+  |001&gt;    128  ( 12.5%)  ####
+  |010&gt;    128  ( 12.5%)  ####
+  |011&gt;    128  ( 12.5%)  ####
+  |100&gt;    128  ( 12.5%)  ####
+  |101&gt;    128  ( 12.5%)  ####
+  |110&gt;    128  ( 12.5%)  ####
+  |111&gt;    128  ( 12.5%)  ####</code></pre>
+<h1 id="theory-deep-dive">Theory Deep Dive</h1>
+<h2 id="circuit-diagram">Circuit Diagram</h2>
+<div class="center">
+<p><img src="../../images/qft_circuit.svg" style="width:70.0%"
+alt="image" /></p>
+</div>
+<h2 id="mathematical-derivation">Mathematical Derivation</h2>
+<p>QFT transforms computational basis to Fourier basis: <span
+class="math display">\[\begin{equation}
+QFT|j\rangle = \frac{1}{\sqrt{N}} \sum_{k=0}^{N-1} e^{2\pi ijk/N}
+|k\rangle
+\end{equation}\]</span></p>
+<p>For <span class="math inline">\(n\)</span> qubits, QFT decomposes as:
+<span class="math display">\[\begin{equation}
+QFT = (H \otimes R_2 \otimes R_3 \otimes \cdots \otimes R_n) \cdot
+\text{CNOT gates}
+\end{equation}\]</span></p>
+<p>Where <span class="math inline">\(R_k = \begin{pmatrix} 1 &amp; 0 \\
+0 &amp; e^{2\pi i/2^k} \end{pmatrix}\)</span></p>
+<h2 id="geometric-interpretation">Geometric Interpretation</h2>
+<p>On the Bloch sphere, QFT rotates computational basis states to
+Fourier basis. Each qubit’s phase encodes frequency information.</p>
+<h1 id="code-walkthrough">Code Walkthrough</h1>
+<pre><code>from quonic import qgate, qshow
+from quonic.gates import H, Rz
+import math
+
+# QFT circuit
+qgate(H, 0)           # Hadamard on q0
+qgate(Rz(math.pi/2), 1)  # Rz(pi/2) on q1
+qgate(Rz(math.pi/4), 2)  # Rz(pi/4) on q2
+qshow()</code></pre>
+<h1 id="advanced-usage">Advanced Usage</h1>
+<h2 id="scenario-1-full-qft-circuit">Scenario 1: Full QFT Circuit</h2>
+<pre><code># Full QFT with controlled rotations
+qgate(H, 0)
+qgate(Rz(math.pi/2), 1)
+qgate(Rz(math.pi/4), 2)
+qgate(CX, 1, 0)
+qgate(Rz(-math.pi/2), 0)
+qgate(CX, 2, 0)
+qgate(Rz(-math.pi/4), 0)
+qshow()</code></pre>
+<h2 id="scenario-2-qft-for-phase-estimation">Scenario 2: QFT for Phase
+Estimation</h2>
+<pre><code># QFT for phase estimation
+# Prepare eigenstate
+qgate(X, 3)
+# Apply controlled-U gates
+qgate(CU, 0, 3)
+qgate(CU, 1, 3)
+qgate(CU, 2, 3)
+# Apply inverse QFT
+qgate(H, 2)
+qgate(Rz(-math.pi/2), 1)
+qgate(Rz(-math.pi/4), 0)
+qshow()</code></pre>
+<h1 id="use-cases">Use Cases</h1>
+<h2 id="quantum-phase-estimation">Quantum Phase Estimation</h2>
+<p>QFT is the core component of quantum phase estimation, used to
+estimate eigenvalues of unitary operators.</p>
+<h2 id="shors-algorithm">Shor’s Algorithm</h2>
+<p>Shor’s algorithm uses QFT to find periods, enabling factoring.</p>
+<h2 id="quantum-simulation">Quantum Simulation</h2>
+<p>QFT is used for frequency analysis in quantum simulation.</p>
+<h1 id="faq">FAQ</h1>
+<h2 id="whats-the-difference-between-qft-and-classical-fft">What’s the
+difference between QFT and classical FFT?</h2>
+<p>QFT is a quantum algorithm with <span
+class="math inline">\(O(n^2)\)</span> time complexity; classical FFT is
+<span class="math inline">\(O(N \log N)\)</span>. QFT provides
+exponential speedup.</p>
+<h2 id="how-many-qubits-does-qft-need">How many qubits does QFT
+need?</h2>
+<p>QFT needs <span class="math inline">\(n\)</span> qubits to process
+<span class="math inline">\(N=2^n\)</span> data points.</p>
+<h2 id="what-is-the-output-of-qft">What is the output of QFT?</h2>
+<p>QFT output is the Fourier transform of the input state, encoded as a
+quantum state.</p>
+<h1 id="learning-path">Learning Path</h1>
+<h2 id="prerequisites">Prerequisites</h2>
+<ul>
+<li><p>Qubits and superposition</p></li>
+<li><p>Hadamard gate and phase gates</p></li>
+<li><p>Quantum measurement</p></li>
+</ul>
+<h2 id="next-steps">Next Steps</h2>
+<ul>
+<li><p>Quantum Phase Estimation (QPE)</p></li>
+<li><p>Shor’s Algorithm</p></li>
+<li><p>Quantum Simulation</p></li>
+</ul>
+<h1 id="complete-examples">Complete Examples</h1>
+<h2 id="example-1-basic-qft">Example 1: Basic QFT</h2>
+<pre><code>from quonic import qgate, qshow
+from quonic.gates import H, Rz
+import math
+
+qgate(H, 0)
+qgate(Rz(math.pi/2), 1)
+qgate(Rz(math.pi/4), 2)
+qshow()</code></pre>
+<h1 id="download">Download</h1>
+<ul>
+<li><p>(https://github.com/ChrisLee0721/QuoNic/blob/main/examples/qft/qft.py)</p></li>
+</ul>
+</body>
+</html>

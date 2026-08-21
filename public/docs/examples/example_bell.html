@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc 3.10.2" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <meta name="author" content="QuoNic" />
+  <title>bell</title>
+  <style>
+    /* Default styles provided by pandoc.
+    ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+    */
+    html {
+      color: #1a1a1a;
+      background-color: #fdfdfd;
+    }
+    body {
+      margin: 0 auto;
+      max-width: 36em;
+      padding-left: 50px;
+      padding-right: 50px;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      hyphens: auto;
+      overflow-wrap: break-word;
+      text-rendering: optimizeLegibility;
+      font-kerning: normal;
+    }
+    @media (max-width: 600px) {
+      body {
+        font-size: 0.9em;
+        padding: 12px;
+      }
+      h1 {
+        font-size: 1.8em;
+      }
+    }
+    @media print {
+      html {
+        background-color: white;
+      }
+      body {
+        background-color: transparent;
+        color: black;
+      }
+      p, h2, h3 {
+        orphans: 3;
+        widows: 3;
+      }
+      h2, h3, h4 {
+        page-break-after: avoid;
+      }
+    }
+    p {
+      margin: 1em 0;
+    }
+    a {
+      color: #1a1a1a;
+    }
+    a:visited {
+      color: #1a1a1a;
+    }
+    img {
+      max-width: 100%;
+    }
+    svg {
+      height: auto;
+      max-width: 100%;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 1.4em;
+    }
+    h5, h6 {
+      font-size: 1em;
+      font-style: italic;
+    }
+    h6 {
+      font-weight: normal;
+    }
+    ol, ul {
+      padding-left: 1.7em;
+      margin-top: 1em;
+    }
+    li > ol, li > ul {
+      margin-top: 0;
+    }
+    blockquote {
+      margin: 1em 0 1em 1.7em;
+      padding-left: 1em;
+      border-left: 2px solid #e6e6e6;
+      color: #606060;
+    }
+    code {
+      white-space: pre-wrap;
+      font-family: Menlo, Monaco, Consolas, 'Lucida Console', monospace;
+      font-size: 85%;
+      margin: 0;
+      hyphens: manual;
+    }
+    pre {
+      margin: 1em 0;
+      overflow: auto;
+    }
+    pre code {
+      padding: 0;
+      overflow: visible;
+      overflow-wrap: normal;
+    }
+    .sourceCode {
+     background-color: transparent;
+     overflow: visible;
+    }
+    hr {
+      border: none;
+      border-top: 1px solid #1a1a1a;
+      height: 1px;
+      margin: 1em 0;
+    }
+    table {
+      margin: 1em 0;
+      border-collapse: collapse;
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+    table caption {
+      margin-bottom: 0.75em;
+    }
+    tbody {
+      margin-top: 0.5em;
+      border-top: 1px solid #1a1a1a;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    th {
+      border-top: 1px solid #1a1a1a;
+      padding: 0.25em 0.5em 0.25em 0.5em;
+    }
+    td {
+      padding: 0.125em 0.5em 0.25em 0.5em;
+    }
+    header {
+      margin-bottom: 4em;
+      text-align: center;
+    }
+    #TOC li {
+      list-style: none;
+    }
+    #TOC ul {
+      padding-left: 1.3em;
+    }
+    #TOC > ul {
+      padding-left: 0;
+    }
+    #TOC a:not(:hover) {
+      text-decoration: none;
+    }
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: 1.5em;}
+    div.column{flex: auto;}
+    @media screen {
+    div.columns{gap: min(4vw, 1.5em);}
+    div.column{overflow-x: auto;}
+    }
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+  </style>
+  <script defer="" src="" type="text/javascript"></script>
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">bell</h1>
+<p class="author">QuoNic</p>
+</header>
+<div class="center">
+<p><strong>Foundational</strong> | Difficulty: Beginner | Time: 5
+min</p>
+</div>
+<h1 id="why-do-we-need-it">Why do we need it?</h1>
+<p>In classical physics, two objects have independent states — measuring
+one does not affect the other. But in the quantum world, two qubits can
+enter an <strong>entangled state</strong>: measuring one
+<strong>instantly</strong> determines the state of the other.</p>
+<h2 id="classical-limitations">Classical Limitations</h2>
+<ul>
+<li><p>Classical physics cannot create such “spooky action at a
+distance”</p></li>
+<li><p>Classical communication requires at least 2 bits to transmit 1
+bit of quantum information</p></li>
+</ul>
+<h2 id="quantum-advantages">Quantum Advantages</h2>
+<ul>
+<li><p>Bell state is the most basic form of quantum
+entanglement</p></li>
+<li><p>Violates Bell inequalities, proving quantum mechanics is
+non-local</p></li>
+<li><p>Foundation for quantum teleportation, superdense coding, and
+QKD</p></li>
+</ul>
+<h2 id="real-world-applications">Real-world Applications</h2>
+<ul>
+<li><p>Quantum Key Distribution (BB84, E91 protocols)</p></li>
+<li><p>Quantum Teleportation (foundation of quantum networks)</p></li>
+<li><p>Quantum Computing (entanglement resource)</p></li>
+</ul>
+<h1 id="quick-start">Quick Start</h1>
+<pre><code>from quonic import qgate, qshow
+from quonic.gates import CX, H
+
+# Create Bell state
+qgate(H, 0)      # Hadamard gate: create superposition
+qgate(CX, 0, 1)  # CNOT gate: create entanglement
+qshow()           # Measure and display results</code></pre>
+<p><strong>Expected Output</strong>:</p>
+<pre><code>backend: native | shots: 1024
+Result:
+  |00&gt;     512  ( 50.0%)  ####################
+  |11&gt;     512  ( 50.0%)  ####################</code></pre>
+<h1 id="theory-deep-dive">Theory Deep Dive</h1>
+<h2 id="circuit-diagram">Circuit Diagram</h2>
+<div class="center">
+<p><img src="../../images/bell_circuit_new.svg" style="width:60.0%"
+alt="image" /></p>
+</div>
+<h2 id="mathematical-derivation">Mathematical Derivation</h2>
+<p><strong>Step 1: Initial State</strong></p>
+<p>Both qubits start from <span
+class="math inline">\(|0\rangle\)</span>: <span
+class="math display">\[\begin{equation}
+|\psi_0\rangle = |00\rangle
+\end{equation}\]</span></p>
+<p><strong>Step 2: Hadamard Gate</strong></p>
+<p>Apply <span class="math inline">\(H\)</span> gate to <span
+class="math inline">\(q_0\)</span>: <span
+class="math display">\[\begin{equation}
+H|0\rangle = \frac{|0\rangle + |1\rangle}{\sqrt{2}}
+\end{equation}\]</span></p>
+<p>State becomes: <span class="math display">\[\begin{equation}
+|\psi_1\rangle = \frac{|0\rangle + |1\rangle}{\sqrt{2}} \otimes
+|0\rangle = \frac{|00\rangle + |10\rangle}{\sqrt{2}}
+\end{equation}\]</span></p>
+<p><strong>Step 3: CNOT Gate</strong></p>
+<p>CNOT gate rule: if control qubit is <span
+class="math inline">\(|1\rangle\)</span>, flip target qubit. <span
+class="math display">\[\begin{align}
+\text{CNOT}|00\rangle &amp;= |00\rangle \\
+\text{CNOT}|10\rangle &amp;= |11\rangle
+\end{align}\]</span></p>
+<p>Final state: <span class="math display">\[\begin{equation}
+|\psi_2\rangle = \frac{|00\rangle + |11\rangle}{\sqrt{2}}
+\end{equation}\]</span></p>
+<p><strong>Step 4: Measurement Probabilities</strong></p>
+<ul>
+<li><p><span class="math inline">\(P(|00\rangle) = |1/\sqrt{2}|^2 =
+0.5\)</span></p></li>
+<li><p><span class="math inline">\(P(|11\rangle) = |1/\sqrt{2}|^2 =
+0.5\)</span></p></li>
+<li><p><span class="math inline">\(P(|01\rangle) = 0\)</span></p></li>
+<li><p><span class="math inline">\(P(|10\rangle) = 0\)</span></p></li>
+</ul>
+<h2 id="geometric-interpretation">Geometric Interpretation</h2>
+<p>On the Bloch sphere:</p>
+<ul>
+<li><p><span class="math inline">\(|0\rangle\)</span> at the north
+pole</p></li>
+<li><p><span class="math inline">\(|1\rangle\)</span> at the south
+pole</p></li>
+<li><p><span class="math inline">\(H\)</span> gate rotates <span
+class="math inline">\(|0\rangle\)</span> to the equator: <span
+class="math inline">\(|+\rangle =
+(|0\rangle+|1\rangle)/\sqrt{2}\)</span></p></li>
+</ul>
+<p>After CNOT creates entanglement, the two qubits can no longer be
+described by individual Bloch spheres — they become one entity. This is
+the geometric meaning of entanglement.</p>
+<h1 id="code-walkthrough">Code Walkthrough</h1>
+<pre><code>from quonic import qgate, qshow  # Import core API
+from quonic.gates import CX, H   # Import gate definitions
+
+# qgate(gate, qubit) - Apply gate to specified qubit
+qgate(H, 0)      # Apply H gate to q0
+                  # H gate: |0&gt; -&gt; (|0&gt;+|1&gt;)/sqrt(2)
+                  # Effect: create superposition
+
+# qgate(gate, control, target) - Apply controlled gate
+qgate(CX, 0, 1)  # CNOT gate: control=q0, target=q1
+                  # Effect: if q0 is |1&gt;, flip q1
+                  # Create entangled state (|00&gt;+|11&gt;)/sqrt(2)
+
+# qshow() - Run circuit and display results
+qshow()           # Auto-select best backend
+                  # Execute 1024 measurements
+                  # Display measurement statistics</code></pre>
+<h2 id="api-reference">API Reference</h2>
+<div class="center">
+<table>
+<thead>
+<tr>
+<th style="text-align: left;"><strong>API</strong></th>
+<th style="text-align: left;"><strong>Parameters</strong></th>
+<th style="text-align: left;"><strong>Description</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><code>qgate(H, 0)</code></td>
+<td style="text-align: left;">H: Hadamard gate, 0: qubit index</td>
+<td style="text-align: left;">Apply H gate to q0</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>qgate(CX, 0, 1)</code></td>
+<td style="text-align: left;">CX: CNOT gate, 0: control, 1: target</td>
+<td style="text-align: left;">Create entanglement</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>qshow()</code></td>
+<td style="text-align: left;">None</td>
+<td style="text-align: left;">Run circuit and display results</td>
+</tr>
+</tbody>
+</table>
+</div>
+<h1 id="advanced-usage">Advanced Usage</h1>
+<h2 id="scenario-1-different-bell-states">Scenario 1: Different Bell
+States</h2>
+<pre><code># Phi+ = (|00&gt;+|11&gt;)/sqrt(2)
+qgate(H, 0)
+qgate(CX, 0, 1)
+
+# Phi- = (|00&gt;-|11&gt;)/sqrt(2)
+qgate(H, 0)
+qgate(X, 0)  # Phase flip
+qgate(CX, 0, 1)
+
+# Psi+ = (|01&gt;+|10&gt;)/sqrt(2)
+qgate(H, 0)
+qgate(CX, 0, 1)
+qgate(X, 1)  # Flip q1
+
+# Psi- = (|01&gt;-|10&gt;)/sqrt(2)
+qgate(H, 0)
+qgate(X, 0)
+qgate(CX, 0, 1)
+qgate(X, 1)</code></pre>
+<h2 id="scenario-2-multi-qubit-ghz-state">Scenario 2: Multi-qubit GHZ
+State</h2>
+<pre><code># GHZ state: (|000&gt;+|111&gt;)/sqrt(2)
+qgate(H, 0)
+qgate(CX, 0, 1)
+qgate(CX, 1, 2)
+qshow()</code></pre>
+<h2 id="scenario-3-noisy-bell-state">Scenario 3: Noisy Bell State</h2>
+<pre><code># No noise
+qshow(noise=0)
+
+# 5% noise
+qshow(noise=0.05)
+
+# 20% noise
+qshow(noise=0.20)</code></pre>
+<h1 id="use-cases">Use Cases</h1>
+<h2 id="quantum-key-distribution">Quantum Key Distribution</h2>
+<p>BB84 and E91 protocols use Bell states to detect eavesdropping. If
+someone tries to measure the quantum state, it destroys the
+entanglement, and both parties can detect it.</p>
+<h2 id="quantum-teleportation">Quantum Teleportation</h2>
+<p>Quantum teleportation uses Bell states as a quantum channel to
+transfer quantum states without directly transmitting qubits.</p>
+<h2 id="quantum-computing-testing">Quantum Computing Testing</h2>
+<p>Bell states are the gold standard for testing quantum hardware
+quality. If hardware cannot correctly prepare Bell states, it indicates
+noise or calibration issues.</p>
+<h1 id="faq">FAQ</h1>
+<h2 id="why-is-my-result-not-exactly-5050">Why is my result not exactly
+50/50?</h2>
+<p>Quantum measurements have inherent randomness. Even with theoretical
+50/50 probabilities, finite measurements (e.g., 1024 shots) will have
+statistical fluctuations. Increasing the number of shots gets closer to
+theoretical values.</p>
+<h2 id="why-did-i-see-01-or-10">Why did I see |01&gt; or |10&gt;?</h2>
+<p>Possible causes: 1) Noise (check if noise parameter is set); 2) Code
+error (verify H gate comes before CNOT); 3) Backend issue (try
+backend=’native’).</p>
+<h2 id="whats-the-difference-between-bell-state-and-ghz-state">What’s
+the difference between Bell state and GHZ state?</h2>
+<p>Bell state is 2-qubit entanglement, GHZ state is 3+ qubit
+entanglement. GHZ state is a generalization of Bell state for
+multi-party quantum communication and quantum error correction.</p>
+<h2 id="how-to-verify-i-prepared-a-bell-state">How to verify I prepared
+a Bell state?</h2>
+<p>Check measurement results: 1) Only |00&gt; and |11&gt;; 2) Both
+probabilities close to 50%; 3) No |01&gt; or |10&gt;. If all three
+conditions are met, it’s a Bell state.</p>
+<h2 id="what-does-bell-inequality-violation-mean">What does Bell
+inequality violation mean?</h2>
+<p>In classical physics, two particles have a correlation limit (Bell
+inequality). Quantum mechanics predictions exceed this limit, and
+experiments confirm quantum mechanics. This means no local hidden
+variable theory can explain quantum correlations.</p>
+<h1 id="learning-path">Learning Path</h1>
+<h2 id="prerequisites">Prerequisites</h2>
+<ul>
+<li><p>Basic qubit concepts (<span
+class="math inline">\(|0\rangle\)</span> and <span
+class="math inline">\(|1\rangle\)</span>)</p></li>
+<li><p>Superposition and Hadamard gate</p></li>
+<li><p>CNOT gate</p></li>
+</ul>
+<h2 id="next-steps">Next Steps</h2>
+<ul>
+<li><p>Quantum Teleportation (transfer quantum states using Bell
+states)</p></li>
+<li><p>Superdense Coding (transfer classical info using Bell
+states)</p></li>
+<li><p>GHZ State (multi-qubit entanglement)</p></li>
+</ul>
+<h1 id="complete-examples">Complete Examples</h1>
+<h2 id="example-1-basic-bell-state">Example 1: Basic Bell State</h2>
+<pre><code>from quonic import qgate, qshow
+from quonic.gates import CX, H
+
+qgate(H, 0)
+qgate(CX, 0, 1)
+qshow()</code></pre>
+<h2 id="example-2-noisy-bell-state">Example 2: Noisy Bell State</h2>
+<pre><code>from quonic import qgate, qshow
+from quonic.gates import CX, H
+
+qgate(H, 0)
+qgate(CX, 0, 1)
+qshow(noise=0.05)</code></pre>
+<h1 id="download">Download</h1>
+<ul>
+<li><p>(https://github.com/ChrisLee0721/QuoNic/blob/main/examples/bell/bell.py)</p></li>
+</ul>
+</body>
+</html>

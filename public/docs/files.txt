@@ -19,8 +19,11 @@ docs/examples.md
 docs/examples/example_amplitude_amplification_zh.html
 docs/examples/example_amplitude_estimation_zh.html
 docs/examples/example_basic_gates_zh.html
+docs/examples/example_bb84.html
 docs/examples/example_bb84_zh.html
+docs/examples/example_bell.html
 docs/examples/example_bell_zh.html
+docs/examples/example_bernstein_vazirani.html
 docs/examples/example_bernstein_vazirani_zh.html
 docs/examples/example_bit_flip_code_zh.html
 docs/examples/example_cif_zh.html
@@ -31,6 +34,7 @@ docs/examples/example_coupling_map_zh.html
 docs/examples/example_creg_multi_zh.html
 docs/examples/example_cwhile_zh.html
 docs/examples/example_decompose_zh.html
+docs/examples/example_deutsch_jozsa.html
 docs/examples/example_deutsch_jozsa_zh.html
 docs/examples/example_diffusion_zh.html
 docs/examples/example_discrete_log_zh.html
@@ -41,8 +45,10 @@ docs/examples/example_elliptic_curve_zh.html
 docs/examples/example_error_mitigation_zh.html
 docs/examples/example_from_qiskit_nature_zh.html
 docs/examples/example_ft_gate_zh.html
+docs/examples/example_ghz.html
 docs/examples/example_ghz_zh.html
 docs/examples/example_gpu_demo_zh.html
+docs/examples/example_grover.html
 docs/examples/example_grover_zh.html
 docs/examples/example_groverize_zh.html
 docs/examples/example_hadamard_test_zh.html
@@ -65,6 +71,7 @@ docs/examples/example_qaoa_tsp_zh.html
 docs/examples/example_qaoa_zh.html
 docs/examples/example_qbm_zh.html
 docs/examples/example_qcnn_zh.html
+docs/examples/example_qft.html
 docs/examples/example_qft_zh.html
 docs/examples/example_qgan_zh.html
 docs/examples/example_qgnn_zh.html
@@ -74,6 +81,7 @@ docs/examples/example_qint_zh.html
 docs/examples/example_qng_zh.html
 docs/examples/example_qnn_zh.html
 docs/examples/example_qpca_zh.html
+docs/examples/example_qpe.html
 docs/examples/example_qpe_zh.html
 docs/examples/example_qrl_zh.html
 docs/examples/example_qsp_zh.html
@@ -99,10 +107,12 @@ docs/examples/example_shor_zh.html
 docs/examples/example_simon_zh.html
 docs/examples/example_stabilizer_zh.html
 docs/examples/example_steane_code_zh.html
+docs/examples/example_superdense_coding.html
 docs/examples/example_superdense_coding_zh.html
 docs/examples/example_surface_code_zh.html
 docs/examples/example_swap_test_zh.html
 docs/examples/example_syndrome_zh.html
+docs/examples/example_teleportation.html
 docs/examples/example_teleportation_zh.html
 docs/examples/example_trotter_zh.html
 docs/examples/example_vqc_zh.html

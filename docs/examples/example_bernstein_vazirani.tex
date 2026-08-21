@@ -1,0 +1,197 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage[UTF8]{ctex}
+\usepackage{amsmath,amssymb}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{geometry}
+\usepackage{graphicx}
+\geometry{margin=2.5cm}
+
+\title{Bernstein-Vazirani Algorithm}
+\author{QuoNic}
+\date{}
+
+\begin{document}
+\maketitle
+
+\begin{center}
+\textbf{Algorithms} | Difficulty: Intermediate | Time: 10 min
+\end{center}
+
+\tableofcontents
+\newpage
+
+\section{Why do we need it?}
+
+Bernstein-Vazirani algorithm is a generalization of Deutsch-Jozsa, used to find hidden bit strings.
+
+\subsection{Classical Limitations}
+\begin{itemize}
+  \item Classical algorithm needs $n$ queries to find hidden bit string
+  \item Each query only yields 1 bit of information
+\end{itemize}
+
+\subsection{Quantum Advantages}
+\begin{itemize}
+  \item Bernstein-Vazirani only needs 1 query
+  \item Provides linear speedup
+  \item Paradigm for quantum algorithm design
+\end{itemize}
+
+\subsection{Real-world Applications}
+\begin{itemize}
+  \item Quantum algorithm teaching
+  \item Quantum advantage verification
+  \item Quantum computing theory
+\end{itemize}
+
+\section{Quick Start}
+
+\begin{verbatim}
+from quonic.algorithms import bernstein_vazirani
+
+# Find hidden bit string
+result = bernstein_vazirani("101", n_qubits=3)
+print(f"Hidden string: {result.hidden_string}")
+\end{verbatim}
+
+\textbf{Expected Output}:
+\begin{verbatim}
+Hidden string: 101
+\end{verbatim}
+
+\section{Theory Deep Dive}
+
+\subsection{Circuit Diagram}
+
+\begin{center}
+\includegraphics[width=0.6\textwidth]{../../images/bernstein_vazirani_circuit.svg}
+\end{center}
+
+\subsection{Mathematical Derivation}
+
+Bernstein-Vazirani finds hidden bit string $s$, such that $f(x) = s \cdot x \mod 2$.
+
+\textbf{Step 1: Initialization}
+\begin{equation}
+|\psi_0\rangle = |0\rangle^{\otimes n}|1\rangle
+\end{equation}
+
+\textbf{Step 2: Hadamard Gates}
+\begin{equation}
+|\psi_1\rangle = \frac{1}{\sqrt{2^n}} \sum_{x=0}^{2^n-1} |x\rangle \cdot \frac{|0\rangle - |1\rangle}{\sqrt{2}}
+\end{equation}
+
+\textbf{Step 3: Oracle Query}
+\begin{equation}
+|\psi_2\rangle = \frac{1}{\sqrt{2^n}} \sum_{x=0}^{2^n-1} (-1)^{s \cdot x} |x\rangle \cdot \frac{|0\rangle - |1\rangle}{\sqrt{2}}
+\end{equation}
+
+\textbf{Step 4: Hadamard and Measurement}
+
+Measurement result is hidden bit string $s$.
+
+\subsection{Geometric Interpretation}
+
+Bernstein-Vazirani uses quantum superposition to query all inputs simultaneously, using interference to extract hidden bit string.
+
+\section{Code Walkthrough}
+
+\begin{verbatim}
+from quonic.algorithms import bernstein_vazirani
+
+# bernstein_vazirani(hidden_string, n_qubits)
+# hidden_string: the hidden bit string to find
+# n_qubits: number of qubits
+result = bernstein_vazirani("101", n_qubits=3)
+
+# result.hidden_string: the found hidden string
+print(f"Hidden string: {result.hidden_string}")
+\end{verbatim}
+
+\section{Advanced Usage}
+
+\subsection{Scenario 1: Different Hidden Strings}
+
+\begin{verbatim}
+from quonic.algorithms import bernstein_vazirani
+
+# Find different hidden strings
+result = bernstein_vazirani("110", n_qubits=3)
+print(f"Hidden string: {result.hidden_string}")
+# Output: 110
+\end{verbatim}
+
+\subsection{Scenario 2: Multi-qubit}
+
+\begin{verbatim}
+from quonic.algorithms import bernstein_vazirani
+
+# More qubits for longer strings
+result = bernstein_vazirani("10110", n_qubits=5)
+print(f"Hidden string: {result.hidden_string}")
+# Output: 10110
+\end{verbatim}
+
+\section{Use Cases}
+
+\subsection{Quantum Algorithm Teaching}
+
+Bernstein-Vazirani is a classic introductory quantum algorithm.
+
+\subsection{Quantum Advantage Verification}
+
+Bernstein-Vazirani is one of the algorithms proving quantum computational advantage.
+
+\subsection{Quantum Computing Theory}
+
+Bernstein-Vazirani is a paradigm for quantum algorithm design.
+
+\section{FAQ}
+
+\subsection{What is the speedup of Bernstein-Vazirani?}
+
+Linear speedup: classical needs $n$ queries, quantum only 1.
+
+\subsection{What are the practical applications of Bernstein-Vazirani?}
+
+Bernstein-Vazirani is mainly used for teaching and theoretical research, with limited practical applications.
+
+\subsection{What's the difference between Bernstein-Vazirani and Deutsch-Jozsa?}
+
+Deutsch-Jozsa determines function type, Bernstein-Vazirani finds hidden bit string.
+
+\section{Learning Path}
+
+\subsection{Prerequisites}
+\begin{itemize}
+  \item Deutsch-Jozsa Algorithm
+  \item Qubits and superposition
+  \item Hadamard gate and CNOT gate
+\end{itemize}
+
+\subsection{Next Steps}
+\begin{itemize}
+  \item Simon's Algorithm
+  \item Shor's Algorithm
+  \item Quantum Algorithm Design
+\end{itemize}
+
+\section{Complete Examples}
+
+\subsection{Example 1: Basic Bernstein-Vazirani}
+
+\begin{verbatim}
+from quonic.algorithms import bernstein_vazirani
+
+result = bernstein_vazirani("101", n_qubits=3)
+print(f"Hidden string: {result.hidden_string}")
+\end{verbatim}
+
+\section{Download}
+
+\begin{itemize}
+  \item [bernstein\_vazirani.py](https://github.com/ChrisLee0721/QuoNic/blob/main/examples/bernstein_vazirani/bernstein_vazirani.py)
+\end{itemize}
+
+\end{document}

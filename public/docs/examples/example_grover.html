@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc 3.10.2" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <meta name="author" content="QuoNic" />
+  <title>grover</title>
+  <style>
+    /* Default styles provided by pandoc.
+    ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+    */
+    html {
+      color: #1a1a1a;
+      background-color: #fdfdfd;
+    }
+    body {
+      margin: 0 auto;
+      max-width: 36em;
+      padding-left: 50px;
+      padding-right: 50px;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      hyphens: auto;
+      overflow-wrap: break-word;
+      text-rendering: optimizeLegibility;
+      font-kerning: normal;
+    }
+    @media (max-width: 600px) {
+      body {
+        font-size: 0.9em;
+        padding: 12px;
+      }
+      h1 {
+        font-size: 1.8em;
+      }
+    }
+    @media print {
+      html {
+        background-color: white;
+      }
+      body {
+        background-color: transparent;
+        color: black;
+      }
+      p, h2, h3 {
+        orphans: 3;
+        widows: 3;
+      }
+      h2, h3, h4 {
+        page-break-after: avoid;
+      }
+    }
+    p {
+      margin: 1em 0;
+    }
+    a {
+      color: #1a1a1a;
+    }
+    a:visited {
+      color: #1a1a1a;
+    }
+    img {
+      max-width: 100%;
+    }
+    svg {
+      height: auto;
+      max-width: 100%;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 1.4em;
+    }
+    h5, h6 {
+      font-size: 1em;
+      font-style: italic;
+    }
+    h6 {
+      font-weight: normal;
+    }
+    ol, ul {
+      padding-left: 1.7em;
+      margin-top: 1em;
+    }
+    li > ol, li > ul {
+      margin-top: 0;
+    }
+    blockquote {
+      margin: 1em 0 1em 1.7em;
+      padding-left: 1em;
+      border-left: 2px solid #e6e6e6;
+      color: #606060;
+    }
+    code {
+      white-space: pre-wrap;
+      font-family: Menlo, Monaco, Consolas, 'Lucida Console', monospace;
+      font-size: 85%;
+      margin: 0;
+      hyphens: manual;
+    }
+    pre {
+      margin: 1em 0;
+      overflow: auto;
+    }
+    pre code {
+      padding: 0;
+      overflow: visible;
+      overflow-wrap: normal;
+    }
+    .sourceCode {
+     background-color: transparent;
+     overflow: visible;
+    }
+    hr {
+      border: none;
+      border-top: 1px solid #1a1a1a;
+      height: 1px;
+      margin: 1em 0;
+    }
+    table {
+      margin: 1em 0;
+      border-collapse: collapse;
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+    table caption {
+      margin-bottom: 0.75em;
+    }
+    tbody {
+      margin-top: 0.5em;
+      border-top: 1px solid #1a1a1a;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    th {
+      border-top: 1px solid #1a1a1a;
+      padding: 0.25em 0.5em 0.25em 0.5em;
+    }
+    td {
+      padding: 0.125em 0.5em 0.25em 0.5em;
+    }
+    header {
+      margin-bottom: 4em;
+      text-align: center;
+    }
+    #TOC li {
+      list-style: none;
+    }
+    #TOC ul {
+      padding-left: 1.3em;
+    }
+    #TOC > ul {
+      padding-left: 0;
+    }
+    #TOC a:not(:hover) {
+      text-decoration: none;
+    }
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: 1.5em;}
+    div.column{flex: auto;}
+    @media screen {
+    div.columns{gap: min(4vw, 1.5em);}
+    div.column{overflow-x: auto;}
+    }
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+  </style>
+  <script defer="" src="" type="text/javascript"></script>
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">grover</h1>
+<p class="author">QuoNic</p>
+</header>
+<div class="center">
+<p><strong>Algorithms</strong> | Difficulty: Intermediate | Time: 10
+min</p>
+</div>
+<h1 id="why-do-we-need-it">Why do we need it?</h1>
+<p>Finding a target in an unsorted database requires <span
+class="math inline">\(O(N)\)</span> queries classically, but Grover’s
+algorithm only needs <span
+class="math inline">\(O(\sqrt{N})\)</span>.</p>
+<h2 id="classical-limitations">Classical Limitations</h2>
+<ul>
+<li><p>Classical search: worst case requires traversing all <span
+class="math inline">\(N\)</span> elements</p></li>
+<li><p>For <span class="math inline">\(N=10^6\)</span>, classical needs
+<span class="math inline">\(10^6\)</span> queries, quantum only <span
+class="math inline">\(10^3\)</span></p></li>
+</ul>
+<h2 id="quantum-advantages">Quantum Advantages</h2>
+<ul>
+<li><p>Quadratic speedup: <span
+class="math inline">\(O(\sqrt{N})\)</span> vs <span
+class="math inline">\(O(N)\)</span></p></li>
+<li><p>Significant speedup for large-scale search problems</p></li>
+<li><p>Foundation for many quantum algorithms (amplitude amplification,
+quantum counting)</p></li>
+</ul>
+<h2 id="real-world-applications">Real-world Applications</h2>
+<ul>
+<li><p>Database search</p></li>
+<li><p>Cryptography (searching key space)</p></li>
+<li><p>Optimization problems (finding optimal solutions)</p></li>
+<li><p>SAT solving</p></li>
+</ul>
+<h1 id="quick-start">Quick Start</h1>
+<pre><code>from quonic.algorithms import grover
+
+# Search for |11&gt; in 2-qubit space
+result = grover(&quot;11&quot;, 2, shots=1024)
+print(result.counts)</code></pre>
+<p><strong>Expected Output</strong>:</p>
+<pre><code>{&#39;11&#39;: 1008, &#39;00&#39;: 6, &#39;01&#39;: 5, &#39;10&#39;: 5}</code></pre>
+<h1 id="theory-deep-dive">Theory Deep Dive</h1>
+<h2 id="circuit-diagram">Circuit Diagram</h2>
+<div class="center">
+<p><img src="../../images/grover_circuit.svg" style="width:60.0%"
+alt="image" /></p>
+</div>
+<h2 id="mathematical-derivation">Mathematical Derivation</h2>
+<p><strong>Step 1: Initialization</strong></p>
+<p>Apply <span class="math inline">\(H\)</span> gate to all qubits,
+creating uniform superposition: <span
+class="math display">\[\begin{equation}
+|\psi_0\rangle = \frac{|00\rangle + |01\rangle + |10\rangle +
+|11\rangle}{2}
+\end{equation}\]</span></p>
+<p><strong>Step 2: Oracle Marking</strong></p>
+<p>Oracle flips the phase of target state <span
+class="math inline">\(|11\rangle\)</span>: <span
+class="math display">\[\begin{equation}
+|\psi_1\rangle = \frac{|00\rangle + |01\rangle + |10\rangle -
+|11\rangle}{2}
+\end{equation}\]</span></p>
+<p><strong>Step 3: Diffusion Operator</strong></p>
+<p>Diffusion operator reflects about the mean amplitude:</p>
+<ul>
+<li><p>Mean amplitude = <span class="math inline">\((1/4 + 1/4 + 1/4 -
+1/4)/4 = 1/8\)</span></p></li>
+<li><p>After reflection: <span class="math inline">\(|11\rangle\)</span>
+amplitude is amplified</p></li>
+</ul>
+<p><strong>Step 4: Iteration</strong></p>
+<p>Repeat Oracle + Diffusion, each iteration amplifies target state
+amplitude.</p>
+<p><strong>Step 5: Measurement</strong></p>
+<p>Optimal iterations <span class="math inline">\(\approx
+\pi\sqrt{N}/4\)</span>, target state probability <span
+class="math inline">\(\approx 100\%\)</span>.</p>
+<h2 id="geometric-interpretation">Geometric Interpretation</h2>
+<p>Grover’s algorithm in Bloch sphere: each iteration rotates the
+quantum state, amplifying the target state amplitude.</p>
+<p>Like swinging on a swing — each push increases the amplitude.</p>
+<h1 id="code-walkthrough">Code Walkthrough</h1>
+<pre><code>from quonic.algorithms import grover  # Import Grover algorithm
+
+# grover(target, n_qubits, shots)
+# target: target bit string
+# n_qubits: number of qubits
+# shots: number of measurements
+result = grover(&quot;11&quot;, 2, shots=1024)
+
+# result.counts: measurement statistics
+# e.g.: {&#39;11&#39;: 1008, &#39;00&#39;: 6, &#39;01&#39;: 5, &#39;10&#39;: 5}
+print(result.counts)</code></pre>
+<h1 id="advanced-usage">Advanced Usage</h1>
+<h2 id="scenario-1-multi-qubit-search">Scenario 1: Multi-qubit
+Search</h2>
+<pre><code># Search for |101&gt; in 3-qubit space
+result = grover(&quot;101&quot;, 3, shots=1024)
+print(result.counts)</code></pre>
+<h2 id="scenario-2-multi-target-search">Scenario 2: Multi-target
+Search</h2>
+<pre><code># Search for multiple targets
+from quonic.algorithms import grover_multi
+result = grover_multi([&quot;00&quot;, &quot;11&quot;], 2, shots=1024)
+print(result.counts)</code></pre>
+<h2 id="scenario-3-grover-for-optimization">Scenario 3: Grover for
+Optimization</h2>
+<pre><code># Grover search for optimization
+result = grover(&quot;11&quot;, 2, shots=1024)
+# |11&gt; corresponds to optimal solution</code></pre>
+<h1 id="use-cases">Use Cases</h1>
+<h2 id="database-search">Database Search</h2>
+<p>Finding a target in an unsorted database: classical <span
+class="math inline">\(O(N)\)</span>, quantum <span
+class="math inline">\(O(\sqrt{N})\)</span>.</p>
+<h2 id="cryptography">Cryptography</h2>
+<p>Searching key space can accelerate brute-force attacks.</p>
+<h2 id="optimization-problems">Optimization Problems</h2>
+<p>Finding optimal solutions can accelerate combinatorial
+optimization.</p>
+<h1 id="faq">FAQ</h1>
+<h2 id="what-is-the-speedup-of-grover-search">What is the speedup of
+Grover search?</h2>
+<p>Quadratic speedup: <span class="math inline">\(O(\sqrt{N})\)</span>
+vs <span class="math inline">\(O(N)\)</span>. For <span
+class="math inline">\(N=10^6\)</span>, classical needs <span
+class="math inline">\(10^6\)</span> queries, quantum only <span
+class="math inline">\(10^3\)</span>.</p>
+<h2 id="how-many-iterations-does-grover-search-need">How many iterations
+does Grover search need?</h2>
+<p>Optimal iterations <span class="math inline">\(\approx
+\pi\sqrt{N}/4\)</span>. For <span class="math inline">\(N=4\)</span> (2
+qubits), only 1 iteration needed.</p>
+<h2 id="can-grover-search-find-all-targets">Can Grover search find all
+targets?</h2>
+<p>Grover search finds one target. To find all targets, multiple runs
+are needed.</p>
+<h2 id="what-are-the-limitations-of-grover-search">What are the
+limitations of Grover search?</h2>
+<p>1) Need target state description; 2) Only finds one target; 3) For
+small problems, classical may be faster.</p>
+<h2
+id="whats-the-difference-between-grover-search-and-amplitude-amplification">What’s
+the difference between Grover search and amplitude amplification?</h2>
+<p>Grover search is amplitude amplification with uniform initial state.
+Amplitude amplification is more general, supports arbitrary initial
+states.</p>
+<h1 id="learning-path">Learning Path</h1>
+<h2 id="prerequisites">Prerequisites</h2>
+<ul>
+<li><p>Qubits and superposition</p></li>
+<li><p>Hadamard gate and CNOT gate</p></li>
+<li><p>Quantum measurement</p></li>
+</ul>
+<h2 id="next-steps">Next Steps</h2>
+<ul>
+<li><p>Amplitude Amplification (generalization of Grover)</p></li>
+<li><p>Quantum Counting (counting number of targets)</p></li>
+<li><p>Quantum Optimization algorithms</p></li>
+</ul>
+<h1 id="complete-examples">Complete Examples</h1>
+<h2 id="example-1-basic-grover-search">Example 1: Basic Grover
+Search</h2>
+<pre><code>from quonic.algorithms import grover
+
+result = grover(&quot;11&quot;, 2, shots=1024)
+print(result.counts)</code></pre>
+<h2 id="example-2-3-qubit-grover-search">Example 2: 3-qubit Grover
+Search</h2>
+<pre><code>from quonic.algorithms import grover
+
+result = grover(&quot;101&quot;, 3, shots=1024)
+print(result.counts)</code></pre>
+<h1 id="download">Download</h1>
+<ul>
+<li><p>(https://github.com/ChrisLee0721/QuoNic/blob/main/examples/grover/grover.py)</p></li>
+</ul>
+</body>
+</html>
