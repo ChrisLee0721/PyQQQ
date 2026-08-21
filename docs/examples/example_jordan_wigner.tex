@@ -261,13 +261,21 @@ print(f'  Max coefficient: {max(abs(c) for _, c in result_bk.pauli_decomposition
 
 \section{适用场景}
 
-\subsection{量子化学}
+\subsection{分子模拟}
 
-Jordan-Wigner 变换是量子化学的基础。
+Jordan-Wigner 变换是量子化学模拟的基础。分子的电子结构可以用费米子哈密顿量描述，Jordan-Wigner 变换将费米子哈密顿量映射到量子比特哈密顿量，使得量子计算机可以模拟分子系统。这对于药物设计、催化剂设计非常重要。
 
-\subsection{材料科学}
+\subsection{材料电子结构计算}
 
-Jordan-Wigner 变换可以用于设计新材料。
+Jordan-Wigner 变换可以用于计算材料的电子结构。材料的电子结构决定了材料的性质（如导电性、磁性、超导性等）。Jordan-Wigner 变换将材料的费米子哈密顿量映射到量子比特，使得量子计算机可以精确计算电子结构。
+
+\subsection{量子多体系统模拟}
+
+Jordan-Wigner 变换可以用于模拟量子多体系统。例如，Hubbard 模型描述了电子在晶格中的相互作用，是理解高温超导的基础。Jordan-Wigner 变换将 Hubbard 模型映射到量子比特，使得量子计算机可以模拟这些系统。
+
+\subsection{量子算法设计}
+
+Jordan-Wigner 变换是许多量子算法的基础。例如，VQE（变分量子本征求解器）需要 Jordan-Wigner 变换来构造量子电路。量子相位估计（QPE）也需要 Jordan-Wigner 变换来准备初始态。
 
 \subsection{量子物理}
 
